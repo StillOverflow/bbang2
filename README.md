@@ -1,5 +1,5 @@
 <h1>🍞bbang2</h1>
-빵돌2빵순2는 Node.js 및 Vue, MariaDB 기반의 MES 프로젝트입니다.
+빵돌2빵순2는 Node.js, Vue.js 및 MariaDB 기반의 MES 프로젝트입니다.
 
 
 <h1>🥐프로젝트 소개</h1>
