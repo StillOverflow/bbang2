@@ -8,7 +8,7 @@ const master_data = require("./router/master_data_router.js");
 const production = require("./router/production_router.js");
 const quality = require("./router/quality_router.js");
 const sales = require("./router/sales_router.js");
-
+// 가나다라마바사아앙아아아ㅓㄹㅇ니ㅏ런아ㅣㄹ넝라ㅣㄴㅇ머라ㅣㄴㅇㅁ러나이
 // 미들웨어
 app.use(express.json()); // application/json
 app.use(express.urlencoded({ extended: false })); // application/x-form-urlencoded
