@@ -23,15 +23,9 @@ export default {
           const route = useRoute();
           const routeArr = route.path.split("/");
           const nowUrl = routeArr[1];
-
           if (nowUrl.includes(value)) {
             return true;
           }          
-        },
-        getRoute(){
-          const route = useRoute();
-          const routeArr = route.path.split("/");
-          return routeArr[1];
         }
     }
 }
@@ -84,17 +78,61 @@ export default {
         </sidenav-item>
       </li>
 <!-- 생산  -->
-      <li class="nav-item">
+      <li class="nav-item head">
         <sidenav-item
-          to="/production"
-          :class="getRoute() === 'production' ? 'active' : ''"
-          :navText="isRTL ? 'Production' : '생산'"
+          to="/produce"
+          :class="urlCompare('produce') == true ? 'nav-link active' : ''"
+          :navText="'생산'"
         >
           <template v-slot:icon>
             <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
+      <ul class="navbar-nav">
+        <li class="nav-item detail">
+          <sidenav-item
+          to="/produce_list"
+          :class="getRoute() === 'produce_list' ? 'active' : ''"
+          :navText="'생산계획서 조회'">
+          </sidenav-item>
+        </li>
+        <li class="nav-item detail">
+          <sidenav-item
+          to="/produce_set"
+          :class="getRoute() === 'produce_set' ? 'active' : ''"
+          :navText="'생산계획서 관리'">
+          </sidenav-item>
+        </li>
+        <li class="nav-item detail">
+          <sidenav-item
+          to="/produce_od"
+          :class="getRoute() === 'produce_od' ? 'active' : ''"
+          :navText="'생산지시서 관리'">
+          </sidenav-item>
+        </li>
+        <li class="nav-item detail">
+          <sidenav-item
+          to="/produce_odset"
+          :class="getRoute() === 'produce_odset' ? 'active' : ''"
+          :navText="'생산지시서 등록'">
+          </sidenav-item>
+        </li>
+        <li class="nav-item detail">
+          <sidenav-item
+          to="/produce_play"
+          :class="getRoute() === 'produce_play' ? 'active' : ''"
+          :navText="'생산 관리'">
+          </sidenav-item>
+        </li>
+        <li class="nav-item detail">
+          <sidenav-item
+          to="/produce_result"
+          :class="getRoute() === 'produce_result' ? 'active' : ''"
+          :navText="'공장실적조회'">
+          </sidenav-item>
+        </li>
+      </ul>
 <!-- 설비  -->
       <li class="nav-item">
         <sidenav-item
