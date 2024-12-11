@@ -15,23 +15,61 @@ const getRoute = () => {
   return routeArr[1];
 };
 </script>
+
+<script>
+export default {
+    methods: {
+        urlCompare(value){
+          const route = useRoute();
+          const routeArr = route.path.split("/");
+          const nowUrl = routeArr[1];
+
+          if (nowUrl.includes(value)) {
+            return true;
+          }          
+        },
+        getRoute(){
+          const route = useRoute();
+          const routeArr = route.path.split("/");
+          return routeArr[1];
+        }
+    }
+}
+</script>
 <template>
   <div
     class="collapse navbar-collapse w-auto h-auto h-100"
     id="sidenav-collapse-main"
   >
+  
     <ul class="navbar-nav">
-      <li class="nav-item">
+      <li class="nav-item head">
         <sidenav-item
-          to="/dashboard-default"
-          :class="getRoute() === 'dashboard-default' ? 'active' : ''"
-          :navText="isRTL ? 'لوحة القيادة' : 'Dashboard'"
+          to="/dashboard"
+          :class="urlCompare('dashboard') == true ? 'nav-link active' : ''"
+          :navText="isRTL ? 'dashboard' : '대시보드'"
         >
           <template v-slot:icon>
             <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
+      <ul class="navbar-nav">
+        <li class="nav-item detail">
+          <sidenav-item
+          to="/dashboard_write"
+          :class="getRoute() === 'dashboard_write' ? 'active' : ''"
+          :navText="isRTL ? 'Business Write' : '영업조회'">
+          </sidenav-item>
+        </li>
+        <li class="nav-item detail">
+          <sidenav-item
+          to="/dashboard_list"
+          :class="getRoute() === 'dashboard_list' ? 'active' : ''"
+          :navText="isRTL ? 'Business List' : '영업관리'">
+          </sidenav-item>
+        </li>
+      </ul>
 
 <!-- 영업  -->
       <li class="nav-item">
