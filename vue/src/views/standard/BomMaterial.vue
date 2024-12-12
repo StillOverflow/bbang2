@@ -8,23 +8,30 @@
         <table class="table align-items-center mb-0">
           <thead>
             <tr>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Author</th>
+              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">자재코드</th>
               <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                제품코드
+                자재명
               </th>
               <th
                 class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                제품명
+                구분
               </th>
               <th
                 class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                사용여부
+                단위
+              </th><th
+                class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                BOM양
+              </th>
+              <th
+                class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                추가
               </th>
               <th class="text-secondary opacity-7"></th>
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr  :key="material.MAT_CD" v-for="material in filteredMaterials">
               <td>
                 <div class="d-flex px-2 py-1">
                   <div>

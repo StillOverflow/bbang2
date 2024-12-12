@@ -424,8 +424,8 @@ export default {
         </li>
         <li class="nav-item">
           <sidenav-item
-          to="/Standard_list5"
-          :class="getRoute() === 'Standard_list5' ? 'active' : ''"
+          to="/Bom"
+          :class="getRoute() === 'Bom' ? 'active' : ''"
           :navText="'BOM관리'">
           </sidenav-item>
         </li>
