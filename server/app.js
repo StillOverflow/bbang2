@@ -3,9 +3,9 @@ const express = require("express");
 const app = express();
 const commonRouter = require("./router/common_router.js");
 const equipmentRouter = require("./router/equipment_router.js");
-const materials = require("./router/materials_router.js");
-const master_data = require("./router/master_data_router.js");
-const production = require("./router/production_router.js");
+const material = require("./router/material_router.js");
+const standard = require("./router/standard_router.js");
+const produce = require("./router/produce_router.js");
 const quality = require("./router/quality_router.js");
 const sales = require("./router/sales_router.js");
 
@@ -16,9 +16,9 @@ app.use(express.urlencoded({ extended: false })); // application/x-form-urlencod
 // 라우터 등록
 app.use("/", commonRouter);
 app.use("/", equipmentRouter);
-app.use("/", materials);
-app.use("/", master_data);
-app.use("/", production);
+app.use("/", material);
+app.use("/", standard);
+app.use("/", produce);
 app.use("/", quality);
 app.use("/", sales);
 

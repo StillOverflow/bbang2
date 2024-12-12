@@ -180,6 +180,15 @@ export default {
             <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
           </template>
         </sidenav-item>
+        <ul class="navbar-nav">
+        <li class="nav-item detail">
+          <sidenav-item
+          to="/bom"
+          :class="getRoute() === 'bom' ? 'active' : ''"
+          :navText="'BOM'">
+          </sidenav-item>
+        </li>
+        </ul>
       </li>
 <!-- 통계  -->
       <li class="nav-item">

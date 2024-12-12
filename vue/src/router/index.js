@@ -14,6 +14,7 @@ import RTL from "../views/Rtl.vue";
 import Profile from "../views/Profile.vue";
 import Signup from "../views/Signup.vue";
 import Signin from "../views/Signin.vue";
+import Bom from "../views/Bom.vue";
 
 const routes = [
   {
@@ -55,6 +56,11 @@ const routes = [
     path: "/standard",
     name: "Standard",
     component: Standard,
+  },
+  { //BOM
+    path: "/bom",
+    name: "Bom",
+    component: Bom,
   },
   { //통계
     path: "/statistics",
