@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  name: 'Production',
+  name: 'Produce',
   // 컴포넌트 로직
 };
 </script>
