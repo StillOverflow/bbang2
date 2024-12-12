@@ -18,8 +18,6 @@ const getRoute = () => {
 
 <script>
 export default {
-    created() {
-    },
     methods: {
         urlCompare(value){
           const route = useRoute();
