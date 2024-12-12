@@ -3,12 +3,12 @@ const mariadb = require("mariadb/callback");
 const sqlList = require("./sql.js");
 
 const connectionPool = mariadb.createPool({
-  host: process.env.MYSQL_HOST,
-  port: process.env.MYSQL_PORT,
-  user: process.env.MYSQL_USER,
-  password: process.env.MYSQL_PWD,
-  database: process.env.MYSQL_DB,
-  connectionLimit: process.env.MYSQL_LIMIT,
+  host: process.env.HOST,
+  port: process.env.PORT,
+  user: process.env.USER,
+  password: process.env.PWD,
+  database: process.env.DB,
+  connectionLimit: process.env.LIMIT,
 
   trace: true, // log
   permitSetMultiParamEntries: true, // parameter가 객체일 경우 escape작업
