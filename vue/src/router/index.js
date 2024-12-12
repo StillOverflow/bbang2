@@ -62,10 +62,14 @@ const routes = [
     name: 'Standard',
     component: Standard,
   },
-  {
-    //통계
-    path: '/statistics',
-    name: 'Statistics',
+  { //BOM
+    path: "/bom",
+    name: "Bom",
+    component: Bom,
+  },
+  { //통계
+    path: "/statistics",
+    name: "Statistics",
     component: Statistics,
   },
   {
