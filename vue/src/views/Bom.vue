@@ -1,7 +1,7 @@
 <script setup>
-import BomProduct from "./components/BomProduct.vue";
-import BomMaterial from "./components/BomMaterial.vue";
-import BomInformation from "./components/BomInformation.vue";
+import BomProduct from "./standard/BomProduct.vue";
+import BomMaterial from "./standard/BomMaterial.vue";
+import BomInformation from "./standard/BomInformation.vue";
 </script>
 
 <!-- BOM -->
