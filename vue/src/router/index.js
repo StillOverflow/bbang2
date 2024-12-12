@@ -7,6 +7,7 @@ import Equipment from '../views/Equipment.vue'; //설비
 import Material from "../views/Material.vue"; //자재
 import Quality from "../views/Quality.vue"; //품질
 import Standard from "../views/Standard.vue"; //기준정보
+import Bom from "../views/Bom.vue"; //기준정보-Bom
 import Statistics from "../views/Statistics.vue"; //통계
 import Tables from "../views/Tables.vue";
 import Billing from "../views/Billing.vue";
