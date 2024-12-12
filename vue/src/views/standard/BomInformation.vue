@@ -8,39 +8,52 @@
         <table class="table align-items-center mb-0">
           <thead>
             <tr>
-              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">제품코드</th>
+              <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Author</th>
               <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
+                제품코드
+              </th>
+              <th
+                class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                 제품명
               </th>
               <th
                 class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
                 사용여부
               </th>
-              <th
-                class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                선택
-              </th>
               <th class="text-secondary opacity-7"></th>
             </tr>
           </thead>
           <tbody>
-            <tr :key="product.PRD_CD" v-for="product in productList">
+            <tr>
               <td>
                 <div class="d-flex px-2 py-1">
-                  
+                  <div>
+                    <img src="../../assets/img/team-2.jpg" class="avatar avatar-sm me-3" alt="user1" />
+                  </div>
                   <div class="d-flex flex-column justify-content-center">
-                    {{ product.PRD_CD }}
+                    <h6 class="mb-0 text-sm">John Michael</h6>
+                    <p class="text-xs text-secondary mb-0">john@creative-tim.com</p>
                   </div>
                 </div>
               </td>
               <td>
-                {{product.PRD_NM}}
+                <p class="text-xs font-weight-bold mb-0">Manager</p>
+                <p class="text-xs text-secondary mb-0">Organization</p>
               </td>
               <td class="align-middle text-center text-sm">
-                {{product.USAGE_STA}}
+                <span class="badge badge-sm bg-gradient-success">Online</span>
               </td>
               <td class="align-middle text-center">
-                <button class="btn btn-xs btn-info" @click="selectPrdBtn(product.PRD_CD)">선택</button>
+                <span class="text-secondary text-xs font-weight-bold">23/04/18</span>
+              </td>
+              <td class="align-middle">
+                <a
+                  href="javascript:;"
+                  class="text-secondary font-weight-bold text-xs"
+                  data-toggle="tooltip"
+                  data-original-title="Edit user"
+                  >Edit</a
+                >
               </td>
             </tr>
           </tbody>
@@ -49,26 +62,3 @@
     </div>
   </div>
 </template>
-
-<script>
-import axios from 'axios';
-
-export default{
-  data(){
-    return{
-      productList:[],
-    };
-  },
-  methods:{
-    async getPrdInfo(){
-      let result = await axios.get(`/api/productList`);
-      this.productList = result.data; 
-    },
-    selectPrdBtn(prdCd){
-      this.$emit('selectPRdBtn',prdCd);
-    }
-  }
-
-}
-
-</script>
