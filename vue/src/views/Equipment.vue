@@ -7,7 +7,7 @@
 
 <script>
 export default {
-  name: 'Facility',
+  name: 'Equipment',
   // 컴포넌트 로직
 };
 </script>

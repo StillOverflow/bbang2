@@ -110,17 +110,18 @@
               pointer-events: none;
             }
           }
-
-          .navbar-nav .detail .nav-link {
-            padding-top: 10;
+          .navbar-nav .sub {
             padding-bottom: 0;
-            margin-left: 7px;
+            margin-left: 17px;
             .nav-link-text,
             .sidenav-mini-icon,
             .sidenav-normal,
             i {
               pointer-events: none;
             }
+          }
+          .navbar-nav .sub > a {
+            font-size: 12px;
           }
 
           .navbar-nav .nav-item {
@@ -149,6 +150,10 @@
                 }
               }
             }
+          }
+
+          .navbar-nav > .sub {
+            margin-top: -0.875rem;
           }
 
           .lavalamp-object {
@@ -412,6 +417,8 @@
       }
     }
   }
+
+  .navbar-nav.dnone{ display: none;}
 
   &.blur {
     .navbar-nav > .nav-item {
