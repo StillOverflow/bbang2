@@ -13,7 +13,7 @@ const connectionPool = mariadb.createPool({
   trace: true, // log
   permitSetMultiParamEntries: true, // parameter가 객체일 경우 escape작업
   insertIdAsNumber: true, //insertId를 Number 타입으로 변환
-  bigIntAsNumber: true, // bigInt 타입을 자동으로 Number 타입으로변환
+  bigIntAsNumber: true, // bigInt 타입을 자동으로 Number 타입으로 변환
 });
 
 const query = (alias, values) => {

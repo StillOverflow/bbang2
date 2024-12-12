@@ -13,6 +13,10 @@ const store = useStore();
           >
             ©
             {{ new Date().getFullYear() }}, made with
+            <i class="fa fa-heart"></i> by Tim <b>"빵돌2빵순2"</b>
+            for Yedam <b>MES Project</b>
+            <!-- ©
+            {{ new Date().getFullYear() }}, made with
             <i class="fa fa-heart"></i> by
             <a
               href="https://www.creative-tim.com"
@@ -20,10 +24,10 @@ const store = useStore();
               target="_blank"
               >Creative Tim</a
             >
-            for a better web.
+            for a better web. -->
           </div>
         </div>
-        <div class="col-lg-6">
+        <!-- <div class="col-lg-6">
           <ul
             class="nav nav-footer justify-content-center justify-content-lg-end"
           >
@@ -60,7 +64,7 @@ const store = useStore();
               >
             </li>
           </ul>
-        </div>
+        </div> -->
       </div>
     </div>
   </footer>

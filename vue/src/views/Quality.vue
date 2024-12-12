@@ -1,14 +1,16 @@
 <!-- 품질 -->
 <template>
-  <div>
-    <!-- 템플릿 내용 -->
-     dfdf
+  <div class="container">
+    <div class="card p-4 pe-5">
+
+      <router-view/>
+
+    </div>
   </div>
 </template>
 
 <script>
-export default {
-  name: 'Quality',
-  // 컴포넌트 로직
-};
+  export default {
+    name: 'Quality'
+  };
 </script>

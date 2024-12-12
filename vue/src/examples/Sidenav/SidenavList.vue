@@ -348,8 +348,8 @@ export default {
         </li>
         <li class="nav-item">
           <sidenav-item
-          to="/Quality_list2"
-          :class="getRoute() === 'Quality_list2' ? 'active' : ''"
+          to="/quality_stdAdd"
+          :class="getRoute() === 'quality_stdAdd' ? 'active' : ''"
           :navText="'품질기준 등록'">
           </sidenav-item>
         </li>

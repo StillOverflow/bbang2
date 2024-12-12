@@ -50,10 +50,10 @@ defineProps({
       </li>
     </ol>
     <h6
-      class="mb-0 font-weight-bolder"
+      class="mb-0 font-weight-bolder fs-3"
       :class="isNavFixed ? 'text-dark' : 'text-white'"
     >
-      {{ currentDirectory }}
+      {{ this.$store.state.navDirectory.title }}
     </h6>
   </nav>
 </template>

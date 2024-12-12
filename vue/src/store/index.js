@@ -17,6 +17,7 @@ export default createStore({
     showFooter: true,
     showMain: true,
     layout: "default",
+    navDirectory: ""
   },
   mutations: {
     toggleConfigurator(state) {
@@ -44,11 +45,17 @@ export default createStore({
         state.isNavFixed = false;
       }
     },
+    navText(state, payload){
+      state.navDirectory = payload;
+    }
   },
   actions: {
     toggleSidebarColor({ commit }, payload) {
       commit("sidebarType", payload);
     },
+    breadCrumb({ commit }, payload){
+      commit("navText", payload);
+    }
   },
   getters: {},
 });
