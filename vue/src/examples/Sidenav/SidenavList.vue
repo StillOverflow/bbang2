@@ -27,8 +27,8 @@ export default {
             return true;
           }          
         },
-        showList(name){     
-          
+        showList(name){    
+            
           const elements_head = document.querySelectorAll('.nav-item.head > a');
           for (var i = 0; i < elements_head.length; i++) {
             elements_head[i].classList.remove('active');
@@ -39,8 +39,10 @@ export default {
             elements_detail[j].classList.add('dnone');
           }
           
-          document.querySelector('#'+name+' > a').classList.add('active'); //1depth에 active클래스 추가 (현재위치 표시)
-          document.querySelector('.'+name+'_list').classList.remove('dnone'); //2detph 목록 노출
+          if(document.querySelector('#'+name+'>a').classList.contains('active') ==false){
+            document.querySelector('#'+name+' > a').classList.add('active'); //1depth에 active클래스 추가 (현재위치 표시)
+            document.querySelector('.'+name+'_list').classList.remove('dnone'); //2detph 목록 노출
+          }
           
         }
     }
