@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
 import Business from "../views/Business.vue"; //영업
 import Production from "../views/Production.vue"; //생산
+import Production_ow from "../views/Production_ow.vue"; //생산
 import Facility from "../views/Facility.vue"; //설비
 import Material from "../views/Material.vue"; //자재
 import Quality from "../views/Quality.vue"; //품질
@@ -35,6 +36,11 @@ const routes = [
     path: "/production",
     name: "Production",
     component: Production,
+  },
+  { //생산지시 등록
+    path: "/production_ow",
+    name: "Production_ow",
+    component: Production_ow,
   },
   { //설비
     path: "/facility",
