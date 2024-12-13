@@ -5,7 +5,7 @@ import Produce from "../views/Produce.vue"; //생산
 import Produce_ow from "../views/Produce_ow.vue"; //생산
 import Equipment from '../views/Equipment.vue'; //설비
 import Material from "../views/Material.vue"; //자재
-import Quality from "../views/Quality.vue"; //품질
+import QualityStdAdd from "../views/QualityStdAdd.vue"; //품질
 import Standard from "../views/Standard.vue"; //기준정보
 import Bom from "../views/Bom.vue"; //기준정보-Bom
 import Statistics from "../views/Statistics.vue"; //통계
@@ -58,9 +58,9 @@ const routes = [
   },
   {
     //품질
-    path: '/quality',
-    name: 'Quality',
-    component: Quality,
+    path: '/quality_stdAdd',
+    name: 'QualityStdAdd',
+    component: QualityStdAdd,
   },
   {
     //기준정보
