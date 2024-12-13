@@ -6,7 +6,7 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         <!-- 대상분류 자재/제품/공정 -->
         <div class="row mb-3">
-          <div class="col-12 col-md-1 text-center me-5 mb-2" :style="t_overflow">대상분류</div>
+          <div class="col-12 col-md-1 text-center me-5 mb-2 fw-bolder" :style="t_overflow">대상분류</div>
           <div class="form-check col-4 col-md-2" v-for="(opt, idx) in radios" :key="idx">
             <input class="form-check-input" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item">
             <label class="form-check-label" :for="'radio' + opt.item">
@@ -17,23 +17,23 @@
     
         <!-- 구분/카테고리/모달 조회조건 선택 -->
         <div class="row">
-          <div class="col-6 col-lg-1 text-center mb-2" :style="t_overflow">구분</div>
+          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">구분</div>
           <div class="col-6 col-lg-2 mb-2">
             <select class="form-select" v-model="selected_div">
               <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.item}}</option>
             </select>
           </div>
-          <div class="col-6 col-lg-1 text-center mb-2" :style="t_overflow">카테고리</div>
+          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">카테고리</div>
           <div class="col-6 col-lg-2 mb-2">
             <select class="form-select" v-model="selected_cate">
               <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.item}}</option>
             </select>
           </div>
-          <div class="col-6 col-lg-1 text-center mb-2" :style="t_overflow">ㅇㅇ선택</div>
+          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">ㅇㅇ선택</div>
           <div class="col-6 col-lg-2 mb-2">
             <input type="text" class="form-control" :value="modal_val" readonly>
           </div>
-          <div class="col-6 col-lg-1 text-center mb-2" :style="t_overflow">ㅇㅇ명</div>
+          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">ㅇㅇ명</div>
           <div class="col-6 col-lg-2 mb-2">
             <input type="text" class="form-control" :value="modal_val" readonly>
           </div>
@@ -59,11 +59,11 @@
           </div>
         </div>
   
-        <div class="row">
+        <div class="row mb-4">
           <div class="col-5">
-            <ag-grid-vue class="ag-theme-alpine" :columnDefs="myDefs" :rowData="myData"/>
+            <ag-grid-vue class="ag-theme-alpine w-100 h-100" :columnDefs="myDefs" :rowData="myData" @grid-ready="gridFit"/>
           </div>
-          <div class="col-2 p-lg-6">
+          <div class="col-2 p-lg-5 p-xxl-6">
             <div class="row">
               <button class="btn btn-success" :style="t_overflow">추가</button>
             </div>
@@ -72,13 +72,13 @@
             </div>
           </div>
           <div class="col-5">
-            <ag-grid-vue class="ag-theme-alpine" :columnDefs="yetDefs" :rowData="yetData"/>
+            <ag-grid-vue class="ag-theme-alpine w-100 h-100" :columnDefs="yetDefs" :rowData="yetData" @grid-ready="gridFit"/>
           </div>
         </div>
   
         <div class="row">
-          <div class="col-2 col-md-1 text-center" :style="t_overflow">
-            등록일자
+          <div class="col-2 col-md-1 text-center fw-bolder" :style="t_overflow">
+            등록일
           </div>
           <div class="col-5 col-md-3 col-xxl-2">
             <input type="text" class="form-control" :value="date_val" readonly>
@@ -140,7 +140,7 @@
     created(){ // 페이지 제목 저장
       this.$store.dispatch('breadCrumb', {title: '품질기준 등록'});
     },
-    beforeMount(){ // grid API 테이블에 넣을 값
+    beforeMount(){ // grid API 테이블에 값 불러오기
       this.myDefs = [
       { field: 'make' },
             { field: 'model' },
@@ -158,6 +158,11 @@
       this.yetData = [
 
       ];
+    },
+    methods: {
+      gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
+        params.api.sizeColumnsToFit();
+      }
     }
   };
 </script>
