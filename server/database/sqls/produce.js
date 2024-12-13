@@ -12,12 +12,12 @@ SET ?
 WHERE PROD_PLAN_CD = ?`;
 
 //제품조회
-const prPlanDtlInsert =
+const prPlanDtlList =
 `SELECT * FROM prod_plan_dtl
 WHERE PROD_PLAN_CD = ? `;
 
 //제품수정
-const prPlanDtlInsert =
+const prPlanDtlUpdate =
 `UPDATE prod_plan_dtl
 SET ? `;
 
@@ -42,7 +42,7 @@ const prInstDtlInsert =
 SET ? `;
 
 //제품수정
-const prInstDtlInsert =
+const prInstDtlUpdate =
 `UPDATE prod_inst_dtl
 SET ? 
 WHERE INST_DTL_CD = ?`;
