@@ -123,7 +123,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="align-middle text-center">
+                  <tr class="align-middle text-center" id="mat1">
                     <td><span class="text-secondary text-s font-weight-bold">1</span></td>
                     <td><span class="text-secondary text-s font-weight-bold">반죽공정</span></td>
                     <td></td>
@@ -131,7 +131,7 @@
                     <td></td>
                     <td>▼</td>
                   </tr>
-                  <tr class="align-middle text-center">
+                  <tr class="align-middle text-center" id="mat2">
                     <td><span class="text-secondary text-s font-weight-bold">2</span></td>
                     <td><span class="text-secondary text-s font-weight-bold">반죽분리공정</span></td>
                     <td></td>
@@ -139,7 +139,7 @@
                     <td></td>
                     <td>▼</td>
                   </tr>
-                  <tr class="align-middle text-center">
+                  <tr class="align-middle text-center" id="mat3">
                     <td><span class="text-secondary text-s font-weight-bold">3</span></td>
                     <td><span class="text-secondary text-s font-weight-bold">발효공정</span></td>
                     <td></td>
@@ -148,7 +148,7 @@
                     <td>▲</td>
                   </tr>
 
-                  <tr class="align-middle text-center">
+                  <tr class="align-middle text-center mat3">
                     <td>
                       <input type="checkbox" id="mat_step" checked>
                     </td>
@@ -158,17 +158,17 @@
                     <td><span class="text-secondary text-s font-weight-bold">180g</span></td>
                     <td></td>
                   </tr>
-                  <tr class="align-middle text-center">
+                  <tr class="align-middle text-center mat3" id="mat2">
                     <td>
                       <input type="checkbox" id="mat_step" checked>
                     </td>
                     <td><span class="text-secondary text-s font-weight-bold">PRC2206123</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">이스트트</span></td>
+                    <td><span class="text-secondary text-s font-weight-bold">이스트</span></td>
                     <td><span class="text-secondary text-s font-weight-bold">30g</span></td>
                     <td><span class="text-secondary text-s font-weight-bold">180g</span></td>
                     <td></td>
                   </tr>
-                  <tr class="align-middle text-center">
+                  <tr class="align-middle text-center mat3" id="mat3">
                     <td>
                       <input type="checkbox" id="mat_step" checked>
                     </td>
