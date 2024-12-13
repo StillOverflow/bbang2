@@ -99,6 +99,7 @@
           }
           // Navbar navigation
           .navbar-nav .head .nav-link {
+            cursor: pointer;
             padding-top: $navbar-vertical-nav-link-padding-y !important;
             padding-bottom: $navbar-vertical-nav-link-padding-y !important;
 
@@ -416,8 +417,6 @@
       }
     }
   }
-
-  .navbar-nav.dnone{ display: none;}
 
   &.blur {
     .navbar-nav > .nav-item {
