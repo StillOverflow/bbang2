@@ -8,7 +8,8 @@
       <ag-grid-vue style="width:500px; height: 500px;"
       class="ag-theme-alpine"
       :columnDefs="columnDefs"
-      :rowData="rowData">
+      :rowData="rowData"
+      @grid-ready="gridFit">
       </ag-grid-vue>
     </div>
   </div>
@@ -41,6 +42,11 @@ export default {
             { make: 'Ford', model: 'Mondeo', price: 32000 },
             { make: 'JoJang', model: 'Boxter', price: 72000 }
         ];
+    },
+    methods: {
+      gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
+        params.api.sizeColumnsToFit();
+      }
     }
 }
 </script>
