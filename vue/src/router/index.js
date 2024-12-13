@@ -5,7 +5,7 @@ import Dashboard from "../views/Dashboard.vue";
 
 
 ////////////////////////////// 영업 //////////////////////////////
-
+import Sales from "../views/sales/Sales.vue";
 
 
 
@@ -22,8 +22,8 @@ import Dashboard from "../views/Dashboard.vue";
 
 
 ////////////////////////////// 생산 //////////////////////////////
-import Produce from "../views/Produce.vue";
-import Produce_ow from "../views/Produce_ow.vue";
+import Produce from "../views/produce/Produce.vue";
+import Produce_ow from "../views/produce/Produce_ow.vue";
 
 
 
@@ -40,7 +40,7 @@ import Produce_ow from "../views/Produce_ow.vue";
 
 
 ////////////////////////////// 설비 //////////////////////////////
-import Equipment from '../views/Equipment.vue';
+import Equipment from '../views/equipment/Equipment.vue';
 
 
 
@@ -56,7 +56,7 @@ import Equipment from '../views/Equipment.vue';
 
 
 ////////////////////////////// 자재 //////////////////////////////
-import Material from "../views/Material.vue";
+import Material from "../views/material/Material.vue";
 
 
 
@@ -71,7 +71,7 @@ import Material from "../views/Material.vue";
 
 
 ////////////////////////////// 품질 //////////////////////////////
-import QualityStdAdd from "../views/QualityStdAdd.vue";
+import QualityStdAdd from "../views/quality/QualityStdAdd.vue";
 
 
 
@@ -86,8 +86,8 @@ import QualityStdAdd from "../views/QualityStdAdd.vue";
 
 
 //////////////////////////// 기준정보 ////////////////////////////
-import Standard from "../views/Standard.vue";
-import Bom from "../views/Bom.vue";
+import Standard from "../views/standard/Standard.vue";
+import Bom from "../views/standard/Bom.vue";
 
 
 
@@ -132,7 +132,12 @@ const routes = [
   },
   
 ////////////////////////////// 영업 //////////////////////////////
-  
+{
+  //영업
+  path: '/slaes',
+  name: 'sales',
+  component: Sales,
+}, 
 
 
 
