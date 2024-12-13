@@ -123,7 +123,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="align-middle text-center" id="mat1">
+                  <tr class="align-middle text-center" @click="matShow('mat1')">
                     <td><span class="text-secondary text-s font-weight-bold">1</span></td>
                     <td><span class="text-secondary text-s font-weight-bold">반죽공정</span></td>
                     <td></td>
@@ -131,7 +131,7 @@
                     <td></td>
                     <td>▼</td>
                   </tr>
-                  <tr class="align-middle text-center" id="mat2">
+                  <tr class="align-middle text-center" @click="matShow('mat2')">
                     <td><span class="text-secondary text-s font-weight-bold">2</span></td>
                     <td><span class="text-secondary text-s font-weight-bold">반죽분리공정</span></td>
                     <td></td>
@@ -139,7 +139,7 @@
                     <td></td>
                     <td>▼</td>
                   </tr>
-                  <tr class="align-middle text-center" id="mat3">
+                  <tr class="align-middle text-center" @click="matShow('mat3')">
                     <td><span class="text-secondary text-s font-weight-bold">3</span></td>
                     <td><span class="text-secondary text-s font-weight-bold">발효공정</span></td>
                     <td></td>
@@ -203,6 +203,15 @@ export default {
   },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
+  },
+
+  methods : {
+    matShow(id){
+      const elements = document.querySelectorAll('.'+id);
+      for (var i = 0; i < elements.length; i++) {
+        elements[i].classList.toggle('dnone');
+      }
+    }
   }
 };
 
