@@ -8,56 +8,23 @@
           <div class="col-md-6">
             <p class="text-uppercase text-lg">기본정보</p>            
               <label for="example-text-input" class="form-control-label">생산계획코드</label>
-              <div class="form-inline">
-                <input class="form-control w-50" type="text" value="" />                  
-                <button type="button" class="btn mb-0 btn-success btn-xsm null null ms-auto">검색</button>
+              <div class="row">
+              <div class="col-6 col-xxl-2">
+                <input class="form-control" type="text" value="" readonly/>
               </div>
+              <div class="col-4 text-end text-md-start">
+                <button class="btn btn-primary me-3">검색</button>
+              </div>
+            </div>
             <label for="example-text-input" class="form-control-label">작업일자</label>
-            <input class="form-control" type="date" value="" />
+            <input class="form-control w-40" type="date" value="" />
 
             <hr class="horizontal dark" />
 
             <p class="text-uppercase text-lg">생산제품 목록</p>
-            <div class="table-responsive p-0">
-              <table class="table align-items-center mb-0">
-                <thead>
-                  <tr>
-                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"
-                      width="10%"> 순번 </th>
-                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"> 제품코드</th>
-                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7">제품명</th>
-                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7">생산수량</th>
-                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                    <template v-if="count >0">
-                      <tr 
-                      v-for="planInfo in planList" 
-                      :key="planInfo.prod_plan_dtl_cd"
-                      class="align-middle text-center"
-                      >
-                          <td>{{ planInfo.prod_plan_dtl_cd }}</td>
-                          <td>{{ planInfo.prd_cd }}</td>
-                          <td>{{ planInfo.prod_plan_qty}}</td>        
-                          <td class="btn-group" role="group" aria-label="Basic mixed styles example">
-                              <button class="btn mb-0 btn-outline-success btn-xsm null null" @click="goToUpdateForm(userInfo.user_no)"><i class="bi bi-pencil"></i></button>
-                              <button class="btn btn-outline-secondary btn-sm" @click="delInfo(userInfo.user_no)"><i class="bi bi-trash"></i></button>
-                          </td>
-                      </tr>                      
-                  </template>
-
-                  <tr v-else>
-                      <td colspan="5" align="center">                          
-                        <span class="text-secondary text-s font-weight-bold">등록된 제품이 없습니다.</span> 
-                      </td>   
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+            <ag-grid-vue class="ag-theme-alpine w-100 h-50" :columnDefs="myDefs" :rowData="myData" @grid-ready="gridFit"/>
           </div>
           
-
           <!--공정설정-->
           <div class="col-md-6 bg-gr">
             <p class="text-uppercase text-lg">공정설정</p>
@@ -194,6 +161,7 @@
 
 <script>
 import axios from 'axios';
+import { AgGridVue } from "ag-grid-vue3";
 
 export default {
   name: 'Produce_ow',
@@ -208,13 +176,42 @@ export default {
         work_dt : '',
         update_dt : '',
         create_dt : ''
-      }
+      },
+      // grid API 테이블 데이터 (Defs: thead 구성, Data: tbody 구성)
+      myDefs: null,
+      myData: null
     };
   },
+  components: { // grid API
+        AgGridVue
+    },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
   },
-
+  beforeMount(){ // grid API 테이블에 값 불러오기
+    this.myDefs = [
+      { headerName: '순번', field: 'no' },
+      { headerName: '제품코드', field: 'model' },
+      { headerName: '제품명', field: 'name' },
+      { headerName: '생산수량', field: 'qty' }
+    ];
+    this.myData = [
+      { no: '1', model: 'PRD2123', name: '소금빵', qty: 200 },
+      { no: '2', model: 'PRD2123', name: '케로로빵', qty: 200 },
+      { no: '3', model: 'PRD2123', name: '단팥빵', qty: 200 }
+    ];
+    this.prDefs = [
+      { headerName: '사용유무', field: 'yn' },
+      { headerName: '순번', field: 'no' },
+      { headerName: '공정코드', field: 'code' },
+      { headerName: '공정명', field: 'name' }
+    ];
+    this.prData = [
+      { yn: '1', model: 'PRD2123', name: '소금빵', qty: 200 },
+      { yn: '2', model: 'PRD2123', name: '케로로빵', qty: 200 },
+      { yn: '3', model: 'PRD2123', name: '단팥빵', qty: 200 }
+    ];
+  },
   methods : {
     matShow(id){
       const elements = document.querySelectorAll('.'+id);
@@ -238,6 +235,9 @@ export default {
           alert('등록되었습니다.');
           this.instInfo.no = addRes.board_no;
       }
+    },
+    gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
+      params.api.sizeColumnsToFit();
     }
   }
 };
