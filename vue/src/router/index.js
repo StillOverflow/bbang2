@@ -1,122 +1,38 @@
-import { createRouter, createWebHistory } from "vue-router";
-import Dashboard from "../views/Dashboard.vue";
-
-
-
+import { createRouter, createWebHistory } from 'vue-router';
+import Dashboard from '../views/Dashboard.vue';
 
 ////////////////////////////// 영업 //////////////////////////////
-import Sales from "../views/sales/Sales.vue";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import Sales from '../views/sales/Sales.vue';
 
 ////////////////////////////// 생산 //////////////////////////////
-import Produce from "../views/produce/Produce.vue";
-import Produce_ow from "../views/produce/Produce_ow.vue";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+import Produce from '../views/produce/Produce.vue';
+import Produce_ow from '../views/produce/Produce_ow.vue';
 
 ////////////////////////////// 설비 //////////////////////////////
 import Equipment from '../views/equipment/Equipment.vue';
-
-
-
-
-
-
-
-
-
-
-
-
-
+import EquipmentMgmt from '../views/equipment/EquipmentMgmt.vue';
 
 ////////////////////////////// 자재 //////////////////////////////
-import Material from "../views/material/Material.vue";
-
-
-
-
-
-
-
-
-
-
-
-
+import Material from '../views/material/Material.vue';
 
 ////////////////////////////// 품질 //////////////////////////////
-import QualityStdAdd from "../views/quality/QualityStdAdd.vue";
-
-
-
-
-
-
-
-
-
-
-
-
+import QualityStdAdd from '../views/quality/QualityStdAdd.vue';
 
 //////////////////////////// 기준정보 ////////////////////////////
-import Standard from "../views/standard/Standard.vue";
-import Bom from "../views/standard/Bom.vue";
-
-
-
-
-
-
-
-
-
-
-
-
+import Standard from '../views/standard/Standard.vue';
+import Bom from '../views/standard/Bom.vue';
 
 //////////////////////////// 통계(미정) ////////////////////////////
-import Statistics from "../views/Statistics.vue"; //통계
+import Statistics from '../views/Statistics.vue'; //통계
 
-
-
-
-
-import Tables from "../views/Tables.vue";
-import Billing from "../views/Billing.vue";
-import VirtualReality from "../views/VirtualReality.vue";
-import RTL from "../views/Rtl.vue";
-import Profile from "../views/Profile.vue";
-import Signup from "../views/Signup.vue";
-import Signin from "../views/Signin.vue";
-import Grid from "../views/Grid.vue";
-
+import Tables from '../views/Tables.vue';
+import Billing from '../views/Billing.vue';
+import VirtualReality from '../views/VirtualReality.vue';
+import RTL from '../views/Rtl.vue';
+import Profile from '../views/Profile.vue';
+import Signup from '../views/Signup.vue';
+import Signin from '../views/Signin.vue';
+import Grid from '../views/Grid.vue';
 
 /////////////////////// 여기부터 라우트 등록 //////////////////////
 const routes = [
@@ -130,153 +46,44 @@ const routes = [
     name: 'Dashboard',
     component: Dashboard,
   },
-  
-////////////////////////////// 영업 //////////////////////////////
-{
-  //영업
-  path: '/slaes',
-  name: 'sales',
-  component: Sales,
-}, 
 
+  ////////////////////////////// 영업 //////////////////////////////
+  {
+    //영업
+    path: '/slaes',
+    name: 'sales',
+    component: Sales,
+  },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////////////////////////////// 생산 //////////////////////////////
+  ////////////////////////////// 생산 //////////////////////////////
   {
     //생산
     path: '/produce',
     name: 'produce',
     component: Produce,
   },
-  { //생산지시 등록
-    path: "/produce_ow",
-    name: "produce_ow",
+  {
+    //생산지시 등록
+    path: '/produce_ow',
+    name: 'produce_ow',
     component: Produce_ow,
   },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////////////////////////////// 설비 //////////////////////////////
-  { //설비
+  ////////////////////////////// 설비 //////////////////////////////
+  {
+    //설비
     path: '/equipment',
-    name: 'Equipment',
-    component: Equipment
+    name: 'equipment',
+    component: Equipment,
+  },
+  {
+    //설비관리
+    path: '/equipment_Mgmt',
+    name: 'Equipment_Mgmt',
+    component: EquipmentMgmt,
   },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////////////////////////////// 자재 //////////////////////////////
+  ////////////////////////////// 자재 //////////////////////////////
   {
     //자재
     path: '/material',
@@ -284,83 +91,13 @@ const routes = [
     component: Material,
   },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////////////////////////////// 품질 //////////////////////////////
+  ////////////////////////////// 품질 //////////////////////////////
   {
     //품질
     path: '/Quality_stdAdd',
     name: 'QualityStdAdd',
     component: QualityStdAdd,
   },
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   //////////////////////////// 기준정보 ////////////////////////////
   {
@@ -369,82 +106,22 @@ const routes = [
     name: 'Standard',
     component: Standard,
   },
-  { //BOM
-    path: "/bom",
-    name: "Bom",
+  {
+    //BOM
+    path: '/bom',
+    name: 'Bom',
     component: Bom,
   },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/////////////////////////// 통계(미정) ///////////////////////////
-  { //통계
-    path: "/statistics",
-    name: "Statistics",
+  /////////////////////////// 통계(미정) ///////////////////////////
+  {
+    //통계
+    path: '/statistics',
+    name: 'Statistics',
     component: Statistics,
   },
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-///////////////////////// 쓸모없는 거 //////////////////////////
+  ///////////////////////// 쓸모없는 거 //////////////////////////
   {
     path: '/tables',
     name: 'Tables',
