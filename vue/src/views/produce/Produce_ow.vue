@@ -6,9 +6,12 @@
         <div class="row">
           <!--기본정보-->
           <div class="col-md-6">
-            <p class="text-uppercase text-lg">기본정보</p>
-            <label for="example-text-input" class="form-control-label">생산계획코드</label>
-            <input class="form-control" type="text" value="" />
+            <p class="text-uppercase text-lg">기본정보</p>            
+              <label for="example-text-input" class="form-control-label">생산계획코드</label>
+              <div class="form-inline">
+                <input class="form-control w-50" type="text" value="" />                  
+                <button type="button" class="btn mb-0 btn-success btn-xsm null null ms-auto">검색</button>
+              </div>
             <label for="example-text-input" class="form-control-label">작업일자</label>
             <input class="form-control" type="date" value="" />
 
@@ -28,26 +31,26 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="align-middle text-center">
-                    <td><span class="text-secondary text-s font-weight-bold">1</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">PRC22012</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">우유식빵</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">200</span></td>
-                    <td><a class="btn mb-0 btn-outline-success btn-xsm null null">선택하기</a></td>
-                  </tr>
-                  <tr class="align-middle text-center">
-                    <td><span class="text-secondary text-s font-weight-bold">2</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">PRC22012</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">공갈빵빵</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">200</span></td>
-                    <td><a class="btn mb-0 btn-outline-success btn-xsm null null">선택하기</a></td>
-                  </tr>
-                  <tr class="align-middle text-center">
-                    <td><span class="text-secondary text-s font-weight-bold">3</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">PRC22012</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">케로로빵</span></td>
-                    <td><span class="text-secondary text-s font-weight-bold">200</span></td>
-                    <td><a class="btn mb-0 btn-outline-success btn-xsm null null">선택하기</a></td>
+                    <template v-if="count >0">
+                      <tr 
+                      v-for="planInfo in planList" 
+                      :key="planInfo.prod_plan_dtl_cd"
+                      class="align-middle text-center"
+                      >
+                          <td>{{ planInfo.prod_plan_dtl_cd }}</td>
+                          <td>{{ planInfo.prd_cd }}</td>
+                          <td>{{ planInfo.prod_plan_qty}}</td>        
+                          <td class="btn-group" role="group" aria-label="Basic mixed styles example">
+                              <button class="btn mb-0 btn-outline-success btn-xsm null null" @click="goToUpdateForm(userInfo.user_no)"><i class="bi bi-pencil"></i></button>
+                              <button class="btn btn-outline-secondary btn-sm" @click="delInfo(userInfo.user_no)"><i class="bi bi-trash"></i></button>
+                          </td>
+                      </tr>                      
+                  </template>
+
+                  <tr v-else>
+                      <td colspan="5" align="center">                          
+                        <span class="text-secondary text-s font-weight-bold">등록된 제품이 없습니다.</span> 
+                      </td>   
                   </tr>
                 </tbody>
               </table>
@@ -190,15 +193,38 @@
       </div>
     </div>
   </div>
+
+  <div class="modal-wrap" v-show="modalOpen">
+    <div class="modal-container">
+      
+      ...  <!--  모달창 content  -->
+      
+      <div class="modal-btn">
+        <button @click="modalOpen">닫기</button>
+        <button @click="modalOpen">확인</button>
+      </div>
+    </div>
+  </div>
+
 </template>
 
 <script>
+import axios from 'axios';
+
 export default {
   name: 'Produce_ow',
   // 컴포넌트 로직
   data() {
     return {
-      pr_step: []
+      pr_step: [],
+      instInfo: {
+        inst_cd : '',
+        prod_plan_cd : '',
+        status : '',
+        work_dt : '',
+        update_dt : '',
+        create_dt : ''
+      }
     };
   },
   created() {
@@ -210,6 +236,23 @@ export default {
       const elements = document.querySelectorAll('.'+id);
       for (var i = 0; i < elements.length; i++) {
         elements[i].classList.toggle('dnone');
+      }
+    },
+    async boardInsert(){
+      let obj = {
+        prod_plan_cd : this.instInfo.prod_plan_cd,
+        status : this.instInfo.status,
+        work_dt : this.instInfo.work_dt,
+        update_dt : this.getToday(),
+        create_dt : this.getToday()
+      }
+
+      let result = await axios.post("/api/produce/inst", obj)
+                              .catch(err => console.log(err));
+      let addRes = result.data;
+      if(addRes.board_no > 0){
+          alert('등록되었습니다.');
+          this.instInfo.no = addRes.board_no;
       }
     }
   }
