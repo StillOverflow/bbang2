@@ -22,8 +22,8 @@ import Business from "../views/Business.vue";
 
 
 ////////////////////////////// 생산 //////////////////////////////
-import Production from "../views/Production.vue";
-import Production_ow from "../views/Production_ow.vue";
+import Produce from "../views/Produce.vue";
+import Produce_ow from "../views/Produce_ow.vue";
 
 
 
