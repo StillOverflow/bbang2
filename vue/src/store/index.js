@@ -17,7 +17,11 @@ export default createStore({
     showFooter: true,
     showMain: true,
     layout: "default",
-    navDirectory: ""
+    navDirectory: "" // Breadcrumbs에 데이터 전송하는 용
+
+
+
+
   },
   mutations: {
     toggleConfigurator(state) {
@@ -45,17 +49,39 @@ export default createStore({
         state.isNavFixed = false;
       }
     },
-    navText(state, payload){
+    navText(state, payload){ // Breadcrumbs에 데이터 전송하는 용
       state.navDirectory = payload;
     }
+
+
+
+
+
+
+
+
+
+
   },
   actions: {
     toggleSidebarColor({ commit }, payload) {
       commit("sidebarType", payload);
     },
-    breadCrumb({ commit }, payload){
+    breadCrumb({ commit }, payload){ // Breadcrumbs에 데이터 전송하는 용
       commit("navText", payload);
     }
+
+
+
+
+
+
+
+
+
+
+    
+    
   },
   getters: {},
 });
