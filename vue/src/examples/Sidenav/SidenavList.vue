@@ -603,6 +603,18 @@ export default {
 
       <li class="nav-item">
         <sidenav-item
+          to="/grid"
+          :class="getRoute() === 'grid' ? 'active' : ''"
+          :navText="isRTL ? 'grid' : 'grid'"
+        >
+          <template v-slot:icon>
+            <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
+          </template>
+        </sidenav-item>
+      </li>
+
+      <li class="nav-item">
+        <sidenav-item
           to="/billing"
           :class="getRoute() === 'billing' ? 'active' : ''"
           :navText="isRTL ? 'الفواتیر' : 'Billing'"

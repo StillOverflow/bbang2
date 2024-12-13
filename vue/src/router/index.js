@@ -5,7 +5,7 @@ import Dashboard from "../views/Dashboard.vue";
 
 
 ////////////////////////////// 영업 //////////////////////////////
-import Business from "../views/Business.vue";
+
 
 
 
@@ -115,7 +115,7 @@ import RTL from "../views/Rtl.vue";
 import Profile from "../views/Profile.vue";
 import Signup from "../views/Signup.vue";
 import Signin from "../views/Signin.vue";
-
+import Grid from "../views/Grid.vue";
 
 
 /////////////////////// 여기부터 라우트 등록 //////////////////////
@@ -132,12 +132,7 @@ const routes = [
   },
   
 ////////////////////////////// 영업 //////////////////////////////
-  {
-    //영업
-    path: '/business',
-    name: 'Business',
-    component: Business,
-  },
+  
 
 
 
@@ -479,6 +474,11 @@ const routes = [
     path: '/signup',
     name: 'Signup',
     component: Signup,
+  },
+  {
+    path: '/grid',
+    name: 'Grid',
+    component: Grid,
   },
 ];
 
