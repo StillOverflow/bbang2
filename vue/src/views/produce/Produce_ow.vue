@@ -56,6 +56,7 @@
               </table>
             </div>
           </div>
+          
 
           <!--공정설정-->
           <div class="col-md-6 bg-gr">
@@ -186,26 +187,9 @@
             </div>
           </div>
         </div>
-        <div>
-          <button class="btn mb-0 btn-success btn-lg null null ms-auto">저장</button>
-          <button class="btn mb-0 btn-secondary btn-lg null null ms-auto">목록</button>
-        </div>
       </div>
     </div>
   </div>
-
-  <div class="modal-wrap" v-show="modalOpen">
-    <div class="modal-container">
-      
-      ...  <!--  모달창 content  -->
-      
-      <div class="modal-btn">
-        <button @click="modalOpen">닫기</button>
-        <button @click="modalOpen">확인</button>
-      </div>
-    </div>
-  </div>
-
 </template>
 
 <script>
