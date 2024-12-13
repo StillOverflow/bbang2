@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
 import Dashboard from "../views/Dashboard.vue";
 import Business from "../views/Business.vue"; //영업
-import Production from "../views/Production.vue"; //생산
-import Production_ow from "../views/Production_ow.vue"; //생산
+import Produce from "../views/Produce.vue"; //생산
+import Produce_ow from "../views/Produce_ow.vue"; //생산
 import Equipment from '../views/Equipment.vue'; //설비
 import Material from "../views/Material.vue"; //자재
 import Quality from "../views/Quality.vue"; //품질
@@ -36,14 +36,14 @@ const routes = [
   },
   {
     //생산
-    path: '/production',
-    name: 'Production',
-    component: Production,
+    path: '/produce',
+    name: 'produce',
+    component: Produce,
   },
   { //생산지시 등록
-    path: "/production_ow",
-    name: "Production_ow",
-    component: Production_ow,
+    path: "/produce_ow",
+    name: "produce_ow",
+    component: Produce_ow,
   },
   { //설비
     path: '/equipment',
@@ -67,11 +67,6 @@ const routes = [
     path: '/standard',
     name: 'Standard',
     component: Standard,
-  },
-  { //BOM
-    path: "/bom",
-    name: "Bom",
-    component: Bom,
   },
   { //통계
     path: "/statistics",
