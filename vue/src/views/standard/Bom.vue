@@ -127,7 +127,7 @@
                 {{material.UNIT}}
               </td>
               <td class="align-middle">
-                  <input v-model="material.usage" type="int"/>
+                  <input v-model="material.usage" type="number"/>
               </td>
               <td>
                 <button class="btn btn-info btn-sm">추가</button>
