@@ -28,7 +28,6 @@ export default {
           }          
         },
         showList(name){     
-          
           const elements_head = document.querySelectorAll('.nav-item.head > a');
           for (var i = 0; i < elements_head.length; i++) {
             elements_head[i].classList.remove('active');
@@ -41,7 +40,6 @@ export default {
           
           document.querySelector('#'+name+' > a').classList.add('active'); //1depth에 active클래스 추가 (현재위치 표시)
           document.querySelector('.'+name+'_list').classList.remove('dnone'); //2detph 목록 노출
-          
         }
     }
 }
@@ -115,6 +113,28 @@ export default {
         </li>
       </ul>
     
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
       <!-- 생산  -->
       <li class="nav-item head" id="Produce" @click="showList('Produce')">
         <a class="nav-link" :class="urlCompare('Produce') == true ? 'active' : ''" >
@@ -154,6 +174,26 @@ export default {
           </sidenav-item>
         </li>
       </ul>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
       <!-- 자재관리  -->
@@ -253,6 +293,27 @@ export default {
       </ul>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
       <!-- 설비  -->
       <li class="nav-item head" id="Equipment" @click="showList('Equipment')">
         <a class="nav-link" :class="urlCompare('Equipment') == true ? 'active' : ''" >
@@ -329,6 +390,27 @@ export default {
       </ul>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
       <!-- 품질  -->
       <li class="nav-item head" id="Quality" @click="showList('Quality')">
         <a class="nav-link" :class="urlCompare('Quality') == true ? 'active' : ''" >
@@ -348,8 +430,8 @@ export default {
         </li>
         <li class="nav-item">
           <sidenav-item
-          to="/quality_stdAdd"
-          :class="getRoute() === 'quality_stdAdd' ? 'active' : ''"
+          to="/Quality_stdAdd"
+          :class="getRoute() === 'Quality_stdAdd' ? 'active' : ''"
           :navText="'품질기준 등록'">
           </sidenav-item>
         </li>
@@ -384,6 +466,27 @@ export default {
       </ul>
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
       <!-- 기준관리  -->
       <li class="nav-item head" id="Standard" @click="showList('Standard')">
         <a class="nav-link" :class="urlCompare('Standard') == true ? 'active' : ''" >
@@ -455,6 +558,27 @@ export default {
       
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+      
       <li class="nav-item">
         <sidenav-item
           to="/tables"
