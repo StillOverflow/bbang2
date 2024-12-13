@@ -12,18 +12,17 @@ import BomInformation from "./standard/BomInformation.vue";
     <!-- 템플릿 내용 -->
     <div class="py-4 container-fluid">
       <div class="row">
-        <div class="col-12">
+        <div class="col-md-6">
           <BomProduct />
-        </div>
       </div>
-      <div class="mt-4 row">
-        <div class="col-12">
-          <BomMaterial />
+        
+        <div class="col-md-6">
+          <div class="col-12">
+            <BomMaterial />
         </div>
-      </div>
-      <div class="row">
         <div class="col-12">
           <BomInformation />
+        </div>
         </div>
       </div>
     </div>
