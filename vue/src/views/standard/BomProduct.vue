@@ -50,7 +50,7 @@
 </template>
 
 <script>
-// import axios from 'axios';
+import axios from 'axios';
 
 export default{
   data(){
@@ -60,8 +60,8 @@ export default{
   },
   methods:{
     async getPrdInfo(){
-      // let result = await axios.get(`/api/productList`);
-      // this.productList = result.data; 
+     let result = await axios.get(`/api/productList`);
+     this.productList = result.data; 
     },
     selectPrdBtn(prdCd){
       this.$emit('selectPRdBtn',prdCd);
