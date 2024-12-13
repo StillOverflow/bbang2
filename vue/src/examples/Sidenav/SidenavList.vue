@@ -27,19 +27,27 @@ export default {
             return true;
           }          
         },
-        showList(name){     
-          const elements_head = document.querySelectorAll('.nav-item.head > a');
-          for (var i = 0; i < elements_head.length; i++) {
-            elements_head[i].classList.remove('active');
+        showList(name){    
+          const elements_head = document.querySelectorAll('.nav-item.head > a'); //1depth 메뉴 전체
+          const elements_detail = document.querySelectorAll('.navbar-nav.detail'); //2depth 메뉴 전체
+          const this_head = document.querySelector('#'+name+' > a'); //선택한 1depth 메뉴
+          const this_detail = document.querySelector('.'+name+'_list'); //선택한 2depth 메뉴
+          
+          this_head.classList.toggle('active'); //선택한 메뉴 toggle
+          
+          if(this_head.classList.contains('active')){ //활성화 되었다면
+
+            //전체 1,2depth 메뉴 비활성화
+            for (var i = 0; i < elements_head.length; i++) {
+              elements_head[i].classList.remove('active');
+            }
+            for (var j = 0; j < elements_detail.length; j++) {
+              elements_detail[j].classList.add('dnone');
+            }
           }
           
-          const elements_detail = document.querySelectorAll('.navbar-nav.detail');
-          for (var j = 0; j < elements_detail.length; j++) {
-            elements_detail[j].classList.add('dnone');
-          }
-          
-          document.querySelector('#'+name+' > a').classList.add('active'); //1depth에 active클래스 추가 (현재위치 표시)
-          document.querySelector('.'+name+'_list').classList.remove('dnone'); //2detph 목록 노출
+          this_head.classList.toggle('active');
+          this_detail.classList.toggle('dnone');
         }
     }
 }
@@ -527,8 +535,8 @@ export default {
         </li>
         <li class="nav-item">
           <sidenav-item
-          to="/Standard_list5"
-          :class="getRoute() === 'Standard_list5' ? 'active' : ''"
+          to="/Bom"
+          :class="getRoute() === 'Bom' ? 'active' : ''"
           :navText="'BOM관리'">
           </sidenav-item>
         </li>
