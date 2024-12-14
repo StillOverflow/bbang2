@@ -188,12 +188,9 @@ export default {
     alert('삭제완료');
     this.bringBomData(this.selectBomData);
   }
+  
   },
-  //키워드로 검색하기
-  async searchPrd(){
-    let result = await axios.get(`/api/standard/prodcuts?search=${this.keyword}`).catch(err => console.log(err));
-    this.productData = result.data
-  }    
+  //키워드로 검색하기   
     }
   }
 </script>
