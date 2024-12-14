@@ -79,16 +79,16 @@ export default {
       >
         <li class="nav-item">
           <sidenav-item
-            to="/Sales_list"
-            :class="getRoute() === 'Sales_list' ? 'active' : ''"
+            to="/Sales_OrderList"
+            :class="getRoute() === 'Sales_OrderList' ? 'active' : ''"
             :navText="'주문서 조회'"
           >
           </sidenav-item>
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/Sales_list1"
-            :class="getRoute() === 'Sales_list1' ? 'active' : ''"
+            to="/Sales_OrderAdd"
+            :class="getRoute() === 'Sales_OrderAdd' ? 'active' : ''"
             :navText="'주문서 등록'"
           >
           </sidenav-item>
