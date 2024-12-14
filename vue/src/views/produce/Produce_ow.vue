@@ -22,7 +22,32 @@
             <hr class="horizontal dark" />
 
             <p class="text-uppercase text-lg">생산제품 목록</p>
-            <ag-grid-vue class="ag-theme-alpine w-100 h-50" :columnDefs="myDefs" :rowData="myData" @grid-ready="gridFit"/>
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"
+                      width="10%"> 사용유무 </th>
+                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"
+                      width="10%"> 순번 </th>
+                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"> 공정코드
+                    </th>
+                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7">공정명</th>
+                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr :key="plan.prod_plan_cd" v-for="plan in planList">
+                      <td>{{ plan.prod_plan_cd }}</td>
+                      <td>{{ plan.order_cd }}</td>
+                      <td>{{ plan.id }}</td>
+                      <td>{{ plan.start_dt }}</td>
+                      <td>{{ plan.end_dt }}</td>
+                     
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
           
           <!--공정설정-->
@@ -161,13 +186,13 @@
 
 <script>
 import axios from 'axios';
-import { AgGridVue } from "ag-grid-vue3";
 
 export default {
   name: 'Produce_ow',
   // 컴포넌트 로직
   data() {
     return {
+      planList: [],
       pr_step: [],
       instInfo: {
         inst_cd : '',
@@ -176,41 +201,12 @@ export default {
         work_dt : '',
         update_dt : '',
         create_dt : ''
-      },
-      // grid API 테이블 데이터 (Defs: thead 구성, Data: tbody 구성)
-      myDefs: null,
-      myData: null
+      }
     };
   },
-  components: { // grid API
-        AgGridVue
-    },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
-  },
-  beforeMount(){ // grid API 테이블에 값 불러오기
-    this.myDefs = [
-      { headerName: '순번', field: 'no' },
-      { headerName: '제품코드', field: 'model' },
-      { headerName: '제품명', field: 'name' },
-      { headerName: '생산수량', field: 'qty' }
-    ];
-    this.myData = [
-      { no: '1', model: 'PRD2123', name: '소금빵', qty: 200 },
-      { no: '2', model: 'PRD2123', name: '케로로빵', qty: 200 },
-      { no: '3', model: 'PRD2123', name: '단팥빵', qty: 200 }
-    ];
-    this.prDefs = [
-      { headerName: '사용유무', field: 'yn' },
-      { headerName: '순번', field: 'no' },
-      { headerName: '공정코드', field: 'code' },
-      { headerName: '공정명', field: 'name' }
-    ];
-    this.prData = [
-      { yn: '1', model: 'PRD2123', name: '소금빵', qty: 200 },
-      { yn: '2', model: 'PRD2123', name: '케로로빵', qty: 200 },
-      { yn: '3', model: 'PRD2123', name: '단팥빵', qty: 200 }
-    ];
+    this.getPlanList();
   },
   methods : {
     matShow(id){
@@ -218,6 +214,11 @@ export default {
       for (var i = 0; i < elements.length; i++) {
         elements[i].classList.toggle('dnone');
       }
+    },
+    async getPlanList() {            
+        let result = await axios.get('/api/plan')
+                                .catch(err => console.log(err));
+        this.planList = result.data; // 서버가 실제로 보낸 데이터
     },
     async boardInsert(){
       let obj = {
@@ -235,9 +236,6 @@ export default {
           alert('등록되었습니다.');
           this.instInfo.no = addRes.board_no;
       }
-    },
-    gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
-      params.api.sizeColumnsToFit();
     }
   }
 };

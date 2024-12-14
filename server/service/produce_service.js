@@ -16,11 +16,10 @@ const findPlanNo = async (no)=>{
 }
 
 // 제품조회
-const findAllPlanPr = async ()=>{
-  let list = await mysql.query('planPrList');
+const findAllPlanDtl = async (no)=>{
+  let list = await mysql.query('planDtlList', no);
   return list;
 }
-
 
 /*--------------지시서-------------*/
 // 조회
@@ -36,7 +35,6 @@ const findInstNo = async (no)=>{
   return info;
 }
 
-
 // 등록
 const instInsert = async (instInfo)=>{
   let result = await mysql.query('instInsert', instInfo);
@@ -50,8 +48,8 @@ const instInsert = async (instInfo)=>{
 module.exports = {
   findAllPlan,
   findPlanNo,
-  findAllPlanPr,
+  findAllPlanDtl,
   findAllInst,
   findInstNo,
-  instInsert
+  instInsert,  
 };
