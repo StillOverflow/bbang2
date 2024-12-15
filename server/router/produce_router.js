@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const produceService = require("../service/produce_service.js");
 
-module.exports = router;
-
 /*--------------계획서-------------*/
 
 // 전체조회
@@ -20,9 +18,10 @@ router.get('/plan/:no', async (req,res)=>{
 })
 
 // 제품조회
-router.get('/plan', async (req, res)=>{
-    let planList = await produceService.findAllPlan();
-    res.send(planList);
+router.get('/plan/:no/dtl', async (req, res)=>{
+    let planNo = req.params.no;
+    let result = await produceService.findAllPlanDtl(planNo);
+    res.send(result);
 });
 
 /*--------------지시서-------------*/
@@ -46,3 +45,4 @@ router.post('/inst', async(req, res)=>{
     let result = await produceService.instInsert(instInfo);
     res.send(result);
 });
+module.exports = router;

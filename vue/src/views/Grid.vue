@@ -34,7 +34,7 @@ export default {
         this.columnDefs = [
             { field: 'make' },
             { field: 'model' },
-            { field: 'price' }
+            { field: 'price' },
         ];
 
         this.rowData = [

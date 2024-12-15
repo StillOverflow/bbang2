@@ -2,7 +2,7 @@
 
 //전체조회
 const planList =
-`SELECT * FROM prod_plan`;
+`SELECT prod_plan_cd, order_cd, id, start_dt, end_dt FROM prod_plan`;
 
 //단건조회
 const planInfo =
@@ -55,12 +55,12 @@ SET ?
 WHERE INST_CD = ?`;
 
 //제품등록
-const nstDtlInsert =
+const instDtlInsert =
 `INSERT INTO prod_inst_dtl
 SET ? `;
 
 //제품수정
-const nstDtlUpdate =
+const instDtlUpdate =
 `UPDATE prod_inst_dtl
 SET ? 
 WHERE INST_DTL_CD = ?`;
@@ -99,5 +99,25 @@ const prRsList =
 WHERE PROC_FLOW_CD = ? `;
 
 module.exports = {
+    planList,
+    planInfo,
+    planInsert,
+    planUpdate,
+    planDtlList,
+    planDtlUpdate,
 
+    instList,
+    instInfo,
+    instInsert,
+    instUpdate,
+    instDtlInsert,
+
+    instDtlInsert,
+    instDtlUpdate,
+    instProcList,
+    instProcInsert,
+    instProcUpdate,
+    instProcMtList,
+    instProcMtInsert,
+    prRsList
 }

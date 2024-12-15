@@ -8,12 +8,16 @@
           <div class="col-md-6">
             <p class="text-uppercase text-lg">기본정보</p>            
               <label for="example-text-input" class="form-control-label">생산계획코드</label>
-              <div class="form-inline">
-                <input class="form-control w-50" type="text" value="" />                  
-                <button type="button" class="btn mb-0 btn-success btn-xsm null null ms-auto">검색</button>
+              <div class="row">
+              <div class="col-6 col-xxl-2">
+                <input class="form-control" type="text" value="" readonly/>
               </div>
+              <div class="col-4 text-end text-md-start">
+                <button class="btn btn-primary me-3">검색</button>
+              </div>
+            </div>
             <label for="example-text-input" class="form-control-label">작업일자</label>
-            <input class="form-control" type="date" value="" />
+            <input class="form-control w-40" type="date" value="" />
 
             <hr class="horizontal dark" />
 
@@ -23,40 +27,29 @@
                 <thead>
                   <tr>
                     <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"
+                      width="10%"> 사용유무 </th>
+                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"
                       width="10%"> 순번 </th>
-                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"> 제품코드</th>
-                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7">제품명</th>
-                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7">생산수량</th>
+                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"> 공정코드
+                    </th>
+                    <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7">공정명</th>
                     <th class="text-center text-uppercase text-secondary text-s font-weight-bolder opacity-7"></th>
                   </tr>
                 </thead>
                 <tbody>
-                    <template v-if="count >0">
-                      <tr 
-                      v-for="planInfo in planList" 
-                      :key="planInfo.prod_plan_dtl_cd"
-                      class="align-middle text-center"
-                      >
-                          <td>{{ planInfo.prod_plan_dtl_cd }}</td>
-                          <td>{{ planInfo.prd_cd }}</td>
-                          <td>{{ planInfo.prod_plan_qty}}</td>        
-                          <td class="btn-group" role="group" aria-label="Basic mixed styles example">
-                              <button class="btn mb-0 btn-outline-success btn-xsm null null" @click="goToUpdateForm(userInfo.user_no)"><i class="bi bi-pencil"></i></button>
-                              <button class="btn btn-outline-secondary btn-sm" @click="delInfo(userInfo.user_no)"><i class="bi bi-trash"></i></button>
-                          </td>
-                      </tr>                      
-                  </template>
-
-                  <tr v-else>
-                      <td colspan="5" align="center">                          
-                        <span class="text-secondary text-s font-weight-bold">등록된 제품이 없습니다.</span> 
-                      </td>   
+                  <tr :key="plan.prod_plan_cd" v-for="plan in planList">
+                      <td>{{ plan.prod_plan_cd }}</td>
+                      <td>{{ plan.order_cd }}</td>
+                      <td>{{ plan.id }}</td>
+                      <td>{{ plan.start_dt }}</td>
+                      <td>{{ plan.end_dt }}</td>
+                     
                   </tr>
                 </tbody>
               </table>
             </div>
           </div>
-
+          
           <!--공정설정-->
           <div class="col-md-6 bg-gr">
             <p class="text-uppercase text-lg">공정설정</p>
@@ -186,26 +179,9 @@
             </div>
           </div>
         </div>
-        <div>
-          <button class="btn mb-0 btn-success btn-lg null null ms-auto">저장</button>
-          <button class="btn mb-0 btn-secondary btn-lg null null ms-auto">목록</button>
-        </div>
       </div>
     </div>
   </div>
-
-  <div class="modal-wrap" v-show="modalOpen">
-    <div class="modal-container">
-      
-      ...  <!--  모달창 content  -->
-      
-      <div class="modal-btn">
-        <button @click="modalOpen">닫기</button>
-        <button @click="modalOpen">확인</button>
-      </div>
-    </div>
-  </div>
-
 </template>
 
 <script>
@@ -216,6 +192,7 @@ export default {
   // 컴포넌트 로직
   data() {
     return {
+      planList: [],
       pr_step: [],
       instInfo: {
         inst_cd : '',
@@ -229,14 +206,19 @@ export default {
   },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
+    this.getPlanList();
   },
-
   methods : {
     matShow(id){
       const elements = document.querySelectorAll('.'+id);
       for (var i = 0; i < elements.length; i++) {
         elements[i].classList.toggle('dnone');
       }
+    },
+    async getPlanList() {            
+        let result = await axios.get('/api/plan')
+                                .catch(err => console.log(err));
+        this.planList = result.data; // 서버가 실제로 보낸 데이터
     },
     async boardInsert(){
       let obj = {
