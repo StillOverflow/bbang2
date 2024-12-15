@@ -2,78 +2,189 @@
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
-      <div class="card-body">
-        희희 설비관리임
-
-        <div class="row">
-          <!-- 이미지 보이는 곳 -->
-          <div class="col-md-2">
-            <p class="text-uppercase text-lg"></p>
-            <img
-              src="../../../src/assets/img/blank_img.png"
-              alt=""
-              width="150px"
-              height="150px" class="mb-3"
-            />
-
-            <input class="form-control w-40" type="text" v-model="imageField">
-          </div>
-          <!-- 왼쪽 입력란 -->
-          <div class="col-md-5">
-            <span v-for="(a,i) in left_menus" :key="i">
-            <label for="example-text-input" class="form-control-label"
-              >{{ a }}</label
-            >
-            <input class="form-control" type="text" v-model="left_blank[i]" />
-          </span>
-          </div>
-
-          <!-- 오른쪽 입력란 -->
-          <div class="col-md-5">
-            <span v-for="(a,i) in right_menus" :key="i">
-            <label for="example-text-input" class="form-control-label"
-              >{{ a }}</label
-            >
-            <input class="form-control" type="text" v-model="right_black[i]" />
-          </span>
-          </div>
+      <div class="card-header bg-light d-flex justify-content-center align-items-center">
+        <div class="d-flex align-items-center gap-2  w-20">
+          <div class="input-group">
+      <input
+        v-model="searchCode"
+        type="text"
+        placeholder="설비코드"
+        class="form-control"
+        style="height: 40px;"
+      />
+      <button 
+        class="btn btn-secondary"
+        @click="fetchEquipment"
+      >
+        조회
+      </button>
+    </div>
         </div>
       </div>
-      <div class="col-12 d-flex justify-content-center mt-3">
-  <button class="btn btn-primary me-2" :style="t_overflow" >등록</button>
-  <button class="btn btn-danger" :style="t_overflow" @click="resetAll">초기화</button>
-</div>
+      <div class="card-body">
+        <div class="row">
+          <!-- 이미지 -->
+          <div class="col-lg-2 col-md-2 col-sm-12 text-center">
+            <img
+              :src="previewImage"
+              alt="설비 이미지"
+              class="mb-3 imgBSJ"
+              width="230"
+              height="230"
+            />
+            <input type="file" class="form-control" @change="onFileChange" />
+          </div>
+          <!-- 왼쪽 입력란 -->
+          <div class="col-lg-5 col-md-5 col-sm-12">
+            <div v-for="(field, index) in leftFields" :key="index" class="mb-2">
+              <label class="form-control-label">{{ field.label }}</label>
+              <input
+                v-model="equipmentData[field.value]"
+                :type="field.type"
+                class="form-control custom-width"
+              />
+            </div>
+          </div>
+          <!-- 오른쪽 입력란 -->
+          <div class="col-lg-5 col-md-12 col-sm-12">
+            <div v-for="(field, index) in rightFields" :key="index" class="mb-2">
+              <label class="form-control-label">{{ field.label }}</label>
+              <input
+                v-model="equipmentData[field.value]"
+                :type="field.type"
+                class="form-control custom-width"
+              />
+            </div>
+          </div>
+        </div>
+        <!-- 버튼 -->
+        <div class="text-center mt-3">
+          <button class="btn btn-success me-2" @click="registerEquipment">등록</button>
+          <button class="btn btn-danger" @click="resetForm">초기화</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
+import axios from 'axios';
 export default {
-  name: 'Equipment_Mgmt',
-  // 컴포넌트 로직
+  name: 'EquipmentRegister',
   data() {
     return {
-      // 스타일 바인딩
-      t_overflow: {whiteSpace: 'nowrap'},
-
-      left_menus : ['설비구분','설비명','모델명','구매일자','구매업체','제조업체','교체주기(연)','점검주기(일)','설비담당자'],
-      right_menus : ['적정 온도','적정 습도','적정 RPM','적정 속도','적정 전력량','UPH','점검 구분','설비 상태'],
-
-      //필드값 초기화
-      left_blank : Array(9).fill(""),
-      right_black : Array(8).fill(""),
-      imageField : "",
+      imagePreview: require('@/assets/img/blank_img.png'), // 이미지 미리보기 경로
+      selectedFile: null, // 선택한 파일일
+      searchCode: '', // 검색 입력값
+      equipmentData: {
+        //이미지 경로
+        imagePath: '',
+        // 입력 데이터 값
+        eqpType: '',
+        eqpName: '',
+        model: '',
+        purDate: '',
+        purAct: '',
+        mfgAct: '',
+        replCycle: '',
+        inspCycle: '',
+        eqpMgr: '',
+        optTemp: '',
+        optHumid: '',
+        optRpm: '',
+        optSpeed: '',
+        optPower: '',
+        uph: '',
+        status: '',
+        isUse: '',
+      },
+      leftFields: [
+        { label: '설비구분 *', value: 'eqpType', type: 'text' },
+        { label: '설비명 *', value: 'eqpName', type: 'text' },
+        { label: '모델명 *', value: 'model', type: 'text' },
+        { label: '구매일자', value: 'purDate', type: 'date' },
+        { label: '구매업체', value: 'purAct', type: 'text' },
+        { label: '제조업체', value: 'mfgAct', type: 'text' },
+        { label: '교체주기 (년)', value: 'replCycle', type: 'number' },
+        { label: '점검주기 (개월)', value: 'inspCycle', type: 'number' },
+        { label: '설비담당자', value: 'eqpMgr', type: 'text' },
+      ],
+      rightFields: [
+        { label: '적정 온도', value: 'optTemp', type: 'text' },
+        { label: '적정 습도', value: 'optHumid', type: 'text' },
+        { label: '적정 RPM', value: 'optRpm', type: 'text' },
+        { label: '적정 속도', value: 'optSpeed', type: 'text' },
+        { label: '적정 전력량', value: 'optPower', type: 'text' },
+        { label: 'UPH', value: 'uph', type: 'text' },
+        { label: '점검구분', value: 'status', type: 'text' },
+        { label: '설비상태', value: 'isUse', type: 'text' },
+      ],
     };
   },
   methods: {
-    resetAll(){
-      this.left_blank = this.left_blank.map(()=>'');
-      this.right_black = this.right_black.map(()=>'');
-      this.imageField = '';
-    }
+    //파일 업로드 핸들러
+    onFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.selectedFile = file; // 파일 객체 저장장
+        this.imagePreview = URL.createObjectURL(file); // 미리보기 서렂ㅇ
+      }
     },
-  created() {
-    this.$store.dispatch('breadCrumb', { title: '설비 관리' });
+
+    // 설비 조회
+    fetchEquipment() {
+      console.log('조회: ', this.searchCode);
+    },
+
+    // 등록 기능
+    async registerEquipment() {
+      const formData = new FormData();
+      formData.append('file', this.selectedFile);
+      formData.append('equipmentData', JSON.stringify(this.equipmentData));
+
+      try {
+        const response = await axios.post('/equip/all', formData);
+        console.log(response.data);
+      } catch(error) {
+        console.error('등록 실패:', error);
+        alert('등록 중 오류가 발생했습니다.');
+      }
+    },
+    // 초기화
+    resetForm() {
+      Object.keys(this.equipmentData).forEach((key) => {
+        this.equipmentData[key] = '';
+      });
+    },
   },
+  created(){ // 페이지 제목 저장
+      this.$store.dispatch('breadCrumb', {title: '설비 관리'});
+    },
 };
 </script>
+
+<style scoped>
+label {
+  font-weight: bold;
+}
+button {
+  white-space: nowrap;
+}
+.custom-width {
+  max-width: 500px;
+  width: 100%;
+}
+.imgBSJ {
+  border-radius: 10px;
+}
+ @media (max-width: 1730px) {
+  .col-md-5, .col-md-2 , .form-control {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  .w-20{
+    flex: 0 0 100%;
+    max-width: 50%;
+  }
+} 
+</style>
