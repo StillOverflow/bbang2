@@ -5,6 +5,7 @@ import router from "./router";
 import "./assets/css/nucleo-icons.css";
 import "./assets/css/nucleo-svg.css";
 import ArgonDashboard from "./argon-dashboard";
+import myPlugin from "./assets/js/commPlugin";
 
 
 
@@ -19,6 +20,7 @@ appInstance.use(VueSweetalert2);
 appInstance.use(store);
 appInstance.use(router);
 appInstance.use(ArgonDashboard);
+appInstance.use(myPlugin); // 커스텀 플러그인 사용 등록
 appInstance.mount("#app");
 
 

@@ -21,7 +21,6 @@ export default createStore({
 
 
 
-
   },
   mutations: {
     toggleConfigurator(state) {
@@ -52,7 +51,6 @@ export default createStore({
     navText(state, payload){ // Breadcrumbs에 데이터 전송하는 용
       state.navDirectory = payload;
     }
-
 
 
 
