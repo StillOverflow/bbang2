@@ -45,6 +45,12 @@ const instInsert = async (instInfo)=>{
   }
 }
 
+//제품별 공정 조회
+const findInstFlow = async (no)=>{
+  let list = await mysql.query('instProcList', no);
+  return list;
+}
+
 module.exports = {
   findAllPlan,
   findPlanNo,
@@ -52,4 +58,5 @@ module.exports = {
   findAllInst,
   findInstNo,
   instInsert,  
+  findInstFlow
 };

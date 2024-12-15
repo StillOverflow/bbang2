@@ -45,4 +45,12 @@ router.post('/inst', async(req, res)=>{
     let result = await produceService.instInsert(instInfo);
     res.send(result);
 });
+
+//제품별 공정 조회
+router.get('/inst/:no/flow', async (req,res)=>{
+    let prodNo = req.params.no;
+    let info = await produceService.findInstFlow(prodNo);
+    res.send(info);
+  })
+
 module.exports = router;

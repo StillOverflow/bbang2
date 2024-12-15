@@ -22,7 +22,13 @@ WHERE PROD_PLAN_CD = ?`;
 
 //제품조회
 const planDtlList =
-`SELECT * FROM prod_plan_dtl
+`SELECT 
+    prod_plan_dtl_cd, 
+    prod_plan_cd, 
+    a.prd_cd, 
+    prd_nm, 
+    prod_plan_qty
+FROM prod_plan_dtl a JOIN product b ON a.PRD_CD = b.PRD_CD
 WHERE PROD_PLAN_CD = ? `;
 
 //제품수정
@@ -68,7 +74,8 @@ WHERE INST_DTL_CD = ?`;
 //제품별 공정 조회
 const instProcList =
 `SELECT * FROM process_flow
-WHERE PRD_CD = ? `;
+WHERE PRD_CD = ? 
+ORDER BY PROC_SEQ`;
 
 //제품별 공정 등록
 const instProcInsert =
