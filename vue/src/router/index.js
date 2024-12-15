@@ -3,6 +3,8 @@ import Dashboard from '../views/Dashboard.vue';
 
 ////////////////////////////// 영업 //////////////////////////////
 import Sales from '../views/sales/Sales.vue';
+import Sales_OrderAdd from '../views/sales/Sales_OrderAdd.vue';
+import Sales_OrderList from '../views/sales/Sales_OrderList.vue';
 
 ////////////////////////////// 생산 //////////////////////////////
 import Produce from '../views/produce/Produce.vue';
@@ -53,6 +55,18 @@ const routes = [
     path: '/slaes',
     name: 'sales',
     component: Sales,
+  },
+  {
+    //주문서 등록
+    path: '/sales_orderadd',
+    name: 'sales_orderadd',
+    component: Sales_OrderAdd,
+  },
+  {
+    //주문서 목록
+    path: '/sales_orderlist',
+    name: 'sales_orderlist',
+    component: Sales_OrderList,
   },
 
   ////////////////////////////// 생산 //////////////////////////////
