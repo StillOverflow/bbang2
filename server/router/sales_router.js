@@ -9,10 +9,18 @@ router.get('/sales', async (req, res) => {
 });
 
 //주문서목록거래처검색
-router.get('/sales/:no', async (req, res) => {
-    let salesNo = req.params.no;
-    let info = await salesService.searchOrder(salesNo);
-    res.send(info);
+router.get('/sales/search/', async (req, res) => {
+    try {
+        let salesNo = req.query.no;
+        let std = req.query.st;
+        let etd = req.query.et;
+        
+        let info = await salesService.searchOrder(salesNo,std,etd);
+        res.send(info);
+    } catch (error) {
+        console.error(error);
+    }
+    
 });
 
 
