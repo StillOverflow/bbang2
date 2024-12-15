@@ -108,7 +108,7 @@ const routes = [
   },
   {
     //BOM
-    path: '/bom',
+    path: '/Bom',
     name: 'Bom',
     component: Bom,
   },
