@@ -529,7 +529,7 @@ export default {
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/Standard_list7"
+            to="/ProcessFlow"
             :class="getRoute() === 'Standard_list7' ? 'active' : ''"
             :navText="'공정흐름도관리'"
           >

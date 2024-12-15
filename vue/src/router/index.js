@@ -25,6 +25,7 @@ import QualityStdAdd from '../views/quality/QualityStdAdd.vue';
 //////////////////////////// 기준정보 ////////////////////////////
 import Standard from '../views/standard/Standard.vue';
 import Bom from '../views/standard/Bom.vue';
+// import ProcessFlow from '../views/standard/ProcessFlow.vue';
 
 //////////////////////////// 통계(미정) ////////////////////////////
 import Statistics from '../views/Statistics.vue'; //통계
@@ -134,7 +135,11 @@ const routes = [
     name: 'Bom',
     component: Bom,
   },
-
+  // {
+  //   path: '/ProcessFlow',
+  //   name: 'ProcessFlow',
+  //   component: ProcessFlow,
+  // },
   /////////////////////////// 통계(미정) ///////////////////////////
   {
     //통계
