@@ -1,4 +1,4 @@
-const mariadb = require("../database/mapper.js");
+const mysql = require("../database/mapper.js");
 
 /*--------------계획서-------------*/
 
