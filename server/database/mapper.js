@@ -30,9 +30,9 @@ const query = (alias, values) => {
         resolve(results);
       }
     });
-  });
-};
-
+  })
+  .catch(err => console.log(err));
+}
 module.exports = {
   query,
 };

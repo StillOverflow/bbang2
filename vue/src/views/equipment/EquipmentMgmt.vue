@@ -6,16 +6,18 @@
         class="card-header bg-light d-flex justify-content-center align-items-center"
       >
         <div class="d-flex align-items-center gap-2 w-20">
-          <input
-            v-model="searchCode"
-            type="text"
-            placeholder="설비코드"
-            class="form-control"
-            style="height: 40px"
-          />
-          <button class="btn btn-secondqary" @click="fetchEquipment">
-            조회
-          </button>
+          <div class="input-group">
+            <input
+              v-model="searchCode"
+              type="text"
+              placeholder="설비코드"
+              class="form-control"
+              style="height: 40px"
+            />
+            <button class="btn btn-secondary" @click="fetchEquipment">
+              조회
+            </button>
+          </div>
         </div>
       </div>
       <div class="card-body">

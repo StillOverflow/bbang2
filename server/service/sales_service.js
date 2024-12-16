@@ -8,8 +8,7 @@ const listOrder = async() => {
     } catch (err) {
         console.error("service",err)
     }
-    
-}
+};
 //주문서 목록 거래처,날짜 검색
 // const searchOrder = async(search,std,etd) => {
 //     let list = await mariadb.query('orderSearch', [`%${search}%`,std,etd]);
@@ -25,7 +24,7 @@ const searchOrder = async (search, std, etd) => {
         etd
        }
        const list = await mariadb.query('orderSearch', searchObj);
-        return list;
+       return list;
     } catch (err) {
         console.error("Error searching orders 실패:", err);
         throw err;
@@ -36,6 +35,6 @@ const searchOrder = async (search, std, etd) => {
 
 
 module.exports = {
-    listOrder,
-    searchOrder,
+    // listOrder,
+    // searchOrder,
 };

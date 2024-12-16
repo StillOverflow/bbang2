@@ -43,7 +43,7 @@ const bomInsert =
 `
 insert into bom
 set  ?
-`;
+`
 //bom 자재삭제
 const bomDel =
 `
