@@ -18,7 +18,11 @@ const connectionPool = mariadb.createPool({
 
 const query = (alias, values) => {
   return new Promise((resolve, reject) => {
-    let executeSql = sqlList[alias];
+    let selected = sqlList[alias];
+
+    // 검색조건이 동적인 경우 한번 더 작업 필요(sql.js(sales.js)에서 쿼리를 가져올 때 함수형태이면)
+    let executeSql = typeof selected == 'string' ? selected : selected(values);
+
     connectionPool.query(executeSql, values, (err, results) => {
       if (err) {
         reject({ err });
@@ -26,9 +30,9 @@ const query = (alias, values) => {
         resolve(results);
       }
     });
-  })
-  .catch(err => console.log(err));
-}
+  });
+};
+
 module.exports = {
   query,
 };
