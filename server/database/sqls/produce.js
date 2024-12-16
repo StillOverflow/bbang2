@@ -2,7 +2,16 @@
 
 //전체조회
 const planList =
-`SELECT prod_plan_cd, order_cd, id, start_dt, end_dt FROM prod_plan`;
+`SELECT prod_plan_cd, 
+        order_cd, 
+        id, 
+        start_dt, 
+        end_dt, 
+        create_dt, 
+	    (SELECT COUNT(prod_plan_qty) 
+      	 FROM prod_plan_dtl 
+	     WHERE prod_plan_cd=pp.PROD_PLAN_CD ) AS dtl_qty 
+FROM prod_plan pp;`;
 
 //단건조회
 const planInfo =

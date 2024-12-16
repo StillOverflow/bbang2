@@ -109,12 +109,12 @@
         t_break: {wordBreak: 'keep-all'},
         
         // 검색조건 전용 값
-        selected_radio: '',
+        selected_radio: null,
         radios: [],
-        selected_div: '',
+        selected_div: null,
         divs: [],
         noCate: false, // 공정은 카테고리가 없으므로 비활성화용
-        selected_cate: '',
+        selected_cate: null,
         cates: [],
         modal_val: '...',
         date_val: '',
@@ -142,7 +142,7 @@
       // 페이지 제목 저장
       this.$store.dispatch('breadCrumb', {title: '품질기준 등록'});
 
-      this.getCondition('QTQ', 'radio');
+      this.getCondition('QT', 'radio');
 
       // grid API 테이블에 값 불러오기
       this.myDefs = [
@@ -185,22 +185,23 @@
         return result.data;
       },
                               
-      async getCondition(cd, con){ // 공통코드 기반으로 검색조건 표시하기
-        let cons = [this.radios, this.divs, this.cates]; // 검색조건으로 들어갈 각각의 input을 배열로 임시저장
-        let consNo = null;
+      async getCondition(cd, type){ // 공통코드 기반으로 검색조건 표시하기
+        let types = [this.radios, this.divs, this.cates]; // 검색조건으로 들어갈 각각의 input을 배열로 임시저장
+        let typesNo = null;
         let arr = await this.getComm(cd);
         
-        switch(con){
-          case 'radio' : consNo = 0; break;
-          case 'divs' : consNo = 1; this.selected_div = cd + '01'; break;
-          case 'cate' : consNo = 2; this.selected_cate = cd + '01'; break;
+        switch(type){
+          case 'radio' : typesNo = 0; break;
+          case 'divs' : typesNo = 1; this.selected_div = arr[0].cd; break;
+          case 'cate' : typesNo = 2; this.selected_cate = arr[0].cd; break;
         };
 
-        cons[consNo].length = 0;
+        
+        types[typesNo].length = 0; // 실행할 때마다 값이 중복되지 않게 비우기
         for(let i = 0; i < arr.length; i++){
-          cons[consNo].push({
-            item : cd + this.$comm.twoNum(i+1), // QTQ01 형식으로 코드 반환, 1부터 끝번호까지
-            name : arr[i].comm_dtl_note // 표시할 한글명
+          types[typesNo].push({
+            item : arr[i].cd, // 공통코드
+            name : arr[i].nm // 표시할 한글명
           });
         };
       },
@@ -208,18 +209,18 @@
       getDivs(){
         // 구분 및 카테고리 불러오기
         switch(this.selected_radio){
-          case 'QTQ01' : // 자재 선택한 경우
-            this.getCondition('MAM', 'divs');
-            this.getCondition('MCM', 'cate'); 
+          case 'QTP01' : // 자재 선택한 경우
+            this.getCondition('MA', 'divs');
+            this.getCondition('MC', 'cate'); 
             this.noCate = false; 
             break;
-          case 'QTQ02' : // 공정중 선택한 경우
-            this.getCondition('PRC', 'divs'); 
+          case 'QTP02' : // 공정중 선택한 경우
+            this.getCondition('EQ', 'divs'); 
             this.noCate = true; 
             break;
-          case 'QTQ03' : // 제품 선택한 경우
-            this.getCondition('PDP', 'divs');
-            this.getCondition('PCP', 'cate'); 
+          case 'QTP03' : // 제품 선택한 경우
+            this.getCondition('PD', 'divs');
+            this.getCondition('PC', 'cate'); 
             this.noCate = false; 
             break;
         }

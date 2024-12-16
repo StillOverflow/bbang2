@@ -82,6 +82,7 @@ export default {
     this.$store.dispatch('breadCrumb', { title: 'BOM 관리' });
     this.bringMtlData();
     this.bringPrdData();
+    this.bringCommData();
   },
   data() {
     return {
@@ -110,10 +111,10 @@ export default {
         { headerName: '자재명', field: 'mat_nm', sortable: true},
         { headerName: '구분', field: 'type', sortable: true},
         { headerName: '단위', field: 'unit', sortable: true, cellEditor: 'agSelectCellEditor',
-          cellEditorParams: { values: ['kg', 'g', 'mg'] }, 
+          cellEditorParams: { values: this.commData }, 
           editable: true
         },
-        { headerName: 'BOM양', field: 'bom_quantity', editable: true, enableCellChangeFlash: true},
+        { headerName: 'BOM양', field: 'usage', editable: true, enableCellChangeFlash: true},
       ],
       // 자재 테이블 데이터
       materialData: [
@@ -128,7 +129,7 @@ export default {
         { headerName: '자재코드', field: 'mat_cd', sortable: true},
         { headerName: '자재명', field: 'mat_nm', sortable: true},
         { headerName: '단가', field: 'price', sortable: true},
-        { headerName: 'BOM양', field: 'bom_quantity', sortable: true},
+        { headerName: 'BOM양', field: 'usage', sortable: true},
         { headerName: '단위', field: 'unit', sortable: true, editable: true},
       ],
       // BOM 테이블 데이터
@@ -146,6 +147,12 @@ export default {
   },
   
   methods: {
+    //공통코드검색
+    async bringCommData(){
+      let result = await axios.get(`/api/standard/commList/${'UN'}`);
+      this.commData = result.data;
+      console.log(this.commData);
+    },
     //제품검색기능
     searchPrd(){
       axios.get(`/api/standard/products/${this.keyword}`)
