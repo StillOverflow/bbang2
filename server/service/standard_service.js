@@ -60,7 +60,11 @@ const mariadb = require("../database/mapper.js");
 
 
 
-
+//------------------공통코드----------------------
+const findAllComm = async(comm_cd)=> {
+  let list = await mariadb.query('commList',comm_cd);
+  return list;
+}
   
 module.exports = {
   //메소드명
@@ -70,5 +74,6 @@ module.exports = {
   findAllMat,
   deleteBom,
   searchPrd,
-  searchMtl
+  searchMtl,
+  findAllComm
 };
