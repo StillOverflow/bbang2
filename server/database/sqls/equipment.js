@@ -20,4 +20,9 @@ SET ?
 WHERE EQP_CD = ?`;
 
 
-module.exports = {};
+module.exports = {
+  eqStatList,
+  eqAllList,
+  eqInsert,
+  eqUpdate
+};
