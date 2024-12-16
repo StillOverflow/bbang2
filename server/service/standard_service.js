@@ -25,17 +25,17 @@ const mariadb = require("../database/mapper.js");
   const findBomByPc = async(prd_cd)=> {
     let list = await mariadb.query('bomlist',prd_cd);
     return list;
-  }
+  } 
 //BOM등록  
   const createBom = async(bomInfo)=>{
     console.log(bomInfo,' bomInfo');
 
     let result = await mariadb.query('bomInsert', bomInfo);
     console.log('result ', result);
-    if(result.insertId>0){
-      return { prd_cd: result.insertId };
+    if(result.affectedRows>0){
+      return { "result" : "success"};
     }else{
-      return {};
+      return {"result" : "fail"};
     }
   }
 //BOM삭제

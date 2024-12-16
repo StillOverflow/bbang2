@@ -30,11 +30,9 @@ router.get('/standard/bom/:prd_cd', async(req, res)=>{
     let bomlist = await standardService.findBomByPc(prcCd);
     res.send(bomlist);
 });
-
-//BOM 추가
+//BOM 추가(중복체크)
 router.post('/standard/bom',async(req,res)=>{
     let bomInfo = req.body;
-    console.log('bomInfo ', bomInfo);
    
     let result = await standardService.createBom(bomInfo);
     

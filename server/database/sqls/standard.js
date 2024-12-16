@@ -3,10 +3,16 @@
 //전체 제품조회
 const prdList = 
 `
-select distinct p.prd_cd, p.prd_nm, b.usage_sta
+select distinct 
+p.prd_cd, 
+p.prd_nm, 
+cd.comm_dtl_nm as usage_sta
 from product p
 left join bom b 
 on p.prd_cd = b.prd_cd
+left join common_detail cd
+on cd.comm_dtl_cd = b.usage_sta
+and comm_cd = 'YN'
 `;
 //제품 키워드 검색
 const prdSearch=
@@ -20,8 +26,15 @@ where p.prd_nm like ?
 //자재 목록 조회
 const matList =
 `
-select mat_cd, mat_nm, type, unit
-from material
+select mat_cd, 
+m.mat_nm, 
+m.type,  
+m.price,
+cd.comm_dtl_nm as unit
+from material m
+join common_detail cd
+on cd.comm_dtl_cd = m.unit
+and comm_cd = 'UN'
 `;
 //자재 키워드 검색
 const matSearch =
@@ -33,10 +46,18 @@ where mat_nm like ?
 //bom 조회
 const bomlist = 
 `
-select b.prd_cd, b.mat_cd, m.mat_nm, m.price, b.usage , b.unit
+select
+b.prd_cd
+,b.mat_cd
+,m.mat_nm
+,m.price
+,b.usage
+,cd.comm_dtl_nm AS unit
 from bom b
-join material m on b.mat_cd = m.mat_cd
-where b.prd_cd = ?
+join material m ON b.mat_cd = m.mat_cd
+join common_detail cd ON b.unit = cd.comm_dtl_cd
+							 	and cd.comm_cd = 'UN'
+where b.prd_cd=?
 `;
 //bom 자재추가
 const bomInsert = 
