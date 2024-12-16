@@ -71,4 +71,14 @@ router.delete('/standard/bom/:prd_cd/:mat_cd',async(req, res)=>{
 //     res.send(result);
 // });
 
+
+
+//------------------공통코드-----------------------
+router.get('/standard/commList/:cd', async (req, res) => {
+    let comCd = req.params.cd;
+    let result = await standardService.findAllComm(comCd);
+    res.send(result);
+});
+
+
 module.exports = router;
