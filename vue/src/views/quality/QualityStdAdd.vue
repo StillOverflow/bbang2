@@ -55,7 +55,7 @@
                 <h4 class="ms-3" :style="t_break">적용 가능 항목</h4>
               </div>
               <div class="col-7 text-end">
-                <button class="btn btn-info" :style="t_break">검사항목 불러오기</button>
+                <button class="btn btn-info" :style="t_break" @click="getMyList">검사항목 불러오기</button>
               </div>
             </div>
           </div>
@@ -192,16 +192,16 @@
         
         switch(type){
           case 'radio' : typesNo = 0; break;
-          case 'divs' : typesNo = 1; this.selected_div = arr[0].cd; break;
-          case 'cate' : typesNo = 2; this.selected_cate = arr[0].cd; break;
+          case 'divs' : typesNo = 1; this.selected_div = arr[0].comm_dtl_cd; break;
+          case 'cate' : typesNo = 2; this.selected_cate = arr[0].comm_dtl_cd; break;
         };
 
         
         types[typesNo].length = 0; // 실행할 때마다 값이 중복되지 않게 비우기
         for(let i = 0; i < arr.length; i++){
           types[typesNo].push({
-            item : arr[i].cd, // 공통코드
-            name : arr[i].nm // 표시할 한글명
+            item : arr[i].comm_dtl_cd, // 공통코드
+            name : arr[i].comm_dtl_nm // 표시할 한글명
           });
         };
       },
@@ -209,16 +209,16 @@
       getDivs(){
         // 구분 및 카테고리 불러오기
         switch(this.selected_radio){
-          case 'QTP01' : // 자재 선택한 경우
+          case 'P01' : // 자재 선택한 경우
             this.getCondition('MA', 'divs');
             this.getCondition('MC', 'cate'); 
             this.noCate = false; 
             break;
-          case 'QTP02' : // 공정중 선택한 경우
+          case 'P02' : // 공정중 선택한 경우
             this.getCondition('EQ', 'divs'); 
             this.noCate = true; 
             break;
-          case 'QTP03' : // 제품 선택한 경우
+          case 'P03' : // 제품 선택한 경우
             this.getCondition('PD', 'divs');
             this.getCondition('PC', 'cate'); 
             this.noCate = false; 
@@ -227,8 +227,12 @@
       },
 
       async getMyList(){
-
+        console.log(this.selected_radio);
+        let result = await axios.get('/api/quality/test', {target_type : this.selected_radio})
+                                .catch(err => console.log(err));
+        console.log(result.data);
       },
+
 
       async getYetList(){
 
