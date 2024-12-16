@@ -1,17 +1,29 @@
 const express = require("express");
 const router = express.Router();
 const standardService = require("../service/standard_service.js");
-
+//-----------------BOM-------------------
 //제품 전체조회
 router.get('/standard/products', async (req,res)=>{
     let prdList = await standardService.findAllPrd();
     res.send(prdList);
 })
+//제품 키워드 검색
+router.get('/standard/products/:keyword', async (req, res) => {
+    const keyword = req.params.keyword;
+    const prdList = await standardService.searchPrd(keyword);
+    res.send(prdList);
+  });
 //자재 전체조회
 router.get('/standard/materials', async(req,res)=>{
     let matList = await standardService.findAllMat();
     res.send(matList);
 })
+//자재 키워드 검색
+router.get('/standard/materials/:matkeyword', async (req, res) => {
+    const matkeyword = req.params.matkeyword;
+    const matList = await standardService.searchMtl(matkeyword);
+    res.send(matList);
+  });
 //BOM 조회
 router.get('/standard/bom/:prd_cd', async(req, res)=>{
     let prcCd = req.params.prd_cd;
@@ -22,6 +34,7 @@ router.get('/standard/bom/:prd_cd', async(req, res)=>{
 //BOM 추가
 router.post('/standard/bom',async(req,res)=>{
     let bomInfo = req.body;
+
     let result = await standardService.createBom(bomInfo);
     res.send(result);
 })
@@ -33,7 +46,27 @@ router.delete('/standard/bom/:prd_cd/:mat_cd',async(req, res)=>{
     res.send(delBom);
 })
 
+//-----------------공정흐름도-------------------
 
+// // 공정 흐름도 조회
+// router.get('/standard/flow/:prd_cd', async (req, res) => {
+//     let { prd_cd } = req.params;
+//     let flowData = await standardService.findFlowByProduct(prd_cd);
+//     res.send(flowData);
+// });
 
+// // 공정 흐름도 추가
+// router.post('/standard/flow', async (req, res) => {
+//     let flowData = req.body;
+//     let result = await standardService.addFlow(flowData);
+//     res.send(result);
+// });
+
+// // 공정 흐름도 삭제
+// router.delete('/standard/flow/:flow_code', async (req, res) => {
+//     let { flow_code } = req.params;
+//     let result = await standardService.deleteFlow(flow_code);
+//     res.send(result);
+// });
 
 module.exports = router;
