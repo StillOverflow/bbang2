@@ -198,35 +198,13 @@ export default {
       instFlowData: [],
 
       planMatDefs: [
-        { headerName: '공정코드', field: 'PROC_FLOW_CD', rowGroup: true},
+        { headerName: '공정코드', field: 'PROC_FLOW_CD', rowGroup: true, hide: true },
         { headerName: '자재코드', field: 'MAT_CD' },
         { headerName: '자재명', field: 'MAT_NM' },
         { headerName: '필요수량(개당)', field: 'MAT_QTY' },
         { headerName: '현 재고', field: 'MAT_QTY_T' },
       ],
       planMatData: [],
-
-      columnDefs: [
-        { field: "total", rowGroup: true },
-        { field: "country" },
-        { field: "year" },
-        { field: "athlete" },
-        { field: "sport" },
-      ],
-      defaultColDef: {
-        flex: 1,
-        minWidth: 100,
-      },
-      autoGroupColumnDef: {
-        headerName: "Gold Medals",
-        minWidth: 220,
-        cellRendererParams: {
-          suppressCount: true,
-          innerRenderer: CustomMedalCellRenderer,
-        },
-      },
-      // optional as 'singleColumn' is the default group display type
-      groupDisplayType: "singleColumn",
 
       gridOptions: {
         rowSelection: {
