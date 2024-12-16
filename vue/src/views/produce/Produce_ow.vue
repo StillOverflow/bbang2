@@ -10,7 +10,7 @@
             <label for="example-text-input" class="form-control-label">생산계획코드</label>
             <div class="row">
               <div class="col-6 col-xxl-2">
-                <input class="form-control" type="text" value="" readonly />
+                <input class="form-control" type="text" value="" readonly id="plan_cd"/>
               </div>
               <div class="col-4 text-end text-md-start">
                 <button class="btn btn-primary me-3" @click="modalOpen">검색</button>
@@ -125,7 +125,7 @@
     </template>
     <template v-slot:default>
       <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="planDefs"
-        :rowData="planData" :pagination="true" @rowClicked="rowClicked" @grid-ready="gridFit"
+        :rowData="planData" :pagination="true" @rowClicked="modalClicked" @grid-ready="gridFit"
         overlayNoRowsTemplate="등록된 계획서가 없습니다.">
       </ag-grid-vue>
     </template>
@@ -161,14 +161,12 @@ export default {
         update_dt: '',
         create_dt: ''
       },
-
       planDefs: [
         { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true },
         { headerName: '생산시작일', field: 'start_dt', sortable: true, valueFormatter: this.$comm.dateFormatter  },
         { headerName: '생산종료일', field: 'end_dt', sortable: true, valueFormatter: this.$comm.dateFormatter },
         { headerName: '제품수량', field: 'dtl_qty', sortable: true },
         { headerName: '등록일', field: 'create_dt', valueFormatter: this.$comm.dateFormatter },
-        {}
       ],
       planData: [],
 
@@ -182,7 +180,8 @@ export default {
       instFlowDefs: [
         { headerName: '순번', field: 'PROC_SEQ', sortable: true },
         { headerName: '공정코드', field: 'PROC_CD' },
-        { headerName: '공정명', field: 'NOTE', },
+        { headerName: '공정명', field: 'PROC_NM', },
+        { headerName: '공정설명', field: 'NOTE', },
       ],
       instFlowData: [],
       gridOptions: {
@@ -199,6 +198,12 @@ export default {
     modalOpen() {
       this.isModal = !this.isModal;
     },
+    modalClicked(params) {
+      params.data.prod_plan_cd;
+      this.getPlanDtlList(params.data.prod_plan_cd);
+      document.getElementById('plan_cd').value = params.data.prod_plan_cd;
+      this.isModal = !this.isModal;
+    },
     matShow(id) {
       const elements = document.querySelectorAll('.' + id);
       for (var i = 0; i < elements.length; i++) {
@@ -210,8 +215,8 @@ export default {
         .catch(err => console.log(err));
       this.planData = result.data; // 서버가 실제로 보낸 데이터
     },
-    async getPlanDtlList() {
-      let result = await axios.get(`/api/plan/PR1/dtl`)
+    async getPlanDtlList(plan_cd) {
+      let result = await axios.get(`/api/plan/${plan_cd}/dtl`)
         .catch(err => console.log(err));
       this.planDtlData = result.data; // 서버가 실제로 보낸 데이터
     },

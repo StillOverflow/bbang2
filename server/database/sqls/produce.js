@@ -82,7 +82,8 @@ WHERE INST_DTL_CD = ?`;
 
 //제품별 공정 조회
 const instProcList =
-`SELECT * FROM process_flow
+`SELECT p.PROC_CD, PROC_NM, PROC_SEQ, PRD_CD, p.NOTE AS NOTE 
+FROM process p JOIN process_flow f ON p.PROC_CD=f.PROC_CD
 WHERE PRD_CD = ? 
 ORDER BY PROC_SEQ`;
 
