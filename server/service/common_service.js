@@ -8,11 +8,11 @@ const findComm = async (cd) => {
 
 // QQQ01 중 'QQQ'와 관련된 공통코드를 모두 찾을 때
 const findCommList = async (cd) => {
-    let result = await mariadb.query('findCommList', cd);  
-    return result;
-  };
+  let result = await mariadb.query('findCommList', cd);  
+  return result;
+};
 
 module.exports = {
     findComm,
     findCommList
-}
+};

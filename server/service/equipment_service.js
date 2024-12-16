@@ -6,13 +6,13 @@ const mariadb = require('../database/mapper.js');
 const findStatEq = async ()=>{
   let list = await mariadb.query('eqStatList');
   return list;
-}
+};
 
 // 설비전체조회
 const findAllEq = async ()=>{
   let list = await mariadb.query('eqAllList');
   return list;
-}
+};
 
 // 등록
 const insertEq = async (eqInfo)=>{
@@ -22,10 +22,10 @@ const insertEq = async (eqInfo)=>{
   }else{
     return {};
   }
-}
+};
 
 module.exports = {
   findStatEq,
   findAllEq,
   insertEq
-}
+};
