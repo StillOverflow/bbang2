@@ -30,12 +30,11 @@
               <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
-          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">
-            {{selected_name}}선택</div>
+          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">선택</div>
           <div class="col-6 col-lg-2 mb-2">
             <input type="text" class="form-control" :value="modal_val" readonly>
           </div>
-          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">항목명</div>
+          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">대상</div>
           <div class="col-6 col-lg-2 mb-2">
             <input type="text" class="form-control" :value="modal_val" readonly>
           </div>
@@ -55,7 +54,7 @@
                 <h4 class="ms-3" :style="t_break">적용 가능 항목</h4>
               </div>
               <div class="col-7 text-end">
-                <button class="btn btn-info" :style="t_break" @click="getMyList">검사항목 불러오기</button>
+                <button class="btn btn-info" :style="t_break" @click="getTList">검사항목 불러오기</button>
               </div>
             </div>
           </div>
@@ -122,8 +121,8 @@
         // grid API 테이블 데이터 (Defs: thead 구성, Data: tbody 구성)
         myDefs: null,
         myData: null,
-        yetDefs: null,
-        yetData: null,
+        yetDefs: [],
+        yetData: [],
 
         gridOptions: null,
         
@@ -145,30 +144,24 @@
       this.getCondition('QT', 'radio');
 
       // grid API 테이블에 값 불러오기
-      this.myDefs = [
-      { field: 'make' },
-            { field: 'model' },
-            { field: 'price' }
-      ];
-      this.myData = [
-      { make: 'Toyota', model: 'Celica', price: 35000 },
-            { make: 'Ford', model: 'Mondeo', price: 32000 },
-            { make: 'JoJang', model: 'Boxter', price: 72000 }
+      // this.myDefs = [
+      // { field: 'make' },
+      //       { field: 'model' },
+      //       { field: 'price' }
+      // ];
+      // this.myData = [
+      // { make: 'Toyota', model: 'Celica', price: 35000 },
+      //       { make: 'Ford', model: 'Mondeo', price: 32000 },
+      //       { make: 'JoJang', model: 'Boxter', price: 72000 }
   
-      ];
-      this.yetDefs = [
-  
-      ];
-      this.yetData = [
-  
-      ];
+      // ];
   
       this.gridOptions = {
         pagination: true,
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
         overlayNoRowsTemplate: '표시할 항목이 없습니다.', // 표시할 행이 없을 때 적용할 메세지
         rowSelection: { 
-            mode: 'multiRow'
+          mode: 'multiRow'
         }
       };
   
@@ -195,9 +188,8 @@
           case 'divs' : typesNo = 1; this.selected_div = arr[0].comm_dtl_cd; break;
           case 'cate' : typesNo = 2; this.selected_cate = arr[0].comm_dtl_cd; break;
         };
-
         
-        types[typesNo].length = 0; // 실행할 때마다 값이 중복되지 않게 비우기
+        types[typesNo].length = 0; // 실행할 때마다 값이 중복되지 않게 비우고 push
         for(let i = 0; i < arr.length; i++){
           types[typesNo].push({
             item : arr[i].comm_dtl_cd, // 공통코드
@@ -226,17 +218,46 @@
         }
       },
 
-      async getMyList(){
-        console.log(this.selected_radio);
-        let result = await axios.get('/api/quality/test', {target_type : this.selected_radio})
-                                .catch(err => console.log(err));
-        console.log(result.data);
+      async axiosGet(val, params){
+        let er = '';
+        let axiosRes = await axios.get('/api/quality/test/' + 'yet', {params})
+                                  .catch(err => er = err);
+        // let keys = Object.keys(axiosRes.data[0]);
+        console.log(axiosRes.data + er);
+        // let defs = [this.yetDefs, this.myDefs];
+        // let defNum = null;
+        // if(val == 'yet'){
+        //   this.yetData = axiosRes.data;
+        //   defNum = 0;
+        // } else {
+        //   this.myData = axiosRes.data;
+        //   defNum = 1;
+        // }
+        // defs[defNum].length = 0;
+        // keys.forEach((key) => {
+        //   defs[defNum].push({field : key});
+        // });
       },
 
+      async getTList(){
+        
+        let params = {params: {cd: 'PR01', 
+                               type : this.selected_radio}};
+        
 
-      async getYetList(){
+        await this.axiosGet('yet', params);
+        // axiosGet('my');
 
-      }
+        // let result = await axios.get('/api/quality/test/yet', {params})
+        //                         .catch(err => console.log(err));
+        // this.yetData = result.data;
+        
+        // let keys = Object.keys(result.data[0]); // 데이터의 각 키들을 배열로 반환
+        // this.yetDefs.length = 0; // 비운 뒤 추가
+        // keys.forEach((key) => {
+        //   this.yetDefs.push({field : key});
+        // });
+      },
     }
   };
 </script>
