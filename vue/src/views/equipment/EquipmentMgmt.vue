@@ -2,23 +2,22 @@
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
-      <div class="card-header bg-light d-flex justify-content-center align-items-center">
-        <div class="d-flex align-items-center gap-2  w-20">
-          <div class="input-group">
-      <input
-        v-model="searchCode"
-        type="text"
-        placeholder="설비코드"
-        class="form-control"
-        style="height: 40px;"
-      />
-      <button 
-        class="btn btn-secondary"
-        @click="fetchEquipment"
+      <div
+        class="card-header bg-light d-flex justify-content-center align-items-center"
       >
-        조회
-      </button>
-    </div>
+        <div class="d-flex align-items-center gap-2 w-20">
+          <div class="input-group">
+            <input
+              v-model="searchCode"
+              type="text"
+              placeholder="설비코드"
+              class="form-control"
+              style="height: 40px"
+            />
+            <button class="btn btn-secondary" @click="fetchEquipment">
+              조회
+            </button>
+          </div>
         </div>
       </div>
       <div class="card-body">
@@ -47,7 +46,11 @@
           </div>
           <!-- 오른쪽 입력란 -->
           <div class="col-lg-5 col-md-12 col-sm-12">
-            <div v-for="(field, index) in rightFields" :key="index" class="mb-2">
+            <div
+              v-for="(field, index) in rightFields"
+              :key="index"
+              class="mb-2"
+            >
               <label class="form-control-label">{{ field.label }}</label>
               <input
                 v-model="equipmentData[field.value]"
@@ -59,7 +62,9 @@
         </div>
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success me-2" @click="registerEquipment">등록</button>
+          <button class="btn btn-success me-2" @click="registerEquipment">
+            등록
+          </button>
           <button class="btn btn-danger" @click="resetForm">초기화</button>
         </div>
       </div>
@@ -143,9 +148,9 @@ export default {
       formData.append('equipmentData', JSON.stringify(this.equipmentData));
 
       try {
-        const response = await axios.post('/equip/all', formData);
+        const response = await axios.post('/api/equip/all', formData);
         console.log(response.data);
-      } catch(error) {
+      } catch (error) {
         console.error('등록 실패:', error);
         alert('등록 중 오류가 발생했습니다.');
       }
@@ -157,9 +162,10 @@ export default {
       });
     },
   },
-  created(){ // 페이지 제목 저장
-      this.$store.dispatch('breadCrumb', {title: '설비 관리'});
-    },
+  created() {
+    // 페이지 제목 저장
+    this.$store.dispatch('breadCrumb', { title: '설비 관리' });
+  },
 };
 </script>
 
@@ -177,14 +183,16 @@ button {
 .imgBSJ {
   border-radius: 10px;
 }
- @media (max-width: 1730px) {
-  .col-md-5, .col-md-2 , .form-control {
+@media (max-width: 1730px) {
+  .col-md-5,
+  .col-md-2,
+  .form-control {
     flex: 0 0 100%;
     max-width: 100%;
   }
-  .w-20{
+  .w-20 {
     flex: 0 0 100%;
     max-width: 50%;
   }
-} 
+}
 </style>

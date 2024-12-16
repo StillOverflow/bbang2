@@ -4,8 +4,13 @@ const salesService = require("../service/sales_service.js");
 
 //주문서 목록
 router.get('/sales', async (req, res) => {
-    let orderList = await salesService.listOrder();
-    res.send(orderList);
+    try {
+        let orderList = await salesService.listOrder();
+        res.send(orderList);
+    } catch (error){
+        console.log("router",error);
+    }
+    
 });
 
 //주문서목록거래처검색

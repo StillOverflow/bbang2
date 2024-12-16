@@ -1,4 +1,4 @@
-<!-- 품질 -->
+품질
 <template>
   <div class="py-4 container-fluid">
     <div class="card">

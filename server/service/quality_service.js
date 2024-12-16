@@ -1,5 +1,4 @@
 const mariadb = require('../database/mapper.js');
-const { testList } = require('../database/sql.js');
 
 // 검사항목
 const findTestList = async (search) => { // 조건을 받아 목록 조회

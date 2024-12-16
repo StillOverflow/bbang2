@@ -6,24 +6,24 @@ const standardService = require("../service/standard_service.js");
 router.get('/standard/products', async (req,res)=>{
     let prdList = await standardService.findAllPrd();
     res.send(prdList);
-})
+});
 //제품 키워드 검색
 router.get('/standard/products/:keyword', async (req, res) => {
     const keyword = req.params.keyword;
     const prdList = await standardService.searchPrd(keyword);
     res.send(prdList);
-  });
+});
 //자재 전체조회
 router.get('/standard/materials', async(req,res)=>{
     let matList = await standardService.findAllMat();
     res.send(matList);
-})
+});
 //자재 키워드 검색
 router.get('/standard/materials/:matkeyword', async (req, res) => {
     const matkeyword = req.params.matkeyword;
     const matList = await standardService.searchMtl(matkeyword);
     res.send(matList);
-  });
+});
 //BOM 조회
 router.get('/standard/bom/:prd_cd', async(req, res)=>{
     let prcCd = req.params.prd_cd;
@@ -34,17 +34,19 @@ router.get('/standard/bom/:prd_cd', async(req, res)=>{
 //BOM 추가
 router.post('/standard/bom',async(req,res)=>{
     let bomInfo = req.body;
-
+    console.log('bomInfo ', bomInfo);
+   
     let result = await standardService.createBom(bomInfo);
+    
     res.send(result);
-})
+});
 //BOM 삭제
 router.delete('/standard/bom/:prd_cd/:mat_cd',async(req, res)=>{
     let prdCd = req.params.prd_cd;
     let matCd = req.params.mat_cd;
     let delBom = await standardService.deleteBom(prdCd, matCd);
     res.send(delBom);
-})
+});
 
 //-----------------공정흐름도-------------------
 

@@ -1,7 +1,21 @@
 <template>
-   <button :class="buttonClass" @click="handleClick">
-      {{ label }}
-   </button>
+   <div>
+         <button :class="buttonClass" @click="handleClick">
+         {{ label }}
+      </button>
+
+      <select name="sel" id="sel">
+         <option value="1">mg</option>
+         <option value=""></option>
+         <option value=""></option>
+         <option value=""></option>
+         <option value=""></option>
+         <option value=""></option>
+         <option value=""></option>
+         <option value=""></option>
+      </select>
+   </div>
+   
 </template>
 
 <script>

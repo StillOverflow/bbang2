@@ -3,9 +3,14 @@ const sales = require('../database/sqls/sales.js');
 
 //주문서 목록
 const listOrder = async() => {
-    let list = await mariadb.query('orderList');
-    return list;
-}
+    try {
+        let list = await mariadb.query('orderList');
+        return list;
+    } catch (err) {
+        console.error("service",err)
+    }
+    
+};
 //주문서 목록 거래처,날짜 검색
 // const searchOrder = async(search,std,etd) => {
 //     let list = await mariadb.query('orderSearch', [`%${search}%`,std,etd]);
@@ -20,8 +25,12 @@ const searchOrder = async (search, std, etd) => {
         const { query, params } = sales.orderSearch(search, std, etd);
         console.log("쿼리결과:", query);
         console.log("쿼리Parameters:", params);
+        console.log("test");
         
         const list = await mariadb.query(query, params);
+
+        console.log("list결과");
+
         return list;
     } catch (err) {
         console.error("Error searching orders:", err);
@@ -33,6 +42,6 @@ const searchOrder = async (search, std, etd) => {
 
 
 module.exports = {
-    listOrder,
-    searchOrder,
+    // listOrder,
+    // searchOrder,
 };
