@@ -50,9 +50,10 @@ export default {
         this.gridOptions = {
           pagination: true,
           paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
+          overlayNoRowsTemplate: '표시할 값이 없습니다.', // 표시할 행이 없을 때 적용할 메세지
           rowSelection: { 
               mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
-              // enableClickSelection: true (행을 클릭하는 것만으로 한 개 선택 가능.)
+              // enableClickSelection: true // (행을 클릭하는 것만으로 singleRow 선택 가능.)
           }
         }
     },

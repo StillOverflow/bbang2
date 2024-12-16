@@ -8,7 +8,8 @@
         <div class="row mb-3">
           <div class="col-12 col-md-1 text-center me-5 mb-2 fw-bolder" :style="t_overflow">대상분류</div>
           <div class="form-check col-4 col-md-2" v-for="(opt, idx) in radios" :key="idx">
-            <input class="form-check-input" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item">
+            <input class="form-check-input" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
+              @change="getDivs">
             <label class="form-check-label" :for="'radio' + opt.item">
               {{opt.name}}
             </label>
@@ -20,20 +21,21 @@
           <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">구분</div>
           <div class="col-6 col-lg-2 mb-2">
             <select class="form-select" v-model="selected_div">
-              <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.item}}</option>
+              <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
           <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">카테고리</div>
           <div class="col-6 col-lg-2 mb-2">
-            <select class="form-select" v-model="selected_cate">
-              <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.item}}</option>
+            <select class="form-select" v-model="selected_cate" :disabled="noCate">
+              <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
-          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">ㅇㅇ선택</div>
+          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">
+            {{selected_name}}선택</div>
           <div class="col-6 col-lg-2 mb-2">
             <input type="text" class="form-control" :value="modal_val" readonly>
           </div>
-          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">ㅇㅇ명</div>
+          <div class="col-6 col-lg-1 text-center mb-2 fw-bolder" :style="t_overflow">항목명</div>
           <div class="col-6 col-lg-2 mb-2">
             <input type="text" class="form-control" :value="modal_val" readonly>
           </div>
@@ -61,7 +63,7 @@
   
         <div class="row mb-4">
           <div class="col-5">
-            <ag-grid-vue class="ag-theme-alpine w-100 h-100" :columnDefs="myDefs" :rowData="myData" @grid-ready="gridFit"/>
+            <ag-grid-vue class="ag-theme-alpine w-100" style="height: 300px;" :columnDefs="myDefs" :rowData="myData" @grid-ready="gridFit" :gridOptions="gridOptions"/>
           </div>
           <div class="col-2 p-lg-5 p-xxl-6">
             <div class="row">
@@ -72,7 +74,7 @@
             </div>
           </div>
           <div class="col-5">
-            <ag-grid-vue class="ag-theme-alpine w-100 h-100" :columnDefs="yetDefs" :rowData="yetData" @grid-ready="gridFit"/>
+            <ag-grid-vue class="ag-theme-alpine w-100 h-100" :columnDefs="yetDefs" :rowData="yetData" @grid-ready="gridFit" :gridOptions="gridOptions"/>
           </div>
         </div>
   
@@ -96,6 +98,7 @@
 
 <script>
   import { AgGridVue } from "ag-grid-vue3";
+  import axios from "axios";
 
   export default {
     name: 'QualityStdAdd',
@@ -106,24 +109,13 @@
         t_break: {wordBreak: 'keep-all'},
         
         // 검색조건 전용 값
-        selected_radio: 'A',
-        radios: [
-          { item: 'A', name: 'Option A' },
-          { item: 'B', name: 'Option B' },
-          { item: 'C', name: 'Option C' }
-        ],
-        selected_div: 'A',
-        divs: [
-          { item: 'A', name: 'Option A' },
-          { item: 'B', name: 'Option B' },
-          { item: 'C', name: 'Option C' }
-        ],
-        selected_cate: 'A',
-        cates: [
-          { item: 'A', name: 'Option A' },
-          { item: 'B', name: 'Option B' },
-          { item: 'C', name: 'Option C' }
-        ],
+        selected_radio: '',
+        radios: [],
+        selected_div: '',
+        divs: [],
+        noCate: false, // 공정은 카테고리가 없으므로 비활성화용
+        selected_cate: '',
+        cates: [],
         modal_val: '...',
         date_val: '',
 
@@ -131,16 +123,28 @@
         myDefs: null,
         myData: null,
         yetDefs: null,
-        yetData: null
+        yetData: null,
+
+        gridOptions: null,
+        
+        // Insert용 양식
+        insertData: {
+          QU_STD_CD: null, 
+          TARGET_TYPE: null, 
+          TARGET_CD: null
+        }
       }
     },
-    components: { // grid API
-        AgGridVue
+    components: { 
+        AgGridVue // grid API
     },
-    created(){ // 페이지 제목 저장
+    created(){ 
+      // 페이지 제목 저장
       this.$store.dispatch('breadCrumb', {title: '품질기준 등록'});
-    },
-    beforeMount(){ // grid API 테이블에 값 불러오기
+
+      this.getCondition('QTQ', 'radio');
+
+      // grid API 테이블에 값 불러오기
       this.myDefs = [
       { field: 'make' },
             { field: 'model' },
@@ -150,18 +154,83 @@
       { make: 'Toyota', model: 'Celica', price: 35000 },
             { make: 'Ford', model: 'Mondeo', price: 32000 },
             { make: 'JoJang', model: 'Boxter', price: 72000 }
-
+  
       ];
       this.yetDefs = [
-
+  
       ];
       this.yetData = [
-
+  
       ];
+  
+      this.gridOptions = {
+        pagination: true,
+        paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
+        overlayNoRowsTemplate: '표시할 항목이 없습니다.', // 표시할 행이 없을 때 적용할 메세지
+        rowSelection: { 
+            mode: 'multiRow'
+        }
+      };
+  
+      this.date_val = this.$comm.getMyDay();
     },
     methods: {
       gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
         params.api.sizeColumnsToFit();
+      },
+      
+      async getComm(cd){ // 공통코드 가져오기
+        let result = await axios.get('/api/commList/' + cd)
+                                .catch(err => console.log(err));
+        return result.data;
+      },
+                              
+      async getCondition(cd, con){ // 공통코드 기반으로 검색조건 표시하기
+        let cons = [this.radios, this.divs, this.cates]; // 검색조건으로 들어갈 각각의 input을 배열로 임시저장
+        let consNo = null;
+        let arr = await this.getComm(cd);
+        
+        switch(con){
+          case 'radio' : consNo = 0; break;
+          case 'divs' : consNo = 1; this.selected_div = cd + '01'; break;
+          case 'cate' : consNo = 2; this.selected_cate = cd + '01'; break;
+        };
+
+        cons[consNo].length = 0;
+        for(let i = 0; i < arr.length; i++){
+          cons[consNo].push({
+            item : cd + this.$comm.twoNum(i+1), // QTQ01 형식으로 코드 반환, 1부터 끝번호까지
+            name : arr[i].comm_dtl_note // 표시할 한글명
+          });
+        };
+      },
+
+      getDivs(){
+        // 구분 및 카테고리 불러오기
+        switch(this.selected_radio){
+          case 'QTQ01' : // 자재 선택한 경우
+            this.getCondition('MAM', 'divs');
+            this.getCondition('MCM', 'cate'); 
+            this.noCate = false; 
+            break;
+          case 'QTQ02' : // 공정중 선택한 경우
+            this.getCondition('PRC', 'divs'); 
+            this.noCate = true; 
+            break;
+          case 'QTQ03' : // 제품 선택한 경우
+            this.getCondition('PDP', 'divs');
+            this.getCondition('PCP', 'cate'); 
+            this.noCate = false; 
+            break;
+        }
+      },
+
+      async getMyList(){
+
+      },
+
+      async getYetList(){
+
       }
     }
   };
