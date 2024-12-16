@@ -35,6 +35,6 @@ const searchOrder = async (search, std, etd) => {
 
 
 module.exports = {
-    // listOrder,
-    // searchOrder,
+     listOrder,
+     searchOrder,
 };
