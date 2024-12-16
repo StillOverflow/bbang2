@@ -19,5 +19,5 @@ module.exports = {
   eqStatList,
   eqAllList,
   eqInsert,
-  eqUpdate,
+  eqUpdate
 };

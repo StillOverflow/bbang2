@@ -10,7 +10,7 @@ const listOrder = async() => {
         console.error("service",err)
     }
     
-}
+};
 //주문서 목록 거래처,날짜 검색
 // const searchOrder = async(search,std,etd) => {
 //     let list = await mariadb.query('orderSearch', [`%${search}%`,std,etd]);
