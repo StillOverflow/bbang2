@@ -111,7 +111,10 @@ export default {
         { headerName: '자재명', field: 'mat_nm', sortable: true},
         { headerName: '구분', field: 'type', sortable: true},
         { headerName: '단위', field: 'unit', sortable: true, cellEditor: 'agSelectCellEditor',
-          cellEditorParams: { values: this.commData }, 
+          cellEditorParams: { 
+            values : []
+          }, 
+          
           editable: true
         },
         { headerName: 'BOM양', field: 'usage', editable: true, enableCellChangeFlash: true},
@@ -151,7 +154,16 @@ export default {
     async bringCommData(){
       let result = await axios.get(`/api/standard/commList/${'UN'}`);
       this.commData = result.data;
-      console.log(this.commData);
+      console.log("commData", this.commData)
+      let unitDataList = []; // 정의 
+
+      this.commData.forEach((data) => {
+        console.log("data => ", );
+        unitDataList.push(data.comm_dtl_nm) //[,,,]
+      });
+      
+      let idx = this.materialDefs.findIndex( obj => obj.field == 'unit'); // => 숫자
+      this.materialDefs[idx].cellEditorParams.values = unitDataList; // materialDefs[idx] => materialDefs[3]
     },
     //제품검색기능
     searchPrd(){
