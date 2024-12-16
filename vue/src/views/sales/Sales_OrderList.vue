@@ -59,12 +59,12 @@ export default {
                 {
                     field: 'order_dt',
                     headName: '주문일자',
-                    valueFormatter: this.dateFormatter // 날짜 포맷터 추가
+                    valueFormatter: this.$comm.dateFormatter // 날짜 포맷터 추가
                 },
                 {
                     field: 'due_dt',
                     headName: '납기일자',
-                    valueFormatter: this.dateFormatter 
+                    valueFormatter: this.$comm.dateFormatter 
                 },
                 {field: 'status', headName: '현재진행상태'},
             ],
@@ -77,6 +77,9 @@ export default {
     },
     components: {
         AgGridVue
+    },
+    created() {
+        this.$store.dispatch('breadCrumb', { title: '주문 목록 조회' });
     },
     mounted() {
         axios.get('/api/sales')
@@ -102,22 +105,22 @@ export default {
             .catch(err => console.log("AXIOS실패",err));
         },
 
-        // 날짜 포맷터 함수
-        dateFormatter(params) { //여기서 ag grid에 date형식을 보냄
-            return this.dateFormat(params.value, 'yyyy-MM-dd'); // 여기서 date 형식을 편하게 바꿀수 있다(dd-MM-yyyy)
-        },
-        dateFormat(value, format) { //date 방식을 지정 후 dateFormatter로 보냄
-            let date = value == null ? new Date() : new Date(value);
+        // 날짜 포맷터 함수(공통코드(commFunc.js)로 이동)
+        // dateFormatter(params) { //여기서 ag grid에 date형식을 보냄
+        //     return this.dateFormat(params.value, 'yyyy-MM-dd'); // 여기서 date 형식을 편하게 바꿀수 있다(dd-MM-yyyy)
+        // },
+        // dateFormat(value, format) { //date 방식을 지정 후 dateFormatter로 보냄
+        //     let date = value == null ? new Date() : new Date(value);
 
-            let year = date.getFullYear();
-            let month = ('0' + (date.getMonth() + 1)).slice(-2);
-            let day = ('0' + date.getDate()).slice(-2);
+        //     let year = date.getFullYear();
+        //     let month = ('0' + (date.getMonth() + 1)).slice(-2);
+        //     let day = ('0' + date.getDate()).slice(-2);
 
-            let result = format.replace('yyyy', year)
-                            .replace('MM', month)
-                            .replace('dd', day);
-            return result;
-        },
+        //     let result = format.replace('yyyy', year)
+        //                     .replace('MM', month)
+        //                     .replace('dd', day);
+        //     return result;
+        // },
 
     }
 }
