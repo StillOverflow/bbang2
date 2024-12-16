@@ -7,7 +7,7 @@ select distinct p.prd_cd, p.prd_nm, b.usage_sta
 from product p
 left join bom b 
 on p.prd_cd = b.prd_cd
-`
+`;
 //제품 키워드 검색
 const prdSearch=
 `
@@ -16,20 +16,20 @@ from product p
 left join bom b 
 on p.prd_cd = b.prd_cd
 where p.prd_nm like ?
-`
+`;
 //자재 목록 조회
 const matList =
 `
 select mat_cd, mat_nm, type, unit
 from material
-`
+`;
 //자재 키워드 검색
 const matSearch =
 `
 select mat_cd, mat_nm, type
 from material
 where mat_nm like ?
-`
+`;
 //bom 조회
 const bomlist = 
 `
@@ -37,20 +37,20 @@ select b.prd_cd, b.mat_cd, m.mat_nm, m.price, b.usage , b.unit
 from bom b
 join material m on b.mat_cd = m.mat_cd
 where b.prd_cd = ?
-`
+`;
 //bom 자재추가
 const bomInsert = 
 `
 insert into bom
 set  ?
-`
+`;
 //bom 자재삭제
 const bomDel =
 `
 delete from bom
 where prd_cd = ?
 and mat_cd = ?
-`
+`;
 //--------------공정흐름도-----------------
 //선택할 제품조회 위에있음
 
