@@ -62,8 +62,8 @@
           :columnDefs="bomDefs"
           :rowData="bomData"
           :pagination="true"
-          :paginationAutoPageSize="true"
           :rowSelection="multiple"
+          overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
           @gridReady="onBomGridReady"> 
         </ag-grid-vue>
       </div>
@@ -205,55 +205,55 @@ export default {
   //bom에 선택한 자재데이터 추가
   async InsertBomData() {
     try {
-    const selectedNodes = this.materialGridApi.getSelectedNodes();
-    const selectedMat = selectedNodes.map( node => node.data );
+      const selectedNodes = this.materialGridApi.getSelectedNodes();
+      const selectedMat = selectedNodes.map( node => node.data );
 
-    const bomMatData = selectedMat.map(material=>({
-      prd_cd: this.selectBomData,
-      mat_cd: material.mat_cd,
-      unit: material.unit,
-      usage: parseFloat(material.bom_quantity) || 0
-    }));
+      const bomMatData = selectedMat.map(material=>({
+        prd_cd: this.selectBomData,
+        mat_cd: material.mat_cd,
+        unit: material.unit,
+        usage: parseFloat(material.bom_quantity) || 0
+      }));
 
-    console.log("전송할 BOM 데이터:", bomMatData);
+      console.log("전송할 BOM 데이터:", bomMatData);
 
-    let result = await axios.post(`/api/standard/bom`, bomMatData); 
-    console.log("서버 응답 데이터:", result.data);   
-                         
-    let addRes = result.data;
+      let result = await axios.post(`/api/standard/bom`, bomMatData); 
+      console.log("서버 응답 데이터:", result.data);   
+                          
+      let addRes = result.data;
 
-    if(addRes.result == 'success'){
-      // this.bomGridApi.applyTransaction({
-      //   add: bomMatData
-      // })
-      alert('추가성공');
-      
-    }} catch (error) {
-        console.error("서버 요청 중 오류 발생:", error);
-        alert(`오류 발생: ${error.response?.data?.message || error.message}`);
-    }
+      if(addRes.result == 'success'){
+        this.bomGridApi.applyTransaction({
+          add: bomMatData
+        })
+        alert('추가성공');
+        
+      }} catch (error) {
+          console.error("서버 요청 중 오류 발생:", error);
+          alert(`오류 발생: ${error.response?.data?.message || error.message}`);
+      }
     
-      },
+    },
   //선택한 bom 정보 삭제
-  async deleteBom(){
-    const selectedNodes = this.bomGridApi.getSelectedNodes(); //현재행 가져오기
-    const selectedBomData = selectedNodes.map(node => node.data); //가져온 데이터 배열에 저장
+    async deleteBom(){
+      const selectedNodes = this.bomGridApi.getSelectedNodes(); //현재행 가져오기
+      const selectedBomData = selectedNodes.map(node => node.data); //가져온 데이터 배열에 저장
 
-    for(const bom of selectedBomData){ //bom객체에 아까 저장한 배열에서 .prc_cd추출
-      let result = await axios.delete(`/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`)
-                              .catch(err => console.log(err));
-      let sqlRes = result.data;
-      if(sqlRes.result =='success'){
-        this.bomGridApi.applyTransaction({ // applyTransaction : 실시간으로
-          remove: [bom], //bom객체를 remove대상 지정
-        });
-        alert('삭제성공')
-  }
+      for(const bom of selectedBomData){ //bom객체에 아까 저장한 배열에서 .prc_cd추출
+        let result = await axios.delete(`/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`)
+                                .catch(err => console.log(err));
+        let sqlRes = result.data;
+        if(sqlRes.result =='success'){
+          this.bomGridApi.applyTransaction({ // applyTransaction : 실시간으로
+            remove: [bom], //bom객체를 remove대상 지정
+          });
+          alert('삭제성공')
     }
-  
-  },
+      }
     
+    },
+      
+      }
     }
-  }
 </script>
 

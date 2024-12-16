@@ -28,9 +28,12 @@ const mariadb = require("../database/mapper.js");
   }
 //BOM등록  
   const createBom = async(bomInfo)=>{
-    let result = await mariadb.query('boardInsert', bomInfo);
+    console.log(bomInfo,' bomInfo');
+
+    let result = await mariadb.query('bomInsert', bomInfo);
+    console.log('result ', result);
     if(result.insertId>0){
-      return { bom_no: result.insertId };
+      return { prd_cd: result.insertId };
     }else{
       return {};
     }
