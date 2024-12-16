@@ -5,6 +5,7 @@ const qualityService = require("../service/quality_service.js");
 // 검사항목
 router.get('/quality/test', async (req, resp) => {
   let value = req.body;
+  console.log('값' + value);
   let result = await qualityService.findTestList(value);
   resp.send(result);
 });
