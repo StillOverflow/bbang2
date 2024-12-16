@@ -92,7 +92,7 @@ export default {
 
         //거래처명,날짜 검색기능
         searchForm(){          
-            this.$router.push({ name : 'sales_orderlist', query : { query : this.search, st : this.std, et : this.etd}});
+            //this.$router.push({ name : 'sales_orderlist', query : { query : this.search, st : this.std, et : this.etd}});
             let searchdt = {no : this.search , st : this.sdt , et : this.edt};
             
             axios.get('/api/sales/search/', {params : searchdt})
