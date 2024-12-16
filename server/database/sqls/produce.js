@@ -99,8 +99,14 @@ SET ? `;
 
 //제품 공정별 자재 조회
 const instProcMtList =
-`SELECT * FROM process_flow_mtl
-WHERE PROC_FLOW_CD = ? `;
+`SELECT 
+	MAT_CD,
+	MAT_QTY,
+	PROC_FLOW_CD,
+	(SELECT mat_nm FROM material WHERE mat_cd=pm.MAT_CD) AS MAT_NM,
+	(SELECT SUM(MAT_QTY) FROM material_in WHERE mat_cd=pm.MAT_CD) AS MAT_QTY_T
+FROM proc_flow_mtl pm 
+WHERE proc_flow_cd= ?`;
 
 //제품 공정별 자재 등록
 const instProcMtInsert =

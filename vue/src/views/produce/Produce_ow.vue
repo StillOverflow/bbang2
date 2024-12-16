@@ -1,26 +1,29 @@
 <!-- 생산 -->
 <template>
   <div class="py-4 container-fluid">
-    <div class="card">
+    <div class="card">      
+      <div class="card-header bg-light ps-5 ps-md-4">
+        
+        <p class="text-uppercase text-lg font-weight-bolder">기본정보</p>
+        <label for="example-text-input" class="form-control-label">생산계획코드</label>
+        <div class="row">
+          <div class="col-6 col-xxl-2">
+            <input class="form-control" type="text" value="" id="plan_cd"/>
+          </div>
+          <div class="col-4 text-end text-md-start">
+            <button class="btn btn-primary me-3" @click="modalOpen">검색</button>
+          </div>
+        </div>
+
+        <label for="example-text-input" class="form-control-label">작업일자</label>
+        <input class="form-control w-40" type="date" value="" />
+      </div>
+
       <div class="card-body">
+        
         <div class="row">
           <!--기본정보-->
-          <div class="col-md-6">
-            <p class="text-uppercase text-lg font-weight-bolder">기본정보</p>
-            <label for="example-text-input" class="form-control-label">생산계획코드</label>
-            <div class="row">
-              <div class="col-6 col-xxl-2">
-                <input class="form-control" type="text" value="" readonly id="plan_cd"/>
-              </div>
-              <div class="col-4 text-end text-md-start">
-                <button class="btn btn-primary me-3" @click="modalOpen">검색</button>
-              </div>
-            </div>
-            <label for="example-text-input" class="form-control-label">작업일자</label>
-            <input class="form-control w-40" type="date" value="" />
-
-            <hr class="horizontal dark" />
-
+          <div class="col-md-4">
             <p class="text-uppercase text-lg font-weight-bolder">생산제품 목록</p>
             <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="planDtlDefs"
               :rowData="planDtlData" :pagination="true" @rowClicked="rowClicked" @grid-ready="gridFit"
@@ -29,16 +32,20 @@
           </div>
 
           <!--공정설정-->
-          <div class="col-md-6 bg-gr">
+          <div class="col-md-4">
             <p class="text-uppercase text-lg font-weight-bolder">공정설정</p>
             <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="instFlowDefs"
               :rowData="instFlowData" :gridOptions="gridOptions" @grid-ready="gridFit"
               overlayNoRowsTemplate="생산제품 목록을 선택해주세요">
             </ag-grid-vue>
-
-            <hr class="horizontal dark" />
+          </div>
+          <div class="col-md-4">
 
             <p class="text-uppercase text-lg font-weight-bolder">공정 및 자재설정</p>
+            <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="planMatDefs"
+              :rowData="planMatData" :gridOptions="gridOptions" @grid-ready="gridFit"
+              overlayNoRowsTemplate="생산제품 목록을 선택해주세요">
+            </ag-grid-vue>
             <div class="table-responsive p-0">
               <table class="table align-items-center mb-0">
                 <thead>
@@ -137,6 +144,10 @@
 
 </template>
 
+<style>
+.modal-container { width:700px; }
+</style>
+
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
@@ -148,6 +159,7 @@ export default {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
     this.getPlanList();
     this.getPlanDtlList();
+    this.getPlanMatList();
   },
   data() {
     return {
@@ -184,6 +196,38 @@ export default {
         { headerName: '공정설명', field: 'NOTE', },
       ],
       instFlowData: [],
+
+      planMatDefs: [
+        { headerName: '공정코드', field: 'PROC_FLOW_CD', rowGroup: true},
+        { headerName: '자재코드', field: 'MAT_CD' },
+        { headerName: '자재명', field: 'MAT_NM' },
+        { headerName: '필요수량(개당)', field: 'MAT_QTY' },
+        { headerName: '현 재고', field: 'MAT_QTY_T' },
+      ],
+      planMatData: [],
+
+      columnDefs: [
+        { field: "total", rowGroup: true },
+        { field: "country" },
+        { field: "year" },
+        { field: "athlete" },
+        { field: "sport" },
+      ],
+      defaultColDef: {
+        flex: 1,
+        minWidth: 100,
+      },
+      autoGroupColumnDef: {
+        headerName: "Gold Medals",
+        minWidth: 220,
+        cellRendererParams: {
+          suppressCount: true,
+          innerRenderer: CustomMedalCellRenderer,
+        },
+      },
+      // optional as 'singleColumn' is the default group display type
+      groupDisplayType: "singleColumn",
+
       gridOptions: {
         rowSelection: {
           mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
@@ -227,6 +271,11 @@ export default {
       let result = await axios.get(`/api/inst/${prdCd}/flow`)
         .catch(err => console.log(err));
       this.instFlowData = result.data; // 서버가 실제로 보낸 데이터
+    },
+    async getPlanMatList() {
+      let result = await axios.get(`/api/inst/PF01/mat`)
+        .catch(err => console.log(err));
+      this.planMatData = result.data; // 서버가 실제로 보낸 데이터
     },
     async boardInsert() {
       let obj = {
