@@ -6,18 +6,16 @@
         class="card-header bg-light d-flex justify-content-center align-items-center"
       >
         <div class="d-flex align-items-center gap-2 w-20">
-          <div class="input-group">
-            <input
-              v-model="searchCode"
-              type="text"
-              placeholder="설비코드"
-              class="form-control"
-              style="height: 40px"
-            />
-            <button class="btn btn-secondary" @click="fetchEquipment">
-              조회
-            </button>
-          </div>
+          <input
+            v-model="searchCode"
+            type="text"
+            placeholder="설비코드"
+            class="form-control"
+            style="height: 40px"
+          />
+          <button class="btn btn-secondqary" @click="fetchEquipment">
+            조회
+          </button>
         </div>
       </div>
       <div class="card-body">
@@ -104,7 +102,12 @@ export default {
         isUse: '',
       },
       leftFields: [
-        { label: '설비구분 *', value: 'eqpType', type: 'text' },
+        {
+          label: '설비구분 *',
+          value: 'eqpType',
+          type: 'text',
+          selectOptions: [],
+        },
         { label: '설비명 *', value: 'eqpName', type: 'text' },
         { label: '모델명 *', value: 'model', type: 'text' },
         { label: '구매일자', value: 'purDate', type: 'date' },
@@ -121,8 +124,8 @@ export default {
         { label: '적정 속도', value: 'optSpeed', type: 'text' },
         { label: '적정 전력량', value: 'optPower', type: 'text' },
         { label: 'UPH', value: 'uph', type: 'text' },
-        { label: '점검구분', value: 'status', type: 'text' },
-        { label: '설비상태', value: 'isUse', type: 'text' },
+        { label: '점검구분', value: 'status', type: 'text', selectOptions: [] },
+        { label: '설비상태', value: 'isUse', type: 'text', selectOptions: [] },
       ],
     };
   },
@@ -131,8 +134,8 @@ export default {
     onFileChange(event) {
       const file = event.target.files[0];
       if (file) {
-        this.selectedFile = file; // 파일 객체 저장장
-        this.imagePreview = URL.createObjectURL(file); // 미리보기 서렂ㅇ
+        this.selectedFile = file; // 파일 객체 저장
+        this.imagePreview = URL.createObjectURL(file); // 미리보기 설정
       }
     },
 

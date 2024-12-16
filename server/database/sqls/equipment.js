@@ -1,23 +1,23 @@
 /* -----------설비------------*/
 
 //상태전체조회
-const eqStatList = `SELECT * FROM equipment`;
+const equipmentList = `SELECT * FROM equipment`;
 
 //정보전체조회
-const eqAllList = `SELECT * FROM equipment`;
+const equipStatList = `SELECT * FROM equipment`;
 
 //등록
-const eqInsert = `INSERT INTO equipment 
+const equipInsert = `INSERT INTO equipment 
 SET ? `;
 
 //수정
-const eqUpdate = `UPDATE equipment 
+const equipUpdate = `UPDATE equipment 
 SET ? 
 WHERE EQP_CD = ?`;
 
 module.exports = {
-  eqStatList,
-  eqAllList,
-  eqInsert,
-  eqUpdate
+  equipList,
+  equipStatList,
+  equipInsert,
+  equipUpdate,
 };
