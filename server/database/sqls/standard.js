@@ -41,8 +41,8 @@ where b.prd_cd = ?
 //bom 자재추가
 const bomInsert = 
 `
-insert into bom (prd_cd, mat_cd, usage, unit, create_dt)
-values(?, ?, ?, ?, now())
+insert into bom
+set  ?
 `
 //bom 자재삭제
 const bomDel =

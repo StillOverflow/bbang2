@@ -34,8 +34,10 @@ router.get('/standard/bom/:prd_cd', async(req, res)=>{
 //BOM 추가
 router.post('/standard/bom',async(req,res)=>{
     let bomInfo = req.body;
-
+    console.log('bomInfo ', bomInfo);
+   
     let result = await standardService.createBom(bomInfo);
+    
     res.send(result);
 })
 //BOM 삭제
