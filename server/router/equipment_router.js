@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
 const equipmentService =  require('../service/equipment_service.js');
 // const multer = require('multer');
@@ -10,13 +10,13 @@ module.exports = router;
 
 // 설비상태조회
 router.get('/equip/stat', async (req, res)=>{
-    let eqStatList = await equipmentService.findStatEq;
+    let eqStatList = await equipmentService.findStatEq();
     res.send(eqStatList);
 });
 
 // 설비전체조회
 router.get('/equip/all', async (req, res)=>{
-  let eqAllList = await equipmentService.findAllEq;
+  let eqAllList = await equipmentService.findAllEq();
   res.send(eqAllList);
 });
 

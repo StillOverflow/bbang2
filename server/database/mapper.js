@@ -28,7 +28,6 @@ const query = (alias, values) => {
     });
   })
   .catch(err => console.log(err));
-};
 
 module.exports = {
   query,
