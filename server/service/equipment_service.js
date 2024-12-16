@@ -4,19 +4,19 @@ const mariadb = require('../database/mapper.js');
 
 // 상태전체조회
 const findStatEq = async ()=>{
-  let list = await mysql.query('eqStatList');
+  let list = await mariadb.query('eqStatList');
   return list;
 }
 
 // 설비전체조회
 const findAllEq = async ()=>{
-  let list = await mysql.query('eqAllList');
+  let list = await mariadb.query('eqAllList');
   return list;
 }
 
 // 등록
 const insertEq = async (eqInfo)=>{
-  let result = await mysql.query('insertEq', eqInfo);
+  // let result = await mariadb.query('insertEq', eqInfo);
   if( result.insertId > 0){
     return { eqp_cd : result.insertId }; 
   }else{

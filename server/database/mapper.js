@@ -3,7 +3,7 @@ const mariadb = require("mariadb/callback");
 const sqlList = require("./sql.js");
 
 const connectionPool = mariadb.createPool({
-  host: process.env.HOST,
+  host: process.env.MYSQL_HOST,
   port: process.env.PORT,
   user: process.env.USER,
   password: process.env.PWD,
@@ -26,7 +26,7 @@ const query = (alias, values) => {
         resolve(results);
       }
     });
-  });
+  }).catch(err => console.log(err));
 };
 
 module.exports = {
