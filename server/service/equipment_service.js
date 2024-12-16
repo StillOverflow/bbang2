@@ -16,7 +16,7 @@ const findAllEq = async ()=>{
 
 // 등록
 const insertEq = async (eqInfo)=>{
-  // let result = await mariadb.query('insertEq', eqInfo);
+  let result = await mariadb.query('insertEq', eqInfo);
   if( result.insertId > 0){
     return { eqp_cd : result.insertId }; 
   }else{
