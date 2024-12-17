@@ -82,7 +82,7 @@ WHERE INST_DTL_CD = ?`;
 
 //제품별 공정 조회
 const instProcList =
-`SELECT p.PROC_CD, PROC_NM, PROC_SEQ, PRD_CD, p.NOTE AS NOTE 
+`SELECT PROC_FLOW_CD, p.PROC_CD AS PROC_CD, PROC_NM, PROC_SEQ, PRD_CD, p.NOTE AS NOTE 
 FROM process p JOIN process_flow f ON p.PROC_CD=f.PROC_CD
 WHERE PRD_CD = ? 
 ORDER BY PROC_SEQ`;
@@ -99,14 +99,29 @@ SET ? `;
 
 //제품 공정별 자재 조회
 const instProcMtList =
-`SELECT 
-	MAT_CD,
-	MAT_QTY,
-	PROC_FLOW_CD,
-	(SELECT mat_nm FROM material WHERE mat_cd=pm.MAT_CD) AS MAT_NM,
-	(SELECT SUM(MAT_QTY) FROM material_in WHERE mat_cd=pm.MAT_CD) AS MAT_QTY_T
-FROM proc_flow_mtl pm 
-WHERE proc_flow_cd= ?`;
+`
+	SELECT 
+		"group" AS CATE,
+		PROC_FLOW_CD, 
+		"" AS MAT_CD, 
+		p.PROC_NM as NAME,
+		0 AS MAT_QTY_T
+	FROM 
+		process p join process_flow pf 
+		ON p.proc_cd = pf.proc_cd 
+	WHERE PRD_CD=?
+UNION
+	SELECT 
+		"data" AS CATE,
+		PROC_FLOW_CD,
+		m.MAT_CD AS MAT_CD, 
+		(SELECT mat_nm FROM material WHERE mat_cd=pm.MAT_CD) AS MAT_NM,
+		(SELECT SUM(MAT_QTY) FROM material_in WHERE mat_cd=m.mat_cd) AS MAT_QTY_T
+	FROM 
+		proc_flow_mtl pm JOIN material_in m 
+		ON pm.MAT_CD=m.MAT_CD 
+	WHERE proc_flow_cd=PROC_FLOW_CD
+order BY proc_flow_cd, field (cate, 'group', 'data')`;
 
 //제품 공정별 자재 등록
 const instProcMtInsert =

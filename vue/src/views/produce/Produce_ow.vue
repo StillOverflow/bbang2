@@ -1,4 +1,9 @@
 <!-- 생산 -->
+<style>
+.modal-container { width:700px; }
+.btn { margin-bottom: 0; }
+</style>
+
 <template>
   <div class="py-4 container-fluid">
     <div class="card">      
@@ -8,7 +13,7 @@
         <label for="example-text-input" class="form-control-label">생산계획코드</label>
         <div class="row">
           <div class="col-6 col-xxl-2">
-            <input class="form-control" type="text" value="" id="plan_cd"/>
+            <input class="form-control" type="text" value="" id="plan_cd"  @click="modalOpen"/>
           </div>
           <div class="col-4 text-end text-md-start">
             <button class="btn btn-primary me-3" @click="modalOpen">검색</button>
@@ -23,99 +28,79 @@
         
         <div class="row">
           <!--기본정보-->
-          <div class="col-md-4">
+          <div class="col-md-6">
             <p class="text-uppercase text-lg font-weight-bolder">생산제품 목록</p>
-            <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="planDtlDefs"
-              :rowData="planDtlData" :pagination="true" @rowClicked="rowClicked" @grid-ready="gridFit"
-              overlayNoRowsTemplate="생산계획코드를 검색해주세요">
-            </ag-grid-vue>
-          </div>
-
-          <!--공정설정-->
-          <div class="col-md-4">
-            <p class="text-uppercase text-lg font-weight-bolder">공정설정</p>
-            <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="instFlowDefs"
-              :rowData="instFlowData" :gridOptions="gridOptions" @grid-ready="gridFit"
-              overlayNoRowsTemplate="생산제품 목록을 선택해주세요">
-            </ag-grid-vue>
-          </div>
-          <div class="col-md-4">
-
-            <p class="text-uppercase text-lg font-weight-bolder">공정 및 자재설정</p>
-            <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="planMatDefs"
-              :rowData="planMatData" :gridOptions="gridOptions" @grid-ready="gridFit"
-              overlayNoRowsTemplate="생산제품 목록을 선택해주세요">
-            </ag-grid-vue>
-            <div class="table-responsive p-0">
-              <table class="table align-items-center mb-0">
-                <thead>
+            <div class="table-responsive">
+              <table class="table">
+                <thead class="table-secondary">
                   <tr>
-                    <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 사용유무 </th>
-                    <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 자재코드 </th>
-                    <th class="text-center text-uppercase text-ser opacity-7"> 자재명
-                    </th>
-                    <th class="text-center text-uppercase text-ser opacity-7">필요수량(개당)
-                    </th>
-                    <th class="text-center text-uppercase text-ser opacity-7">현재고</th>
-                    <th class="text-center text-uppercase text-ser opacity-7"></th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 제품코드 </th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 제품명 </th>
+                    <th class="text-center text-uppercase text-ser opacity-7"> 생산수량</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr class="align-middle text-center" @click="matShow('mat1')">
-                    <td><span class="text-s">1</span></td>
-                    <td><span class="text-s">반죽공정</span></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>▼</td>
-                  </tr>
-                  <tr class="align-middle text-center" @click="matShow('mat2')">
-                    <td><span class="text-s">2</span></td>
-                    <td><span class="text-s">반죽분리공정</span></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>▼</td>
-                  </tr>
-                  <tr class="align-middle text-center" @click="matShow('mat3')">
-                    <td><span class="text-s">3</span></td>
-                    <td><span class="text-s">발효공정</span></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td>▲</td>
-                  </tr>
+                  <template v-if="planDtlCount >0">
+                    <tr :key="i" v-for="(Dtl, i) in planDtlList" @click="rowClicked(Dtl.prd_cd)" class="text-center planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
+                        <td>{{ Dtl.prd_cd }}</td>
+                        <td>{{ Dtl.prd_nm }}</td>
+                        <td>{{ Dtl.prod_plan_qty }}</td>
+                    </tr>
+                  </template>
 
-                  <tr class="align-middle text-center mat3">
-                    <td>
-                      <input type="checkbox" id="mat_step" checked>
-                    </td>
-                    <td><span class="text-s">PRC2206123</span></td>
-                    <td><span class="text-s">밀가루</span></td>
-                    <td><span class="text-s">30g</span></td>
-                    <td><span class="text-s">180g</span></td>
-                    <td></td>
+                  <tr v-else>
+                    <td colspan="3" align="center">
+                        현재 데이터가 존재하지 않습니다.
+                    </td>   
                   </tr>
-                  <tr class="align-middle text-center mat3" id="mat2">
-                    <td>
-                      <input type="checkbox" id="mat_step" checked>
-                    </td>
-                    <td><span class="text-s">PRC2206123</span></td>
-                    <td><span class="text-s">이스트</span></td>
-                    <td><span class="text-s">30g</span></td>
-                    <td><span class="text-s">180g</span></td>
-                    <td></td>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!--공정설정-->
+          <div class="col-md-6">
+
+            <p class="text-uppercase text-lg font-weight-bolder">공정 및 자재설정</p>
+            <div class="table-responsive">
+              <table class="table">
+                <thead class="table-secondary">
+                  <tr>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 사용유무 </th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 자재명 </th>
+                    <th class="text-center text-uppercase text-ser opacity-7"> 자재코드</th>
+                    <th class="text-center text-uppercase text-ser opacity-7">필요수량(개당)</th>
+                    <th class="text-center text-uppercase text-ser opacity-7">현재고</th>
                   </tr>
-                  <tr class="align-middle text-center mat3" id="mat3">
-                    <td>
-                      <input type="checkbox" id="mat_step" checked>
-                    </td>
-                    <td><span class="text-s">PRC2206123</span></td>
-                    <td><span class="text-s">물</span></td>
-                    <td><span class="text-s">30g</span></td>
-                    <td><span class="text-s">180g</span></td>
-                    <td></td>
-                  </tr>
+                </thead>
+                <tbody class="text-center">
+                  <template :key="i" v-for="(Mat, i) in planMatList" >
+                      <tr v-if="Mat.CATE == 'group'">
+                        <td>
+                          <div class="form-check col-4 col-md-2">
+                            <input class="form-check-input" type="checkbox" v-model="selected_check" :value="Mat.PROC_FLOW_CD" :id="'ck' + Mat.PROC_FLOW_CD"
+                             >
+                            <label class="form-check-label" :for="'ck' + Mat.PROC_FLOW_CD">{{ Mat.NAME }}</label>
+                          </div>
+                        </td>
+                        <td colspan="3"></td>
+                        <td><button @click="matShow(Mat.PROC_FLOW_CD)" v-bind:id="Mat.PROC_FLOW_CD + '_btn'" >▼</button></td>
+                      </tr>
+
+                      <tr v-else v-bind:class="Mat.PROC_FLOW_CD" class="dnone">
+                        <td></td>
+                        <td>
+                          <div class="form-check col-4 col-md-2">
+                            <input class="form-check-input" type="checkbox" v-model="selected_mat" :value="Mat.MAT_CD" :id="'mt' + Mat.MAT_CD"
+                             >
+                            <label class="form-check-label" :for="'mt' + Mat.MAT_CD">{{ Mat.NAME }}</label>
+                          </div>
+                        </td>
+                        <td>{{ Mat.MAT_CD }}</td>
+                        <td>{{ Mat.NAME }}</td>
+                        <td>{{ Mat.MAT_QTY_T }}</td>
+                      </tr>
+                  </template>
                 </tbody>
               </table>
             </div>
@@ -144,10 +129,6 @@
 
 </template>
 
-<style>
-.modal-container { width:700px; }
-</style>
-
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
@@ -161,8 +142,20 @@ export default {
     this.getPlanDtlList();
     this.getPlanMatList();
   },
+  computed : {
+      planDtlCount(){
+          return this.planDtlList.length;
+      },
+      planMatCount(){
+          return this.planMatList.length;
+      }
+  },
   data() {
     return {
+      planDtlList : [],
+      instProcList : [],
+      planMatList : [],
+
       selectBomData: null,
       pr_step: [],
       instInfo: {
@@ -173,6 +166,7 @@ export default {
         update_dt: '',
         create_dt: ''
       },
+      /* 모달 계획서 목록 */
       planDefs: [
         { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true },
         { headerName: '생산시작일', field: 'start_dt', sortable: true, valueFormatter: this.$comm.dateFormatter  },
@@ -182,13 +176,7 @@ export default {
       ],
       planData: [],
 
-      planDtlDefs: [
-        { headerName: '제품코드', field: 'prd_cd', sortable: true },
-        { headerName: '제품명', field: 'prd_nm', sortable: true },
-        { headerName: '생산수량', field: 'prod_plan_qty' },
-      ],
-      planDtlData: [],
-
+      /* 제품별 공정 목록 */
       instFlowDefs: [
         { headerName: '순번', field: 'PROC_SEQ', sortable: true },
         { headerName: '공정코드', field: 'PROC_CD' },
@@ -197,8 +185,9 @@ export default {
       ],
       instFlowData: [],
 
+      /* 공정별 자재 목록 */
       planMatDefs: [
-        { headerName: '공정코드', field: 'PROC_FLOW_CD', rowGroup: true, hide: true },
+        { headerName: '공정코드', field: 'PROC_FLOW_CD', rowGroup: true, hide: true, keyCreator : (params) => params.value.proc_flow_cd, valueFormatter: (params) => params.value.proc_nm},
         { headerName: '자재코드', field: 'MAT_CD' },
         { headerName: '자재명', field: 'MAT_NM' },
         { headerName: '필요수량(개당)', field: 'MAT_QTY' },
@@ -221,40 +210,58 @@ export default {
       this.isModal = !this.isModal;
     },
     modalClicked(params) {
-      params.data.prod_plan_cd;
       this.getPlanDtlList(params.data.prod_plan_cd);
       document.getElementById('plan_cd').value = params.data.prod_plan_cd;
       this.isModal = !this.isModal;
     },
-    matShow(id) {
-      const elements = document.querySelectorAll('.' + id);
-      for (var i = 0; i < elements.length; i++) {
-        elements[i].classList.toggle('dnone');
-      }
-    },
+    
+    //계획서 리스트
     async getPlanList() {
       let result = await axios.get('/api/plan')
-        .catch(err => console.log(err));
+                              .catch(err => console.log(err));
       this.planData = result.data; // 서버가 실제로 보낸 데이터
     },
+
+    //계획서 제품 리스트
     async getPlanDtlList(plan_cd) {
       let result = await axios.get(`/api/plan/${plan_cd}/dtl`)
-        .catch(err => console.log(err));
-      this.planDtlData = result.data; // 서버가 실제로 보낸 데이터
+                              .catch(err => console.log(err));
+                              
+      this.planDtlList = result.data; // 서버가 실제로 보낸 데이터
     },
-    rowClicked(params) {
-      this.getInstFlowList(params.data.prd_cd);
+
+    rowClicked(prd_cd) {
+      this.getPlanMatList(prd_cd); //공정 및 자재설정 리스트 노출
+
+      /* 선택된 생산제품 목록 색깔표기 [S]*/
+      const elements = document.querySelectorAll('.planDtl');
+      for (var i = 0; i < elements.length; i++) {
+        elements[i].classList.remove('table-warning');
+      }
+      document.getElementById(prd_cd+'_dtl').classList.add('table-warning');
+      /* 선택된 생산제품 목록 색깔표기 [E]*/
     },
-    async getInstFlowList(prdCd) {
-      let result = await axios.get(`/api/inst/${prdCd}/flow`)
-        .catch(err => console.log(err));
-      this.instFlowData = result.data; // 서버가 실제로 보낸 데이터
+
+    //계획서 제품 공정별 자재 리스트
+    async getPlanMatList(prd_cd) {
+      let result = await axios.get(`/api/inst/${prd_cd}/mat`)
+                              .catch(err => console.log(err));
+      this.planMatList = result.data; // 서버가 실제로 보낸 데이터
     },
-    async getPlanMatList() {
-      let result = await axios.get(`/api/inst/PF01/mat`)
-        .catch(err => console.log(err));
-      this.planMatData = result.data; // 서버가 실제로 보낸 데이터
+
+    matShow(procFlowCd) {
+      const btn = document.getElementById(procFlowCd+'_btn');
+      const elements = document.querySelectorAll('.' + procFlowCd);
+      for (var i = 0; i < elements.length; i++) {
+        elements[i].classList.toggle('dnone');
+        if (elements[i].classList.contains('dnone')) {
+          btn.innerText = "▼";
+        }else{
+          btn.innerText = "▲";
+        }
+      }
     },
+
     async boardInsert() {
       let obj = {
         prod_plan_cd: this.instInfo.prod_plan_cd,

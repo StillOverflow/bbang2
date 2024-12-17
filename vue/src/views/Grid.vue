@@ -10,8 +10,9 @@
       :columnDefs="columnDefs"
       :rowData="rowData"
       :gridOptions="gridOptions"
-      @grid-ready="gridFit">
+      @grid-ready="myGrid">
       </ag-grid-vue>
+      <button type="button" class="btn btn-light m-3" @click="getGridVal">선택된 값 콘솔로 확인하기</button>
     </div>
   </div>
 </template>
@@ -27,7 +28,21 @@ export default {
         return {
             columnDefs: null,
             rowData: null,
-            gridOptions: null
+            myApi: null,
+            myColApi: null,
+
+            gridOptions: {
+                pagination: true,
+                // paginationPageSize: 10, // 몇 행까지 표시할지 지정하고 싶은 경우
+                // paginationPageSizeSelector: false,
+                paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
+                overlayNoRowsTemplate: '표시할 값이 없습니다.', // 표시할 행이 없을 때 적용할 메세지'
+                suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+                rowSelection: { 
+                    mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
+                    // enableClickSelection: true // (행을 클릭하는 것만으로 singleRow 선택 가능.)
+                }
+            }
         }
     },
     components: {
@@ -46,20 +61,19 @@ export default {
             { make: 'JoJang', model: 'Boxter', price: 72000 },
             { make: 'Ford', model: 'Mondeo', price: 32000 }
         ];
-
-        this.gridOptions = {
-          pagination: true,
-          paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
-          overlayNoRowsTemplate: '표시할 값이 없습니다.', // 표시할 행이 없을 때 적용할 메세지
-          rowSelection: { 
-              mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
-              // enableClickSelection: true // (행을 클릭하는 것만으로 singleRow 선택 가능.)
-          }
-        }
     },
     methods: {
-      gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
-        params.api.sizeColumnsToFit();
+      myGrid(params){ // 매개변수 속성으로 자동 접근
+        params.api.sizeColumnsToFit(); // 가로스크롤 삭제
+        this.myApi = params.api;
+        this.myColApi = params.columnApi; // api, columnApi 둘 다 꼭 있어야 함
+      },
+      getGridVal(){
+        const val = this.myApi.getSelectedNodes();
+        console.log(val);
+        if(val.length != 0){ // data 속성에 접근할 시, 선택된 값이 없으면 오류남
+          console.log(val[0].data);
+        }
       }
     }
 }
