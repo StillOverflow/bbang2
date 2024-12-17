@@ -113,6 +113,7 @@ export default {
         { headerName: '구분', field: 'type', sortable: true},
         { headerName: '단위', field: 'unit', sortable: true, cellEditor: 'agSelectCellEditor',
           cellEditorParams: { 
+            label : [],
             values : []
           }, 
           
@@ -159,10 +160,10 @@ export default {
       let unitDataList = []; // 정의 
 
       this.commData.forEach((data) => {
-        //console.log("data => ", );
-        unitDataList.push(data.comm_dtl_nm) //[,,,]
+        console.log("data => ", data);
+        unitDataList.push(data) //[,,,]
       });
-      
+      console.log("unitDataList => ", unitDataList);
       let idx = this.materialDefs.findIndex( obj => obj.field == 'unit'); // => 숫자
       this.materialDefs[idx].cellEditorParams.values = unitDataList; // materialDefs[idx] => materialDefs[3]
     },
