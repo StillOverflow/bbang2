@@ -48,12 +48,12 @@ router.delete('/standard/bom/:prd_cd/:mat_cd',async(req, res)=>{
 
 //-----------------공정흐름도-------------------
 
-// // 공정 흐름도 조회
-// router.get('/standard/flow/:prd_cd', async (req, res) => {
-//     let { prd_cd } = req.params;
-//     let flowData = await standardService.findFlowByProduct(prd_cd);
-//     res.send(flowData);
-// });
+// 선택한 제품의 공정 흐름도 조회
+router.get('/standard/flow/:prd_cd', async (req, res) => {
+    let prdCd = req.params.prd_cd;
+    let flowList = await standardService.searchFlow(prdCd);
+    res.send(flowList);
+});
 
 // // 공정 흐름도 추가
 // router.post('/standard/flow', async (req, res) => {
@@ -68,6 +68,7 @@ router.delete('/standard/bom/:prd_cd/:mat_cd',async(req, res)=>{
 //     let result = await standardService.deleteFlow(flow_code);
 //     res.send(result);
 // });
+
 
 
 

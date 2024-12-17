@@ -28,7 +28,7 @@ const mariadb = require("../database/mapper.js");
   } 
 //BOM등록  
   const createBom = async(bomInfo)=>{
-    console.log(bomInfo,' bomInfo');
+    //console.log(bomInfo,' bomInfo');
 
     let result = await mariadb.query('bomInsert', bomInfo);
     console.log('result ', result);
@@ -50,7 +50,10 @@ const mariadb = require("../database/mapper.js");
 
 //-----------------공정흐름도-------------------
   // 공정 흐름도 조회
-
+  const searchFlow = async(prd_cd)=>{
+    let list = await mariadb.query('procFlowByProd', prd_cd);
+    return list;
+  }
 
   // 공정 추가
 
@@ -75,5 +78,6 @@ module.exports = {
   deleteBom,
   searchPrd,
   searchMtl,
-  findAllComm
+  findAllComm,
+  searchFlow
 };
