@@ -1,6 +1,7 @@
 const mariadb = require('../database/mapper.js');
 
-//주문서 목록
+/* ----------------------주문서------------------------ */
+//주문서 목록 조회
 const listOrder = async() => {
     try {
         let list = await mariadb.query('orderList');
@@ -31,10 +32,17 @@ const searchOrder = async (search, std, etd) => {
     }
 };
 
+//주문서 등록
 
+//거래처 조회(모달)
+const listAccMo = async() => {
+  let list = await mariadb.query('moAccList');
+  return list;
+};
 
 
 module.exports = {
-    // listOrder,
-    // searchOrder,
+     listOrder,
+     searchOrder,
+     listAccMo,
 };

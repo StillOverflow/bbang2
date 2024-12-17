@@ -1,4 +1,6 @@
-//주문서 목록
+/* --------------------주문서---------------------- */
+
+//주문서 목록 조회
 const orderList = 
 `
 SELECT o.order_cd, 
@@ -48,7 +50,24 @@ const orderSearch = (searchObj) => {
     return query; 
 };
 
+//주문서 등록
+
+// 거래처 조회(모달)
+const moAccList = 
+`
+SELECT act_cd, 
+       act_nm, 
+       (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = act_type) AS act_type
+FROM account;
+`;
+
+
+
+
+
+
 module.exports = {
     orderList,
     orderSearch,
+    moAccList,
 }
