@@ -8,15 +8,13 @@
         <div class="d-flex align-items-center gap-2 w-20">
           <div class="input-group">
             <input
-              v-model="searchCode"
+              id="eqp_cd"
               type="text"
               placeholder="설비코드"
               class="form-control"
               style="height: 40px"
             />
-            <button class="btn btn-secondary" @click="fetchEquipment">
-              조회
-            </button>
+            <button class="btn btn-secondary" @click="modalOpen">조회</button>
           </div>
         </div>
       </div>
@@ -33,30 +31,68 @@
             />
             <input type="file" class="form-control" @change="onFileChange" />
           </div>
+
           <!-- 왼쪽 입력란 -->
           <div class="col-lg-5 col-md-5 col-sm-12">
             <div v-for="(field, index) in leftFields" :key="index" class="mb-2">
-              <label class="form-control-label">{{ field.label }}</label>
-              <input
-                v-model="equipmentData[field.value]"
-                :type="field.type"
-                class="form-control custom-width"
-              />
+              <template v-if="field.value == 'eqpType'">
+                <label class="form-control-label">{{ field.label }}</label>
+                <select
+                  class="form-select custom-width"
+                  v-model="equipmentData[field.value]"
+                >
+                  <option
+                    v-for="(opt, idx) in field.selectOptions"
+                    :key="idx"
+                    :value="opt.item"
+                  >
+                    {{ opt.name }}
+                  </option>
+                </select>
+              </template>
+              <template v-else>
+                <label class="form-control-label">{{ field.label }}</label>
+                <input
+                  v-model="equipmentData[field.value]"
+                  :type="field.type"
+                  class="form-control custom-width"
+                />
+              </template>
             </div>
           </div>
+
           <!-- 오른쪽 입력란 -->
-          <div class="col-lg-5 col-md-12 col-sm-12">
+          <div class="col-lg-5 col-md-5 col-sm-12">
             <div
               v-for="(field, index) in rightFields"
               :key="index"
               class="mb-2"
             >
-              <label class="form-control-label">{{ field.label }}</label>
-              <input
-                v-model="equipmentData[field.value]"
-                :type="field.type"
-                class="form-control custom-width"
-              />
+              <template
+                v-if="field.value == 'status' || field.value == 'isUse'"
+              >
+                <label class="form-control-label">{{ field.label }}</label>
+                <select
+                  class="form-select custom-width"
+                  v-model="equipmentData[field.value]"
+                >
+                  <option
+                    v-for="(opt, idx) in field.selectOptions"
+                    :key="idx"
+                    :value="opt.item"
+                  >
+                    {{ opt.name }}
+                  </option>
+                </select>
+              </template>
+              <template v-else>
+                <label class="form-control-label">{{ field.label }}</label>
+                <input
+                  v-model="equipmentData[field.value]"
+                  :type="field.type"
+                  class="form-control custom-width"
+                />
+              </template>
             </div>
           </div>
         </div>
@@ -70,43 +106,95 @@
       </div>
     </div>
   </div>
+
+  <Layout :modalCheck="isModal">
+    <template v-slot:header>
+      <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+      <h5 class="modal-title">설비 코드 검색</h5>
+      <button type="button" aria-label="Close" class="close" @click="modalOpen">
+        ×
+      </button>
+    </template>
+    <template v-slot:default>
+      <ag-grid-vue
+        class="ag-theme-alpine"
+        style="width: 100%; height: 400px"
+        :columnDefs="equipDefs"
+        :rowData="equipData"
+        :pagination="true"
+        @rowClicked="modalClicked"
+        @grid-ready="gridFit"
+        overlayNoRowsTemplate="등록된 설비가 없습니다."
+      >
+      </ag-grid-vue>
+    </template>
+    <template v-slot:footer>
+      <button type="button" class="btn btn-secondary" @click="modalOpen">
+        Cancel
+      </button>
+      <button type="button" class="btn btn-primary" @click="modalOpen">
+        OK
+      </button>
+    </template>
+  </Layout>
 </template>
 
 <script>
+import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
+import Layout from '../components/modalLayout.vue';
+
 export default {
+  components: { AgGridVue, Layout },
   name: 'EquipmentRegister',
   data() {
     return {
       imagePreview: require('@/assets/img/blank_img.png'), // 이미지 미리보기 경로
-      selectedFile: null, // 선택한 파일일
-      searchCode: '', // 검색 입력값
+      selectedFile: null, // 선택한 파일
+      equipInfo: {},
       equipmentData: {
         //이미지 경로
-        imagePath: '',
+        IMG_PATH: '',
         // 입력 데이터 값
-        eqpType: '',
-        eqpName: '',
-        model: '',
-        purDate: '',
-        purAct: '',
-        mfgAct: '',
-        replCycle: '',
-        inspCycle: '',
-        eqpMgr: '',
-        optTemp: '',
-        optHumid: '',
-        optRpm: '',
-        optSpeed: '',
-        optPower: '',
-        uph: '',
-        status: '',
-        isUse: '',
+        EQP_TYPE: '',
+        EQP_NM: '',
+        MODEL: '',
+        PUR_DT: '',
+        PUR_ACT: '',
+        MFG_ACT: '',
+        REPL_CYCLE: '',
+        INSP_CYCLE: '',
+        ID: '',
+        OPT_TEMP: '',
+        OPT_HUMID: '',
+        OPT_RPM: '',
+        OPT_SPEED: '',
+        OPT_POWER: '',
+        UPH: '',
+        STATUS: '',
+        IS_USE: '',
       },
+
+      equipDefs: [
+        { headerName: '설비 코드', field: 'EQP_CD', sortable: true },
+        {
+          headerName: '설비 구분',
+          field: 'EQP_TYPE',
+          sortable: true,
+        },
+        {
+          headerName: '설비명',
+          field: 'EQP_NM',
+          sortable: true,
+        },
+        { headerName: '모델명', field: 'MODEL', sortable: true },
+      ],
+
+      equipData: [],
+
       leftFields: [
         {
           label: '설비구분 *',
-          value: 'eqpType',
           type: 'text',
           selectOptions: [],
         },
@@ -116,7 +204,7 @@ export default {
         { label: '구매업체', value: 'purAct', type: 'text' },
         { label: '제조업체', value: 'mfgAct', type: 'text' },
         { label: '교체주기 (년)', value: 'replCycle', type: 'number' },
-        { label: '점검주기 (개월)', value: 'inspCycle', type: 'number' },
+        { label: '점검주기 (일)', value: 'inspCycle', type: 'number' },
         { label: '설비담당자', value: 'eqpMgr', type: 'text' },
       ],
       rightFields: [
@@ -129,9 +217,20 @@ export default {
         { label: '점검구분', value: 'status', type: 'text', selectOptions: [] },
         { label: '설비상태', value: 'isUse', type: 'text', selectOptions: [] },
       ],
+
+      isModal: false,
     };
   },
   methods: {
+    modalOpen() {
+      this.isModal = !this.isModal;
+    },
+    modalClicked(params) {
+      this.getEquipInfo(params.data.EQP_CD);
+      document.getElementById('eqp_cd').value = params.data.EQP_CD;
+      this.isModal = !this.isModal;
+    },
+
     //파일 업로드 핸들러
     onFileChange(event) {
       const file = event.target.files[0];
@@ -141,9 +240,28 @@ export default {
       }
     },
 
+    async getComm(cd) {
+      // 공통코드 가져오기
+      let result = await axios
+        .get('/api/commList/' + cd)
+        .catch((err) => console.log(err));
+      return result.data;
+    },
+
     // 설비 조회
-    fetchEquipment() {
-      console.log('조회: ', this.searchCode);
+    async getEquipInfo(eqp_cd) {
+      let result = await axios
+        .get(`api/equip/${eqp_cd}`)
+        .catch((err) => console.log(err));
+      this.boardInfo = result.data;
+    },
+
+    // 설비 전체 조회
+    async getEquipList() {
+      let result = await axios
+        .get(`/api/equip`)
+        .catch((err) => console.log(err));
+      this.equipData = result.data; // 서버가 실제로 보낸 데이터
     },
 
     // 등록 기능
@@ -168,13 +286,63 @@ export default {
     },
   },
   created() {
+    this.getEquipList();
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 관리' });
+
+    //this.getCondition('QT', 'radio');
+    this.getComm('EQ')
+      .then((result) => {
+        const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
+        console.log('설비 구분 공통 코드명:', commDtlNames);
+
+        //selectOptions에 담아 select 박스에 활용
+        this.leftFields.find(
+          (field) => field.value === 'eqpType'
+        ).selectOptions = result.map((item) => ({
+          item: item.comm_dtl_cd,
+          name: item.comm_dtl_nm,
+        }));
+      })
+      .catch((err) => console.log(err));
+
+    this.getComm('EU')
+      .then((result) => {
+        const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
+        console.log('공통 코드명:', commDtlNames);
+
+        //selectOptions에 담아 select 박스에 활용
+        this.rightFields.find(
+          (field) => field.value === 'isUse'
+        ).selectOptions = result.map((item) => ({
+          item: item.comm_dtl_cd,
+          name: item.comm_dtl_nm,
+        }));
+      })
+      .catch((err) => console.log(err));
+
+    this.getComm('EI')
+      .then((result) => {
+        const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
+        console.log('공통 코드명:', commDtlNames);
+
+        //selectOptions에 담아 select 박스에 활용
+        this.rightFields.find(
+          (field) => field.value === 'status'
+        ).selectOptions = result.map((item) => ({
+          item: item.comm_dtl_cd,
+          name: item.comm_dtl_nm,
+        }));
+      })
+      .catch((err) => console.log(err));
   },
 };
 </script>
 
 <style scoped>
+.modal-container {
+  width: 700px;
+}
 label {
   font-weight: bold;
 }
@@ -184,14 +352,21 @@ button {
 .custom-width {
   max-width: 500px;
   width: 100%;
+  height: 40px;
 }
-.imgBSJ {
-  border-radius: 10px;
+
+.form-control,
+.form-select {
+  max-width: 500px;
+  width: 100%;
 }
-@media (max-width: 1730px) {
-  .col-md-5,
-  .col-md-2,
-  .form-control {
+
+.input-group {
+  max-width: 500px;
+}
+
+@media (max-width: 992px) {
+  .form-control .form-select .custom-width {
     flex: 0 0 100%;
     max-width: 100%;
   }
