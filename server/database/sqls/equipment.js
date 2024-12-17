@@ -7,7 +7,7 @@ const eqStatList = `SELECT * FROM equipment`;
 const eqAllList = `SELECT * FROM equipment`;
 
 //단건조회
-const equipInfo = `SELECT (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = eqp_type) eqp_type, 
+const equipInfo = `SELECT eqp_type, 
                           eqp_nm,
                           model,
                           pur_dt,
@@ -22,8 +22,9 @@ const equipInfo = `SELECT (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_
                           opt_speed,
                           opt_power,
                           uph,
-                          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = status) STATUS,
-                          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = is_use) is_use
+                          status,
+                          is_use,
+                          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = status) status,
 
 FROM equipment
 WHERE eqp_cd = ?
