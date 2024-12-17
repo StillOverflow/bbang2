@@ -111,13 +111,19 @@ export default {
         { headerName: '자재코드', field: 'mat_cd', sortable: true, checkboxSelection: true},
         { headerName: '자재명', field: 'mat_nm', sortable: true},
         { headerName: '구분', field: 'type', sortable: true},
-        { headerName: '단위', field: 'unit', sortable: true, cellEditor: 'agSelectCellEditor',
+        { headerName: '단위', field: 'unit_nm', sortable: true, cellEditor: 'agSelectCellEditor',
           cellEditorParams: { 
-            values : []
-          }, 
-          
+            values : [] // label => comm_dtl_nm
+          },
           editable: true
-        },
+        },/*
+        { headerName: '단위', field: 'unit_cd', sortable: true, cellEditor: 'agSelectCellEditor',
+          cellEditorParams: { 
+            values : [] // values => comm_dtl_cd
+          },
+          editable: true,
+          //hide : true,
+        },*/
         { headerName: 'BOM양', field: 'usage', editable: true, enableCellChangeFlash: true},
       ],
       // 자재 테이블 데이터
@@ -157,15 +163,32 @@ export default {
       this.commData = result.data;
       //console.log("commData", this.commData)
       let unitDataList = []; // 정의 
-
-      this.commData.forEach((data) => {
-        //console.log("data => ", );
-        unitDataList.push(data.comm_dtl_nm) //[,,,]
-      });
-      
-      let idx = this.materialDefs.findIndex( obj => obj.field == 'unit'); // => 숫자
+      for(let i = 0 ; i < this.commData.length; i++){
+        unitDataList.push(this.commData[i].comm_dtl_nm) //[,,,]
+      };
+      let idx = this.materialDefs.findIndex( obj => obj.field == 'unit_nm'); // => 숫자
       this.materialDefs[idx].cellEditorParams.values = unitDataList; // materialDefs[idx] => materialDefs[3]
     },
+/*
+    async bringCommData(){
+      let result = await axios.get(`/api/standard/commList/${'UN'}`);
+      this.commData = result.data;
+      //console.log("commData", this.commData)
+
+      let unitDataList = this.commData.map((data) => {
+        return { value: data.comm_dtl_cd, label: data.comm_dtl_nm }; // 코드와 이름 매핑
+      });
+
+      let idx = this.materialDefs.findIndex((obj) => obj.field == 'unit_nm'); 
+      this.materialDefs[idx].cellEditorParams.values = unitDataList.map((item) => item.label); // select 값에 표시될 이름
+      
+      let idx2 = this.materialDefs.findIndex((obj) => obj.field == 'unit_cd');
+      this.materialDefs[idx2].cellEditorParams.values = unitDataList.map((item) => item.value); // select 값에 표시될 이름
+      
+      this.unitDataMap = unitDataList; // 코드와 이름 매핑 저장
+    },
+    */
+
     //제품검색기능
     searchPrd(){
       axios.get(`/api/standard/products/${this.keyword}`)
@@ -214,6 +237,7 @@ export default {
       this.bomData = result.data;
       
     },
+
   //자재추가
     onMatGridReady(params) {
       this.materialGridApi = params.api;
@@ -221,6 +245,7 @@ export default {
     onBomGridReady(params) {
       this.bomGridApi = params.api; // BOM 테이블 gridApi
     },
+
   //bom에 선택한 자재데이터 추가
   async InsertBomData() {
     try {
@@ -236,20 +261,22 @@ export default {
       const bomMatData = selectedMat.map(material=>({
         prd_cd: this.selectBomData,
         mat_cd: material.mat_cd,
-        unit: material.unit,
+        unit: this.commData.find(obj => obj.comm_dtl_nm ==  material.unit_nm).comm_dtl_cd ,  
         usage: parseFloat(material.usage) || 0
       }));
-
+      console.log('selected', bomMatData);
 
       let result = await axios.post(`/api/standard/bom`, bomMatData)  
                               .catch(err => console.log(err));
       let addRes = result.data;
+
       console.log(result);
+
       if(addRes.result == 'success'){//그리드 실시간 반영을 위한 데이터
         const selectBom = selectedMat.map(material=>({
           prd_cd: this.selectBomData,
           mat_cd: material.mat_cd,
-          unit: material.unit,
+          unit: material.unit_cd,
           usage: parseFloat(material.usage) || 0,
           mat_nm: material.mat_nm,
           price: material.price||0
@@ -286,7 +313,7 @@ export default {
       }
     
     },
-      
+
       }
     }
 </script>
