@@ -142,8 +142,6 @@ export default {
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
     this.getPlanList();
-    this.getPlanDtlList();
-    this.getPlanMatList();
   },
   computed : {
       planDtlCount(){
@@ -161,14 +159,8 @@ export default {
 
       selectBomData: null,
       pr_step: [],
-      instInfo: {
-        inst_cd: '',
-        prod_plan_cd: '',
-        status: '',
-        work_dt: '',
-        update_dt: '',
-        create_dt: ''
-      },
+      instInfo: {},
+      
       /* 모달 계획서 목록 */
       planDefs: [
         { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true },
