@@ -106,6 +106,7 @@ export default {
       //검색데이터
       keyword: "",
 
+      
       // 자재 테이블 컬럼명
       materialDefs: [
         { headerName: '자재코드', field: 'mat_cd', sortable: true, checkboxSelection: true},
