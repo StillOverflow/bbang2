@@ -60,8 +60,43 @@ SELECT act_cd,
        (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = act_type) AS act_type
 FROM account;
 `;
-
-
+//거래처 단건조회(모달)-필요가 없어짐...
+// const moAccInfo =
+// `
+// SELECT act_cd, 
+//        act_nm, 
+//        (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = act_type) AS act_type
+// FROM account
+// WHERE act_cd = ? 
+// `;
+// 담당자 조회(모달)
+const moMemList =
+`
+SELECT m.ID, 
+       m.name, 
+       d.dpt_nm 
+FROM member m 
+JOIN department d ON m.dpt_cd = d.dpt_cd;
+`;
+//담당자 단건조회(모달)-필요가 없어짐...
+// const moMemInfo =
+// `
+// SELECT m.ID, 
+//        m.name, 
+//        d.dpt_nm 
+// FROM member m 
+// JOIN department d ON m.dpt_cd = d.dpt_cd
+// WHERE m.ID = ?
+// `;
+// 제품 조회(모달)
+const moProList =
+`
+SELECT p.prd_cd, 
+       p.prd_nm, 
+       i.stock
+FROM product p 
+JOIN product_in i ON p.prd_cd = i.prd_cd;
+`;
 
 
 
@@ -70,4 +105,8 @@ module.exports = {
     orderList,
     orderSearch,
     moAccList,
+    //moAccInfo,
+    moMemList,
+    //moMemInfo,
+    moProList,
 }

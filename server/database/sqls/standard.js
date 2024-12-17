@@ -17,30 +17,50 @@ and comm_cd = 'YN'
 //제품 키워드 검색
 const prdSearch=
 `
-select distinct p.prd_cd, p.prd_nm, b.usage_sta
+select distinct 
+p.prd_cd, 
+p.prd_nm, 
+cd.comm_dtl_nm as usage_sta
 from product p
 left join bom b 
 on p.prd_cd = b.prd_cd
+left join common_detail cd
+on cd.comm_dtl_cd = b.usage_sta
+and comm_cd = 'YN'
 where p.prd_nm like ?
 `;
 //자재 목록 조회
 const matList =
 `
 select mat_cd, 
-m.mat_nm, 
-m.type,  
+m.mat_nm,   
 m.price,
-cd.comm_dtl_nm as unit
+cd.comm_dtl_nm as unit,
+cd_t.comm_dtl_nm as type
 from material m
 join common_detail cd
 on cd.comm_dtl_cd = m.unit
-and comm_cd = 'UN'
+and cd.comm_cd = 'UN'
+join common_detail cd_t
+on cd_t.comm_dtl_cd = m.type
+and cd_t.comm_cd = 'MA'
 `;
 //자재 키워드 검색
 const matSearch =
 `
-select mat_cd, mat_nm, type
-from material
+select mat_cd, 
+m.mat_nm,   
+m.price,
+cd.comm_dtl_nm as unit,
+cd_t.comm_dtl_nm as type
+from material m
+join common_detail cd
+on cd.comm_dtl_cd = m.unit
+and cd.comm_cd = 'UN'
+join common_detail cd_t
+on cd_t.comm_dtl_cd = m.type
+and cd_t.comm_cd = 'MA'
+
 where mat_nm like ?
 `;
 //bom 조회
@@ -73,22 +93,75 @@ where prd_cd = ?
 and mat_cd = ?
 `;
 //--------------공정흐름도-----------------
-//선택할 제품조회 위에있음
-
+//선택할 제품조회 
+const selectPrd = 
+`
+SELECT
+prd_cd
+,prd_nm,
+(SELECT EXISTS(
+					SELECT 1
+					FROM prod_inst_dtl
+					WHERE prd_cd = 'pr01')) AS "작동여부"
+FROM product; 
+`;
 //선택한 제품의 공정흐름도 조회
-
+const procFlowByProd =
+`
+SELECT 
+p.proc_cd
+,p.proc_nm
+,pf.proc_seq
+FROM process_flow pf
+JOIN process p
+ON p.proc_cd = pf.proc_cd
+WHERE prd_cd = ?
+`;
 //공정코드 조회(모달)
-
+const procCd = 
+`
+SELECT
+proc_cd
+,proc_nm
+,eqp_type
+,duration
+FROM process;
+`;
 //공정흐름도에 선택한 공정코드 등록
-
+const insertProcFlow =
+`
+insert into process_flow
+set ?
+`;
 //공정흐름도의 공정코드 삭제
+const deleteProcFlow =
+`
+delete from process_flow
+?
+`
 
-//선택한 제품의 bom조회 위에있음
+//선택한 제품의 bom조회 위에있음(o)
 
-//bom내역에서 선택한 자재 공정흐름도 공정코드에 등록
+//bom내역에서 선택한 자재 공정흐름도 공정코드 조회
+
 
 //선택한 공정흐름도의 공정코드에대한 자재정보 조회
-
+const selectMatByProc =
+`
+SELECT 
+m.mat_cd
+,m.mat_nm
+,pfm.mat_qty
+,cd.comm_dtl_nm AS unit
+FROM process_flow pf
+JOIN proc_flow_mtl pfm
+ON pfm.PROC_FLOW_CD = pf.PROC_FLOW_CD
+JOIN material m
+ON m.mat_cd = pfm.mat_cd
+JOIN common_detail cd
+ON cd.COMM_DTL_CD = m.unit
+WHERE pf.proc_cd = ?;
+`;
 //선택한 공정흐름도의 공정코드에대한 자재삭제
 
 
@@ -100,5 +173,11 @@ module.exports = {
     bomInsert,
     bomDel,
     prdSearch,
-    matSearch
+    matSearch,
+    procFlowByProd,
+    procCd,
+    insertProcFlow,
+    deleteProcFlow,
+    selectPrd,
+    selectMatByProc
 };
