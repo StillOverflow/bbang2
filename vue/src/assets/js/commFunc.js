@@ -1,5 +1,5 @@
 export default {
-  // 날짜 포맷팅용 전역 함수 (value 있으면 해당 날짜를, 없으면 오늘 날짜를 반환)
+  // 단순 날짜 포맷팅용 전역 함수 (value 있으면 해당 날짜를, 없으면 오늘 날짜를 반환)
   getMyDay(value){
     let date = value == null ? new Date() : new Date(value);
     
@@ -10,14 +10,14 @@ export default {
     return year + '-' + month + '-' + day;
   },
 
-  // 숫자 포맷팅용 전역 함수1 (1 => 01, 2 => 02 형식으로 반환)
+  // 두 자리 숫자 포맷팅용 전역 함수1 (1 => 01, 2 => 02 형식으로 반환)
   twoNum(num){
     return ('0' + num).slice(-2);
   },
 
   // 날짜 포맷 변환 ag-grid 적용 가능 [S]
   dateFormatter(params) { //여기서 ag grid에 date형식을 보냄
-    let value = params.value;
+    let value = params.value; // getMyDay() 와의 차이점!
     let format = 'yyyy-MM-dd';
     let date = value == null ? new Date() : new Date(value);
 
