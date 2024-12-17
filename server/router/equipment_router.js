@@ -27,7 +27,7 @@ router.get('/equip/:no', async (req, res) => {
 });
 
 // 설비등록
-router.post('/equip/all', async (req, res) => {
+router.post('/equip', async (req, res) => {
   let eqInfo = req.body;
   let result = await equipmentService.insertEq(eqInfo);
   res.send(result);

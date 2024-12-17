@@ -2,10 +2,11 @@
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
+
       <div
         class="card-header bg-light d-flex justify-content-center align-items-center"
       >
-        <div class="d-flex align-items-center gap-2 w-20">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="input-group">
             <input
               id="eqp_cd"
@@ -14,11 +15,13 @@
               class="form-control"
               style="height: 40px"
               v-model="selectedEqp"
+              @click="modalOpen"
             />
             <button class="btn btn-secondary" @click="modalOpen">조회</button>
           </div>
         </div>
       </div>
+
       <div class="card-body">
         <div class="row">
           <!-- 이미지 -->
@@ -97,9 +100,10 @@
             </div>
           </div>
         </div>
+
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success me-2" @click="registerEquipment">
+          <button class="btn btn-success me-2" @click="equipInsert">
             등록
           </button>
           <button class="btn btn-danger" @click="resetForm">초기화</button>
@@ -108,37 +112,43 @@
     </div>
   </div>
 
-  <Layout :modalCheck="isModal">
-    <template v-slot:header>
-      <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-      <h5 class="modal-title">설비 코드 검색</h5>
-      <button type="button" aria-label="Close" class="close" @click="modalOpen">
-        ×
-      </button>
-    </template>
-    <template v-slot:default>
-      <ag-grid-vue
-        class="ag-theme-alpine"
-        style="width: 100%; height: 400px"
-        :columnDefs="equipDefs"
-        :rowData="equipData"
-        :pagination="true"
-        @rowClicked="modalClicked"
-        @grid-ready="gridFit"
-        overlayNoRowsTemplate="등록된 설비가 없습니다."
-      >
-      </ag-grid-vue>
-    </template>
-    <template v-slot:footer>
-      <button type="button" class="btn btn-secondary" @click="modalOpen">
-        Cancel
-      </button>
-      <button type="button" class="btn btn-primary" @click="modalOpen">
-        OK
-      </button>
-    </template>
-  </Layout>
+  <!--모달-->
+  <Transition name="fade">
+    <Layout :modalCheck="isModal">
+      <template v-slot:header>
+        <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+        <h5 class="modal-title">설비 코드 검색</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalOpen">
+          ×
+        </button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue
+          class="ag-theme-alpine"
+          style="width: 100%; height: 400px"
+          :columnDefs="equipDefs"
+          :rowData="equipData"
+          :pagination="true"
+          @rowClicked="modalClicked"
+          @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 설비가 없습니다."
+        >
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type="button" class="btn btn-secondary" @click="modalOpen">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" @click="modalOpen">
+          OK
+        </button>
+      </template>
+    </Layout>
+  </Transition>
+
 </template>
+
+
 
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
@@ -147,7 +157,7 @@ import Layout from '../components/modalLayout.vue';
 
 export default {
   components: { AgGridVue, Layout },
-  name: 'EquipmentRegister',
+  name: 'EquipmentMgmt',
   data() {
     return {
       selectedEqp: '',
@@ -203,7 +213,7 @@ export default {
         },
         { label: '설비명 *', value: 'eqp_nm', type: 'text' },
         { label: '모델명 *', value: 'model', type: 'text' },
-        { label: '구매일자', value: 'pur_dt', type: 'date' },
+        { label: '구매일자', value: 'pur_dt', type: 'date'},
         { label: '구매업체', value: 'pur_act', type: 'text' },
         { label: '제조업체', value: 'mfg_act', type: 'text' },
         { label: '교체주기 (년)', value: 'repl_cycle', type: 'number' },
@@ -256,6 +266,9 @@ export default {
       let result = await axios
         .get(`api/equip/${eqp_cd}`)
         .catch((err) => console.log(err));
+        if (result.data.pur_dt) {
+    result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 날짜 변환
+  }
       this.equipmentData = result.data;
     },
 
@@ -268,17 +281,35 @@ export default {
     },
 
     // 등록 기능
-    async registerEquipment() {
-      const formData = new FormData();
-      formData.append('file', this.selectedFile);
-      formData.append('equipmentData', JSON.stringify(this.equipmentData));
+    async equipInsert() {
+      let obj = {
+        img_path: this.equipmentData.img_path,
+        eqp_type: this.equipmentData.eqp_type,
+        eqp_nm: this.equipmentData.eqp_nm,
+        model: this.equipmentData.model,
+        pur_dt: this.equipmentData.pur_dt.split('T')[0],
+        pur_act: this.equipmentData.pur_act,
+        mfg_act: this.equipmentData.mfg_act,
+        repl_cycle: this.equipmentData.repl_cycle,
+        insp_cycle: this.equipmentData.insp_cycle,
+        id: this.equipmentData.id,
+        opt_temp: this.equipmentData.opt_temp,
+        opt_humid:this.equipmentData.opt_humid,
+        opt_rpm: this.equipmentData.opt_rpm,
+        opt_speed: this.equipmentData.opt_speed,
+        opt_power: this.equipmentData.opt_power,
+        uph: this.equipmentData.uph,
+        status: this.equipmentData.status,
+        is_use: this.equipmentData.is_use,
+        create_dt: this.create_dt
+      }
 
-      try {
-        const response = await axios.post('/api/equip/all', formData);
-        console.log(response.data);
-      } catch (error) {
-        console.error('등록 실패:', error);
-        alert('등록 중 오류가 발생했습니다.');
+      let result = await axios.post("/api/equip", obj)
+      .catch(err => console.log(err));
+      let addRes = result.data;
+      if (addRes.insertedId  > 0){
+        alert('등록되었습니다.');
+        this.equipInfo.no = addRes.insertedId;
       }
     },
     // 초기화
@@ -288,16 +319,17 @@ export default {
       });
     },
   },
+  
   created() {
     this.getEquipList();
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 관리' });
 
-    //this.getCondition('QT', 'radio');
+    // 공통코드가 EQ(설비구분)일 때
     this.getComm('EQ')
       .then((result) => {
         const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
-        console.log('설비 구분 공통 코드명:', commDtlNames);
+        console.log('공통 코드명:', commDtlNames);
 
         //selectOptions에 담아 select 박스에 활용
         this.leftFields.find(
@@ -308,7 +340,8 @@ export default {
         }));
       })
       .catch((err) => console.log(err));
-
+    
+    // 공통코드가 EU(설비상태)일 때
     this.getComm('EU')
       .then((result) => {
         const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
@@ -324,6 +357,7 @@ export default {
       })
       .catch((err) => console.log(err));
 
+    // 공통코드가 EI(점검구분)일 때 
     this.getComm('EI')
       .then((result) => {
         const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
@@ -339,6 +373,7 @@ export default {
       })
       .catch((err) => console.log(err));
   },
+
   watch: {
     // 감시자
     selectedEqp() {
@@ -351,6 +386,30 @@ export default {
 </script>
 
 <style scoped>
+.fade-enter-from{
+  /* opacity: 0; */
+  transform: translateY(-1000px);
+
+}
+.fade-enter-active{
+  transition: all 0.5s;
+}
+.fade-enter-to{
+  /* opacity: 1; */
+  transform: translateY(0px);
+}
+
+
+.fade-leave-from{
+  opacity: 1;
+}
+.fade-leave-active{
+  transition: all 0.7s;
+}
+.fade-leave-to{
+  opacity: 0;
+}
+
 .modal-container {
   width: 700px;
 }
@@ -372,9 +431,6 @@ button {
   width: 100%;
 }
 
-.input-group {
-  max-width: 500px;
-}
 
 @media (max-width: 992px) {
   .form-control .form-select .custom-width {

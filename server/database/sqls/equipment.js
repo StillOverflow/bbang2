@@ -23,9 +23,7 @@ const equipInfo = `SELECT eqp_type,
                           opt_power,
                           uph,
                           status,
-                          is_use,
-                          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = status) status,
-
+                          is_use
 FROM equipment
 WHERE eqp_cd = ?
 `;
