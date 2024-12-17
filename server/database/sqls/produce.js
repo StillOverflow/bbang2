@@ -104,6 +104,7 @@ const instProcMtList =
 		"group" AS CATE,
 		PROC_FLOW_CD, 
 		"" AS MAT_CD, 
+        "" AS MAT_QTY,
 		p.PROC_NM as NAME,
 		0 AS MAT_QTY_T
 	FROM 
@@ -115,6 +116,7 @@ UNION
 		"data" AS CATE,
 		PROC_FLOW_CD,
 		m.MAT_CD AS MAT_CD, 
+        m.MAT_QTY,
 		(SELECT mat_nm FROM material WHERE mat_cd=pm.MAT_CD) AS MAT_NM,
 		(SELECT SUM(MAT_QTY) FROM material_in WHERE mat_cd=m.mat_cd) AS MAT_QTY_T
 	FROM 

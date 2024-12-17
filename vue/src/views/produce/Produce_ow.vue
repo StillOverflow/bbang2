@@ -13,7 +13,7 @@
         <label for="example-text-input" class="form-control-label">생산계획코드</label>
         <div class="row">
           <div class="col-6 col-xxl-2">
-            <input class="form-control" type="text" value="" id="plan_cd"  @click="modalOpen"/>
+            <input class="form-control" type="text" value="" v-model="plan_cd" @click="modalOpen"/>
           </div>
           <div class="col-4 text-end text-md-start">
             <button class="btn btn-primary me-3" @click="modalOpen">검색</button>
@@ -35,8 +35,8 @@
                 <thead class="table-secondary">
                   <tr>
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 제품코드 </th>
-                    <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 제품명 </th>
-                    <th class="text-center text-uppercase text-ser opacity-7"> 생산수량</th>
+                    <th class="text-center text-uppercase text-ser opacity-7"> 제품명 </th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="20%"> 생산수량</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -49,9 +49,10 @@
                   </template>
 
                   <tr v-else>
-                    <td colspan="3" align="center">
-                        현재 데이터가 존재하지 않습니다.
-                    </td>   
+                    <td colspan="3">
+                      <div class="list-nodata">생산계획코드를 검색해주세요.</div>
+
+                    </td>
                   </tr>
                 </tbody>
               </table>
@@ -68,23 +69,24 @@
                   <tr>
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 사용유무 </th>
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 자재명 </th>
-                    <th class="text-center text-uppercase text-ser opacity-7"> 자재코드</th>
+                    <th class="text-center text-uppercase text-ser opacity-7">자재코드</th>
                     <th class="text-center text-uppercase text-ser opacity-7">필요수량(개당)</th>
                     <th class="text-center text-uppercase text-ser opacity-7">현재고</th>
+                    <th class="text-center text-uppercase text-ser opacity-7"></th>
                   </tr>
                 </thead>
                 <tbody class="text-center">
                   <template :key="i" v-for="(Mat, i) in planMatList" >
                       <tr v-if="Mat.CATE == 'group'">
                         <td>
-                          <div class="form-check col-4 col-md-2">
-                            <input class="form-check-input" type="checkbox" v-model="selected_check" :value="Mat.PROC_FLOW_CD" :id="'ck' + Mat.PROC_FLOW_CD"
-                             >
-                            <label class="form-check-label" :for="'ck' + Mat.PROC_FLOW_CD">{{ Mat.NAME }}</label>
+                          <div class="form-check">
+                            <input class="form-check-input" type="checkbox" v-model="selected_check" :value="Mat.PROC_FLOW_CD" :id="'ck' + Mat.PROC_FLOW_CD">
+                            {{ Mat.NAME }}
                           </div>
+                          
                         </td>
-                        <td colspan="3"></td>
-                        <td><button @click="matShow(Mat.PROC_FLOW_CD)" v-bind:id="Mat.PROC_FLOW_CD + '_btn'" >▼</button></td>
+                        <td colspan="4"></td>
+                        <td><button @click="matShow(Mat.PROC_FLOW_CD)" v-bind:id="Mat.PROC_FLOW_CD + '_btn'" class="badge rounded-pill text-bg-secondary">▼</button></td>
                       </tr>
 
                       <tr v-else v-bind:class="Mat.PROC_FLOW_CD" class="dnone">
@@ -92,13 +94,14 @@
                         <td>
                           <div class="form-check col-4 col-md-2">
                             <input class="form-check-input" type="checkbox" v-model="selected_mat" :value="Mat.MAT_CD" :id="'mt' + Mat.MAT_CD"
-                             >
-                            <label class="form-check-label" :for="'mt' + Mat.MAT_CD">{{ Mat.NAME }}</label>
+                            >
+                            {{ Mat.NAME }}
                           </div>
                         </td>
                         <td>{{ Mat.MAT_CD }}</td>
-                        <td>{{ Mat.NAME }}</td>
-                        <td>{{ Mat.MAT_QTY_T }}</td>
+                        <td>{{ Number(Mat.MAT_QTY).toLocaleString() }}</td>
+                        <td>{{ Number(Mat.MAT_QTY_T).toLocaleString() }}</td>
+                        <td></td>
                       </tr>
                   </template>
                 </tbody>
@@ -211,7 +214,7 @@ export default {
     },
     modalClicked(params) {
       this.getPlanDtlList(params.data.prod_plan_cd);
-      document.getElementById('plan_cd').value = params.data.prod_plan_cd;
+      this.plan_cd= params.data.prod_plan_cd;
       this.isModal = !this.isModal;
     },
     
