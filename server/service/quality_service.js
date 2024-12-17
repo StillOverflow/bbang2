@@ -18,9 +18,17 @@ const findTestList = async (search) => { // 조건을 받아 목록 조회
 
 
 // 품질기준
-const stdInsert = async (obj) => { 
-    let result = await mariadb.query('stdInsert', obj);
-    if(result.affectedRows == 1){
+const stdInsert = async (values) => { 
+    let sample = values[0];
+    let arr = [
+        sample.qu_std_cd,
+        sample.target_type,
+        sample.target_cd
+    ];
+
+    let header_res = await mariadb.query('stdInsert', arr);
+    let dtl_res = await mariadb.query('stdDtlInsert', values); // 배열 그대로 넣기
+    if(header_res.affectedRows > 0 & dtl_res.affectedRows > 0){
         return {"result" : "success"};
     } else {
         return {"result" : "fail"};
