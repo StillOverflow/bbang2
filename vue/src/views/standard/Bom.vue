@@ -22,6 +22,7 @@
           :rowData="productData"
           :pagination="true"
           :paginationAutoPageSize="true"
+          :cellValueChanged ="cellValueChanged"
           @rowClicked="rowClicked"> <!--행선택시 bom데이터 조회-->
         </ag-grid-vue>
       </div>
@@ -93,7 +94,7 @@ export default {
       productDefs: [
         { headerName: '제품코드', field: 'prd_cd', sortable: true},
         { headerName: '제품명', field: 'prd_nm', sortable: true},
-        { headerName: '사용여부', field: 'usage_sta'},
+        { headerName: '사용여부', field: 'usage_sta' ,cellEditor: 'agSelectCellEditor'},
         { headerName: '선택', field: 'button',},
       ],
       // 제품 테이블 데이터
@@ -111,7 +112,10 @@ export default {
         { headerName: '자재명', field: 'mat_nm', sortable: true},
         { headerName: '구분', field: 'type', sortable: true},
         { headerName: '단위', field: 'unit', sortable: true, cellEditor: 'agSelectCellEditor',
-          cellEditorParams: { values: this.commData }, 
+          cellEditorParams: { 
+            values : []
+          }, 
+          
           editable: true
         },
         { headerName: 'BOM양', field: 'usage', editable: true, enableCellChangeFlash: true},
@@ -151,7 +155,16 @@ export default {
     async bringCommData(){
       let result = await axios.get(`/api/standard/commList/${'UN'}`);
       this.commData = result.data;
-      console.log(this.commData);
+      //console.log("commData", this.commData)
+      let unitDataList = []; // 정의 
+
+      this.commData.forEach((data) => {
+        //console.log("data => ", );
+        unitDataList.push(data.comm_dtl_nm) //[,,,]
+      });
+      
+      let idx = this.materialDefs.findIndex( obj => obj.field == 'unit'); // => 숫자
+      this.materialDefs[idx].cellEditorParams.values = unitDataList; // materialDefs[idx] => materialDefs[3]
     },
     //제품검색기능
     searchPrd(){
@@ -207,7 +220,6 @@ export default {
     },
     onBomGridReady(params) {
       this.bomGridApi = params.api; // BOM 테이블 gridApi
-      console.log("BOM Grid API:", this.bomGridApi);
     },
   //bom에 선택한 자재데이터 추가
   async InsertBomData() {
@@ -215,29 +227,44 @@ export default {
       const selectedNodes = this.materialGridApi.getSelectedNodes();
       const selectedMat = selectedNodes.map( node => node.data );
 
+      for(const dup of selectedMat){
+        if(this.bomData.some(obj => obj.mat_cd == dup.mat_cd)){
+          alert('이미 자재 존재');
+          return;
+        }
+      }
       const bomMatData = selectedMat.map(material=>({
         prd_cd: this.selectBomData,
         mat_cd: material.mat_cd,
         unit: material.unit,
-        usage: parseFloat(material.bom_quantity) || 0
+        usage: parseFloat(material.usage) || 0
       }));
 
-      console.log("전송할 BOM 데이터:", bomMatData);
 
-      let result = await axios.post(`/api/standard/bom`, bomMatData); 
-      console.log("서버 응답 데이터:", result.data);   
-                          
+      let result = await axios.post(`/api/standard/bom`, bomMatData)  
+                              .catch(err => console.log(err));
       let addRes = result.data;
+      console.log(result);
+      if(addRes.result == 'success'){//그리드 실시간 반영을 위한 데이터
+        const selectBom = selectedMat.map(material=>({
+          prd_cd: this.selectBomData,
+          mat_cd: material.mat_cd,
+          unit: material.unit,
+          usage: parseFloat(material.usage) || 0,
+          mat_nm: material.mat_nm,
+          price: material.price||0
+        }));
 
-      if(addRes.result == 'success'){
         this.bomGridApi.applyTransaction({
-          add: bomMatData
-        })
+          add: selectBom,
+        });
+
+        console.log("BOM 테이블에 추가된 데이터:", bomMatData);
         alert('추가성공');
         
       }} catch (error) {
           console.error("서버 요청 중 오류 발생:", error);
-          alert(`오류 발생: ${error.response?.data?.message || error.message}`);
+          alert(`오류 발생`);
       }
     
     },
