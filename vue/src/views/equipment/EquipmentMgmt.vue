@@ -13,6 +13,7 @@
               placeholder="설비코드"
               class="form-control"
               style="height: 40px"
+              v-model="selectedEqp"
             />
             <button class="btn btn-secondary" @click="modalOpen">조회</button>
           </div>
@@ -35,7 +36,7 @@
           <!-- 왼쪽 입력란 -->
           <div class="col-lg-5 col-md-5 col-sm-12">
             <div v-for="(field, index) in leftFields" :key="index" class="mb-2">
-              <template v-if="field.value == 'eqpType'">
+              <template v-if="field.value == 'eqp_type'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <select
                   class="form-select custom-width"
@@ -69,7 +70,7 @@
               class="mb-2"
             >
               <template
-                v-if="field.value == 'status' || field.value == 'isUse'"
+                v-if="field.value == 'status' || field.value == 'is_use'"
               >
                 <label class="form-control-label">{{ field.label }}</label>
                 <select
@@ -149,30 +150,31 @@ export default {
   name: 'EquipmentRegister',
   data() {
     return {
+      selectedEqp: '',
       imagePreview: require('@/assets/img/blank_img.png'), // 이미지 미리보기 경로
       selectedFile: null, // 선택한 파일
       equipInfo: {},
       equipmentData: {
         //이미지 경로
-        IMG_PATH: '',
+        img_path: '',
         // 입력 데이터 값
-        EQP_TYPE: '',
-        EQP_NM: '',
-        MODEL: '',
-        PUR_DT: '',
-        PUR_ACT: '',
-        MFG_ACT: '',
-        REPL_CYCLE: '',
-        INSP_CYCLE: '',
-        ID: '',
-        OPT_TEMP: '',
-        OPT_HUMID: '',
-        OPT_RPM: '',
-        OPT_SPEED: '',
-        OPT_POWER: '',
-        UPH: '',
-        STATUS: '',
-        IS_USE: '',
+        eqp_type: '',
+        eqp_nm: '',
+        model: '',
+        pur_dt: '',
+        pur_act: '',
+        mfg_act: '',
+        repl_cycle: '',
+        insp_cycle: '',
+        id: '',
+        opt_temp: '',
+        opt_humid: '',
+        opt_rpm: '',
+        opt_speed: '',
+        opt_power: '',
+        uph: '',
+        status: '',
+        is_use: '',
       },
 
       equipDefs: [
@@ -195,27 +197,28 @@ export default {
       leftFields: [
         {
           label: '설비구분 *',
+          value: 'eqp_type',
           type: 'text',
           selectOptions: [],
         },
-        { label: '설비명 *', value: 'eqpName', type: 'text' },
+        { label: '설비명 *', value: 'eqp_nm', type: 'text' },
         { label: '모델명 *', value: 'model', type: 'text' },
-        { label: '구매일자', value: 'purDate', type: 'date' },
-        { label: '구매업체', value: 'purAct', type: 'text' },
-        { label: '제조업체', value: 'mfgAct', type: 'text' },
-        { label: '교체주기 (년)', value: 'replCycle', type: 'number' },
-        { label: '점검주기 (일)', value: 'inspCycle', type: 'number' },
-        { label: '설비담당자', value: 'eqpMgr', type: 'text' },
+        { label: '구매일자', value: 'pur_dt', type: 'date' },
+        { label: '구매업체', value: 'pur_act', type: 'text' },
+        { label: '제조업체', value: 'mfg_act', type: 'text' },
+        { label: '교체주기 (년)', value: 'repl_cycle', type: 'number' },
+        { label: '점검주기 (일)', value: 'insp_cycle', type: 'number' },
+        { label: '설비담당자', value: 'id', type: 'text' },
       ],
       rightFields: [
-        { label: '적정 온도', value: 'optTemp', type: 'text' },
-        { label: '적정 습도', value: 'optHumid', type: 'text' },
-        { label: '적정 RPM', value: 'optRpm', type: 'text' },
-        { label: '적정 속도', value: 'optSpeed', type: 'text' },
-        { label: '적정 전력량', value: 'optPower', type: 'text' },
+        { label: '적정 온도', value: 'opt_temp', type: 'text' },
+        { label: '적정 습도', value: 'opt_humid', type: 'text' },
+        { label: '적정 RPM', value: 'opt_rpm', type: 'text' },
+        { label: '적정 속도', value: 'opt_speed', type: 'text' },
+        { label: '적정 전력량', value: 'opt_power', type: 'text' },
         { label: 'UPH', value: 'uph', type: 'text' },
         { label: '점검구분', value: 'status', type: 'text', selectOptions: [] },
-        { label: '설비상태', value: 'isUse', type: 'text', selectOptions: [] },
+        { label: '설비상태', value: 'is_use', type: 'text', selectOptions: [] },
       ],
 
       isModal: false,
@@ -227,7 +230,7 @@ export default {
     },
     modalClicked(params) {
       this.getEquipInfo(params.data.EQP_CD);
-      document.getElementById('eqp_cd').value = params.data.EQP_CD;
+      this.selectedEqp = params.data.EQP_CD;
       this.isModal = !this.isModal;
     },
 
@@ -253,7 +256,7 @@ export default {
       let result = await axios
         .get(`api/equip/${eqp_cd}`)
         .catch((err) => console.log(err));
-      this.boardInfo = result.data;
+      this.equipmentData = result.data;
     },
 
     // 설비 전체 조회
@@ -298,7 +301,7 @@ export default {
 
         //selectOptions에 담아 select 박스에 활용
         this.leftFields.find(
-          (field) => field.value === 'eqpType'
+          (field) => field.value === 'eqp_type'
         ).selectOptions = result.map((item) => ({
           item: item.comm_dtl_cd,
           name: item.comm_dtl_nm,
@@ -313,7 +316,7 @@ export default {
 
         //selectOptions에 담아 select 박스에 활용
         this.rightFields.find(
-          (field) => field.value === 'isUse'
+          (field) => field.value === 'is_use'
         ).selectOptions = result.map((item) => ({
           item: item.comm_dtl_cd,
           name: item.comm_dtl_nm,
@@ -335,6 +338,14 @@ export default {
         }));
       })
       .catch((err) => console.log(err));
+  },
+  watch: {
+    // 감시자
+    selectedEqp() {
+      // 기존 설비 코드를 선택한 경우 해당 설비를 기준으로 단건조회
+      // 해당 설비 : this.selectedEqp
+      this.getEquipInfo(this.selectedEqp);
+    },
   },
 };
 </script>
