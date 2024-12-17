@@ -53,4 +53,11 @@ router.get('/inst/:no/flow', async (req,res)=>{
     res.send(info);
   })
 
+ //제품 공정별 자재재 조회
+router.get('/inst/:no/mat', async (req,res)=>{
+    let prodNo = req.params.no;
+    let info = await produceService.findInstMatFlow(prodNo);
+    res.send(info);
+  })
+
 module.exports = router;

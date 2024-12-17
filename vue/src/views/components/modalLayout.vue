@@ -32,6 +32,9 @@ export default {
     modalCheck : Boolean
   },
   methods: {
+    gridFit(params) { // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
+      params.api.sizeColumnsToFit();
+    },
     // modalOpen() {
     //   this.modalCheck = !this.modalCheck
     // }
@@ -56,7 +59,6 @@ export default {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 700px;
   background: #fff;
   border-radius: 10px;
   box-sizing: border-box;

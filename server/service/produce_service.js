@@ -51,6 +51,12 @@ const findInstFlow = async (no)=>{
   return list;
 }
 
+//제품 공정별 자재재 조회
+const findInstMatFlow = async (no)=>{
+  let list = await mariadb.query('instProcMtList', no);
+  return list;
+}
+
 module.exports = {
   findAllPlan,
   findPlanNo,
@@ -58,5 +64,6 @@ module.exports = {
   findAllInst,
   findInstNo,
   instInsert,  
-  findInstFlow
+  findInstFlow,
+  findInstMatFlow
 };
