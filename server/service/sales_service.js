@@ -36,13 +36,37 @@ const searchOrder = async (search, std, etd) => {
 
 //거래처 조회(모달)
 const listAccMo = async() => {
-  let list = await mariadb.query('moAccList');
-  return list;
+    let list = await mariadb.query('moAccList');
+    return list;
 };
+//거래처 단건조회(모달)-필요 없어짐...
+// const infoAccMo = async(no) => {
+//     let list = await mariadb.query('moAccInfo', no);
+//     return list;
+// };
+//담당자 조회(모달)
+const listMemMo = async() => {
+    let list = await mariadb.query('moMemList');
+    return list;
+};
+//담당자 단건조회(모달)-필요 없어짐...
+// const infoMemMo = async(no) => {
+//     let list = await mariadb.query('moMemInfo', no);
+//     return list;
+// };
+//제품 조회(모달)
+const listProMo = async() => {
+    let list = await mariadb.query('moProList');
+    return list;
+}
 
 
 module.exports = {
      listOrder,
      searchOrder,
      listAccMo,
+     listMemMo,
+     listProMo,
+    // infoAccMo,
+    // infoMemMo,
 };

@@ -52,21 +52,21 @@ export default {
     data() {
         return {
             columnDefs: [
-                {field: 'order_cd', headName: '주문코드'},
-                {field: 'act_cd', headName: '거래처코드'},
-                {field: 'act_nm', headName: '거래처이름'},
-                {field: 'name', headName: '담당자'},
+                {field: 'order_cd', headerName: '주문코드'},
+                {field: 'act_cd', headerName: '거래처코드'},
+                {field: 'act_nm', headerName: '거래처이름'},
+                {field: 'name', headerName: '담당자'},
                 {
                     field: 'order_dt',
-                    headName: '주문일자',
+                    headerName: '주문일자',
                     valueFormatter: this.$comm.dateFormatter // 날짜 포맷터 추가
                 },
                 {
                     field: 'due_dt',
-                    headName: '납기일자',
+                    headerName: '납기일자',
                     valueFormatter: this.$comm.dateFormatter 
                 },
-                {field: 'status', headName: '현재진행상태'},
+                {field: 'status', headerName: '현재진행상태'},
             ],
             rowData: [],
             //거래처,날짜 검색어
