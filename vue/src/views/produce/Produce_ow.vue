@@ -13,7 +13,7 @@
         <label for="example-text-input" class="form-control-label">생산계획코드</label>
         <div class="row">
           <div class="col-6 col-xxl-2">
-            <input class="form-control" type="text" value="" id="plan_cd"  @click="modalOpen"/>
+            <input class="form-control" type="text" value="" v-model="plan_cd" @click="modalOpen"/>
           </div>
           <div class="col-4 text-end text-md-start">
             <button class="btn btn-primary me-3" @click="modalOpen">검색</button>
@@ -81,10 +81,9 @@
                         <td>
                           <div class="form-check">
                             <input class="form-check-input" type="checkbox" v-model="selected_check" :value="Mat.PROC_FLOW_CD" :id="'ck' + Mat.PROC_FLOW_CD">
-                            <label class="form-check-label" :for="'ck' + Mat.PROC_FLOW_CD">
-                              {{ Mat.NAME }}
-                            </label>
+                            {{ Mat.NAME }}
                           </div>
+                          
                         </td>
                         <td colspan="4"></td>
                         <td><button @click="matShow(Mat.PROC_FLOW_CD)" v-bind:id="Mat.PROC_FLOW_CD + '_btn'" class="badge rounded-pill text-bg-secondary">▼</button></td>
@@ -96,12 +95,12 @@
                           <div class="form-check col-4 col-md-2">
                             <input class="form-check-input" type="checkbox" v-model="selected_mat" :value="Mat.MAT_CD" :id="'mt' + Mat.MAT_CD"
                             >
-                            <label class="form-check-label" :for="'mt' + Mat.MAT_CD">{{ Mat.NAME }}</label>
+                            {{ Mat.NAME }}
                           </div>
                         </td>
                         <td>{{ Mat.MAT_CD }}</td>
-                        <td>{{ Mat.MAT_QTY }}</td>
-                        <td>{{ Mat.MAT_QTY_T }}</td>
+                        <td>{{ Number(Mat.MAT_QTY).toLocaleString() }}</td>
+                        <td>{{ Number(Mat.MAT_QTY_T).toLocaleString() }}</td>
                         <td></td>
                       </tr>
                   </template>
@@ -215,7 +214,7 @@ export default {
     },
     modalClicked(params) {
       this.getPlanDtlList(params.data.prod_plan_cd);
-      document.getElementById('plan_cd').value = params.data.prod_plan_cd;
+      this.plan_cd= params.data.prod_plan_cd;
       this.isModal = !this.isModal;
     },
     
