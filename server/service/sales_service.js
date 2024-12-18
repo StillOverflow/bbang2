@@ -33,6 +33,33 @@ const searchOrder = async (search, std, etd) => {
 };
 
 //주문서 등록
+const insertOrder = async (values) => {
+
+    let seq = (await mariadb.query('orderSeq'))[0].order_cd;
+
+    let samples = values[0]; // 배열로 넘긴게 첫번째가 헤드부분이고 두번째가 데테일 부분임(2개가 끝 헷갈렸음)
+    samples.seq = seq; //seq 넘기기
+    /* 원래 배열로 만들어서 넘겨서 받을려고 했는데 받는곳에서 객체로 받는거로 바꿔서 그냥 sample로 넘어감
+    let arr = [
+        samples.order_dt, 
+        samples.due_dt, 
+        samples.mem_id, 
+        samples.act_cd,
+    ];  
+    arr.push(seq);
+    */
+    
+    let order = await mariadb.query('orderInsert', samples);
+
+    let order_dtl = await mariadb.query('orderDtlInsert', [seq, values[1]]); // 배열에 디테일 부분이랑 시퀀스를 같이 넘김
+
+    if(order.affectedRows > 0 & order_dtl.affectedRows > 0){
+        return {"result" : "success"};
+    } else {
+        return {"result" : "fail"};
+    }
+
+};
 
 //거래처 조회(모달)
 const listAccMo = async() => {
@@ -64,6 +91,8 @@ const listProMo = async() => {
 module.exports = {
      listOrder,
      searchOrder,
+     insertOrder,
+
      listAccMo,
      listMemMo,
      listProMo,

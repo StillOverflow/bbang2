@@ -155,8 +155,8 @@ export default {
       >
         <li class="nav-item">
           <sidenav-item
-            to="/Produce_list"
-            :class="getRoute() === 'Produce_list' ? 'active' : ''"
+            to="/Produce_PlanList"
+            :class="getRoute() === 'Produce_PlanList' ? 'active' : ''"
             :navText="'생산계획서 조회'"
           >
           </sidenav-item>
@@ -179,8 +179,8 @@ export default {
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/Produce_ow"
-            :class="getRoute() === 'Produce_ow' ? 'active' : ''"
+            to="/Produce_InstAdd"
+            :class="getRoute() === 'Produce_InstAdd' ? 'active' : ''"
             :navText="'생산지시서 등록'"
           >
           </sidenav-item>

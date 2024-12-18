@@ -17,3 +17,26 @@
   color: #7f7f7f;
   line-height: 200px;
 }
+
+.center {  
+  display: flex;
+  justify-content: center;
+}
+
+.mlp10{margin-left : 10px;}
+.mlp30{margin-left : 30px;}
+.mlp50{margin-left : 50px;}
+
+.mrp10{margin-right : 10px;}
+.mrp30{margin-right : 30px;}
+.mrp50{margin-right : 50px;}
+
+.mtp10{margin-top : 10px;}
+.mtp30{margin-top : 30px;}
+.mtp50{margin-top : 50px;}
+
+.mbp10{margin-bottom : 10px;}
+.mbp30{margin-bottom : 30px;}
+.mbp50{margin-bottom : 50px;}
+
+.table{border: 1px solid #eee;}

@@ -48,11 +48,11 @@
                     <div class="col-6 col-lg-2"></div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">납기일자</div> 
                     <div class="col-6 col-lg-2">
-                        <input class="form-control" type="date" value="" />
+                        <input class="form-control" type="date" id="due_date" value="" />
                     </div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주문일자</div> 
                     <div class="col-6 col-lg-2">
-                        <input class="form-control" type="date" value="" />
+                        <input class="form-control" type="date" id="order_date" value="" />
                     </div>
                 </div>
             </div>
@@ -63,13 +63,19 @@
                         <button class="btn btn-primary " @click="modalOpen3">제품 조회</button>
                     </div>
                 </div>
-                <ag-grid-vue style="width:100%; height: 440px;"
+                <ag-grid-vue style="width:100%; height: 380px;"
                 class="ag-theme-alpine"
                 :columnDefs="columnDefs"
                 :rowData="rowData"
                 :gridOptions="gridOptions"
                 @grid-ready="gridFit">
                 </ag-grid-vue>
+                <div class="row">
+                    <div class="col-6 col-lg-5"></div>
+                    <div class="col-6 col-lg-1 mt-2">
+                        <button class="btn btn-primary " @click="ordInsert()">등록</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -122,8 +128,8 @@
             </ag-grid-vue>
         </template>
         <template v-slot:footer>
-            <button type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="modalOpen3">OK</button>
+            <button v-show="hidden" type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
+            <button v-show="hidden" type="button" class="btn btn-primary" @click="modalOpen3">OK</button>
         </template>
     </Layout>
 </template>
@@ -138,8 +144,26 @@ export default {
     name: 'App',
     data() {
         return {
-            columnDefs: null,
-            rowData: null,
+            columnDefs: [
+                {headerName: '제품 코드', field: 'prd_cd'},
+                {headerName: '제품 이름', field: 'prd_nm'},
+                {headerName: '주문 수량', field: 'order_qty', editable: true, cellDataType: 'number'},
+                {headerName: '비고', field: 'note', editable: true},
+                {
+                    headerName: '삭제' ,
+                    field: 'delete',
+                    cellRenderer: (params) => {
+                        const button = document.createElement('button');
+                        button.innerText = 'DELETE';
+                        button.className = 'btn btn-danger';
+                        button.addEventListener('click', () => {
+                            this.rowData = this.rowData.filter(row => row !== params.data);
+                        });
+                        return button;
+                    }
+                 },
+            ],
+            rowData: [ ],
             accDefs: [
                 {headerName: '거래처 코드', field: 'act_cd'},
                 {headerName: '거래처 명', field: 'act_nm'},
@@ -177,22 +201,6 @@ export default {
         this.getProList();
         //this.getAccInfo();
     },
-    beforeMount() {
-        this.columnDefs = [
-            { field: 'make' },
-            { field: 'model' },
-            { field: 'price' },
-            { field: 'four' },
-            { field: 'del' },
-        ];
-
-        this.rowData = [
-            { make: 'Toyota', model: 'Celica', price: 35000, four: 1, del: 'delete'},
-            { make: 'Ford', model: 'Mondeo', price: 32000, four: 2, del: 'delete'  },
-            { make: 'JoJang', model: 'Boxter', price: 72000, four: 3, del: 'delete'  },
-            { make: '왜', model: '안들어가', price: 72000, four: 4, del: 'delete'  }
-        ];
-    },
     methods: {
         modalOpen() {
             this.asModal = !this.asModal;
@@ -216,6 +224,19 @@ export default {
             document.getElementById('mem_id').value = params.data.ID;
             document.getElementById('mem_name').value = params.data.name;
             this.msModal = !this.msModal;
+        },
+        modalClicked3(params) {
+            // 선택한 제품 rowData에 추가
+            const newRowData = {
+                prd_cd: params.data.prd_cd, 
+                prd_nm: params.data.prd_nm, 
+                order_qty: '', 
+                note: '',  
+                delete: 'delete', 
+            };
+
+            this.rowData = [...this.rowData, newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
+            this.psModal = !this.psModal;
         },
         async getAccList() {
             let result = await axios.get('/api/moacc')
@@ -243,6 +264,36 @@ export default {
         //     this.MemInfo = result.data;
         // },
 
+        async ordInsert() {
+            let insertOrd = [];
+            let insertOrdDtl = [];
+
+            this.rowData.forEach((obj) => {
+                    insertOrdDtl.push({prd_cd: obj.prd_cd, 
+                    prd_nm: obj.prd_nm, 
+                    order_qty: obj.order_qty, 
+                    note: obj.note,});
+            });
+            console.log(insertOrdDtl);
+            insertOrd.push({
+                mem_id : document.getElementById('mem_id').value,
+                act_cd : document.getElementById('acc_code').value,
+                due_dt : document.getElementById('due_date').value,
+                order_dt : document.getElementById('order_date').value
+            });
+            console.log(insertOrd);
+
+            let insertOrdArr = [...insertOrd, insertOrdDtl ];   //첫번째가 헤드, 두번째가 디테일
+            console.log(insertOrdArr);
+
+            let result = await axios.post('/api/sales/ord', insertOrdArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
+                                .catch(err => console.log("axios에러",err));
+            console.log(result.data.result);
+            console.log(result.data);
+            return result;
+
+        },
+     
 
         gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
             params.api.sizeColumnsToFit();

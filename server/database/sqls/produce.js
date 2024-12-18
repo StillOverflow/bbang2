@@ -27,7 +27,7 @@ SET ? `;
 const planUpdate =
 `UPDATE prod_plan 
 SET ? 
-WHERE PROD_PLAN_CD = ?`;
+WHERE PROD_PLAN_CD IN "("?")"`;
 
 //제품조회
 const planDtlList =
@@ -99,9 +99,9 @@ SET ? `;
 
 //제품 공정별 자재 조회
 const instProcMtList =
-`
-	SELECT 
+`SELECT 
 		"group" AS CATE,
+        "" AS PRD_CD,
 		PROC_FLOW_CD, 
 		"" AS MAT_CD, 
         "" AS MAT_QTY,
@@ -114,16 +114,18 @@ const instProcMtList =
 UNION
 	SELECT 
 		"data" AS CATE,
+        "" AS PRD_CD,
 		PROC_FLOW_CD,
-		m.MAT_CD AS MAT_CD, 
-        m.MAT_QTY,
+		pm.MAT_CD AS MAT_CD, 
+      pm.MAT_QTY,
 		(SELECT mat_nm FROM material WHERE mat_cd=pm.MAT_CD) AS MAT_NM,
-		(SELECT SUM(MAT_QTY) FROM material_in WHERE mat_cd=m.mat_cd) AS MAT_QTY_T
+		m.MAT_QTY_T
 	FROM 
-		proc_flow_mtl pm JOIN material_in m 
+		proc_flow_mtl pm JOIN (SELECT MAT_CD, SUM(MAT_QTY) AS MAT_QTY_T from material_in GROUP BY MAT_CD) m 
 		ON pm.MAT_CD=m.MAT_CD 
 	WHERE proc_flow_cd=PROC_FLOW_CD
-order BY proc_flow_cd, field (cate, 'group', 'data')`;
+order BY proc_flow_cd, field (cate, 'group', 'data');
+`;
 
 //제품 공정별 자재 등록
 const instProcMtInsert =

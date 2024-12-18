@@ -5,7 +5,7 @@
       <div
         class="card-header bg-light d-flex justify-content-center align-items-center"
       >
-        <div class="d-flex align-items-center gap-2 w-20">
+        <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="input-group">
             <input
               id="eqp_cd"
@@ -13,17 +13,25 @@
               placeholder="설비코드"
               class="form-control"
               style="height: 40px"
+              v-model="selectedEqp"
+              @click="modalOpen"
             />
             <button class="btn btn-secondary" @click="modalOpen">조회</button>
           </div>
         </div>
       </div>
+
       <div class="card-body">
         <div class="row">
           <!-- 이미지 -->
           <div class="col-lg-2 col-md-2 col-sm-12 text-center">
+            <!-- 프록시를 문자열로 박아넣음 배포시 replace로 삭제하기 -->
             <img
-              :src="previewImage"
+              :src="
+                equipmentData.img_path != ''
+                  ? '/api/' + equipmentData.img_path
+                  : previewImage
+              "
               alt="설비 이미지"
               class="mb-3 imgBSJ"
               width="230"
@@ -35,11 +43,12 @@
           <!-- 왼쪽 입력란 -->
           <div class="col-lg-5 col-md-5 col-sm-12">
             <div v-for="(field, index) in leftFields" :key="index" class="mb-2">
-              <template v-if="field.value == 'eqpType'">
+              <template v-if="field.value == 'eqp_type'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <select
                   class="form-select custom-width"
                   v-model="equipmentData[field.value]"
+                  :disabled="isEditMode"
                 >
                   <option
                     v-for="(opt, idx) in field.selectOptions"
@@ -56,6 +65,7 @@
                   v-model="equipmentData[field.value]"
                   :type="field.type"
                   class="form-control custom-width"
+                  :disabled="isEditMode"
                 />
               </template>
             </div>
@@ -68,13 +78,12 @@
               :key="index"
               class="mb-2"
             >
-              <template
-                v-if="field.value == 'status' || field.value == 'isUse'"
-              >
+              <template v-if="field.value == 'is_use'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <select
                   class="form-select custom-width"
                   v-model="equipmentData[field.value]"
+                  :disabled="isEditMode"
                 >
                   <option
                     v-for="(opt, idx) in field.selectOptions"
@@ -91,14 +100,27 @@
                   v-model="equipmentData[field.value]"
                   :type="field.type"
                   class="form-control custom-width"
+                  :disabled="isEditMode"
                 />
               </template>
             </div>
           </div>
         </div>
+
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success me-2" @click="registerEquipment">
+          <button
+            v-if="isEditMode"
+            class="btn btn-primary me-2"
+            @click="enableEditMode"
+          >
+            수정
+          </button>
+          <button
+            v-if="!isEditMode"
+            class="btn btn-success me-2"
+            @click="equipInsert"
+          >
             등록
           </button>
           <button class="btn btn-danger" @click="resetForm">초기화</button>
@@ -107,36 +129,44 @@
     </div>
   </div>
 
-  <Layout :modalCheck="isModal">
-    <template v-slot:header>
-      <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-      <h5 class="modal-title">설비 코드 검색</h5>
-      <button type="button" aria-label="Close" class="close" @click="modalOpen">
-        ×
-      </button>
-    </template>
-    <template v-slot:default>
-      <ag-grid-vue
-        class="ag-theme-alpine"
-        style="width: 100%; height: 400px"
-        :columnDefs="equipDefs"
-        :rowData="equipData"
-        :pagination="true"
-        @rowClicked="modalClicked"
-        @grid-ready="gridFit"
-        overlayNoRowsTemplate="등록된 설비가 없습니다."
-      >
-      </ag-grid-vue>
-    </template>
-    <template v-slot:footer>
-      <button type="button" class="btn btn-secondary" @click="modalOpen">
-        Cancel
-      </button>
-      <button type="button" class="btn btn-primary" @click="modalOpen">
-        OK
-      </button>
-    </template>
-  </Layout>
+  <!--모달-->
+  <Transition name="fade">
+    <Layout :modalCheck="isModal">
+      <template v-slot:header>
+        <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+        <h5 class="modal-title">설비 코드 검색</h5>
+        <button
+          type="button"
+          aria-label="Close"
+          class="close"
+          @click="modalOpen"
+        >
+          ×
+        </button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue
+          class="ag-theme-alpine"
+          style="width: 100%; height: 400px"
+          :columnDefs="equipDefs"
+          :rowData="equipData"
+          :pagination="true"
+          @rowClicked="modalClicked"
+          @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 설비가 없습니다."
+        >
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type="button" class="btn btn-secondary" @click="modalOpen">
+          Cancel
+        </button>
+        <button type="button" class="btn btn-primary" @click="modalOpen">
+          OK
+        </button>
+      </template>
+    </Layout>
+  </Transition>
 </template>
 
 <script>
@@ -146,48 +176,49 @@ import Layout from '../components/modalLayout.vue';
 
 export default {
   components: { AgGridVue, Layout },
-  name: 'EquipmentRegister',
+  name: 'EquipmentMgmt',
   data() {
     return {
-      imagePreview: require('@/assets/img/blank_img.png'), // 이미지 미리보기 경로
+      isEditMode: false,
+      selectedEqp: '',
+      previewImage: require('@/assets/img/blank_img.png'), // 이미지 미리보기 경로
       selectedFile: null, // 선택한 파일
       equipInfo: {},
       equipmentData: {
         //이미지 경로
-        IMG_PATH: '',
+        img_path: '',
         // 입력 데이터 값
-        EQP_TYPE: '',
-        EQP_NM: '',
-        MODEL: '',
-        PUR_DT: '',
-        PUR_ACT: '',
-        MFG_ACT: '',
-        REPL_CYCLE: '',
-        INSP_CYCLE: '',
-        ID: '',
-        OPT_TEMP: '',
-        OPT_HUMID: '',
-        OPT_RPM: '',
-        OPT_SPEED: '',
-        OPT_POWER: '',
-        UPH: '',
-        STATUS: '',
-        IS_USE: '',
+        eqp_type: '',
+        eqp_nm: '',
+        model: '',
+        pur_dt: '',
+        pur_act: '',
+        mfg_act: '',
+        repl_cycle: '',
+        insp_cycle: '',
+        id: '',
+        opt_temp: '',
+        opt_humid: '',
+        opt_rpm: '',
+        opt_speed: '',
+        opt_power: '',
+        uph: '',
+        is_use: '',
       },
 
       equipDefs: [
-        { headerName: '설비 코드', field: 'EQP_CD', sortable: true },
+        { headerName: '설비 코드', field: 'eqp_cd', sortable: true },
         {
           headerName: '설비 구분',
-          field: 'EQP_TYPE',
+          field: 'eqp_type',
           sortable: true,
         },
         {
           headerName: '설비명',
-          field: 'EQP_NM',
+          field: 'eqp_nm',
           sortable: true,
         },
-        { headerName: '모델명', field: 'MODEL', sortable: true },
+        { headerName: '모델명', field: 'model', sortable: true },
       ],
 
       equipData: [],
@@ -195,27 +226,27 @@ export default {
       leftFields: [
         {
           label: '설비구분 *',
+          value: 'eqp_type',
           type: 'text',
           selectOptions: [],
         },
-        { label: '설비명 *', value: 'eqpName', type: 'text' },
+        { label: '설비명 *', value: 'eqp_nm', type: 'text' },
         { label: '모델명 *', value: 'model', type: 'text' },
-        { label: '구매일자', value: 'purDate', type: 'date' },
-        { label: '구매업체', value: 'purAct', type: 'text' },
-        { label: '제조업체', value: 'mfgAct', type: 'text' },
-        { label: '교체주기 (년)', value: 'replCycle', type: 'number' },
-        { label: '점검주기 (일)', value: 'inspCycle', type: 'number' },
-        { label: '설비담당자', value: 'eqpMgr', type: 'text' },
+        { label: '구매일자', value: 'pur_dt', type: 'date' },
+        { label: '구매업체', value: 'pur_act', type: 'text' },
+        { label: '제조업체', value: 'mfg_act', type: 'text' },
+        { label: '교체주기 (년)', value: 'repl_cycle', type: 'number' },
+        { label: '점검주기 (일)', value: 'insp_cycle', type: 'number' },
       ],
       rightFields: [
-        { label: '적정 온도', value: 'optTemp', type: 'text' },
-        { label: '적정 습도', value: 'optHumid', type: 'text' },
-        { label: '적정 RPM', value: 'optRpm', type: 'text' },
-        { label: '적정 속도', value: 'optSpeed', type: 'text' },
-        { label: '적정 전력량', value: 'optPower', type: 'text' },
+        { label: '적정 온도', value: 'opt_temp', type: 'text' },
+        { label: '적정 습도', value: 'opt_humid', type: 'text' },
+        { label: '적정 RPM', value: 'opt_rpm', type: 'text' },
+        { label: '적정 속도', value: 'opt_speed', type: 'text' },
+        { label: '적정 전력량', value: 'opt_power', type: 'text' },
         { label: 'UPH', value: 'uph', type: 'text' },
-        { label: '점검구분', value: 'status', type: 'text', selectOptions: [] },
-        { label: '설비상태', value: 'isUse', type: 'text', selectOptions: [] },
+        { label: '설비상태', value: 'is_use', type: 'text', selectOptions: [] },
+        { label: '설비담당자', value: 'id', type: 'text' },
       ],
 
       isModal: false,
@@ -226,9 +257,19 @@ export default {
       this.isModal = !this.isModal;
     },
     modalClicked(params) {
-      this.getEquipInfo(params.data.EQP_CD);
-      document.getElementById('eqp_cd').value = params.data.EQP_CD;
+      this.getEquipInfo(params.data.eqp_cd);
+      this.selectedEqp = params.data.eqp_cd;
       this.isModal = !this.isModal;
+      this.isEditMode = true; // 수정 모드로 전환
+    },
+    enableEditMode() {
+      // if (
+      //   !this.equipmentData.eqp_type ||
+      //   !this.equipmentData.eqp_nm ||
+      //   !this.equipmentData.model
+      // ) {
+      this.isEditMode = false;
+      // } // 필드 활성화
     },
 
     //파일 업로드 핸들러
@@ -236,7 +277,7 @@ export default {
       const file = event.target.files[0];
       if (file) {
         this.selectedFile = file; // 파일 객체 저장
-        this.imagePreview = URL.createObjectURL(file); // 미리보기 설정
+        this.previewImage = URL.createObjectURL(file); // 미리보기 설정
       }
     },
 
@@ -248,12 +289,16 @@ export default {
       return result.data;
     },
 
-    // 설비 조회
+    // 설비 단건 조회
     async getEquipInfo(eqp_cd) {
       let result = await axios
         .get(`api/equip/${eqp_cd}`)
         .catch((err) => console.log(err));
-      this.boardInfo = result.data;
+      if (result.data.pur_dt) {
+        result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 날짜 변환
+      }
+      this.equipmentData = result.data;
+      this.previewImage = this.equipmentData.img_path;
     },
 
     // 설비 전체 조회
@@ -264,19 +309,46 @@ export default {
       this.equipData = result.data; // 서버가 실제로 보낸 데이터
     },
 
-    // 등록 기능
-    async registerEquipment() {
-      const formData = new FormData();
-      formData.append('file', this.selectedFile);
-      formData.append('equipmentData', JSON.stringify(this.equipmentData));
+    // 등록 기능 (for in 사용)
+    async equipInsert() {
+      let obj = this.getInsertData();
 
-      try {
-        const response = await axios.post('/api/equip/all', formData);
-        console.log(response.data);
-      } catch (error) {
-        console.error('등록 실패:', error);
-        alert('등록 중 오류가 발생했습니다.');
+      let result = await axios
+        .post('/api/equip', obj, {
+          headers: {
+            'Content-Type': 'multipart/form-data', // multer와 관련
+          },
+          transformRequest: [
+            function () {
+              return obj;
+            },
+          ],
+        })
+        .catch((err) => console.log(err));
+      let addRes = result.data; // { success: true, data: result, img_path: imgPath }
+      if (addRes.success) {
+        this.$swal({
+          icon: 'success',
+          title: '등록완료',
+          text: '설비가 등록되었습니다.',
+        });
+
+        this.equipData.push({
+          eqp_cd: addRes.data.eqp_cd,
+          ...this.equipmentData,
+        });
       }
+    },
+    getInsertData() {
+      let formData = new FormData(); // 'Content-Type': 'multipart/form-data'
+
+      for (let field in this.equipmentData) {
+        if (this.equipmentData[field] == '') continue;
+        formData.append(field, this.equipmentData[field]);
+      }
+
+      formData.append('selectedFile', this.selectedFile);
+      return formData;
     },
     // 초기화
     resetForm() {
@@ -285,20 +357,18 @@ export default {
       });
     },
   },
+
   created() {
     this.getEquipList();
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 관리' });
 
-    //this.getCondition('QT', 'radio');
+    // 공통코드가 EQ(설비구분)일 때
     this.getComm('EQ')
       .then((result) => {
-        const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
-        console.log('설비 구분 공통 코드명:', commDtlNames);
-
         //selectOptions에 담아 select 박스에 활용
         this.leftFields.find(
-          (field) => field.value === 'eqpType'
+          (field) => field.value === 'eqp_type'
         ).selectOptions = result.map((item) => ({
           item: item.comm_dtl_cd,
           name: item.comm_dtl_nm,
@@ -306,29 +376,12 @@ export default {
       })
       .catch((err) => console.log(err));
 
+    // 공통코드가 EU(설비상태)일 때
     this.getComm('EU')
       .then((result) => {
-        const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
-        console.log('공통 코드명:', commDtlNames);
-
         //selectOptions에 담아 select 박스에 활용
         this.rightFields.find(
-          (field) => field.value === 'isUse'
-        ).selectOptions = result.map((item) => ({
-          item: item.comm_dtl_cd,
-          name: item.comm_dtl_nm,
-        }));
-      })
-      .catch((err) => console.log(err));
-
-    this.getComm('EI')
-      .then((result) => {
-        const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
-        console.log('공통 코드명:', commDtlNames);
-
-        //selectOptions에 담아 select 박스에 활용
-        this.rightFields.find(
-          (field) => field.value === 'status'
+          (field) => field.value === 'is_use'
         ).selectOptions = result.map((item) => ({
           item: item.comm_dtl_cd,
           name: item.comm_dtl_nm,
@@ -336,10 +389,41 @@ export default {
       })
       .catch((err) => console.log(err));
   },
+
+  watch: {
+    // 감시자
+    selectedEqp() {
+      // 기존 설비 코드를 선택한 경우 해당 설비를 기준으로 단건조회
+      // 해당 설비 : this.selectedEqp
+      this.getEquipInfo(this.selectedEqp);
+    },
+  },
 };
 </script>
 
 <style scoped>
+.fade-enter-from {
+  /* opacity: 0; */
+  transform: translateY(-1000px);
+}
+.fade-enter-active {
+  transition: all 0.5s;
+}
+.fade-enter-to {
+  /* opacity: 1; */
+  transform: translateY(0px);
+}
+
+.fade-leave-from {
+  opacity: 1;
+}
+.fade-leave-active {
+  transition: all 0.7s;
+}
+.fade-leave-to {
+  opacity: 0;
+}
+
 .modal-container {
   width: 700px;
 }
@@ -359,10 +443,6 @@ button {
 .form-select {
   max-width: 500px;
   width: 100%;
-}
-
-.input-group {
-  max-width: 500px;
 }
 
 @media (max-width: 992px) {
