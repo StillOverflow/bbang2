@@ -26,7 +26,7 @@
          <div class="row">
             <div class="col-md-12">
                <div class="card p-3">
-                  <div class="card-action mb-2" >{{ prodPlanCode }} 대한 자재조회</div>
+                  <div class="card-action mb-2">{{ prodPlanCode }} 대한 자재조회</div>
                   <div class="card-content">
                      <div class="table-responsive">
                         <ag-grid-vue
@@ -131,10 +131,10 @@
    
 // ------------------------------------------------------------------------------------------
    // 미지시 생산 계획서 클릭 시 ~~
-   let plan_cd = null;
+ //  let plan_cd = null;
    const rowClicked = (params) => {
-      plan_cd = params.data.prod_plan_cd;
-      planToMaterialStkStock(plan_cd);
+      prodPlanCode.value= params.data.prod_plan_cd;
+      planToMaterialStkStock(prodPlanCode.value);
    };
 
    watch(prodPlanListData, (newVal) => {
