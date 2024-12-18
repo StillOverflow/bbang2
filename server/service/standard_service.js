@@ -49,12 +49,26 @@ const mariadb = require("../database/mapper.js");
   }
 
 //-----------------공정흐름도-------------------
+  //제품목록 조회(사용여부 포함)
+  const searchPrdUsage = async()=>{
+    let list = await mariadb.query('selectPrd');
+    return list;
+  }
+
+
   // 공정 흐름도 조회
   const searchFlow = async(prd_cd)=>{
     let list = await mariadb.query('procFlowByProd', prd_cd);
     return list;
   }
 
+  //공정별 자재 조회
+  const searchProMtl = async(proc_cd)=>{
+    let list = await mariadb.query('selectMatByProc', proc_cd);
+    return list;
+  }
+
+  //공정 코드 조회
   // 공정 추가
 
 
@@ -79,5 +93,7 @@ module.exports = {
   searchPrd,
   searchMtl,
   findAllComm,
-  searchFlow
+  searchFlow,
+  searchPrdUsage,
+  searchProMtl
 };
