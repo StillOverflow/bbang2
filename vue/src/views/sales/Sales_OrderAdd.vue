@@ -48,11 +48,11 @@
                     <div class="col-6 col-lg-2"></div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">납기일자</div> 
                     <div class="col-6 col-lg-2">
-                        <input class="form-control" type="date" value="" />
+                        <input class="form-control" type="date" id="due_date" value="" />
                     </div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주문일자</div> 
                     <div class="col-6 col-lg-2">
-                        <input class="form-control" type="date" value="" />
+                        <input class="form-control" type="date" id="order_date" value="" />
                     </div>
                 </div>
             </div>
@@ -73,7 +73,7 @@
                 <div class="row">
                     <div class="col-6 col-lg-5"></div>
                     <div class="col-6 col-lg-1 mt-2">
-                        <button class="btn btn-primary " click="">등록</button>
+                        <button class="btn btn-primary " @click="ordInsert()">등록</button>
                     </div>
                 </div>
             </div>
@@ -147,7 +147,7 @@ export default {
             columnDefs: [
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '주문 수량', field: 'order_qty', editable: true},
+                {headerName: '주문 수량', field: 'order_qty', editable: true, cellDataType: 'number'},
                 {headerName: '비고', field: 'note', editable: true},
                 {
                     headerName: '삭제' ,
@@ -264,6 +264,36 @@ export default {
         //     this.MemInfo = result.data;
         // },
 
+        async ordInsert() {
+            let insertOrd = [];
+            let insertOrdDtl = [];
+
+            this.rowData.forEach((obj) => {
+                    insertOrdDtl.push({prd_cd: obj.prd_cd, 
+                    prd_nm: obj.prd_nm, 
+                    order_qty: obj.order_qty, 
+                    note: obj.note,});
+            });
+            console.log(insertOrdDtl);
+            insertOrd.push({
+                mem_id : document.getElementById('mem_id').value,
+                act_cd : document.getElementById('acc_code').value,
+                due_dt : document.getElementById('due_date').value,
+                order_dt : document.getElementById('order_date').value
+            });
+            console.log(insertOrd);
+
+            let insertOrdArr = [...insertOrd, insertOrdDtl ];   //첫번째가 헤드, 두번째가 디테일
+            console.log(insertOrdArr);
+
+            let result = await axios.post('/api/sales/ord', insertOrdArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
+                                .catch(err => console.log("axios에러",err));
+            console.log(result.data.result);
+            console.log(result.data);
+            return result;
+
+        },
+     
 
         gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
             params.api.sizeColumnsToFit();

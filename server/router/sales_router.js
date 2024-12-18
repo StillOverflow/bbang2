@@ -30,6 +30,12 @@ router.get('/sales/search/', async (req, res) => {
 });
 
 //주문서 등록
+router.post('/sales/ord', async (req, resp) => {
+  let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
+  console.log("router",values);
+  let result = await salesService.insertOrder(values);
+  resp.send(result);
+});
 
 //거래처 조회(모달)
 router.get('/moacc', async (req, res)=>{

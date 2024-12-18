@@ -50,7 +50,47 @@ const orderSearch = (searchObj) => {
     return query; 
 };
 
+
+//주문 코드 시퀀스 
+const orderSeq =
+`
+SELECT CONCAT('OD', LPAD(nextval(order_cd_seq), 3,'0')) as order_cd FROM DUAL;
+`;
 //주문서 등록
+const orderInsert = (obj) => {
+    
+    let query = `
+                INSERT INTO \`order\` (order_cd, order_dt, due_dt, id, act_cd)
+                VALUES 
+                `;
+
+    const {seq, order_dt, due_dt, mem_id, act_cd} = obj; 
+    
+    if(Object.keys(obj).length > 0){    // 객체의 길이를 측정(값이 들어온것을 확인) 
+
+        query += `('${seq}', '${order_dt}', '${due_dt}', '${mem_id}', '${act_cd}')`;
+
+    }
+    return query;
+
+}
+
+//주문서 디테일 등록
+const orderDtlInsert = ([seq, values]) => {
+
+let sql = `
+INSERT INTO order_detail (order_dtl_cd, order_cd, prd_cd, order_qty)
+VALUES 
+`;
+
+values.forEach((obj) => {
+    sql += `(CONCAT('ODT', LPAD(nextval(order_dtl_cd_seq), 3,'0')),'${seq}','${obj.prd_cd}', '${obj.order_qty}'), `;
+  });
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+  return sql;
+};
+
 
 // 거래처 조회(모달)
 const moAccList = 
@@ -104,6 +144,10 @@ JOIN product_in i ON p.prd_cd = i.prd_cd;
 module.exports = {
     orderList,
     orderSearch,
+    orderSeq,
+    orderInsert,
+    orderDtlInsert,
+
     moAccList,
     //moAccInfo,
     moMemList,
