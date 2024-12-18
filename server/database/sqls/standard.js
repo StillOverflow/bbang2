@@ -2,29 +2,31 @@
 
 //전체 제품조회
 const prdList = `
-select distinct 
-p.prd_cd, 
-p.prd_nm, 
-cd.comm_dtl_nm as usage_sta
-from product p
-left join bom b 
-on p.prd_cd = b.prd_cd
-left join common_detail cd
-on cd.comm_dtl_cd = b.usage_sta
-and comm_cd = 'YN'
-`;
+SELECT
+    p.prd_cd, 
+    p.prd_nm,
+    b.create_dt AS create_dt,  
+    cd.comm_dtl_nm AS usage_sta  
+FROM product p
+	LEFT outer JOIN bom b 
+    ON p.prd_cd = b.prd_cd
+	LEFT JOIN common_detail cd
+    ON cd.comm_dtl_cd = b.usage_sta
+	 GROUP BY prd_cd
+`
 //제품 키워드 검색
 const prdSearch = `
-select distinct 
-p.prd_cd, 
-p.prd_nm, 
-cd.comm_dtl_nm as usage_sta
-from product p
-left join bom b 
-on p.prd_cd = b.prd_cd
-left join common_detail cd
-on cd.comm_dtl_cd = b.usage_sta
-and comm_cd = 'YN'
+SELECT
+    p.prd_cd, 
+    p.prd_nm,
+    b.create_dt AS create_dt,  
+    cd.comm_dtl_nm AS usage_sta  
+FROM product p
+	LEFT outer JOIN bom b 
+    ON p.prd_cd = b.prd_cd
+	LEFT JOIN common_detail cd
+    ON cd.comm_dtl_cd = b.usage_sta
+	 GROUP BY prd_cd
 where p.prd_nm like ?
 `;
 //자재 목록 조회
@@ -96,7 +98,7 @@ prd_cd
 (SELECT EXISTS(
 					SELECT 1
 					FROM prod_inst_dtl
-					WHERE prd_cd = 'pr01')) AS "작동여부"
+					WHERE prd_cd = 'pr01')) AS "useSta"
 FROM product; 
 `;
 //선택한 제품의 공정흐름도 조회

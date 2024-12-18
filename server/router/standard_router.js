@@ -45,9 +45,14 @@ router.delete("/standard/bom/:prd_cd/:mat_cd", async (req, res) => {
   let delBom = await standardService.deleteBom(prdCd, matCd);
   res.send(delBom);
 });
-//저장버튼
-router.post("/api/standard/bom/save", async (req, res) => {});
+
 //-----------------공정흐름도-------------------
+
+//제품목록 조회(사용여부 포함)
+router.get("/standard/productFlow", async(req, res)=>{
+  let prdFlowlist =await standardService.searchPrdUsage();
+  res.send(prdFlowlist);
+})
 
 // 선택한 제품의 공정 흐름도 조회
 router.get("/standard/flow/:prd_cd", async (req, res) => {
@@ -55,6 +60,15 @@ router.get("/standard/flow/:prd_cd", async (req, res) => {
   let flowList = await standardService.searchFlow(prdCd);
   res.send(flowList);
 });
+
+//선택한 공정 자재 조회
+router.get("/standard/proessMtl/:proc_cd", async(req,res)=>{
+  let procCd = req.params.proc_cd;
+  let procMtllist = await standardService.searchProMtl(procCd);
+  res.send(procMtllist);
+});
+
+//공정코드 조회
 
 // // 공정 흐름도 추가
 // router.post('/standard/flow', async (req, res) => {

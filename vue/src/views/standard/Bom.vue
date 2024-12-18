@@ -56,8 +56,8 @@
           style="width: 100%; height: 300px"
           :columnDefs="materialDefs"
           :rowData="materialData"
-          :rowSelection="multiple"
           :pagination="true"
+          :gridOptions="gridOptions"
           :cellValueChanged="cellValueChanged"
           @gridReady="onMatGridReady"
         >
@@ -75,7 +75,7 @@
           :columnDefs="bomDefs"
           :rowData="bomData"
           :pagination="true"
-          :rowSelection="multiple"
+          :gridOptions="gridOptions"
           overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
           @gridReady="onBomGridReady"
         >
@@ -91,21 +91,28 @@
 <script>
 import { AgGridVue } from "ag-grid-vue3";
 import axios from "axios";
+// import Swal from "sweetalert2";
 
 export default {
   components: { AgGridVue },
+  
   //화면 정보 제목
   created() {
     this.$store.dispatch("breadCrumb", { title: "BOM 관리" });
     this.bringMtlData();
     this.bringPrdData();
   },
+  
   data() {
     return {
       selectBomData: null, //제품 선택
       selectMatData: null,
       selectPrdData: null,
       // 제품 테이블 컬럼명
+      gridOptions: {
+        rowSelection:{mode:'multiRow'},
+        
+      },
       productDefs: [
         { headerName: "제품코드", field: "prd_cd", sortable: true },
         { headerName: "제품명", field: "prd_nm", sortable: true },
@@ -114,7 +121,11 @@ export default {
           field: "usage_sta",
           cellEditor: "agSelectCellEditor",
         },
-        { headerName: "선택", field: "button" },
+        { headerName: "등록날짜", field: "create_dt" 
+        ,cellRenderer: (data) => {
+        return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+}
+        },
       ],
       // 제품 테이블 데이터
       productData: [],
@@ -127,7 +138,6 @@ export default {
           headerName: "자재코드",
           field: "mat_cd",
           sortable: true,
-          checkboxSelection: true,
         },
         { headerName: "자재명", field: "mat_nm", sortable: true },
         { headerName: "구분", field: "type", sortable: true },
@@ -157,7 +167,6 @@ export default {
           headerName: "제품코드",
           field: "prd_cd",
           sortable: true,
-          checkboxSelection: true,
         },
         { headerName: "자재코드", field: "mat_cd", sortable: true },
         { headerName: "자재명", field: "mat_nm", sortable: true },
@@ -254,7 +263,11 @@ export default {
           };
 
           if (this.bomData.some((obj) => obj.mat_cd == dup.mat_cd)) {
-            alert("이미 자재 존재");
+            this.$swal({
+              icon: "error",
+              title: "이미자재존재",
+              text: "다시추가해주세요",
+            });
             return;
           }
           //실제넘기는값
@@ -264,7 +277,14 @@ export default {
             unit: saveBom.unit_cd,
             usage: saveBom.usage,
           };
-
+          if (this.bomData.some((obj) => obj.mat_cd == dup.mat_cd)) {
+            this.$swal({
+              icon: "error",
+              title: "이미자재존재",
+              text: "다시추가해주세요",
+            });
+            return;
+          }
           this.saveData.push(saveRealData);
           this.bomGridApi.applyTransaction({
             add: [saveBom],
@@ -292,14 +312,20 @@ export default {
     },
     async save() {
       try {
+        let savResult;
+        let delResult;
         for (const bom of this.deleteData) {
-          await axios.delete(`/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`);
+          delResult = await axios.delete(`/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`);  
+          console.log(delResult.data.result)     
         }
         for (const bom of this.saveData) {
-          await axios.post(`/api/standard/bom`, bom);
+          savResult = await axios.post(`/api/standard/bom`, bom);
+          console.log(savResult.data.result)
         }
-        alert("저장완료");
-
+        // if(savResult.data.result == 'success' && delResult.data.result == 'success'){
+        //   console.log(delResult.data.result)
+        // };
+       
         this.saveData = [];
         this.deleteData = [];
         this.bringBomData(this.selectBomData);
