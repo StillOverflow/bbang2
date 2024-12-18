@@ -36,7 +36,7 @@ const getMyList = () => { // 적용한 목록 조회
 };
 
 // 실험용!!!! 검색조건을 포함한 조회
-// 매개변수로 검색조건을 유동적으로 받아 쿼리 반환. 값이 없을 시 전체출력
+// 매개변수로 검색조건을 유동적으로 받아 쿼리 생성. 값이 없을 시 전체출력
 const testList = (sc) => {
   let query = selectTSql;
   let scArr = Object.keys(sc);
@@ -58,22 +58,29 @@ const testList = (sc) => {
 
 
 // 품질기준 (QUALITY_STANDARD)
+// 시퀀스 조회
+const stdSeq = `
+  SELECT CONCAT('QS', LPAD(nextval(qual_std_seq), 3,'0')) seq
+  FROM   dual
+`;
 
+// 헤더 입력
 const stdInsert = `
-  INSERT INTO quality_standard (
-    (QU_STD_CD, TARGET_TYPE, TARGET_CD)
+  INSERT INTO quality_standard
+    (qu_std_cd, target_type, target_cd)
   VALUES (?, ?, ?)
 `;
 
-const stdDtlInsert = ([values]) => { // 배열 형식으로 받아야 함.
+// 디테일 입력
+const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
-    INSERT INTO quality_standard_detail (
-      (QU_STD_DTL_CD, QU_STD_CD, TEST_CD)
+    INSERT INTO quality_standard_detail
+      (qu_std_dtl_cd, qu_std_cd, test_cd)
     VALUES 
   `;
 
   values.forEach((obj) => {
-    sql += `(${obj.qu_std_dtl_cd}, ${obj.qu_std_cd}, ${obj.test_cd}), `;
+    sql += `(CONCAT('QSD', LPAD(nextval(qual_std_dtl_seq), 3,'0')), '${obj.qu_std_cd}', '${obj.test_cd}'), `;
   });
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
@@ -85,6 +92,7 @@ module.exports = {
   getYetList,
   getMyList,
   testList,
+  stdSeq,
   stdInsert,
   stdDtlInsert
 }
