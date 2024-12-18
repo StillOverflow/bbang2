@@ -16,16 +16,33 @@ const findAllEq = async () => {
 
 // 설비단건조회
 const findEquipNo = async (no) => {
-  let list = await mariadb.query('equipInfo', no);
+  let list = await mariadb.query('equipInfo', no); // 단건 조회 결과
+
   let info = list[0];
   return info;
 };
 
 // 등록
 const insertEq = async (eqInfo) => {
-  let result = await mariadb.query('insertEq', eqInfo);
-  if (result.insertedId > 0) {
-    return { eqp_cd: insertedId };
+  let new_eqp_cd = (await mariadb.query('getEqpCd'))[0].eqp_cd;
+  eqInfo['eqp_cd'] = new_eqp_cd;
+
+  let result = await mariadb.query('eqInsert', eqInfo);
+  if (result.affectedRows > 0) {
+    return { eqp_cd: new_eqp_cd };
+  } else {
+    return {};
+  }
+};
+
+// 수정
+const updateEq = async (eqInfo) => {
+  let new_eqp_cd = (await mariadb.query('getEqpCd'))[0].eqp_cd;
+  eqInfo['eqp_cd'] = new_eqp_cd;
+
+  let result = await mariadb.query('eqUpdate', eqInfo);
+  if (result.affectedRows > 0) {
+    return { eqp_cd: new_eqp_cd };
   } else {
     return {};
   }
@@ -36,4 +53,5 @@ module.exports = {
   findAllEq,
   findEquipNo,
   insertEq,
+  updateEq,
 };
