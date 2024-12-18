@@ -24,8 +24,8 @@ const findEquipNo = async (no) => {
 // 등록
 const insertEq = async (eqInfo) => {
   let result = await mariadb.query('insertEq', eqInfo);
-  if (result.insertId > 0) {
-    return { eqp_cd: result.insertId };
+  if (result.insertedId > 0) {
+    return { eqp_cd: insertedId };
   } else {
     return {};
   }
