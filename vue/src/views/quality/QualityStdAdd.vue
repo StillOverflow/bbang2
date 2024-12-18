@@ -190,16 +190,14 @@
         let insertArr = [];
         
         this.myData.forEach((obj) => {
-          insertArr.push({qu_std_cd: obj.test_cd, 
-                          qu_std_dtl_cd: obj.test_cd, 
-                          target_type: obj.target_type, 
+          insertArr.push({target_type: obj.target_type, 
                           target_cd: 'PR01',
                           test_cd: obj.test_cd});
         });
         console.log(insertArr);
-        let result = await axios.post('/api/quality/std' + insertArr)
+        let result = await axios.post('/api/quality/std', insertArr)
                                 .catch(err => console.log(err));
-        return result;
+        console.log(result);
       },
       
       // 공통코드 기반으로 검색조건 표시하기
