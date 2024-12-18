@@ -27,7 +27,11 @@
           <div class="col-lg-2 col-md-2 col-sm-12 text-center">
             <!-- 프록시를 문자열로 박아넣음 배포시 replace로 삭제하기 -->
             <img
-              :src="'/api/' + previewImage"
+              :src="
+                equipmentData.img_path != ''
+                  ? '/api/' + equipmentData.img_path
+                  : previewImage
+              "
               alt="설비 이미지"
               class="mb-3 imgBSJ"
               width="230"
