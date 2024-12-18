@@ -93,7 +93,7 @@
                         <td></td>
                         <td>
                           <div class="form-check col-4 col-md-2">
-                            <input class="form-check-input" type="checkbox" v-model="selected_mat" :value="Mat.MAT_CD" :id="'mt' + Mat.MAT_CD"
+                            <input class="form-check-input" type="checkbox" v-model="matArr" :value="Mat.MAT_CD" :id="'mt' + Mat.MAT_CD" @click="subMatArr"
                             >
                             {{ Mat.NAME }}
                           </div>
@@ -142,8 +142,6 @@ export default {
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
     this.getPlanList();
-    this.getPlanDtlList();
-    this.getPlanMatList();
   },
   computed : {
       planDtlCount(){
@@ -160,15 +158,9 @@ export default {
       planMatList : [],
 
       selectBomData: null,
-      pr_step: [],
-      instInfo: {
-        inst_cd: '',
-        prod_plan_cd: '',
-        status: '',
-        work_dt: '',
-        update_dt: '',
-        create_dt: ''
-      },
+      matArr: [],
+      instInfo: {},
+      
       /* 모달 계획서 목록 */
       planDefs: [
         { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true },
@@ -264,7 +256,6 @@ export default {
         }
       }
     },
-
     async boardInsert() {
       let obj = {
         prod_plan_cd: this.instInfo.prod_plan_cd,
