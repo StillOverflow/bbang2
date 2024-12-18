@@ -83,7 +83,7 @@
       </div>
     </div>
   </div>
-  <div class="col-13 text-end">
+  <div class="col-6 text-end">
     <button class="btn btn-success" @click="save">저장</button>
   </div>
 </template>
