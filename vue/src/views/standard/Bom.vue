@@ -85,7 +85,13 @@
     </div>
   </div>
   <div class="col-6 text-end">
-    <button class="btn btn-success" @click="save">저장</button>
+    <button
+      class="btn btn-success"
+      @click="save"
+      v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0"
+    >
+      저장
+    </button>
   </div>
 </template>
 
@@ -330,13 +336,6 @@ export default {
     },
     async save() {
       try {
-        if (this.saveData.length == 0 && this.deleteData.length == 0) {
-          this.$swal({
-            icon: "warning",
-            title: "저장할 데이터가 없습니다.",
-          });
-          return;
-        }
         this.$swal({
           title: "Do you want to save the changes?",
           showDenyButton: true,
