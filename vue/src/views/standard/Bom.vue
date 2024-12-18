@@ -46,9 +46,7 @@
           <button class="btn btn-primary" @click="searchMtl">검색</button>
         </div>
         <div class="col-13 text-end">
-          <button class="btn btn-primary" @click="InsertBomData">
-            자재 추가
-          </button>
+          <button class="btn btn-primary" @click="InsertBomData">자재 추가</button>
         </div>
         <!-- 자재 테이블 ag-gird -->
         <ag-grid-vue

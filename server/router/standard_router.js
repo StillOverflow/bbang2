@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const standardService = require("../service/standard_service.js");
-//-----------------BOM-------------------
+// -----------------BOM-------------------
 //제품 전체조회
 router.get("/standard/products", async (req, res) => {
   let prdList = await standardService.findAllPrd();
