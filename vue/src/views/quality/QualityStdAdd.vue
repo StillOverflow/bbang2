@@ -82,7 +82,7 @@
           </div>
           <div class="col-5 col-md-4 text-end text-md-start">
             <button class="btn btn-primary me-3" :style="t_overflow" @click="stdInsert">저장</button>
-            <button class="btn btn-secondary" :style="t_overflow">초기화</button>
+            <button class="btn btn-secondary" :style="t_overflow" @click="getTList">초기화</button>
           </div>
         </div>
       </div>
@@ -114,7 +114,7 @@
         cates: [],
         modal_val: '...',
         modal_val_nm: '...',
-        date_val: this.$comm.getMyDay(),
+        date_val: '',
 
         // grid API 테이블 데이터 (Defs: thead 구성, Data: tbody 구성)
         defs: [
@@ -175,7 +175,7 @@
             changeArr = changeArr.filter(obj => obj.test_nm != val.data.test_nm); // 선택되지 않은 것만 남김
           });
           
-          // 수정된 배열로 바꿈
+          // 수정된 배열로 반영하기
           if(type == '추가'){
             this.yetData = changeArr;
             this.myData = [...this.myData, ...addArr]; // 펼침연산자로 기존의 값에 추가함
@@ -190,16 +190,18 @@
         let insertArr = [];
         
         this.myData.forEach((obj) => {
-          insertArr.push({qu_std_cd: obj.test_cd, 
+          insertArr.push({qu_std_cd: 1, 
                           qu_std_dtl_cd: obj.test_cd, 
                           target_type: obj.target_type, 
                           target_cd: 'PR01',
                           test_cd: obj.test_cd});
         });
-        console.log(insertArr);
-        let result = await axios.post('/api/quality/std' + insertArr)
+        
+        let result = await axios.post('/api/quality/std', insertArr)
                                 .catch(err => console.log(err));
-        return result;
+        if(result.data.result == 'success'){
+          alert('저장완료');
+        }
       },
       
       // 공통코드 기반으로 검색조건 표시하기
@@ -257,13 +259,14 @@
           let result = await axios.get('/api/quality/test/' + val, {params: query})
                                 .catch(err => console.log(err));
           let data = result.data;
+          console.log(data);
 
-          if(data.length != 0){ // 데이터가 있는 경우에만 실행  
-            if(val == 'yet') this.yetData = data;
-            else this.myData = data;
-          }
+          // 각각의 grid 데이터에 넣기
+          if(val == 'yet') this.yetData = data;
+          else this.myData = data;
         };
 
+        // if modalVal 있는 경우 실행해야 함. (구현전)
         await axiosGet('yet');
         await axiosGet('my');
       },
