@@ -10,7 +10,7 @@ const mariadb = require("../database/mapper.js");
   const searchPrd = async(search) => {
     let list = await mariadb.query('prdSearch', [`%${search}%`]);
     return list;
-}
+  }
 //자재전체조회  
   const findAllMat = async()=>{
     let list = await mariadb.query('matList');
@@ -20,7 +20,7 @@ const mariadb = require("../database/mapper.js");
   const searchMtl = async(search) => {
     let list = await mariadb.query('matSearch', [`%${search}%`]);
     return list;
-}
+  }
 //BOM조회
   const findBomByPc = async(prd_cd)=> {
     let list = await mariadb.query('bomlist',prd_cd);
@@ -41,11 +41,11 @@ const mariadb = require("../database/mapper.js");
 //BOM삭제
   const deleteBom = async(prd_cd, mat_cd)=>{
     let result = await mariadb.query('bomDel', [prd_cd, mat_cd]);
-    if(result.affectedRows >0){
+    if(result.affectedRows > 0){
       return{ "result" : "success", "prd_cd" : prd_cd, "mat_cd" : mat_cd};
-  }else{
+    } else{
       return { "result" : "fail" };
-  }
+    }
   }
 
 //-----------------공정흐름도-------------------
