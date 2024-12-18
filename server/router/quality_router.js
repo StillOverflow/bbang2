@@ -27,8 +27,9 @@ router.get('/quality/test/all', async (req, resp) => {
 // 품질기준
 
 router.post('/quality/std', async (req, resp) => {
-  let val = req.body;
-  let result = await qualityService.stdInsert(val);
+  let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
+  console.log(values);
+  let result = await qualityService.stdInsert(values);
   resp.send(result);
 });
 

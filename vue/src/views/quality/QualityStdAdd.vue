@@ -6,7 +6,7 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         <!-- 대상분류 자재/제품/공정 -->
         <div class="row mb-3">
-          <h6 class="col-1 col-md-1 me-6 mb-2" :style="t_overflow">대상분류</h6>
+          <h6 class="col-1 col-md-1 me-6 mb-2 text-center" :style="t_overflow">대상분류</h6>
           <div class="form-check col-3 col-md-2" v-for="(opt, idx) in radios" :key="idx">
             <input class="form-check-input" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
               @change="getDivs">
@@ -18,25 +18,25 @@
     
         <!-- 구분/카테고리/모달 조회조건 선택 -->
         <div class="row">
-          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center" :style="t_overflow">대상구분</h6>
+          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상구분</h6>
           <div class="col-10 col-lg-2 mb-2">
             <select class="form-select" v-model="selected_div">
               <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
-          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center" :style="t_overflow">카테고리</h6>
+          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">카테고리</h6>
           <div class="col-10 col-lg-2 mb-2">
             <select class="form-select" v-model="selected_cate" :disabled="noCate">
               <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
-          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center" :style="t_overflow">선택</h6>
+          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">선택</h6>
           <div class="col-10 col-lg-2 mb-2">
             <input type="text" class="form-control" :value="modal_val" readonly>
           </div>
-          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center" :style="t_overflow">대상명</h6>
+          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상명</h6>
           <div class="col-10 col-lg-2 mb-2">
-            <input type="text" class="form-control" :value="modal_val" readonly>
+            <input type="text" class="form-control" :value="modal_val_nm" readonly>
           </div>
         </div>
   
@@ -81,7 +81,7 @@
             <input type="text" class="form-control" :value="date_val" readonly>
           </div>
           <div class="col-5 col-md-4 text-end text-md-start">
-            <button class="btn btn-primary me-3" :style="t_overflow">저장</button>
+            <button class="btn btn-primary me-3" :style="t_overflow" @click="stdInsert">저장</button>
             <button class="btn btn-secondary" :style="t_overflow">초기화</button>
           </div>
         </div>
@@ -113,6 +113,7 @@
         selected_cate: null,
         cates: [],
         modal_val: '...',
+        modal_val_nm: '...',
         date_val: this.$comm.getMyDay(),
 
         // grid API 테이블 데이터 (Defs: thead 구성, Data: tbody 구성)
@@ -183,6 +184,22 @@
             this.yetData = [...this.yetData, ...addArr];
           }
         }
+      },
+
+      async stdInsert(){
+        let insertArr = [];
+        
+        this.myData.forEach((obj) => {
+          insertArr.push({qu_std_cd: obj.test_cd, 
+                          qu_std_dtl_cd: obj.test_cd, 
+                          target_type: obj.target_type, 
+                          target_cd: 'PR01',
+                          test_cd: obj.test_cd});
+        });
+        console.log(insertArr);
+        let result = await axios.post('/api/quality/std' + insertArr)
+                                .catch(err => console.log(err));
+        return result;
       },
       
       // 공통코드 기반으로 검색조건 표시하기

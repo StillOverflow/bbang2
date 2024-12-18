@@ -8,8 +8,8 @@ let selectTSql = `
           pass_min, 
           pass_max, 
           (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = pass_ispercent) pass_ispercent,
-          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = target_type) target_type,
-          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = status) status,
+          target_type,
+          status,
           create_dt
   FROM    quality_test 
   `;
@@ -62,12 +62,29 @@ const testList = (sc) => {
 const stdInsert = `
   INSERT INTO quality_standard (
     (QU_STD_CD, TARGET_TYPE, TARGET_CD)
-  SET ?
+  VALUES (?, ?, ?)
 `;
+
+const stdDtlInsert = ([values]) => { // 배열 형식으로 받아야 함.
+  let sql = `
+    INSERT INTO quality_standard_detail (
+      (QU_STD_DTL_CD, QU_STD_CD, TEST_CD)
+    VALUES 
+  `;
+
+  values.forEach((obj) => {
+    sql += `(${obj.qu_std_dtl_cd}, ${obj.qu_std_cd}, ${obj.test_cd}), `;
+  });
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+  return sql;
+};
+
 
 module.exports = {
   getYetList,
   getMyList,
   testList,
-  stdInsert
+  stdInsert,
+  stdDtlInsert
 }
