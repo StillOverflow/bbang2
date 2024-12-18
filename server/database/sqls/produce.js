@@ -27,6 +27,11 @@ SET ? `;
 const planUpdate =
 `UPDATE prod_plan 
 SET ? 
+WHERE PROD_PLAN_CD = ?`;
+
+//계획서 다중 삭제
+const planDelete =
+`DELETE FROM prod_plan 
 WHERE PROD_PLAN_CD IN "("?")"`;
 
 //제품조회
@@ -34,7 +39,7 @@ const planDtlList =
 `SELECT 
     prod_plan_dtl_cd, 
     prod_plan_cd, 
-    a.prd_cd, 
+    a.prd_cd as prd_cd, 
     prd_nm, 
     prod_plan_qty
 FROM prod_plan_dtl a JOIN product b ON a.PRD_CD = b.PRD_CD
@@ -145,6 +150,7 @@ module.exports = {
     planInfo,
     planInsert,
     planUpdate,
+    planDelete,
     planDtlList,
     planDtlUpdate,
 

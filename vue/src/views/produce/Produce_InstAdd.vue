@@ -30,6 +30,15 @@
           <!--기본정보-->
           <div class="col-md-6">
             <p class="text-uppercase text-lg font-weight-bolder">생산제품 목록</p>
+            <ag-grid-vue class="ag-theme-alpine" 
+            style="width: 100%; height: 400px;" 
+            :columnDefs="planDtlDefs"
+            :rowData="planDtlData" 
+            @rowClicked="prdClicked" 
+            @grid-ready="gridFit"
+            overlayNoRowsTemplate="생산계획코드를 조회해주세요.">
+            </ag-grid-vue>
+            <!--
             <div class="table-responsive">
               <table class="table">
                 <thead class="table-secondary">
@@ -55,13 +64,22 @@
                   </tr>
                 </tbody>
               </table>
-            </div>
+            </div>-->
           </div>
 
           <!--공정설정-->
           <div class="col-md-6">
 
             <p class="text-uppercase text-lg font-weight-bolder">공정 및 자재설정</p>
+            <ag-grid-vue class="ag-theme-alpine" 
+            style="width: 100%; height: 400px;" 
+            :columnDefs="planFlowDefs"
+            :rowData="planFlowData" 
+            @grid-ready="gridFit"
+            :gridOptions="gridOptions"
+            overlayNoRowsTemplate="생산계획코드를 조회해주세요.">
+            </ag-grid-vue>
+            <!--
             <div class="table-responsive">
               <table class="table">
                 <thead class="table-secondary">
@@ -117,9 +135,10 @@
                 </tbody>
               </table>
             </div>
+          -->
           </div>
         </div>
-        <div class="center">
+        <div class="center mtp30">
           <button class="btn btn-success" @click="instInsert">등록</button>
           <button class="btn btn-secondary mlp10">목록</button>
         </div>
@@ -133,9 +152,13 @@
       <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
     </template>
     <template v-slot:default>
-      <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="planDefs"
-        :rowData="planData" :pagination="true" @rowClicked="modalClicked" @grid-ready="gridFit"
-        overlayNoRowsTemplate="등록된 계획서가 없습니다.">
+      <ag-grid-vue class="ag-theme-alpine" 
+      style="width: 100%; height: 400px;" 
+      :columnDefs="planDefs"
+      :rowData="planData" 
+      @rowClicked="modalClicked" 
+      @grid-ready="gridFit"
+      overlayNoRowsTemplate="등록된 계획서가 없습니다.">
       </ag-grid-vue>
     </template>
     <template v-slot:footer>
@@ -159,10 +182,7 @@ export default {
   },
   computed : {
       planDtlCount(){
-          return this.planDtlList.length;
-      },
-      planMatCount(){
-          return this.planMatList.length;
+          return this.planDtlData.length;
       }
   },
   data() {
@@ -170,9 +190,7 @@ export default {
       isModal: false,
       flowArr: [],
       matArr: [],
-      planDtlList : [],
-      planMatList : [],
-      
+
       /* 모달 계획서 목록 */
       planDefs: [
         { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true, width: 120 },
@@ -181,11 +199,38 @@ export default {
         { headerName: '제품수량', field: 'dtl_qty', sortable: true, width: 100},
         { headerName: '등록일', field: 'create_dt', valueFormatter: this.$comm.dateFormatter, width: 150 },
       ],
-      planData: []
+      planData: [],
+
+      /* 계획서 제품목록 */
+      planDtlDefs: [
+        { headerName: '제품코드', field: 'prd_cd', sortable: true },
+        { headerName: '제품명', field: 'prd_nm', sortable: true },
+        { headerName: '생산수량', field: 'prod_plan_qty', sortable: true },
+      ],
+      planDtlData: [],
+
+      /* 제품 공정목록 */
+      planFlowDefs: [
+        { headerName: '공정명', field: 'PROC_NM', sortable: true, rowDrag: true },
+        { headerName: '공정코드', field: 'PROC_CD', sortable: true },
+      ],
+      planFlowData: [],
+
+      gridOptions: {
+        rowDragManaged: true,
+        rowDragMultiRow: true,
+        rowDragEntireRow: true,
+        suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+        rowSelection: { 
+            mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
+        }
+      }
     };
   },
   methods: {
-
+    gridFit(params) { // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
+      params.api.sizeColumnsToFit();
+    },
     /*모달 [S]*/
     modalOpen() {
       this.isModal = !this.isModal;
@@ -208,34 +253,46 @@ export default {
     async getPlanDtlList(plan_cd) {
       let result = await axios.get(`/api/plan/${plan_cd}/dtl`)
                               .catch(err => console.log(err));                              
-      this.planDtlList = result.data;
+      this.planDtlData = result.data;
     },
 
     //계획서 제품 리스트 선택
-    rowClicked(prd_cd) {
-      this.getPlanMatList(prd_cd); //공정 및 자재설정 리스트 노출
+    prdClicked(params) {
+      this.prd_cd = params.data.prd_cd;
+      this.getPlanFlowList(this.prd_cd); //공정 및 자재설정 리스트 노출
 
-      /* 선택된 생산제품 색깔표기 [S]*/
+      /*
+      //선택된 생산제품 색깔표기[S]
       const elements = document.querySelectorAll('.planDtl');
       for (var i = 0; i < elements.length; i++) {
         elements[i].classList.remove('table-warning');
       }
       document.getElementById(prd_cd+'_dtl').classList.add('table-warning');
-      /* 선택된 생산제품 색깔표기 [E]*/
+      //선택된 생산제품 색깔표기[E]
+      */
     },
 
+     //제품별 공정 리스트
+     async getPlanFlowList(plan_cd) {
+      let result = await axios.get(`/api/inst/${plan_cd}/flow`)
+                              .catch(err => console.log(err));                              
+      this.planFlowData = result.data;
+    },
+
+     /*
     //계획서 제품 공정별 자재 리스트
     async getPlanMatList(prd_cd) {
       let result = await axios.get(`/api/inst/${prd_cd}/mat`)
                               .catch(err => console.log(err));
       this.planMatList = result.data;
     },
-
+    
+   
     //공정 선택 시 자재 리스트 노출
     matShow(procFlowCd) {
       const btn = document.getElementById(procFlowCd+'_btn');
 
-       /* 자재목록 노출 시 화살표 방향 변경 [S]*/
+      // 자재목록 노출 시 화살표 방향 변경 
       const elements = document.querySelectorAll('.' + procFlowCd);
       for (var i = 0; i < elements.length; i++) {
         elements[i].classList.toggle('dnone');
@@ -245,8 +302,9 @@ export default {
           btn.innerText = "▲";
         }
       }
-       /* 자재목록 노출 시 화살표 방향 변경 [E]*/
-    },
+      // 자재목록 노출 시 화살표 방향 변경
+     
+    }, */
 
     //지시서 등록
     async instInsert() {
