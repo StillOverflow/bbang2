@@ -68,11 +68,12 @@ const connection = mariadb.createConnection({
 // 트랜잭션 오픈
 const transOpen = async (callback) => { // 콜백함수 형식으로 서비스에서 호출 후 내부에서 작업
   await connection.beginTransaction(async () => {
-    try {
-      await callback(); 
-    } catch (err) {
-      console.log(err);
-    }
+    console.log('TRANSACTION OPEN!!');
+    // try{?
+      await callback();
+    // } catch (err) {
+      // console.log(err);
+    // }
   });
 };
 

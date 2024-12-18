@@ -37,9 +37,7 @@ const findTestList = async (search) => { // 조건을 받아 목록 조회
 
 // 트랜잭션 적용 버전
 const stdInsert = async (values) => {
-    await mariadb.transOpen( async () => {
-        console.log('TRANSACTION OPEN!!');
-
+    return await mariadb.transOpen( async () => {
         // 헤더 시퀀스 nextval 얻기
         let seq_res = await mariadb.transQuery('stdSeq');
         let mySeq = seq_res[0].seq;
