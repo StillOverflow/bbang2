@@ -6,7 +6,7 @@ const eqStatList = `SELECT * FROM equipment`;
 //정보전체조회
 const eqAllList = `SELECT * FROM equipment`;
 
-//단건조회
+//정보단건조회
 const equipInfo = `SELECT eqp_type, 
                           eqp_nm,
                           model,
@@ -22,7 +22,6 @@ const equipInfo = `SELECT eqp_type,
                           opt_speed,
                           opt_power,
                           uph,
-                          status,
                           is_use
 FROM equipment
 WHERE eqp_cd = ?

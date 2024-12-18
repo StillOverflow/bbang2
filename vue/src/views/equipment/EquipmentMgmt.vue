@@ -2,7 +2,6 @@
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
-
       <div
         class="card-header bg-light d-flex justify-content-center align-items-center"
       >
@@ -72,9 +71,7 @@
               :key="index"
               class="mb-2"
             >
-              <template
-                v-if="field.value == 'status' || field.value == 'is_use'"
-              >
+              <template v-if="field.value == 'is_use'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <select
                   class="form-select custom-width"
@@ -118,7 +115,12 @@
       <template v-slot:header>
         <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
         <h5 class="modal-title">설비 코드 검색</h5>
-        <button type="button" aria-label="Close" class="close" @click="modalOpen">
+        <button
+          type="button"
+          aria-label="Close"
+          class="close"
+          @click="modalOpen"
+        >
           ×
         </button>
       </template>
@@ -145,10 +147,7 @@
       </template>
     </Layout>
   </Transition>
-
 </template>
-
-
 
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
@@ -183,7 +182,6 @@ export default {
         opt_speed: '',
         opt_power: '',
         uph: '',
-        status: '',
         is_use: '',
       },
 
@@ -213,12 +211,11 @@ export default {
         },
         { label: '설비명 *', value: 'eqp_nm', type: 'text' },
         { label: '모델명 *', value: 'model', type: 'text' },
-        { label: '구매일자', value: 'pur_dt', type: 'date'},
+        { label: '구매일자', value: 'pur_dt', type: 'date' },
         { label: '구매업체', value: 'pur_act', type: 'text' },
         { label: '제조업체', value: 'mfg_act', type: 'text' },
         { label: '교체주기 (년)', value: 'repl_cycle', type: 'number' },
         { label: '점검주기 (일)', value: 'insp_cycle', type: 'number' },
-        { label: '설비담당자', value: 'id', type: 'text' },
       ],
       rightFields: [
         { label: '적정 온도', value: 'opt_temp', type: 'text' },
@@ -227,8 +224,8 @@ export default {
         { label: '적정 속도', value: 'opt_speed', type: 'text' },
         { label: '적정 전력량', value: 'opt_power', type: 'text' },
         { label: 'UPH', value: 'uph', type: 'text' },
-        { label: '점검구분', value: 'status', type: 'text', selectOptions: [] },
         { label: '설비상태', value: 'is_use', type: 'text', selectOptions: [] },
+        { label: '설비담당자', value: 'id', type: 'text' },
       ],
 
       isModal: false,
@@ -266,9 +263,9 @@ export default {
       let result = await axios
         .get(`api/equip/${eqp_cd}`)
         .catch((err) => console.log(err));
-        if (result.data.pur_dt) {
-    result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 날짜 변환
-  }
+      if (result.data.pur_dt) {
+        result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 날짜 변환
+      }
       this.equipmentData = result.data;
     },
 
@@ -294,20 +291,20 @@ export default {
         insp_cycle: this.equipmentData.insp_cycle,
         id: this.equipmentData.id,
         opt_temp: this.equipmentData.opt_temp,
-        opt_humid:this.equipmentData.opt_humid,
+        opt_humid: this.equipmentData.opt_humid,
         opt_rpm: this.equipmentData.opt_rpm,
         opt_speed: this.equipmentData.opt_speed,
         opt_power: this.equipmentData.opt_power,
         uph: this.equipmentData.uph,
-        status: this.equipmentData.status,
         is_use: this.equipmentData.is_use,
-        create_dt: this.create_dt
-      }
+        create_dt: this.create_dt,
+      };
 
-      let result = await axios.post("/api/equip", obj)
-      .catch(err => console.log(err));
+      let result = await axios
+        .post('/api/equip', obj)
+        .catch((err) => console.log(err));
       let addRes = result.data;
-      if (addRes.insertedId  > 0){
+      if (addRes.insertedId > 0) {
         alert('등록되었습니다.');
         this.equipInfo.no = addRes.insertedId;
       }
@@ -319,7 +316,7 @@ export default {
       });
     },
   },
-  
+
   created() {
     this.getEquipList();
     // 페이지 제목 저장
@@ -340,7 +337,7 @@ export default {
         }));
       })
       .catch((err) => console.log(err));
-    
+
     // 공통코드가 EU(설비상태)일 때
     this.getComm('EU')
       .then((result) => {
@@ -350,22 +347,6 @@ export default {
         //selectOptions에 담아 select 박스에 활용
         this.rightFields.find(
           (field) => field.value === 'is_use'
-        ).selectOptions = result.map((item) => ({
-          item: item.comm_dtl_cd,
-          name: item.comm_dtl_nm,
-        }));
-      })
-      .catch((err) => console.log(err));
-
-    // 공통코드가 EI(점검구분)일 때 
-    this.getComm('EI')
-      .then((result) => {
-        const commDtlNames = result.map((item) => item.comm_dtl_nm); // comm_dtl_nm만 추출
-        console.log('공통 코드명:', commDtlNames);
-
-        //selectOptions에 담아 select 박스에 활용
-        this.rightFields.find(
-          (field) => field.value === 'status'
         ).selectOptions = result.map((item) => ({
           item: item.comm_dtl_cd,
           name: item.comm_dtl_nm,
@@ -386,27 +367,25 @@ export default {
 </script>
 
 <style scoped>
-.fade-enter-from{
+.fade-enter-from {
   /* opacity: 0; */
   transform: translateY(-1000px);
-
 }
-.fade-enter-active{
+.fade-enter-active {
   transition: all 0.5s;
 }
-.fade-enter-to{
+.fade-enter-to {
   /* opacity: 1; */
   transform: translateY(0px);
 }
 
-
-.fade-leave-from{
+.fade-leave-from {
   opacity: 1;
 }
-.fade-leave-active{
+.fade-leave-active {
   transition: all 0.7s;
 }
-.fade-leave-to{
+.fade-leave-to {
   opacity: 0;
 }
 
@@ -430,7 +409,6 @@ button {
   max-width: 500px;
   width: 100%;
 }
-
 
 @media (max-width: 992px) {
   .form-control .form-select .custom-width {
