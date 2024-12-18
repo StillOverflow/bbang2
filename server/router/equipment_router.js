@@ -67,23 +67,26 @@ router.post('/equip', upload.single('selectedFile'), async (req, res) => {
 
 // 설비수정 + 이미지 파일도 같이 수정
 
-router.put('/equip', upload.single('selectedFile'), async (req, res) => {
+router.put('/equip/:eqp_cd', upload.single('selectedFile'), async (req, res) => {
   try {
-    // 업로드된 파일 경로
-    const imgPath = req.file ? `/uploads/${req.file.filename}` : null;
-    console.log(imgPath);
+    const eqpCd = req.params.eqp_cd; // URL에서 설비 코드 추출
 
-    // 나머지 폼 데이터
-    const eqInfo = { ...req.body, img_path: imgPath };
+    // 이미지 파일 업로드 처리
+    const imgPath = req.file 
+      ? `/uploads/${req.file.filename}` // 새 이미지 경로
+      : req.body.img_path || null;      // 기존 이미지 경로 유지
 
-    // DB 저장(서비스 함수 호출)
+    // 수정할 데이터 구성
+    const eqInfo = { ...req.body, img_path: imgPath, eqp_cd: eqpCd };
+
+    // 서비스 호출
     const result = await equipmentService.updateEq(eqInfo);
 
-    //결과 반환
-    res.json({ success: true, data: result, img_path: imgPath });
+    // 응답 반환
+    res.json(result);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ success: false, message: '설비 등록 실패' });
+    console.error("설비 수정 에러:", err.message);
+    res.status(500).json({ success: false, message: "설비 수정 실패" });
   }
 });
 
