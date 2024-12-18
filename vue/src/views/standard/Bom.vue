@@ -47,7 +47,9 @@
           <button class="btn btn-primary" @click="searchMtl">검색</button>
         </div>
         <div class="col-13 text-end">
-          <button class="btn btn-primary" @click="InsertBomData">자재 추가</button>
+          <button class="btn btn-primary" @click="InsertBomData">
+            자재 추가
+          </button>
         </div>
         <!-- 자재 테이블 ag-gird -->
         <ag-grid-vue
@@ -94,14 +96,14 @@ import axios from "axios";
 
 export default {
   components: { AgGridVue },
-  
+
   //화면 정보 제목
   created() {
     this.$store.dispatch("breadCrumb", { title: "BOM 관리" });
     this.bringMtlData();
     this.bringPrdData();
   },
-  
+
   data() {
     return {
       selectBomData: null, //제품 선택
@@ -109,27 +111,29 @@ export default {
       selectPrdData: null,
       // 제품 테이블 컬럼명
       gridOptions: {
-        rowSelection:{mode:'multiRow'},        
+        rowSelection: { mode: "multiRow" },
       },
-        prdOptions: {
-          rowSelection: {
-            mode: "singleRow",
-            checkboxes: false,
-            enableClickSelection: true,
-          }   
+      prdOptions: {
+        rowSelection: {
+          mode: "singleRow",
+          checkboxes: false,
+          enableClickSelection: true,
+        },
       },
       productDefs: [
-        { headerName: "제품코드", field: "prd_cd", sortable: true ,},
+        { headerName: "제품코드", field: "prd_cd", sortable: true },
         { headerName: "제품명", field: "prd_nm", sortable: true },
         {
           headerName: "사용여부",
           field: "usage_sta",
           cellEditor: "agSelectCellEditor",
         },
-        { headerName: "등록날짜", field: "create_dt" 
-        ,cellRenderer: (data) => {
-        return data.value ? (new Date(data.value)).toLocaleDateString() : '';
-}
+        {
+          headerName: "등록날짜",
+          field: "create_dt",
+          cellRenderer: (data) => {
+            return data.value ? new Date(data.value).toLocaleDateString() : "";
+          },
         },
       ],
       // 제품 테이블 데이터
@@ -251,12 +255,20 @@ export default {
     //bom에 선택한 자재데이터 추가
     async InsertBomData() {
       try {
-        const selectedNodes = this.materialGridApi.getSelectedNodes();
-        const selectedMat = selectedNodes.map((node) => node.data);
-
+        const selectedNodes = this.materialGridApi.getSelectedNodes(); //자재데이터 불러오기
+        console.log("selectedNodes => ", selectedNodes);
+        const selectedMat = selectedNodes.map((node) => node.data); //배열로 저장
+        if (!this.selectBomData) {
+          this.$swal({
+            icon: "error",
+            title: "제품 선택이 되지 않았습니다.",
+            text: "제품 선택 후 추가해주세요",
+          });
+          return;
+        }
         for (const dup of selectedMat) {
           const saveBom = {
-            //보여주기용
+            //보여주기용 그리드에 넘기기
             prd_cd: this.selectBomData,
             mat_cd: dup.mat_cd,
             unit: dup.unit_nm,
@@ -267,13 +279,16 @@ export default {
             unit_cd: dup.unit_cd,
           };
 
-          if (this.bomData.some((obj) => obj.mat_cd == dup.mat_cd)) {
+          if (
+            this.bomData.some((obj) => obj.mat_cd === dup.mat_cd) ||
+            this.saveData.some((obj) => obj.mat_cd === dup.mat_cd)
+          ) {
             this.$swal({
               icon: "error",
-              title: "이미자재존재",
-              text: "다시추가해주세요",
+              title: "존재하는 자재가 있습니다.",
+              text: "다시 선택해주세요",
             });
-            return;
+            continue;
           }
           //실제넘기는값
           const saveRealData = {
@@ -282,15 +297,8 @@ export default {
             unit: saveBom.unit_cd,
             usage: saveBom.usage,
           };
-          if (this.bomData.some((obj) => obj.mat_cd == dup.mat_cd)) {
-            this.$swal({
-              icon: "error",
-              title: "이미자재존재",
-              text: "다시추가해주세요",
-            });
-            return;
-          }
-          this.saveData.push(saveRealData);
+
+          this.saveData.push(saveRealData); //savaData 배열에 저장
           this.bomGridApi.applyTransaction({
             add: [saveBom],
           }); //ui만 반영
@@ -306,34 +314,55 @@ export default {
       const selectedBomData = selectedNodes.map((node) => node.data); //가져온 데이터 배열에 저장
 
       for (const bom of selectedBomData) {
-        //bom객체에 아까 저장한 배열에서 .prc_cd추출
-        this.deleteData.push(bom);
+        //반복문으로 배열 0 배열1 배열2... 뽑아내기
+        this.deleteData.push(bom); //deletedata 배열에 저장
+
+        this.saveData = this.saveData.filter(
+          (item) => item.mat_cd !== bom.mat_cd
+        ); //세이브데이터에서 자재코드가 bom자재코드랑 같은거만 남겨두기
 
         this.bomGridApi.applyTransaction({
           // applyTransaction : 실시간으로
           remove: [bom], //bom객체를 remove대상 지정
         });
+        console.log(bom);
       }
     },
     async save() {
       try {
-        let savResult;
-        let delResult;
-        for (const bom of this.deleteData) {
-          delResult = await axios.delete(`/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`);  
-          console.log(delResult.data.result)     
+        if (this.saveData.length == 0 && this.deleteData.length == 0) {
+          this.$swal({
+            icon: "warning",
+            title: "저장할 데이터가 없습니다.",
+          });
+          return;
         }
-        for (const bom of this.saveData) {
-          savResult = await axios.post(`/api/standard/bom`, bom);
-          console.log(savResult.data.result)
-        }
-        // if(savResult.data.result == 'success' && delResult.data.result == 'success'){
-        //   console.log(delResult.data.result)
-        // };
-       
-        this.saveData = [];
-        this.deleteData = [];
-        this.bringBomData(this.selectBomData);
+        this.$swal({
+          title: "Do you want to save the changes?",
+          showDenyButton: true,
+          showCancelButton: true,
+          confirmButtonText: "Save",
+          denyButtonText: `Don't save`,
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            for (const bom of this.deleteData) {
+              await axios.delete(
+                `/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`
+              );
+            }
+            for (const bom of this.saveData) {
+              await axios.post(`/api/standard/bom`, bom);
+            }
+
+            this.saveData = [];
+            this.deleteData = [];
+            this.bringBomData(this.selectBomData);
+
+            this.$swal("Saved!", "", "success");
+          } else if (result.isDenied) {
+            this.$swal("Changes are not saved", "", "info");
+          }
+        });
       } catch (error) {
         console.error("오류 발생:", error);
         alert("저장 실패");

@@ -13,7 +13,7 @@ FROM product p
 	LEFT JOIN common_detail cd
     ON cd.comm_dtl_cd = b.usage_sta
 	 GROUP BY prd_cd
-`
+`;
 //제품 키워드 검색
 const prdSearch = `
 SELECT
@@ -40,10 +40,8 @@ cd_t.comm_dtl_nm as type
 from material m
 join common_detail cd
 on cd.comm_dtl_cd = m.unit
-and cd.comm_cd = 'UN'
 join common_detail cd_t
 on cd_t.comm_dtl_cd = m.type
-and cd_t.comm_cd = 'MA'
 `;
 //자재 키워드 검색
 const matSearch = `
