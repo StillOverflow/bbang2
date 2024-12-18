@@ -25,6 +25,7 @@
           :rowData="productData"
           :pagination="true"
           :paginationAutoPageSize="true"
+          :gridOptions="prdOptions"
           :cellValueChanged="cellValueChanged"
           @rowClicked="rowClicked"
         >
@@ -110,11 +111,17 @@ export default {
       selectPrdData: null,
       // 제품 테이블 컬럼명
       gridOptions: {
-        rowSelection:{mode:'multiRow'},
-        
+        rowSelection:{mode:'multiRow'},        
+      },
+        prdOptions: {
+          rowSelection: {
+            mode: "singleRow",
+            checkboxes: false,
+            enableClickSelection: true,
+          }   
       },
       productDefs: [
-        { headerName: "제품코드", field: "prd_cd", sortable: true },
+        { headerName: "제품코드", field: "prd_cd", sortable: true ,},
         { headerName: "제품명", field: "prd_nm", sortable: true },
         {
           headerName: "사용여부",

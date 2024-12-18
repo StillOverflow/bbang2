@@ -179,6 +179,7 @@ export default {
   },
   data(){
     return{
+      
     //제품정보  
     productDefs:[
       { headerName: '제품코드', field: 'prd_cd', sortale:true},
