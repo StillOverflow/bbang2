@@ -8,7 +8,8 @@ import Sales_OrderList from '../views/sales/Sales_OrderList.vue';
 
 ////////////////////////////// 생산 //////////////////////////////
 import Produce from '../views/produce/Produce.vue';
-import Produce_ow from '../views/produce/Produce_ow.vue';
+import Produce_PlanList from '../views/produce/Produce_PlanList.vue';
+import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
 
 ////////////////////////////// 설비 //////////////////////////////
 import Equipment from '../views/equipment/Equipment.vue';
@@ -79,10 +80,16 @@ const routes = [
     component: Produce,
   },
   {
-    //생산지시 등록
-    path: '/produce_ow',
-    name: 'produce_ow',
-    component: Produce_ow,
+    //생산지시서 조회
+    path: '/Produce_PlanList',
+    name: 'Produce_PlanList',
+    component: Produce_PlanList,
+  },
+  {
+    //생산지시서 등록
+    path: '/Produce_InstAdd',
+    name: 'Produce_InstAdd',
+    component: Produce_InstAdd,
   },
 
   ////////////////////////////// 설비 //////////////////////////////

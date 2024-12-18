@@ -21,6 +21,7 @@ const findAllPlanDtl = async (no)=>{
   return list;
 }
 
+
 /*--------------지시서-------------*/
 // 조회
 const findAllInst = async ()=>{
@@ -56,6 +57,24 @@ const findInstMatFlow = async (no)=>{
   let list = await mariadb.query('instProcMtList', no);
   return list;
 }
+
+const stdInsert = async (values) => { 
+
+  let nextVal = await mariadb.query('inst_seq'); 
+  let header_res = await mariadb.query('instInsert', [instInfo, nextVal]);  
+  
+  values.forEach((val) => {
+    val.inst_cd = nextVal;
+  });
+  
+  let dtl_res = await mariadb.query('instDtlInsert', values);
+  if(header_res.affectedRows > 0 & dtl_res.affectedRows > 0){
+      return {"result" : "success"};
+  } else {
+      return {"result" : "fail"};
+  }
+
+}; 
 
 module.exports = {
   findAllPlan,
