@@ -194,6 +194,7 @@ export default {
         AgGridVue,
         Layout
     },
+    
     created() {
         this.$store.dispatch('breadCrumb', { title: '주문서 등록' });
         this.getAccList();
@@ -265,6 +266,48 @@ export default {
         // },
 
         async ordInsert() {
+
+            // 필수값 입력 알람
+            let dueDt = document.getElementById('due_date').value;
+            let accCode = document.getElementById('acc_code').value;
+            let memId = document.getElementById('mem_id').value;
+            let rowQty = this.rowData.filter(row => !row.order_qty || row.order_qty <= 0);
+
+            if (!accCode && !memId) {
+                this.$swal({
+                    icon: "error",
+                    title: "거래처와 담당자를 조회 하세요",
+                    text: "거래처와 담당자를 선택해야 주문을 등록할 수 있습니다.",
+                });
+                return;
+            }
+            if (!this.rowData || this.rowData.length === 0) {
+                this.$swal({
+                    icon: "error",
+                    title: "제품을 선택하세요",
+                    text: "최소 한 개 이상의 제품을 선택해야 주문을 등록할 수 있습니다.",
+                });
+                return;
+            }
+            if (rowQty.length > 0) {
+                //alert("모든 제품의 주문 수량을 입력하세요.");
+                this.$swal({
+                    icon: "error",
+                    title: "주문 수량을 입력하세요",
+                    text: "입력 후 엔터를 쳐주세요",
+                });
+                return;
+            }
+            if (!dueDt) {
+                this.$swal({
+                    icon: "error",
+                    title: "납기 일자를 입력하세요",
+                    text: "확인을 다시 하여주세요",
+                });
+                return;
+            }
+
+            //주문서 등록
             let insertOrd = [];
             let insertOrdDtl = [];
 
@@ -290,6 +333,14 @@ export default {
                                 .catch(err => console.log("axios에러",err));
             console.log(result.data.result);
             console.log(result.data);
+
+            if(result.data.result == 'success'){
+                this.$swal({
+                    icon: "success",
+                    title: "등록에 성공 하였습니다.",
+                    text: "목록에서 확인 해주세요.",
+                });
+            }
             return result;
 
         },
