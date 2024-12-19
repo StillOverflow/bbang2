@@ -1,33 +1,36 @@
 /* -----------설비------------*/
 
-//상태전체조회
+//설비상태조회
 const eqStatList = `SELECT * FROM equipment`;
 
-//정보전체조회
-const eqAllList = `SELECT eqp_cd,
-                          eqp_type,
-                          eqp_nm,
-                          model,
-                          pur_dt,
-                          pur_act,
-                          mfg_act,
-                          insp_cycle,
-                          repl_cycle,
-                          status,
-                          id,
-                          is_use,
-                          opt_temp,
-                          opt_humid,
-                          opt_rpm,
-                          opt_speed,
-                          opt_power,
-                          last_insp_dt,
-                          next_insp_dt,
-                          uph,
-                          create_dt,
-                          update_dt,
-                          note 
-FROM equipment`;
+//설비정보조회
+const eqAllList = `SELECT e.eqp_cd,
+                          e.eqp_type,
+                          e.eqp_nm,
+                          e.model,
+                          e.pur_dt,
+                          e.pur_act,
+                          e.mfg_act,
+                          e.insp_cycle,
+                          e.repl_cycle,
+                          e.status,
+                          e.id,
+                          e.is_use,
+                          e.opt_temp,
+                          e.opt_humid,
+                          e.opt_rpm,
+                          e.opt_speed,
+                          e.opt_power,
+                          e.last_insp_dt,
+                          e.next_insp_dt,
+                          e.uph,
+                          e.create_dt,
+                          e.update_dt,
+                          e.note,
+                          date(r.end_time) AS end_dt
+FROM equipment e 
+                          JOIN repair_log r
+                          ON e.eqp_cd = r.eqp_cd`;
 
 //정보단건조회
 const equipInfo = `SELECT eqp_cd,

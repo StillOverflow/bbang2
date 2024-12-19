@@ -201,7 +201,10 @@ export default {
           <span class="nav-link-text ms-1">자재</span>
         </a>
       </li>
-      <ul class="navbar-nav detail Material_list" :class="urlCompare('Material') == true ? '' : 'dnone'">
+      <ul
+        class="navbar-nav detail Material_list"
+        :class="urlCompare('Material') == true ? '' : 'dnone'"
+      >
         <li class="nav-item">
           <sidenav-item
             to="/Material_list6"
@@ -329,16 +332,16 @@ export default {
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/Equipment_list2"
-            :class="getRoute() === 'Equipment_list2' ? 'active' : ''"
+            to="/Equipment_AllList"
+            :class="getRoute() === 'Equipment_AllList' ? 'active' : ''"
             :navText="'설비 정보 조회'"
           >
           </sidenav-item>
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/equipment_Mgmt"
-            :class="getRoute() === 'equipment_Mgmt' ? 'active' : ''"
+            to="/Equipment_Mgmt"
+            :class="getRoute() === 'Equipment_Mgmt' ? 'active' : ''"
             :navText="'설비 등록 관리'"
           >
           </sidenav-item>

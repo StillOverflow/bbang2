@@ -1,4 +1,4 @@
-<!-- 설비 -->
+<!-- 설비 관리 -->
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
@@ -6,17 +6,26 @@
         class="card-header bg-light d-flex justify-content-center align-items-center"
       >
         <div class="d-flex align-items-center gap-2 flex-wrap">
-          <div class="input-group">
+          <div class="input-group mb-3 w-30">
             <input
               id="eqp_cd"
               type="text"
               placeholder="설비코드"
               class="form-control"
-              style="height: 40px"
+              aria-label="Recipient's username"
+              aria-describedby="button-addon2"
+              style="height: 41px"
               v-model="selectedEqp"
               @click="modalOpen"
             />
-            <button class="btn btn-secondary" @click="modalOpen">조회</button>
+            <button
+              class="btn btn-warning"
+              id="button-addon2"
+              type="button"
+              @click="modalOpen"
+            >
+              조회
+            </button>
           </div>
         </div>
       </div>
@@ -107,20 +116,24 @@
         <div class="text-center mt-3">
           <button
             v-if="isEditMode"
-            class="btn btn-primary me-2"
+            class="btn btn-success mlp10"
             @click="equipUpdate"
           >
-            수정
+            SAVE
           </button>
           <button
             v-if="!isEditMode"
-            class="btn btn-success me-2"
+            class="btn btn-success mlp10"
             @click="equipInsert"
           >
-            등록
+            SAVE
           </button>
-          <button v-if="!isEditMode" class="btn btn-danger" @click="resetForm">
-            초기화
+          <button
+            v-if="!isEditMode"
+            class="btn btn-secondary mlp10"
+            @click="resetForm"
+          >
+            RESET
           </button>
         </div>
       </div>
@@ -202,6 +215,7 @@ export default {
         opt_power: '',
         uph: '',
         is_use: '',
+        end_dt: '',
       },
 
       equipDefs: [
@@ -251,6 +265,10 @@ export default {
     };
   },
   methods: {
+    gridFit(params) {
+      // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
+      params.api.sizeColumnsToFit();
+    },
     modalOpen() {
       this.isModal = !this.isModal;
     },
