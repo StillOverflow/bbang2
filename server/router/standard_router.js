@@ -81,7 +81,7 @@ router.post("/standard/procFlow", async (req, res) => {
 });
 // 공정 순서 업데이트
 router.put("/processFlow/seq", async (req, res) => {
-  const { updatedProcesses } = req.body; // [{ proc_seq, proc_cd }, ...]
+  const updatedProcesses = req.body; // [{ proc_seq, proc_cd }]
   let result = await standardService.updateProcessSequence(updatedProcesses);
   res.send(result);
 });

@@ -89,7 +89,7 @@ const deleteProcessFlow = async (info) => {
 };
 // 공정 순서 업데이트
 const updateProcessSequence = async (updatedProcesses) => {
-  // updatedProcesses는 [{ proc_seq, proc_cd }, ...] 형식의 배열
+  // updatedProcesses는 [{ proc_seq, proc_cd }] 배열
   for (const process of updatedProcesses) {
     const result = await mariadb.query("updateProcessSequence", [
       process.proc_seq,
