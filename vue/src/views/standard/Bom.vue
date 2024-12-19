@@ -1,89 +1,100 @@
 <script setup></script>
 
 <template>
-  <div class="py-4 container-fluid">
+  <div id="page-inner" class="mx-auto">
+    <div class="py-4 container-fluid">
+      <div class="card p-3">
+        <div class="row">
+          <!-- 제품목록 -->
+          <div class="col-md-5" style="height : auto">
+            <h4 class="mb-3 text-center">제품 목록</h4>
+            <div class="d-flex justify-content-left align-items-center mb-2" style="width : 100%">
+              <div style="width:15%">
+                <label class="me-2 align-self-center" >제품명</label>
+              </div>
+              <div class="d-flex justify-content-left align-items-center" style="width: 85%">
+                <input
+                  type="text"
+                  class="form-control d-inline"
+                  v-model="keyword"
+                  placeholder="제품명을 입력하세요"
+                  style="width:75%"
+                />
+                <button class="btn btn-primary mb-0" style="width:25%" @click="searchPrd">검색</button>
+              </div>
+              
+            </div>
+            <!-- 제품 테이블 ag-gird -->
+            <ag-grid-vue
+              class="ag-theme-alpine"
+              style="width: 100%; height: 600px"
+              :columnDefs="productDefs"
+              :rowData="productData"
+              :pagination="true"
+              :paginationAutoPageSize="true"
+              :gridOptions="prdOptions"
+              :cellValueChanged="cellValueChanged"
+              @rowClicked="rowClicked"
+            >
+              <!--행선택시 bom데이터 조회-->
+            </ag-grid-vue>
+          </div>
+
+          <div class="col-md-7">
+            <!-- 자재 목록 -->
+            <h4 class="mb-3">자재 목록</h4>
+            <div class="mb-3">
+              <label class="me-2 align-self-center">자재명</label>
+              <input
+                type="text"
+                class="form-control w-50 d-inline"
+                v-model="matkeyword"
+                placeholder="자재명을 입력하세요"
+              />
+              <button class="btn btn-primary" @click="searchMtl">검색</button>
+            </div>
+            <div class="col-13 text-end">
+              <button class="btn btn-primary" @click="InsertBomData">
+                자재 추가
+              </button>
+            </div>
+            <!-- 자재 테이블 ag-gird -->
+            <ag-grid-vue
+              class="ag-theme-alpine"
+              style="width: 100%; height: 300px"
+              :columnDefs="materialDefs"
+              :rowData="materialData"
+              :pagination="true"
+              :gridOptions="gridOptions"
+              :cellValueChanged="cellValueChanged"
+              @gridReady="onMatGridReady"
+            >
+            </ag-grid-vue>
+
+            <!-- BOM 목록 -->
+            <h4 class="mt-4 mb-3">BOM 정보</h4>
+            <div class="col-13 text-end">
+              <button class="btn btn-danger ms-10" @click="deleteBom">삭제</button>
+            </div>
+            <!-- BOM 테이블 ag-grid -->
+            <ag-grid-vue
+              class="ag-theme-alpine"
+              style="width: 100%; height: 300px"
+              :columnDefs="bomDefs"
+              :rowData="bomData"
+              :pagination="true"
+              :gridOptions="gridOptions"
+              overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
+              @gridReady="onBomGridReady"
+            >
+            </ag-grid-vue>
+          </div>
+        </div>
+      </div>
     <!-- bom 관리 -->
-    <div class="row">
-      <!-- 제품목록 -->
-      <div class="col-md-6">
-        <h4 class="mb-3">제품 목록</h4>
-        <div class="mb-3 me-3">
-          <label class="me-2 align-self-center">제품명</label>
-          <input
-            type="text"
-            class="form-control w-50 d-inline"
-            v-model="keyword"
-            placeholder="제품명을 입력하세요"
-          />
-          <button class="btn btn-primary" @click="searchPrd">검색</button>
-        </div>
-        <!-- 제품 테이블 ag-gird -->
-        <ag-grid-vue
-          class="ag-theme-alpine pt-6"
-          style="width: 100%; height: 600px"
-          :columnDefs="productDefs"
-          :rowData="productData"
-          :pagination="true"
-          :paginationAutoPageSize="true"
-          :gridOptions="prdOptions"
-          :cellValueChanged="cellValueChanged"
-          @rowClicked="rowClicked"
-        >
-          <!--행선택시 bom데이터 조회-->
-        </ag-grid-vue>
-      </div>
-
-      <div class="col-md-6">
-        <!-- 자재 목록 -->
-        <h4 class="mb-3">자재 목록</h4>
-        <div class="mb-3">
-          <label class="me-2 align-self-center">자재명</label>
-          <input
-            type="text"
-            class="form-control w-50 d-inline"
-            v-model="matkeyword"
-            placeholder="자재명을 입력하세요"
-          />
-          <button class="btn btn-primary" @click="searchMtl">검색</button>
-        </div>
-        <div class="col-13 text-end">
-          <button class="btn btn-primary" @click="InsertBomData">
-            자재 추가
-          </button>
-        </div>
-        <!-- 자재 테이블 ag-gird -->
-        <ag-grid-vue
-          class="ag-theme-alpine"
-          style="width: 100%; height: 300px"
-          :columnDefs="materialDefs"
-          :rowData="materialData"
-          :pagination="true"
-          :gridOptions="gridOptions"
-          :cellValueChanged="cellValueChanged"
-          @gridReady="onMatGridReady"
-        >
-        </ag-grid-vue>
-
-        <!-- BOM 목록 -->
-        <h4 class="mt-4 mb-3">BOM 정보</h4>
-        <div class="col-13 text-end">
-          <button class="btn btn-danger ms-10" @click="deleteBom">삭제</button>
-        </div>
-        <!-- BOM 테이블 ag-grid -->
-        <ag-grid-vue
-          class="ag-theme-alpine"
-          style="width: 100%; height: 300px"
-          :columnDefs="bomDefs"
-          :rowData="bomData"
-          :pagination="true"
-          :gridOptions="gridOptions"
-          overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
-          @gridReady="onBomGridReady"
-        >
-        </ag-grid-vue>
-      </div>
-    </div>
   </div>
+  </div>
+  
   <div class="col-6 text-end">
     <button
       class="btn btn-success"
