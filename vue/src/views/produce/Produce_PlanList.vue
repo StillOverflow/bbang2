@@ -78,24 +78,19 @@ export default {
       this.planData = result.data;
     },
 
-    //계획서 리스트
+    //계획서 삭제
     async PlanCancel() {
-      /*
-      const cancelArr = [];
-      let obj = {
-          status : 1
-      }
+      
+      let cancelArr = [];
 
       const val = this.myApi.getSelectedNodes();
       for(let i=0; i<val.length; i++){
-        cancelArr.push(val[i].data.prod_plan_cd);
+        cancelArr.push({chkVal : val[i].data.prod_plan_cd });
       }
-      cancelArr.join(",");
-
-      let result = await axios.put(`/api/plan_cancel/`, cancelArr)
+      let result = await axios.delete(`/api/plan/`, {params : cancelArr})
                               .catch(err => console.log(err));
       return result;
-      */
+      
     },
   }
 };
