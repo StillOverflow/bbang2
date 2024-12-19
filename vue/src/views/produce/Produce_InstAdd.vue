@@ -9,18 +9,16 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         
         <p class="text-uppercase text-lg font-weight-bolder">기본정보</p>
-        <label for="example-text-input" class="form-control-label">생산계획코드</label>
-        <div class="row">
-          <div class="col-6 col-xxl-2">
-            <input class="form-control" type="text" v-model="plan_cd" @click="modalOpen"/>
-          </div>
-          <div class="col-4 text-end text-md-start">
-            <button class="btn btn-primary me-3" @click="modalOpen">검색</button>
+        <p for="example-text-input" class="text-sm font-weight-bolder">생산계획코드</p>
+          <div class="row">
+            <div class="input-group w-30">
+              <input class="form-control" type="text" v-model="plan_cd" @click="modalOpen" style="height: 41px;">
+              <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
           </div>
         </div>
 
-        <label for="example-text-input" class="form-control-label">작업일자</label>
-        <input class="form-control w-40" type="date" v-model="work_dt"/>
+        <p for="example-text-input" class="text-sm font-weight-bolder">작업일자</p>
+        <input class="form-control w-40" type="date" v-model="work_dt" @click="modalOpen"/>
       </div>
 
       <div class="card-body">
@@ -33,7 +31,6 @@
             style="width: 100%; height: 400px;" 
             :columnDefs="planDtlDefs"
             :rowData="planDtlData" 
-            :gridOptions="gridOptions"
             @rowClicked="prdClicked" 
             @grid-ready="gridFit"
             overlayNoRowsTemplate="생산계획코드를 조회해주세요.">
@@ -70,16 +67,16 @@
           <!--공정설정-->
           <div class="col-md-6">
 
-            <p class="text-uppercase text-lg font-weight-bolder">공정 및 자재설정</p>
+            <p class="text-uppercase text-lg font-weight-bolder">공정흐름 설정</p>
             <ag-grid-vue class="ag-theme-alpine" 
             style="width: 100%; height: 400px;" 
             :columnDefs="planFlowDefs"
             :rowData="planFlowData" 
-            @grid-ready="gridFit"
+            @grid-ready="myGrid"
             :gridOptions="FlowGridOptions"
             overlayNoRowsTemplate="생산계획코드를 조회해주세요.">
             </ag-grid-vue>
-            
+            <!--
             <div class="table-responsive">
               <table class="table">
                 <thead class="table-secondary">
@@ -135,11 +132,12 @@
                 </tbody>
               </table>
             </div>
+            -->
           </div>
         </div>
         <div class="center mtp30">
-          <button class="btn btn-success" @click="instInsert">등록</button>
-          <button class="btn btn-secondary mlp10">목록</button>
+          <button class="btn btn-primary" @click="instInsert">SUBMIT</button>
+          <button class="btn btn-secondary mlp10">RESET</button>
         </div>
       </div>
     </div>
@@ -219,12 +217,6 @@ export default {
       ],
       planFlowData: [],
 
-      gridOptions: {
-        suppressMovableColumns: true, // 컬럼 드래그 이동 방지
-        rowSelection: { 
-            mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
-        }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
-      },
       FlowGridOptions: {
         rowDragManaged: true,
         rowDragMultiRow: true,
@@ -242,6 +234,11 @@ export default {
     gridFit(params) { // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
       params.api.sizeColumnsToFit();
     },
+    myGrid(params){ // 매개변수 속성으로 자동 접근
+      params.api.sizeColumnsToFit(); // 가로스크롤 삭제
+      this.myApi = params.api;
+      this.myColApi = params.columnApi; // api, columnApi 둘 다 꼭 있어야 함
+    },    
     /*모달 [S]*/
     modalOpen() {
       this.isModal = !this.isModal;
@@ -319,19 +316,22 @@ export default {
 
     //지시서 등록
     async instInsert() {
-        
-      let obj = {
-        PROD_PLAN_CD : this.plan_cd,
-        WORK_DT : this.work_dt,
-        FLOW : this.flowArr,
-        MAT : this.matArr
+      let insertArr = [];
+
+      const val = this.myApi.getSelectedNodes();
+      for(let i=0; i<val.length; i++){
+        insertArr.push({
+                        PROD_PLAN_CD: this.plan_cd, 
+                        WORK_DT: this.work_dt,
+                        PRD_CD: this.prd_cd,
+                        PROC_FLOW_CD : val[i].data.PROC_FLOW_CD,
+                        PROC_SEQ : i+1,
+                      });
       }
-      console.log(obj);
-       /*
-      let result = await axios.post('/api/inst', obj)
-                              .catch(err => console.log(err));
-                              
-      return result;*/
+      console.log(insertArr);
+
+      await axios.post('/api/inst', insertArr)
+                 .catch(err => console.log(err));
       
     },
   }

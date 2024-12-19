@@ -63,21 +63,48 @@ const instInfo =
 `SELECT * FROM prod_inst
 WHERE INST_CD = ?`;
 
-//등록
-const instInsert =
-`INSERT INTO prod_inst 
-SET ? `;
+
+/* 지시서 등록[S] */
+/*
+PROD_PLAN_CD: this.plan_cd, 
+WORK_DT: this.work_dt,
+PRD_CD: this.prd_cd,
+PROC_FLOW_CD : val[i].data.PROC_FLOW_CD,
+PROC_SEQ : i+1,
+*/
+// 시퀀스 조회
+const instSeq = `
+  SELECT CONCAT('PI', LPAD(nextval(inst_seq), 3,'0')) seq
+  FROM dual
+`;
+
+// 헤더 입력
+const instInsert = `
+  INSERT INTO prod_inst SET ?
+`;
+
+// 디테일 입력
+const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
+  let sql = `
+    INSERT prod_inst_dtl
+      (qu_std_dtl_cd, qu_std_cd, test_cd)
+    VALES 
+  `;
+
+  values.forEach((obj) => {
+    sql += `(CONCAT('PID', LPAD(nextval(inst_dtl_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '0'), `;
+  });
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+  return sql;
+};
+/* 지시서 등록[E] */
 
 //수정
 const instUpdate =
 `UPDATE prod_inst 
 SET ? 
 WHERE INST_CD = ?`;
-
-//제품등록
-const instDtlInsert =
-`INSERT INTO prod_inst_dtl
-SET ? `;
 
 //제품수정
 const instDtlUpdate =
@@ -156,6 +183,7 @@ module.exports = {
 
     instList,
     instInfo,
+    instSeq,
     instInsert,
     instUpdate,
     instDtlInsert,

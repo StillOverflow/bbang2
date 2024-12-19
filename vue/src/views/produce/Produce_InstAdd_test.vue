@@ -14,7 +14,7 @@
           <div class="row">
             <div class="input-group w-30">
               <input class="form-control" type="text" v-model="plan_cd" @click="modalOpen" style="height: 41px;">
-            <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
+              <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
           </div>
         </div>
 
@@ -72,7 +72,13 @@
                 <tbody>
                   <template v-if="planFlowCount >0">
                     <tr :key="i" v-for="(Flow, i) in planFlowData" class="text-center planDtl" v-bind:id="Flow.PROC_FLOW_CD+'_dtl'" >
+                      <td>
+                            <div class="form-check col-4 col-md-2">
+                              <input class="form-check-input" type="checkbox" v-model="flowArr" :value="Flow.PROC_FLOW_CD" :id="'fl' + Flow.PROC_FLOW_CD">
+                            </div>
+                          </td>
                         <td>{{ Flow.PROC_FLOW_CD }}</td>
+                        <td>{{ Flow.PROC_NM }}</td>
                     </tr>
                   </template>
 
@@ -115,19 +121,36 @@
       <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
     </template>
   </Layout>
-
+  <table>
+    <thead>
+      <tr>
+        <th>공정코드</th>
+        <th>공정명</th>
+      </tr>
+    </thead>
+    <tbody>
+      <draggable class="list-group" item-key="PROC_FLOW_CD" :list="planFlowData" group="people" v-model="planFlowData"  @change="log">
+          <tr class="list-group-item" v-for="Flow in planFlowData" 
+          :key="Flow.PROC_FLOW_CD">
+            <td>{{Flow.PROC_FLOW_CD}}</td>
+          </tr>
+      </draggable>
+    </tbody>
+</table>
 </template>
 
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
 import Layout from '../components/modalLayout.vue';
+import draggable from "vue3-draggable";
 
 export default {
-  components: { AgGridVue, Layout },
+  components: { AgGridVue, Layout, draggable },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
     this.getPlanList();
+    this.getPlanFlowList();
   },
   computed : {
       planDtlCount(){
@@ -138,20 +161,14 @@ export default {
       }
 
   },
-  el: '#list',
   data() {
     return {
-      list1: [
-        { name: "John", id: 1 },
-        { name: "Joao", id: 2 },
-        { name: "Jean", id: 3 },
-        { name: "Gerard", id: 4 }
-      ],
       isModal: false,
       flowArr: [],
       matArr: [],
       planDtlData: [],
       planFlowData: [],
+      
 
       /* 모달 계획서 목록 */
       planDefs: [
@@ -183,6 +200,17 @@ export default {
   },
   
   methods: {
+    log: function(evt) {
+      window.console.log(evt);
+    },
+    //제품별 공정 리스트
+    async getPlanFlowList(prd_cd) {
+      prd_cd = "PR01";
+      let result = await axios.get(`/api/inst/${prd_cd}/flow`)
+                              .catch(err => console.log(err));                              
+      this.planFlowData = result.data;
+    },
+
     gridFit(params) { // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
       params.api.sizeColumnsToFit();
     },
@@ -213,7 +241,7 @@ export default {
 
     //계획서 제품 리스트 선택
     prdClicked(prd_cd) {
-      this.getPlanFlowList(); //공정 및 자재설정 리스트 노출
+      this.getPlanFlowList(prd_cd); //공정 및 자재설정 리스트 노출
 
       
       //선택된 생산제품 색깔표기[S]
@@ -226,55 +254,19 @@ export default {
       
     },
 
-     //제품별 공정 리스트
-     async getPlanFlowList() {
-      let result = await axios.get(`/api/inst/PR01/flow`)
-                              .catch(err => console.log(err));                              
-      this.planFlowData = result.data;
-    },
-
-     /*
-    //계획서 제품 공정별 자재 리스트
-    async getPlanMatList(prd_cd) {
-      let result = await axios.get(`/api/inst/${prd_cd}/mat`)
-                              .catch(err => console.log(err));
-      this.planMatList = result.data;
-    },
-    
-   
-    //공정 선택 시 자재 리스트 노출
-    matShow(procFlowCd) {
-      const btn = document.getElementById(procFlowCd+'_btn');
-
-      // 자재목록 노출 시 화살표 방향 변경 
-      const elements = document.querySelectorAll('.' + procFlowCd);
-      for (var i = 0; i < elements.length; i++) {
-        elements[i].classList.toggle('dnone');
-        if (elements[i].classList.contains('dnone')) {
-          btn.innerText = "▼";
-        }else{
-          btn.innerText = "▲";
-        }
-      }
-      // 자재목록 노출 시 화살표 방향 변경
-     
-    }, */
-
     //지시서 등록
     async instInsert() {
+      let insertArr = [];
         
-      let obj = {
-        PROD_PLAN_CD : this.plan_cd,
-        WORK_DT : this.work_dt,
-        FLOW : this.flowArr,
-        MAT : this.matArr
-      }
-      console.log(obj);
-       /*
-      let result = await axios.post('/api/inst', obj)
-                              .catch(err => console.log(err));
-                              
-      return result;*/
+      this.flowArr.forEach(() => {
+        insertArr.push({
+                        PROD_PLAN_CD: this.plan_cd, 
+                        WORK_DT: this.work_dt
+                      });
+      });
+      console.log(insertArr);
+      //let result = await axios.post('/api/inst', insertArr).catch(err => console.log(err));
+      //console.log(result);
       
     },
   }

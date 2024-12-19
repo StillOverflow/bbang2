@@ -46,10 +46,11 @@ router.get('/inst/:no', async (req,res)=>{
   })
 
 // 등록
+
 router.post('/inst', async(req, res)=>{
-    let instInfo = req.body;
-    let result = await produceService.instInsert(instInfo);
-    res.send(result);
+  let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
+  let result = await produceService.stdInsert(values);
+  res.send(result);
 });
 
 //제품별 공정 조회
