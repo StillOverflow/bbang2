@@ -5,13 +5,23 @@ const sqlList = require("./sql.js");
 
 // 단일 작업 시
 // createPool (자동 커밋)
+
+const host = process.env.HOST 
+const user = 'bbang2'
 const connectionPool = mariadb.createPool({
-  host: process.env.HOST,
+  host: host,//process.env.HOST,
   port: process.env.PORT,
-  user: process.env.USER,
-  password: process.env.PWD,
-  database: process.env.DB,
+  user: user,//process.env.USER,
+  password: user,//process.env.PWD,
+  database: user,//process.env.DB,
   connectionLimit: process.env.LIMIT,
+  
+  // host: process.env.HOST,
+  // port: process.env.PORT,
+  // user: process.env.USER,
+  // password: process.env.PWD,
+  // database: process.env.DB,
+  // connectionLimit: process.env.LIMIT,
 
   trace: true, // log
   permitSetMultiParamEntries: true, // parameter가 객체일 경우 escape작업
@@ -47,12 +57,19 @@ const query = (alias, values) => {
 // 다중 작업 시
 // createConnection (다중 작업에서 트랜잭션 제어 가능)
 const connection = mariadb.createConnection({
-  host: process.env.HOST,
+  host: host,//process.env.HOST,
   port: process.env.PORT,
-  user: process.env.USER,
-  password: process.env.PWD,
-  database: process.env.DB,
+  user: user,//process.env.USER,
+  password: user,//process.env.PWD,
+  database: user,//process.env.DB,
   connectionLimit: process.env.LIMIT,
+  
+  // host: process.env.HOST,
+  // port: process.env.PORT,
+  // user: process.env.USER,
+  // password: process.env.PWD,
+  // database: process.env.DB,
+  // connectionLimit: process.env.LIMIT,
 
   trace: true, // log
   permitSetMultiParamEntries: true, // parameter가 객체일 경우 escape작업
