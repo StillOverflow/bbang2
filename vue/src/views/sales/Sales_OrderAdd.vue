@@ -167,7 +167,17 @@ export default {
             columnDefs: [
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '주문 수량', field: 'order_qty', editable: true, cellDataType: 'number'},
+                {
+                    headerName: '주문 수량', 
+                    field: 'order_qty', 
+                    editable: true, 
+                    cellDataType: 'number',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                    cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
+                },
                 {headerName: '비고', field: 'note', editable: true},
                 {
                     headerName: '삭제' ,
@@ -185,27 +195,33 @@ export default {
             ],
             rowData: [ ],
             accDefs: [
-                {headerName: '거래처 코드', field: 'act_cd'},
-                {headerName: '거래처 명', field: 'act_nm'},
-                {headerName: '구분', field: 'act_type'},
+                {headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter' },
+                {headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter' },
+                {headerName: '구분', field: 'act_type', filter: 'agTextColumnFilter' },
             ],
             accData: [],
             memDefs: [
-                {headerName: '담당자 ID', field: 'ID'},
-                {headerName: '담당자 명', field: 'name'},
-                {headerName: '부서', field: 'dpt_nm'},
+                {headerName: '담당자 ID', field: 'ID', filter: 'agTextColumnFilter'},
+                {headerName: '담당자 명', field: 'name', filter: 'agTextColumnFilter'},
+                {headerName: '부서', field: 'dpt_nm', filter: 'agTextColumnFilter'},
             ],
             memData: [],
             proDefs: [
-                {headerName: '제품 코드', field: 'prd_cd'},
-                {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '제품 수량', field: 'stock'},
+                {headerName: '제품 코드', field: 'prd_cd', filter: 'agTextColumnFilter'},
+                {headerName: '제품 이름', field: 'prd_nm', filter: 'agTextColumnFilter'},
+                {headerName: '제품 수량', field: 'stock', filter: 'agTextColumnFilter'},
             ],
             proData: [],
 
             asModal: false,
             msModal: false,
             psModal: false,
+
+            //그리드 테이블에 필터를 넣어서 검색하게 만들어줌
+            defaultColDef: {    //따로 검색창 만들어서 하는것 도전 했으나 실패...기본 필터만 나옴
+            flex: 1,
+            filter: true, // 모든 컬럼에 필터 기본 활성화
+            },
         }
     },
     components: {
@@ -252,6 +268,14 @@ export default {
             this.rowData = [...this.rowData, newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
             this.psModal = !this.psModal;
         },
+        placeholderRenderer(params) {
+            // 주문 수량 값이 없으면 placeholder 텍스트 표시
+            if (!params.value) {
+                return `<span style="color: gray; font-style: italic;">수량은 숫자만 입력하세요.</span>`;
+            }
+            return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
+        },
+
         async getAccList() {
             let result = await axios.get('/api/moacc')
                                     .catch(err => console.log(err));
