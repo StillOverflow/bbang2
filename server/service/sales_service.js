@@ -10,12 +10,7 @@ const listOrder = async() => {
         console.error("service",err)
     }
 };
-//주문서 목록 거래처,날짜 검색
-// const searchOrder = async(search,std,etd) => {
-//     let list = await mariadb.query('orderSearch', [`%${search}%`,std,etd]);
-//     console.log(search,std,etd);
-//     return list;   
-// }
+
 //거래처, 날짜 따로 검색
 const searchOrder = async (search, std, etd) => {
     try {
@@ -38,16 +33,7 @@ const insertOrder = async (values) => {
     let seq = (await mariadb.query('orderSeq'))[0].order_cd;
 
     let samples = values[0]; // 배열로 넘긴게 첫번째가 헤드부분이고 두번째가 데테일 부분임(2개가 끝 헷갈렸음)
-    samples.seq = seq; //seq 넘기기
-    /* 원래 배열로 만들어서 넘겨서 받을려고 했는데 받는곳에서 객체로 받는거로 바꿔서 그냥 sample로 넘어감
-    let arr = [
-        samples.order_dt, 
-        samples.due_dt, 
-        samples.mem_id, 
-        samples.act_cd,
-    ];  
-    arr.push(seq);
-    */
+    samples.seq = seq; //seq 넘기기 { } (배열로 받은걸 여기서 객체로 하나씩 만들어서 set절로 바꿔보기)
     
     let order = await mariadb.query('orderInsert', samples);
 
@@ -58,7 +44,6 @@ const insertOrder = async (values) => {
     } else {
         return {"result" : "fail"};
     }
-
 };
 
 //거래처 조회(모달)
@@ -66,21 +51,11 @@ const listAccMo = async() => {
     let list = await mariadb.query('moAccList');
     return list;
 };
-//거래처 단건조회(모달)-필요 없어짐...
-// const infoAccMo = async(no) => {
-//     let list = await mariadb.query('moAccInfo', no);
-//     return list;
-// };
 //담당자 조회(모달)
 const listMemMo = async() => {
     let list = await mariadb.query('moMemList');
     return list;
 };
-//담당자 단건조회(모달)-필요 없어짐...
-// const infoMemMo = async(no) => {
-//     let list = await mariadb.query('moMemInfo', no);
-//     return list;
-// };
 //제품 조회(모달)
 const listProMo = async() => {
     let list = await mariadb.query('moProList');
@@ -96,6 +71,4 @@ module.exports = {
      listAccMo,
      listMemMo,
      listProMo,
-    // infoAccMo,
-    // infoMemMo,
 };
