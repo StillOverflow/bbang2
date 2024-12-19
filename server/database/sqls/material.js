@@ -12,16 +12,16 @@ const produceHeadPlanList = `
 `
 
 const getPlanMaterialStock = `
-   SELECT   DISTINCT(a.prod_plan_dtl_cd),
+   SELECT  
             b.mat_cd,
             c.mat_nm,
             f.comm_dtl_nm,
-            CONCAT(IFNULL(b.\`usage\`, 0), d.comm_dtl_nm) AS "usage",
-            CONCAT(CAST(IFNULL(b.\`usage\`, 0) * IFNULL(a.prod_plan_qty, 0) AS CHAR), d.comm_dtl_nm) AS require_qty,
+            CONCAT(SUM(IFNULL(b.\`usage\`, 0)), d.comm_dtl_nm) AS "usage",
+            CONCAT(CAST(SUM(IFNULL(b.\`usage\`, 0))* IFNULL(a.prod_plan_qty, 0) AS CHAR), d.comm_dtl_nm) AS require_qty,
             CONCAT(SUM(IFNULL(e.mat_stock, 0)), d.comm_dtl_nm) AS stock_qty,
             CONCAT(SUM(IFNULL(e.mat_stock, 0)) - (IFNULL(b.\`usage\`, 0) * IFNULL(a.prod_plan_qty, 0)), d.comm_dtl_nm) AS lack_qty,
             a.prod_plan_cd
-   FROM     prod_plan_dtl a LEFT JOIN (SELECT * FROM bom GROUP BY mat_cd) b
+   FROM     prod_plan_dtl a LEFT JOIN bom b
                                    ON a.prd_cd = b.prd_cd
                              LEFT JOIN material c 
                                     ON b.mat_cd = c.mat_cd
@@ -32,15 +32,13 @@ const getPlanMaterialStock = `
                             LEFT OUTER JOIN material_in e 
                                     ON b.mat_cd = e.mat_cd
    WHERE    a.prod_plan_cd = UPPER( ? )
-   GROUP BY a.prod_plan_dtl_cd, 
-            a.prd_cd, 
+   GROUP BY
             a.prod_plan_qty, 
             b.mat_cd, 
             c.mat_nm, 
             d.comm_dtl_nm, 
-            b.\`usage\`, 
             a.prod_plan_cd
-   ORDER BY a.prod_plan_dtl_cd, a.prd_cd, b.mat_cd
+   ORDER BY b.mat_cd
 `
 
 module.exports = {

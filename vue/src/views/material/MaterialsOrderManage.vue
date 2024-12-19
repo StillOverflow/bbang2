@@ -11,9 +11,10 @@
                         style="width: 100%; height: 300px;"
                         :rowData="prodPlanListData"
                         :pagination="true"
+                        :paginationPageSize="10"
                         :gridOptions="planOptions"
                         @rowClicked="rowClicked"
-                        @grid-ready="gridFit"
+                        @grid-ready="gridReady"
                         overlayNoRowsTemplate="미지시 생산계획서가 없습니다.">
                      </ag-grid-vue>
                   </div>
@@ -32,15 +33,16 @@
                         style="width: 100%; height: 500px;"
                         :rowData="planToMaterialStk"
                         :pagination="true"
+                        :paginationPageSize="10"
                         :gridOptions="materialOptions"
-                        @grid-ready="gridFit"
+                        @grid-ready="gridReady, materialReady"
                         overlayNoRowsTemplate="Loding중~~">
                      </ag-grid-vue>
                   </div>
                </div>
             </div>
             <div class="text-center">
-               <button class="mt-3 btn btn-primary">SUBMIT</button>
+               <button class="mt-3 btn btn-primary" @click="orderFormFunc">SUBMIT</button>
             </div>
          </div>
       </div>
@@ -84,10 +86,32 @@
    };
 
 // ------------------------------------------------------------------------------------------
-   const gridFit = (params) => {
+   // 그리드 준비
+   const gridReady = (params) => {
       params.api.sizeColumnsToFit(); // 그리드 열을 컨테이너 크기에 맞춤
    };
 
+   const selectedData = ref(''); // 선택한 행 저장
+   const materialReady = (params) => {
+      console.log(params.api)
+      selectedData.value = params.api
+   };
+
+   // const materialList = ref([]);
+   const orderFormFunc = () => {
+      const selectedRows = selectedData.value.getSelectedNodes();
+      console.log("Selected Rows:", selectedRows);
+      // if (selectedRows.value.length > 0) {
+      //    console.log("Selected Rows:", selectedRows);
+      //    materialList.value = selectedRows.value.map((node) => node.data);
+      // } else {
+      //    console.log("No rows selected.");
+      // }
+   };
+
+   
+   
+   
 // ------------------------------------------------------------------------------------------
    // ~ 미지시 생산계획서 조회
    // 그리드 컬럼명
@@ -147,7 +171,7 @@
    
 // ------------------------------------------------------------------------------------------
    // 미지시 생산 계획서 클릭 시 ~~
- //  let plan_cd = null;
+   //  let plan_cd = null;
    const rowClicked = (params) => {
       prodPlanCode.value= params.data.prod_plan_cd;
       planToMaterialStkStock(prodPlanCode.value);
@@ -156,12 +180,12 @@
    // watch(plan_cd, (plan_cd) => {
    //    prodPlanCode.value = plan_cd;
    // });
-
+   
 // ------------------------------------------------------------------------------------------
    // 계획서에 대한 자재 재고 컬럼명
    const materialOptions = {
       columnDefs : [
-         { headerName: '계획서상세코드', field: 'prod_plan_dtl_cd', sortable: true },
+         //{ headerName: '계획서상세코드', field: 'prod_plan_dtl_cd', sortable: true },
          { headerName: '자재코드', field: 'mat_cd', sortable: true },
          { headerName: '자재명', field: 'mat_nm', sortable: true },
          { headerName: '자재구분', field: 'comm_dtl_nm', sortable: true },
