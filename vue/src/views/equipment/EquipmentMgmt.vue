@@ -1,4 +1,4 @@
-<!-- 설비 -->
+<!-- 설비 관리 -->
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
@@ -6,17 +6,26 @@
         class="card-header bg-light d-flex justify-content-center align-items-center"
       >
         <div class="d-flex align-items-center gap-2 flex-wrap">
-          <div class="input-group">
+          <div class="input-group mb-3 w-30">
             <input
               id="eqp_cd"
               type="text"
               placeholder="설비코드"
               class="form-control"
-              style="height: 40px"
+              aria-label="Recipient's username"
+              aria-describedby="button-addon2"
+              style="height: 41px"
               v-model="selectedEqp"
               @click="modalOpen"
             />
-            <button class="btn btn-secondary" @click="modalOpen">조회</button>
+            <button
+              class="btn btn-warning"
+              id="button-addon2"
+              type="button"
+              @click="modalOpen"
+            >
+              조회
+            </button>
           </div>
         </div>
       </div>
@@ -106,21 +115,26 @@
         <!-- 버튼 -->
         <div class="text-center mt-3">
           <button
-          v-if="isEditMode"
-            class="btn btn-primary me-2"
+            v-if="isEditMode"
+            class="btn btn-success mlp10"
             @click="equipUpdate"
-            
           >
-            수정
+            SAVE
           </button>
           <button
-          v-if="!isEditMode"
-            class="btn btn-success me-2"
+            v-if="!isEditMode"
+            class="btn btn-success mlp10"
             @click="equipInsert"
           >
-            등록
+            SAVE
           </button>
-          <button v-if="!isEditMode" class="btn btn-danger" @click="resetForm">초기화</button>
+          <button
+            v-if="!isEditMode"
+            class="btn btn-secondary mlp10"
+            @click="resetForm"
+          >
+            RESET
+          </button>
         </div>
       </div>
     </div>
@@ -201,6 +215,7 @@ export default {
         opt_power: '',
         uph: '',
         is_use: '',
+        end_dt: '',
       },
 
       equipDefs: [
@@ -250,6 +265,10 @@ export default {
     };
   },
   methods: {
+    gridFit(params) {
+      // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
+      params.api.sizeColumnsToFit();
+    },
     modalOpen() {
       this.isModal = !this.isModal;
     },
@@ -258,15 +277,15 @@ export default {
       this.selectedEqp = params.data.eqp_cd;
       this.isModal = !this.isModal;
     },
-    
+
     //파일 업로드 핸들러
     onFileChange(event) {
-  const file = event.target.files[0]; // 파일 객체
-  if (file) {
-    this.selectedFile = file; // 새 파일 저장
-    this.previewImage = URL.createObjectURL(file); // 미리보기 이미지 갱신
-  }
-},
+      const file = event.target.files[0]; // 파일 객체
+      if (file) {
+        this.selectedFile = file; // 새 파일 저장
+        this.previewImage = URL.createObjectURL(file); // 미리보기 이미지 갱신
+      }
+    },
 
     async getComm(cd) {
       // 공통코드 가져오기
@@ -278,21 +297,23 @@ export default {
 
     // 설비 단건 조회
     async getEquipInfo(eqp_cd) {
-  let result = await axios.get(`api/equip/${eqp_cd}`).catch((err) => console.log(err));
+      let result = await axios
+        .get(`api/equip/${eqp_cd}`)
+        .catch((err) => console.log(err));
 
-  if (result.data) {
-    // 날짜 필드 스플릿
-    if (result.data.pur_dt) {
-      result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
-    }
-    this.equipmentData = result.data;
+      if (result.data) {
+        // 날짜 필드 스플릿
+        if (result.data.pur_dt) {
+          result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
+        }
+        this.equipmentData = result.data;
 
-    // 이미지 경로 처리
-    this.previewImage = result.data.img_path 
-      ? `/api/${result.data.img_path}` 
-      : require('@/assets/img/blank_img.png');
-  }
-},
+        // 이미지 경로 처리
+        this.previewImage = result.data.img_path
+          ? `/api/${result.data.img_path}`
+          : require('@/assets/img/blank_img.png');
+      }
+    },
 
     // 설비 전체 조회
     async getEquipList() {
@@ -304,7 +325,7 @@ export default {
 
     isFieldDisabled(fieldName) {
       // 특정 필드 비활성화 조건
-      const alwaysDisabled = ["eqp_type", "eqp_nm", "model"];
+      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model'];
       return this.isEditMode && alwaysDisabled.includes(fieldName);
     },
 
@@ -337,7 +358,6 @@ export default {
           ...this.equipmentData,
         });
         this.resetForm();
-
       }
     },
 
@@ -346,7 +366,11 @@ export default {
 
       Object.keys(this.equipmentData).forEach((key) => {
         // null이나 빈 값은 null로 설정
-        if (this.equipmentData[key] === "" || this.equipmentData[key] === undefined || this.equipmentData[key] === "null") {
+        if (
+          this.equipmentData[key] === '' ||
+          this.equipmentData[key] === undefined ||
+          this.equipmentData[key] === 'null'
+        ) {
           formData.append(key, null); // 실제 null 값 추가
         } else {
           formData.append(key, this.equipmentData[key]);
@@ -354,53 +378,58 @@ export default {
       });
 
       if (this.selectedFile) {
-        formData.append("selectedFile", this.selectedFile);
+        formData.append('selectedFile', this.selectedFile);
       } else if (this.equipmentData.img_path) {
-        formData.append("img_path", this.equipmentData.img_path);
+        formData.append('img_path', this.equipmentData.img_path);
       } else {
-        formData.append("img_path", null); // 이미지 경로가 없을 경우 null 추가
+        formData.append('img_path', null); // 이미지 경로가 없을 경우 null 추가
       }
 
       return formData;
     },
 
-    
     //수정
     async equipUpdate() {
-  let formData = this.getInsertData();
+      let formData = this.getInsertData();
 
-  try {
-    let response = await axios.put(`/api/equip/${this.selectedEqp}`, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      try {
+        let response = await axios.put(
+          `/api/equip/${this.selectedEqp}`,
+          formData,
+          {
+            headers: { 'Content-Type': 'multipart/form-data' },
+          }
+        );
 
-    if (response.data.success) {
-      this.$swal("수정 완료", "설비 정보가 성공적으로 수정되었습니다.", "success");
-      // 상태 초기화 및 등록 모드 전환
-      this.isEditMode = false; // 수정 모드 종료
-      this.resetForm(); // 입력 필드 초기화
-    } else {
-      this.$swal("수정 실패", response.data.message, "error");
-    }
-  } catch (err) {
-    console.error("수정 오류:", err);
-    this.$swal("수정 실패", "서버 오류가 발생했습니다.", "error");
-  }
-},
+        if (response.data.success) {
+          this.$swal(
+            '수정 완료',
+            '설비 정보가 성공적으로 수정되었습니다.',
+            'success'
+          );
+          // 상태 초기화 및 등록 모드 전환
+          this.resetForm(); // 입력 필드 초기화
+        } else {
+          this.$swal('수정 실패', response.data.message, 'error');
+        }
+      } catch (err) {
+        console.error('수정 오류:', err);
+        this.$swal('수정 실패', '서버 오류가 발생했습니다.', 'error');
+      }
+    },
 
-  
     // 초기화
     resetForm() {
       this.isEditMode = false; // 수정 모드 종료
-      this.selectedEqp = "";   // 설비 코드 입력란 초기화
+      this.selectedEqp = ''; // 설비 코드 입력란 초기화
       this.selectedFile = null; // 선택된 파일 초기화
       this.previewImage = require('@/assets/img/blank_img.png'); // 기본 이미지로 초기화
 
-  // 입력 필드 초기화
+      // 입력 필드 초기화
       Object.keys(this.equipmentData).forEach((key) => {
-       this.equipmentData[key] = '';
-  });
-},
+        this.equipmentData[key] = '';
+      });
+    },
   },
 
   created() {
@@ -441,6 +470,11 @@ export default {
     selectedEqp() {
       // 기존 설비 코드를 선택한 경우 해당 설비를 기준으로 단건조회
       // 해당 설비 : this.selectedEqp
+
+      if (!this.selectedEqp) {
+        this.isEditMode = false; // 수정모드 비활성화
+        return;
+      }
       this.getEquipInfo(this.selectedEqp);
       this.isEditMode = true; // 조회 시 수정 모드 활성화
     },
@@ -492,7 +526,7 @@ button {
   width: 100%;
 }
 
-.imgBSJ{
+.imgBSJ {
   border-radius: 5px;
 }
 

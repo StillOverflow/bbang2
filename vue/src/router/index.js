@@ -15,11 +15,11 @@ import Produce_InstAdd_test from '../views/produce/Produce_InstAdd_test.vue';
 ////////////////////////////// 설비 //////////////////////////////
 import Equipment from '../views/equipment/Equipment.vue';
 import EquipmentMgmt from '../views/equipment/EquipmentMgmt.vue';
+import EquipmentAllList from '../views/equipment/EquipmentAllList.vue';
 
 ////////////////////////////// 자재 //////////////////////////////
 import MaterialOrderList from '../views/material/MaterialsOrderList.vue';
 import MaterialOrderManage from '../views/material/MaterialsOrderManage.vue';
-
 
 ////////////////////////////// 품질 //////////////////////////////
 import QualityStdAdd from '../views/quality/QualityStdAdd.vue';
@@ -108,9 +108,15 @@ const routes = [
   },
   {
     //설비관리
-    path: '/equipment_Mgmt',
+    path: '/Equipment_Mgmt',
     name: 'Equipment_Mgmt',
     component: EquipmentMgmt,
+  },
+  {
+    //설비 전체 조회
+    path: '/Equipment_AllList',
+    name: 'Equipment_AllList',
+    component: EquipmentAllList,
   },
 
   ////////////////////////////// 자재 //////////////////////////////
