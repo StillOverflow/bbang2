@@ -31,34 +31,33 @@ where p.prd_nm like ?
 `;
 //자재 목록 조회
 const matList = `
-select mat_cd, 
-m.mat_nm,   
-m.price,
-cd.comm_dtl_nm as unit_nm,
-cd.comm_dtl_cd as unit_cd,
-cd_t.comm_dtl_nm as type
+select 
+    mat_cd, 
+    m.mat_nm,   
+    m.price,
+    cd.comm_dtl_nm as unit_nm,
+    cd.comm_dtl_cd as unit_cd,
+    cd_t.comm_dtl_nm as type
 from material m
-join common_detail cd
-on cd.comm_dtl_cd = m.unit
-join common_detail cd_t
-on cd_t.comm_dtl_cd = m.type
+left join common_detail cd
+    on cd.comm_dtl_cd = m.unit
+left join common_detail cd_t
+    on cd_t.comm_dtl_cd = m.type
 `;
 //자재 키워드 검색
 const matSearch = `
-select mat_cd, 
-m.mat_nm,   
-m.price,
-cd.comm_dtl_nm as unit_nm,
-cd.comm_dtl_cd as unit_cd,
-cd_t.comm_dtl_nm as type
-from material m
-join common_detail cd
-on cd.comm_dtl_cd = m.unit
-and cd.comm_cd = 'UN'
-join common_detail cd_t
-on cd_t.comm_dtl_cd = m.type
-and cd_t.comm_cd = 'MA'
-
+SELECT 
+    m.mat_cd, 
+    m.mat_nm,   
+    m.price,
+    cd.comm_dtl_nm AS unit_nm,
+    cd.comm_dtl_cd AS unit_cd,
+    cd_t.comm_dtl_nm AS type
+FROM material m
+LEFT JOIN common_detail cd
+    ON cd.comm_dtl_cd = m.unit
+LEFT JOIN common_detail cd_t
+    ON cd_t.comm_dtl_cd = m.type;
 where mat_nm like ?
 `;
 //bom 조회
@@ -73,7 +72,7 @@ b.prd_cd
 from bom b
 join material m ON b.mat_cd = m.mat_cd
 join common_detail cd ON b.unit = cd.comm_dtl_cd
-							 	and cd.comm_cd = 'UN'
+						and cd.comm_cd = 'UN'
 where b.prd_cd=?
 `;
 //bom 자재추가
@@ -111,7 +110,7 @@ ON p.proc_cd = pf.proc_cd
 WHERE prd_cd = ?
 `;
 //공정코드 조회(모달)
-const procCd = `
+const selectProcCd = `
 SELECT
 proc_cd
 ,proc_nm
@@ -126,8 +125,7 @@ set ?
 `;
 //공정흐름도의 공정코드 삭제
 const deleteProcFlow = `
-delete from process_flow
-?
+
 `;
 
 //선택한 제품의 bom조회 위에있음(o)
@@ -161,7 +159,7 @@ module.exports = {
   prdSearch,
   matSearch,
   procFlowByProd,
-  procCd,
+  selectProcCd,
   insertProcFlow,
   deleteProcFlow,
   selectPrd,

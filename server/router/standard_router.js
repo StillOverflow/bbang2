@@ -69,7 +69,10 @@ router.get("/standard/proessMtl/:proc_cd", async(req,res)=>{
 });
 
 //공정코드 조회
-
+router.get("/standard/procCd", async(req,res)=>{
+  let procCdlist = await standardService.searchProcCd();
+  res.send(procCdlist);
+})
 // // 공정 흐름도 추가
 // router.post('/standard/flow', async (req, res) => {
 //     let flowData = req.body;

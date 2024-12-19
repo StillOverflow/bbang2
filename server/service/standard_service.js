@@ -69,6 +69,11 @@ const mariadb = require("../database/mapper.js");
   }
 
   //공정 코드 조회
+  const searchProcCd = async()=>{
+    let list = await mariadb.query('selectProcCd');
+    return list;
+  }
+
   // 공정 추가
 
 
@@ -95,5 +100,6 @@ module.exports = {
   findAllComm,
   searchFlow,
   searchPrdUsage,
-  searchProMtl
+  searchProMtl,
+  searchProcCd
 };

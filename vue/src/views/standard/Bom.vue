@@ -20,7 +20,7 @@
                   placeholder="제품명을 입력하세요"
                   style="width:75%"
                 />
-                <button class="btn btn-primary mb-0" style="width:25%" @click="searchPrd">검색</button>
+                <button class="btn btn-primary mb-0" style="width:25%;margin-left: 10px;" @click="searchPrd">검색</button>
               </div>
               
             </div>
@@ -34,12 +34,12 @@
               :paginationAutoPageSize="true"
               :gridOptions="prdOptions"
               :cellValueChanged="cellValueChanged"
+              @gridReady="onPrdGridReady"
               @rowClicked="rowClicked"
             >
               <!--행선택시 bom데이터 조회-->
             </ag-grid-vue>
           </div>
-
           <div class="col-md-7">
             <!-- 자재 목록 -->
             <h4 class="mb-3">자재 목록</h4>
@@ -182,6 +182,8 @@ export default {
           field: "usage",
           editable: true,
           enableCellChangeFlash: true,
+          
+          
         },
       ],
       // 자재 테이블 데이터
@@ -194,7 +196,7 @@ export default {
           field: "prd_cd",
           sortable: true,
         },
-        { headerName: "자재코드", field: "mat_cd", sortable: true },
+        { headerName: "자재코드", field: "mat_cd", sortable: true ,},
         { headerName: "자재명", field: "mat_nm", sortable: true },
         { headerName: "단가", field: "price", sortable: true },
         { headerName: "BOM양", field: "usage", sortable: true },
@@ -245,7 +247,6 @@ export default {
         .get("/api/standard/materials")
         .catch((err) => console.log(err));
       this.materialData = result.data;
-      console.log(this.materialData);
     },
     //제품 행 클릭시 행 제품코드 전달
     rowClicked(params) {
@@ -260,7 +261,11 @@ export default {
         .catch((err) => console.log(err));
       this.bomData = result.data;
     },
-
+    // this.prdGridApi.sizeColumnsToFit()
+    //스크롤없애기
+    onPrdGridReady(params){
+      this.prdGridApi = params.api;
+    },
     //자재추가
     onMatGridReady(params) {
       this.materialGridApi = params.api;
@@ -273,7 +278,7 @@ export default {
     async InsertBomData() {
       try {
         const selectedNodes = this.materialGridApi.getSelectedNodes(); //자재데이터 불러오기
-        console.log("selectedNodes => ", selectedNodes);
+        
         const selectedMat = selectedNodes.map((node) => node.data); //배열로 저장
         if (!this.selectBomData) {
           this.$swal({
@@ -291,11 +296,12 @@ export default {
             unit: dup.unit_nm,
             //this.commData.find(obj => obj.comm_dtl_nm ==  dup.unit_nm).comm_dtl_cd ,
             usage: parseFloat(dup.usage) || 0,
+            // usage : dup.usage.setValue,
             mat_nm: dup.mat_nm,
             price: dup.price || 0,
             unit_cd: dup.unit_cd,
           };
-
+          
           if (
             this.bomData.some((obj) => obj.mat_cd === dup.mat_cd) ||
             this.saveData.some((obj) => obj.mat_cd === dup.mat_cd)
@@ -314,12 +320,14 @@ export default {
             unit: saveBom.unit_cd,
             usage: saveBom.usage,
           };
-
+          
           this.saveData.push(saveRealData); //savaData 배열에 저장
           this.bomGridApi.applyTransaction({
             add: [saveBom],
           }); //ui만 반영
+          console.log('saveBom => ' ,saveBom);
         }
+        
       } catch (error) {
         console.error("서버 요청 중 오류 발생:", error);
         alert(`오류 발생`);
@@ -342,7 +350,6 @@ export default {
           // applyTransaction : 실시간으로
           remove: [bom], //bom객체를 remove대상 지정
         });
-        console.log(bom);
       }
     },
     async save() {
