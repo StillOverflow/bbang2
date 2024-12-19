@@ -5,30 +5,32 @@
             <!-- 검색조건 -->
             <div class="card-header bg-light ps-5 ps-md-4">  
                 <div class="row">
+                    <div class="col-6 col-lg-3"></div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처 명</div> 
-                    <div class="col-6 col-lg-3 mb-2">
+                    <div class="col-6 col-lg-5 mb-2">
                         <input class="form-control " type="text" v-model="search" />         
                     </div>
                 </div>
                 <div class="row">
+                    <div class="col-6 col-lg-3"></div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주문일자</div>
-                    <div class="col-6 col-lg-3 mb-2">
+                    <div class="col-6 col-lg-2 mb-2">
                         <input class="form-control" type="date" v-model="sdt" />
                     </div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">~</div>
-                    <div class="col-6 col-lg-3 mb-2">
+                    <div class="col-6 col-lg-2 mb-2">
                         <input class="form-control" type="date" v-model="edt" />
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-6 col-lg-4 mb-2"></div>
+                    <div class="col-6 col-lg-6 mb-2"></div>
                     <div class="col-6 col-lg-1 mb-2">
-                        <button type="button" class="btn mb-0 btn-success btn-xsm null null ms-auto" @click="searchForm">검색</button>
+                        <button type="button" class="btn mb-0 btn-warning btn-xsm null null ms-auto" @click="searchForm">검색</button>
                     </div>
                 </div>
             </div>
             <!-- 주문목록 -->
-                <div class="card-body" style="position: relative; height: 600px;">
+                <div class="card-body" style="position: relative; height: 550px;">
                 <ag-grid-vue
                     style="width: 100%; height: 100%;"
                     class="ag-theme-alpine"
@@ -104,23 +106,6 @@ export default {
             })
             .catch(err => console.log("AXIOS실패",err));
         },
-
-        // 날짜 포맷터 함수(공통코드(commFunc.js)로 이동)
-        // dateFormatter(params) { //여기서 ag grid에 date형식을 보냄
-        //     return this.dateFormat(params.value, 'yyyy-MM-dd'); // 여기서 date 형식을 편하게 바꿀수 있다(dd-MM-yyyy)
-        // },
-        // dateFormat(value, format) { //date 방식을 지정 후 dateFormatter로 보냄
-        //     let date = value == null ? new Date() : new Date(value);
-
-        //     let year = date.getFullYear();
-        //     let month = ('0' + (date.getMonth() + 1)).slice(-2);
-        //     let day = ('0' + date.getDate()).slice(-2);
-
-        //     let result = format.replace('yyyy', year)
-        //                     .replace('MM', month)
-        //                     .replace('dd', day);
-        //     return result;
-        // },
 
     }
 }

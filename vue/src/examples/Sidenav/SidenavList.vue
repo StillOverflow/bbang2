@@ -95,40 +95,40 @@ export default {
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/Sales_list2"
-            :class="getRoute() === 'Sales_list2' ? 'active' : ''"
+            to="/Sales_ProOutList"
+            :class="getRoute() === 'Sales_ProOutList' ? 'active' : ''"
             :navText="'출고제품 조회'"
           >
           </sidenav-item>
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/Sales_list3"
-            :class="getRoute() === 'Sales_list3' ? 'active' : ''"
+            to="/Sales_ProOutAdd"
+            :class="getRoute() === 'Sales_ProOutAdd' ? 'active' : ''"
             :navText="'출고제품 등록'"
           >
           </sidenav-item>
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/Sales_list4"
-            :class="getRoute() === 'Sales_list4' ? 'active' : ''"
+            to="/Sales_ResultList"
+            :class="getRoute() === 'Sales_ResultList' ? 'active' : ''"
             :navText="'반품제품 조회'"
           >
           </sidenav-item>
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/Sales_list5"
-            :class="getRoute() === 'Sales_list5' ? 'active' : ''"
+            to="/Sales_ResultAdd"
+            :class="getRoute() === 'Sales_ResultAdd' ? 'active' : ''"
             :navText="'반품제품 등록'"
           >
           </sidenav-item>
         </li>
         <li class="nav-item">
           <sidenav-item
-            to="/Sales_list6"
-            :class="getRoute() === 'Sales_list6' ? 'active' : ''"
+            to="/Sales_ProList"
+            :class="getRoute() === 'Sales_ProList' ? 'active' : ''"
             :navText="'제품재고'"
           >
           </sidenav-item>

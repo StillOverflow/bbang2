@@ -45,21 +45,22 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-6 col-lg-2"></div>
-                    <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">납기일자</div> 
-                    <div class="col-6 col-lg-2">
-                        <input class="form-control" type="date" id="due_date" value="" />
-                    </div>
+                    <div class="col-6 col-lg-2"></div>                    
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주문일자</div> 
                     <div class="col-6 col-lg-2">
                         <input class="form-control" type="date" id="order_date" value="" />
+                    </div>
+                    <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">납기일자</div> 
+                    <div class="col-6 col-lg-2">
+                        <input class="form-control" type="date" id="due_date" value="" />
                     </div>
                 </div>
             </div>
             <!-- 주문디테일 테이블 부분 -->
             <div class="card-body">
                 <div class="row">
-                    <div class="col-6 col-lg-2 text-end text-md-start">
+                    <div class="col-6 col-lg-11"></div>
+                    <div class="col-6 col-lg-1 text-end text-md-start">
                         <button class="btn btn-primary " @click="modalOpen3">제품 조회</button>
                     </div>
                 </div>
@@ -68,7 +69,8 @@
                 :columnDefs="columnDefs"
                 :rowData="rowData"
                 :gridOptions="gridOptions"
-                @grid-ready="gridFit">
+                @grid-ready="gridFit"
+                overlayNoRowsTemplate="제품 조회 버튼을 이용하여 제품을 추가 해주세요.">
                 </ag-grid-vue>
                 <div class="row">
                     <div class="col-6 col-lg-5"></div>
@@ -93,6 +95,7 @@
         </template>
         <template v-slot:footer>
             <button v-show="hidden" type="button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
+            <!-- v-show="hidden" 이거 적은 이유는 그냥 지워도 footer가 나와서 그냥 숨겼단 -->
             <button v-show="hidden" type="button" class="btn btn-primary" @click="modalOpen">OK</button>
         </template>
     </Layout>
@@ -183,8 +186,6 @@ export default {
             ],
             proData: [],
 
-
-            
             asModal: false,
             msModal: false,
             psModal: false,
@@ -200,7 +201,6 @@ export default {
         this.getAccList();
         this.getMemList();
         this.getProList();
-        //this.getAccInfo();
     },
     methods: {
         modalOpen() {
@@ -213,15 +213,11 @@ export default {
             this.psModal = !this.psModal;
         },
         modalClicked(params) {
-            //params.data.act_cd;
-            //this.getAccInfo(params.data.act_cd);
             document.getElementById('acc_code').value = params.data.act_cd;
             document.getElementById('acc_name').value = params.data.act_nm;
             this.asModal = !this.asModal;
         },
         modalClicked2(params) {
-            //params.data.ID;
-            //this.getAccInfo(params.data.ID);
             document.getElementById('mem_id').value = params.data.ID;
             document.getElementById('mem_name').value = params.data.name;
             this.msModal = !this.msModal;
@@ -254,26 +250,17 @@ export default {
                                     .catch(err => console.log(err));
             this.proData = result.data;
         },
-        // async getAccInfo(moaccNo) {
-        //     let result = await axios.get(`/api/moacc/${moaccNo}`)
-        //                             .catch(err => console.log(err));
-        //     this.AccInfo = result.data;
-        // },
-        // async getMemInfo(momemNo) {
-        //     let result = await axios.get(`/api/momem/${momemNo}`)
-        //                             .catch(err => console.log(err));
-        //     this.MemInfo = result.data;
-        // },
 
         async ordInsert() {
 
             // 필수값 입력 알람
             let dueDt = document.getElementById('due_date').value;
+            let ordDt = document.getElementById('order_date').value;
             let accCode = document.getElementById('acc_code').value;
             let memId = document.getElementById('mem_id').value;
             let rowQty = this.rowData.filter(row => !row.order_qty || row.order_qty <= 0);
 
-            if (!accCode && !memId) {
+            if (!accCode || !memId) {
                 this.$swal({
                     icon: "error",
                     title: "거래처와 담당자를 조회 하세요",
@@ -290,7 +277,6 @@ export default {
                 return;
             }
             if (rowQty.length > 0) {
-                //alert("모든 제품의 주문 수량을 입력하세요.");
                 this.$swal({
                     icon: "error",
                     title: "주문 수량을 입력하세요",
@@ -298,10 +284,10 @@ export default {
                 });
                 return;
             }
-            if (!dueDt) {
+            if (!dueDt || !ordDt) {
                 this.$swal({
                     icon: "error",
-                    title: "납기 일자를 입력하세요",
+                    title: "납기일자와 주문일자를 입력하세요",
                     text: "확인을 다시 하여주세요",
                 });
                 return;
@@ -338,13 +324,28 @@ export default {
                 this.$swal({
                     icon: "success",
                     title: "등록에 성공 하였습니다.",
-                    text: "목록에서 확인 해주세요.",
+                    text: "등록한 주문서는 목록에서 확인 해주세요.",
+                })
+                .then(() => {
+                    this.resetForm();   //등록 후 값 초기화
                 });
+                // .then(() => {    
+                //     window.location.reload();    //페이지 새로고침
+                // });               
             }
             return result;
 
         },
-     
+        // 등록 후 초기화 기능
+        resetForm() {
+            document.getElementById('acc_name').value = "";
+            document.getElementById('acc_code').value = "";
+            document.getElementById('mem_name').value = "";
+            document.getElementById('mem_id').value = "";
+            document.getElementById('due_date').value = "";
+            document.getElementById('order_date').value = "";
+            this.rowData = [];         
+        },
 
         gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
             params.api.sizeColumnsToFit();
