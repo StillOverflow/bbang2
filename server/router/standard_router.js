@@ -74,11 +74,11 @@ router.get("/standard/procCd", async(req,res)=>{
   res.send(procCdlist);
 })
 // // 공정 흐름도 추가
-// router.post('/standard/flow', async (req, res) => {
-//     let flowData = req.body;
-//     let result = await standardService.addFlow(flowData);
-//     res.send(result);
-// });
+router.post("/standard/procFlow", async(req,res)=>{
+  let procFlowInfo = req.body;
+  let result = await standardService.InsertProcMat(procFlowInfo);
+  res.send(result);
+})
 
 // // 공정 흐름도 삭제
 // router.delete('/standard/flow/:flow_code', async (req, res) => {

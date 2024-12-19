@@ -198,7 +198,6 @@ export default {
         },
         { headerName: "자재코드", field: "mat_cd", sortable: true ,},
         { headerName: "자재명", field: "mat_nm", sortable: true },
-        { headerName: "단가", field: "price", sortable: true },
         { headerName: "BOM양", field: "usage", sortable: true },
         { headerName: "단위", field: "unit", sortable: true },
       ],

@@ -106,7 +106,6 @@
                 <h4 class="ms-0">공정별 자재</h4>
               </div>
               <div class="ms-3 col-10">
-                <button class="btn btn-info" :style="t_break">저장</button>
                 <button class="btn btn-danger" :style="t_break">삭제</button>
               </div>
             </div>
@@ -170,6 +169,13 @@
       <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
     </template>
   </Layout>
+  <div class="col-6 text-end">
+    <button
+      class="btn btn-success"
+    >
+      저장
+    </button>
+  </div>
 </template>
 
 <script>
@@ -208,7 +214,11 @@ export default {
     productData:[],
     //공정흐름도
     procFlowDefs:[
-      { headerName: '순서', field: 'proc_seq', sortale:true},
+      { headerName: '순서',
+        field: 'proc_seq',
+        valueGetter: 'node.rowIndex+1',
+        sortale:true
+      },
       { headerName: '공정코드', field: 'proc_cd', sortale:true},
       { headerName: '공정명', field: 'proc_nm', sortale:true},
     ],
@@ -313,8 +323,9 @@ export default {
 
     //     for(const dup of selectedProCd){ //그리드
     //       const saveBom ={
-    //         proc_cd: this.selectProData,
     //         proc_nm: dup.proc_nm,
+    //         proc_cd: dup.proc_cd,
+
 
 
     //       }

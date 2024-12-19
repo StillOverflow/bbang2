@@ -31,7 +31,6 @@ const mariadb = require("../database/mapper.js");
     //console.log(bomInfo,' bomInfo');
 
     let result = await mariadb.query('bomInsert', bomInfo);
-    console.log('result ', result);
     if(result.affectedRows>0){
       return { "result" : "success"};
     }else{
@@ -75,7 +74,14 @@ const mariadb = require("../database/mapper.js");
   }
 
   // 공정 추가
-
+  const InsertProcMat = async(matInfo)=>{
+    let result = await mariadb.query('ProcMatInsert', ProcMatInfro);
+    if(result.affectedRows>0){
+      return{"result" : "success"}
+    }else{
+      return{"result" : "fail"}
+    }
+  }
 
   // 공정 삭제
  
@@ -101,5 +107,6 @@ module.exports = {
   searchFlow,
   searchPrdUsage,
   searchProMtl,
-  searchProcCd
+  searchProcCd,
+  InsertProcMat
 };

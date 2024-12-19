@@ -12,7 +12,7 @@ FROM product p
     ON p.prd_cd = b.prd_cd
 	LEFT JOIN common_detail cd
     ON cd.comm_dtl_cd = b.usage_sta
-	 GROUP BY prd_cd
+	GROUP BY prd_cd
 `;
 //제품 키워드 검색
 const prdSearch = `
@@ -26,23 +26,24 @@ FROM product p
     ON p.prd_cd = b.prd_cd
 	LEFT JOIN common_detail cd
     ON cd.comm_dtl_cd = b.usage_sta
-	 GROUP BY prd_cd
+	 
 where p.prd_nm like ?
+GROUP BY prd_cd
 `;
 //자재 목록 조회
 const matList = `
-select 
-    mat_cd, 
+SELECT 
+    m.mat_cd, 
     m.mat_nm,   
     m.price,
-    cd.comm_dtl_nm as unit_nm,
-    cd.comm_dtl_cd as unit_cd,
-    cd_t.comm_dtl_nm as type
-from material m
-left join common_detail cd
-    on cd.comm_dtl_cd = m.unit
-left join common_detail cd_t
-    on cd_t.comm_dtl_cd = m.type
+    cd.comm_dtl_nm AS unit_nm,
+    cd.comm_dtl_cd AS unit_cd,
+    cd_t.comm_dtl_nm AS type
+FROM material m
+LEFT JOIN common_detail cd
+    ON cd.comm_dtl_cd = m.unit
+LEFT JOIN common_detail cd_t
+    ON cd_t.comm_dtl_cd = m.type 
 `;
 //자재 키워드 검색
 const matSearch = `
@@ -57,9 +58,10 @@ FROM material m
 LEFT JOIN common_detail cd
     ON cd.comm_dtl_cd = m.unit
 LEFT JOIN common_detail cd_t
-    ON cd_t.comm_dtl_cd = m.type;
-where mat_nm like ?
+    ON cd_t.comm_dtl_cd = m.type 
+WHERE m.mat_nm LIKE ?
 `;
+
 //bom 조회
 const bomlist = `
 select
