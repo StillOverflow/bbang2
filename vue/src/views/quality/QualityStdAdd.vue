@@ -6,7 +6,7 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         <!-- 대상분류 자재/제품/공정 -->
         <div class="row mb-3">
-          <h6 class="col-2 col-xxl-1 mb-2 d-flex justify-content-center" :style="t_overflow">대상분류</h6>
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex justify-content-center" :style="t_overflow">조회대상</h6>
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">
               <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
@@ -22,7 +22,7 @@
         <div class="row">
           <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상구분</h6>
           <div class="col-10 col-lg-4 col-xxl-2 mb-2">
-            <select class="form-select" v-model="selected_div">
+            <select class="form-select" v-model="selected_div" @change="divSort">
               <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
@@ -36,13 +36,12 @@
           <div class="col-10 col-lg-4 col-xxl-2 d-flex">
             <div class="input-group">
               <input type="text" class="form-control" :value="modal_val" readonly style="height: 41px;">
-              <button class="btn btn-warning" type="button">SEARCH</button>
+              <button class="btn btn-warning" type="button" @click="modalToggle">SEARCH</button>
             </div>
-            <!-- <input type="text" class="form-control" :value="modal_val" readonly> -->
           </div>
           <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상명</h6>
           <div class="col-10 col-lg-4 col-xxl-2 mb-2">
-            <input type="text" class="form-control" :value="modal_val_nm" readonly>
+            <input type="text" class="form-control" :value="modal_val" readonly>
           </div>
         </div>
   
@@ -54,21 +53,22 @@
           <div class="col-7 col-xl-6">
             <h4 class="ms-3">적용 가능 항목</h4>
           </div>
-          <div class="col-5  col-xl-6">
+          <div class="col-5 col-xl-6">
             <div class="row">
-              <div class="col-12 col-md-8">
+              <div class="col-12 col-md-7 col-xl-9">
                 <h4 class="ms-3" :style="t_overflow">선택된 항목</h4>
               </div>
-              <div class="col-12 col-md-4 text-center">
-                <button class="btn btn-warning" :style="t_break" @click="getTList">검사항목 불러오기</button>
+              <div class="col-12 col-md-5 col-xl-3 text-center">
+                <button class="btn btn-warning" :style="t_break" @click="getTList">불러오기</button>
               </div>
             </div>
           </div>
         </div>
   
         <div class="row mb-4">
-          <div class="col-5 col-xl-5">
-            <ag-grid-vue class="ag-theme-alpine w-100" :style="g_height" :columnDefs="defs" :rowData="yetData" @grid-ready="yetGrid" :gridOptions="gridOptions"/>
+          <div class="col-5">
+            <ag-grid-vue class="ag-theme-alpine w-100" :style="g_height" :columnDefs="defs" :rowData="yetData" 
+             @grid-ready="yetGrid" :gridOptions="gridOptions"/>
           </div>
           <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center">
             <button class="btn btn-outline-primary" :style="t_overflow" @click="getSelected('추가')">
@@ -79,7 +79,8 @@
             </button>
           </div>
           <div class="col-5 col-xl-6">
-            <ag-grid-vue class="ag-theme-alpine w-100"  :style="g_height" :columnDefs="defs" :rowData="myData" @grid-ready="myGrid" :gridOptions="gridOptions"/>
+            <ag-grid-vue class="ag-theme-alpine w-100"  :style="g_height" :columnDefs="defs" :rowData="myData" 
+             @grid-ready="myGrid" :gridOptions="gridOptions"/>
           </div>
         </div>
   
@@ -98,12 +99,28 @@
         </div>
       </div>
     </div>
+
+    <ModalLayout :modalCheck="isModal">
+        <template v-slot:header>
+            <h5>ㅇㅇ 조회</h5>
+            <button type="button" aria-label="Close" class="close" @click="modalToggle">×</button>
+        </template>
+        <template v-slot:default>
+            <ag-grid-vue class="ag-theme-alpine w-100" :style="g_height" :columnDefs="modalDefs" :rowData="modalData" 
+             :gridOptions="gridOptions" :rowSelection="false" @rowClicked="null" @grid-ready="gridFit"/>
+        </template>
+        <template v-slot:footer>
+            <div/> <!-- 아무것도 안 넣으면 기본 버튼이 표시됨. -->
+        </template>
+    </ModalLayout>
+
   </div>
 </template>
 
 <script>
   import { AgGridVue } from "ag-grid-vue3";
   import axios from "axios";
+  import ModalLayout from "../components/modalLayout.vue";
 
   export default {
     name: 'QualityStdAdd',
@@ -122,11 +139,15 @@
         noCate: false, // 공정은 카테고리가 없으므로 비활성화용
         selected_cate: null,
         cates: [],
-        modal_val: '...',
-        modal_val_nm: '...',
         date_val: '',
 
-        // grid API 테이블 데이터 (Defs: thead 구성, Data: tbody 구성)
+        // 모달 내부 grid API 데이터 (Defs: thead 구성, Data: tbody 구성)
+        isModal: false, // 토글기능
+        modalDefs: [],
+        modalData: [],
+        modal_val: null, // 선택된 값
+
+        // 일반 grid API 데이터
         defs: [
           { headerName: '검사명', field: 'test_nm'},
           { headerName: '검사방식', field: 'test_metd'},
@@ -152,10 +173,29 @@
         }
       }
     },
+
     components: { 
-        AgGridVue // grid API
+        AgGridVue, // grid API
+        ModalLayout
     },
+
+    created(){ 
+      // 페이지 제목 저장
+      this.$store.dispatch('breadCrumb', {title: '품질기준 등록'});
+
+      // 조회대상 불러오기
+      this.getCondition('QT', 'radio');
+    },
+
     methods: {
+      gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
+        params.api.sizeColumnsToFit();
+      },
+
+      modalToggle(){
+        this.isModal = !this.isModal;
+      },
+
       yetGrid(params){ // '적용가능목록' @grid-ready 시 매개변수 속성으로 자동 접근
         params.api.sizeColumnsToFit();
         this.yetApi = params.api;
@@ -166,6 +206,93 @@
         params.api.sizeColumnsToFit();
         this.myApi = params.api;
         this.myColApi = params.columnApi;
+      },
+      
+      // 공통코드 기반으로 검색조건 표시하기
+      async getCondition(cd, type){ 
+        let types = [this.radios, this.divs, this.cates]; // 검색조건으로 들어갈 각각의 input을 배열로 임시저장
+        let typesNo = null;
+        let arr = await this.$comm.getComm(cd); // 공통코드 axios.get
+
+        switch(type){
+          case 'radio' : typesNo = 0; break;
+          case 'divs' : typesNo = 1; this.selected_div = arr[0].comm_dtl_cd; break;
+          case 'cate' : typesNo = 2; this.selected_cate = arr[0].comm_dtl_cd; break;
+        };
+        
+        types[typesNo].length = 0; // 실행할 때마다 값이 중복되지 않게 비우고 push
+        for(let i = 0; i < arr.length; i++){
+          types[typesNo].push({
+            item : arr[i].comm_dtl_cd, // 공통코드
+            name : arr[i].comm_dtl_nm // 표시할 한글명
+          });
+        };
+      },
+
+      async getDivs(){
+        // 조회대상 선택값이 변경될 때마다 구분 및 카테고리 재호출
+        switch(this.selected_radio){
+          case 'P01' : // 자재 선택한 경우
+            this.getCondition('MA', 'divs');
+            this.getCondition('MC', 'cate'); 
+            this.noCate = false; 
+            break;
+          case 'P02' : { // 공정중 선택한 경우
+            // switch - case 조건 안에서 변수 선언 시, 작업 내용을 중괄호로 묶지 않으면 오류남.
+            let result = await axios.get('/api/standard/procCd').catch(err => console.log(err));
+            result.data.forEach((obj) => {
+              this.divs.push({
+                item: obj.proc_cd,
+                name: obj.proc_nm
+              });
+            });
+            this.selected_div = result.data[0].proc_cd;
+            this.noCate = true; 
+            break;
+            };
+          case 'P03' : // 제품 선택한 경우
+            this.getCondition('PD', 'divs');
+            this.getCondition('PC', 'cate'); 
+            this.noCate = false; 
+            break;
+        }
+      },
+
+      divSort(){
+        // 대상구분 변경될 때, 자재-소모품 혹은 자재-기타인 경우 카테고리도 기타로 표시
+        if(this.selected_div == 'M03' || this.selected_div == 'M04'){
+          this.selected_cate = 'D05';
+        }
+      },
+
+      async getModalList(){
+        // let target = this.selected_radio;
+        // if(target == 'P01'){ // 조회대상이 자재인 경우
+        //   let result = await axios.get();
+        // } else if(target == 'P02'){ // 공정인 경우
+
+        // } else { // 제품인 경우
+          
+        // }
+      }, 
+
+      // 검사항목 버튼 클릭 시 불러오기
+      async getTList(){
+        const axiosGet = async (val) => { // 'yet' or 'my'에 따라 같은 동작 실행
+          let query = {cd: 'PR01', type : this.selected_radio};
+
+          let result = await axios.get('/api/quality/test/' + val, {params: query})
+                                .catch(err => console.log(err));
+          let data = result.data;
+
+          // 각각의 grid 데이터에 넣기
+          if(val == 'yet') this.yetData = data;
+          else this.myData = data;
+        };
+
+        // if modalVal 있는 경우 실행해야 함. (구현전)
+        await axiosGet('yet');
+        await axiosGet('my');
       },
 
       getSelected(type){ // 추가/삭제버튼 동작
@@ -222,81 +349,7 @@
             'error'
           );
         }
-      },
-      
-      // 공통코드 기반으로 검색조건 표시하기
-      async getComm(cd){ // 공통코드 가져오기
-        let result = await axios.get('/api/commList/' + cd)
-                                .catch(err => console.log(err));
-        return result.data;
-      },
-                              
-      async getCondition(cd, type){ 
-        let types = [this.radios, this.divs, this.cates]; // 검색조건으로 들어갈 각각의 input을 배열로 임시저장
-        let typesNo = null;
-        let arr = await this.getComm(cd);
-        
-        switch(type){
-          case 'radio' : typesNo = 0; break;
-          case 'divs' : typesNo = 1; this.selected_div = arr[0].comm_dtl_cd; break;
-          case 'cate' : typesNo = 2; this.selected_cate = arr[0].comm_dtl_cd; break;
-        };
-        
-        types[typesNo].length = 0; // 실행할 때마다 값이 중복되지 않게 비우고 push
-        for(let i = 0; i < arr.length; i++){
-          types[typesNo].push({
-            item : arr[i].comm_dtl_cd, // 공통코드
-            name : arr[i].comm_dtl_nm // 표시할 한글명
-          });
-        };
-      },
-
-      getDivs(){
-        // 선택값이 변경될 때마다 구분 및 카테고리 재호출
-        switch(this.selected_radio){
-          case 'P01' : // 자재 선택한 경우
-            this.getCondition('MA', 'divs');
-            this.getCondition('MC', 'cate'); 
-            this.noCate = false; 
-            break;
-          case 'P02' : // 공정중 선택한 경우
-            this.getCondition('EQ', 'divs'); 
-            this.noCate = true; 
-            break;
-          case 'P03' : // 제품 선택한 경우
-            this.getCondition('PD', 'divs');
-            this.getCondition('PC', 'cate'); 
-            this.noCate = false; 
-            break;
-        }
-      },
-
-      // 검사항목 버튼 클릭 시 불러오기
-      async getTList(){
-        const axiosGet = async (val) => { // 'yet' or 'my'에 따라 같은 동작 실행
-          let query = {cd: 'PR01', type : this.selected_radio};
-
-          let result = await axios.get('/api/quality/test/' + val, {params: query})
-                                .catch(err => console.log(err));
-          let data = result.data;
-          console.log(data);
-
-          // 각각의 grid 데이터에 넣기
-          if(val == 'yet') this.yetData = data;
-          else this.myData = data;
-        };
-
-        // if modalVal 있는 경우 실행해야 함. (구현전)
-        await axiosGet('yet');
-        await axiosGet('my');
-      },
-    },
-    created(){ 
-      // 페이지 제목 저장
-      this.$store.dispatch('breadCrumb', {title: '품질기준 등록'});
-
-      // 대상분류 불러오기
-      this.getCondition('QT', 'radio');
+      }
     }
   };
 </script>

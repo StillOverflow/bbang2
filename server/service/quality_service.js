@@ -57,7 +57,6 @@ const stdInsert = async (values) => {
             val.qu_std_cd = mySeq;
         });
         let dtl_res = await mariadb.transQuery('stdDtlInsert', values);
-        console.log('aaaa:'+dtl_res.affectedRows);
         
         if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
             await mariadb.commit();
@@ -71,10 +70,18 @@ const stdInsert = async (values) => {
     return result;
 };
 
+// 자재, 공정, 제품 전체 조회 (모달용)
+const searchAll = async (valueObj) => { 
+    // nm => '소금빵', cate => 'C01' 형태로 들어옴.
+    // 둘 중 하나만 있을 수도, 둘 다 있을 수도 있으므로 null여부에 따라 동적 쿼리 생성
+    let result = mariadb.query('searchAll', valueObj);
+};
+
 
 module.exports = {
     getYetList,
     getMyList,
     findTestList,
-    stdInsert
+    stdInsert,
+    searchAll
 }

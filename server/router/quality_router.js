@@ -39,4 +39,12 @@ router.post('/quality/std', async (req, resp) => {
 });
 
 
+// 자재, 공정, 제품 전체 조회 (모달용)
+router.get('/quality/targetAll', async (req, resp) => {
+  let valueObj = req.body;
+  let result = await qualityService.searchAll(valueObj);
+  resp.send(result);
+});
+
+
 module.exports = router;
