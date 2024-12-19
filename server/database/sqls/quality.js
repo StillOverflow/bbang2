@@ -76,7 +76,7 @@ const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT INTO quality_standard_detail
       (qu_std_dtl_cd, qu_std_cd, test_cd)
-    VALUES 
+    VALES 
   `;
 
   values.forEach((obj) => {

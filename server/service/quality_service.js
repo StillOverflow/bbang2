@@ -29,15 +29,16 @@ const findTestList = async (search) => { // 조건을 받아 목록 조회
 //     ];
 //     let dtl_res = await mariadb.query('stdDtlInsert', values); // 배열 그대로 넣기
 //     if(header_res.affectedRows > 0 & dtl_res.affectedRows > 0){
-//         return {"result" : "success"};
+        // return {"result" : "success"};
 //     } else {
-//         return {"result" : "fail"};
+        // return {"result" : "fail"};
 //     }
 // };
 
 // 트랜잭션 적용 버전
 const stdInsert = async (values) => {
-    return await mariadb.transOpen( async () => {
+    let result = await mariadb.transOpen( async () => {
+
         // 헤더 시퀀스 nextval 얻기
         let seq_res = await mariadb.transQuery('stdSeq');
         let mySeq = seq_res[0].seq;
@@ -57,10 +58,15 @@ const stdInsert = async (values) => {
         });
         let dtl_res = await mariadb.transQuery('stdDtlInsert', values);
         
-        if(header_res.affectedRows > 0 & dtl_res.affectedRows > 0){
+        if(header_res.affectedRows > 0 & dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
             await mariadb.commit();
+            return 'success';
         }
+        else return 'fail';
+
     });
+    
+    return result;
 };
 
 
