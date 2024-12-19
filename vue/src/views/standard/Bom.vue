@@ -40,8 +40,6 @@
               <!--행선택시 bom데이터 조회-->
             </ag-grid-vue>
           </div>
-     
-          
           <div class="col-md-7">
             <!-- 자재 목록 -->
             <h4 class="mb-3">자재 목록</h4>
