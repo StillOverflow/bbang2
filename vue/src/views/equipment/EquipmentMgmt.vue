@@ -215,7 +215,6 @@ export default {
         opt_power: '',
         uph: '',
         is_use: '',
-        end_dt: '',
       },
 
       equipDefs: [
