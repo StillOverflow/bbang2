@@ -40,7 +40,6 @@ const query = (alias, values) => {
     });
   })
   .catch(err => console.log(err));
-
 };
 
 
@@ -66,29 +65,41 @@ const connection = mariadb.createConnection({
 });
 
 // 트랜잭션 오픈
-const transOpen = async (callback) => { // 콜백함수 형식으로 서비스에서 호출 후 내부에서 작업
-  await connection.beginTransaction(async () => {
-    console.log('TRANSACTION OPEN!!');
-    await callback();
-  });
+const transOpen = (callback) => { // 콜백함수 형식으로 서비스에서 호출 후 내부에서 작업
+  return new Promise((resolve, reject) => {
+    try{
+      connection.beginTransaction(async () => {
+        console.log('TRANSACTION OPEN!!');
+        let result = await callback();
+        resolve(result); // 성공한 경우 내부 결과 반환
+      });
+    } catch (err) {
+      reject(err); // beginTransaction 자체가 오류난 경우 에러 반환
+    }
+  })
+  .catch(err => console.log(err));
 };
 
 // 개별 쿼리 함수 (트랜잭션 안에서 실행)
 const transQuery = (alias, values) => { 
   return new Promise((resolve, reject) => {
-    let selected = sqlList[alias];
-
-    // 동적인 쿼리(sqls/...js 파일에서 해당 내용이 함수 형태일 때) 추가작업
-    let executeSql = typeof selected == 'string' ? selected : selected(values);
-    console.log(executeSql);
-
-    connection.query(executeSql, values, (err, results) => {
-      if (err) {
-        reject({ err });
-      } else {
-        resolve(results);
-      }
-    });
+      let selected = sqlList[alias];
+  
+      // 동적인 쿼리(sqls/...js 파일에서 해당 내용이 함수 형태일 때) 추가작업
+      let executeSql = typeof selected == 'string' ? selected : selected(values);
+      console.log(executeSql);
+  
+      connection.query(executeSql, values, (err, results) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(results);
+        }
+      });
+  })
+  .catch(err => {
+    console.log(err); 
+    return false; // 오류 시 뭐라도 리턴해줘야 서비스에서 판단 가능함.
   });
 };
 

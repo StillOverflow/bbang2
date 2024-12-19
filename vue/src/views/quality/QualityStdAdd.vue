@@ -6,13 +6,15 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         <!-- 대상분류 자재/제품/공정 -->
         <div class="row mb-3">
-          <h6 class="col-1 col-md-1 me-6 mb-2 text-center" :style="t_overflow">대상분류</h6>
-          <div class="form-check col-3 col-md-2" v-for="(opt, idx) in radios" :key="idx">
-            <input class="form-check-input" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
-              @change="getDivs">
-            <label class="form-check-label" :for="'radio' + opt.item">
-              {{opt.name}}
-            </label>
+          <h6 class="col-2 col-lg-1 mb-2 d-flex justify-content-center" :style="t_overflow">대상분류</h6>
+          <div class="form-check col-10 d-flex">
+            <div v-for="(opt, idx) in radios" :key="idx">
+              <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
+                @change="getDivs">
+              <label class="form-check-label ms-2 me-4 text-start" :for="'radio' + opt.item">
+                {{opt.name}}
+              </label>
+            </div>
           </div>
         </div>
     
@@ -65,7 +67,7 @@
             <ag-grid-vue class="ag-theme-alpine w-100"  :style="g_height" :columnDefs="defs" :rowData="myData" @grid-ready="myGrid" :gridOptions="gridOptions"/>
           </div>
           <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center">
-            <button class="btn btn-success" :style="t_overflow" @click="getSelected('추가')">추가</button>
+            <button class="btn btn-info" :style="t_overflow" @click="getSelected('추가')">추가</button>
             <button class="btn btn-danger" :style="t_overflow" @click="getSelected()">삭제</button>
           </div>
           <div class="col-5 col-xl-6">
@@ -189,7 +191,6 @@
         let insertArr = [];
         
         this.myData.forEach((obj) => {
-
           insertArr.push({target_type: obj.target_type, 
                           target_cd: 'PR01',
                           test_cd: obj.test_cd});
