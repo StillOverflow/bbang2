@@ -1,4 +1,5 @@
 // const mysql = require('mysql');
+require('dotenv').config({ path: '/server/database/mysql.env' });
 const mariadb = require("mariadb/callback");
 const sqlList = require("./sql.js");
 
