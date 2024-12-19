@@ -94,16 +94,6 @@
     </div>
   </div>
 
-  <draggable v-model="items">
-    <template v-slot:item="{item}">
-        <!-- example -->
-        <div>
-            {{item.title}}
-        </div>
-        <!-- or your own template -->
-    </template>
-</draggable>
-
   <Layout :modalCheck="isModal">
     <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
       <h5 class="modal-title">생산계획코드 검색</h5>
@@ -132,10 +122,9 @@
 import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
 import Layout from '../components/modalLayout.vue';
-import draggable from "vue3-draggable";
 
 export default {
-  components: { AgGridVue, Layout, draggable },
+  components: { AgGridVue, Layout },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
     this.getPlanList();

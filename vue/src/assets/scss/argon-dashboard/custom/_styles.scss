@@ -40,7 +40,8 @@
 .mbp50{margin-bottom : 50px;}
 
 .table{border: 1px solid #eee;}
-.btn{box-shadow:none}
+.btn{box-shadow:none !important}
 .btn-warning{background-color: #ddc270;}
-.btn-warning:hover{background-color: #ddc270;}
+.btn-warning:hover{background-color: #ddc270 !important}
+.btn-warning:active{background-color: #ddc270 !important}
 
