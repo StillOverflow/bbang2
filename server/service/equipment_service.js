@@ -35,30 +35,24 @@ const insertEq = async (eqInfo) => {
   }
 };
 
+//수정
+
 const updateEq = async (eqInfo) => {
   try {
     const eqpCd = eqInfo.eqp_cd; // 설비 코드 추출
     delete eqInfo.eqp_cd; // eqp_cd는 WHERE절에 사용되므로 제거
 
-
-    // 문자열 "null"을 실제 NULL로 변환 (안해주면 date에 문자열 "null"이 들어가서 수정불가)
-    Object.keys(eqInfo).forEach((key) => {
-      if (eqInfo[key] === "null" || eqInfo[key] === "") {
-        eqInfo[key] = null;
-      }
-    });
-
     // SQL 실행 (UPDATE ... SET ? WHERE eqp_cd = ?)
     let result = await mariadb.query('eqUpdate', [eqInfo, eqpCd]);
 
     if (result && result.affectedRows > 0) {
-      return { success: true, message: "설비 정보 수정 성공" };
+      return { success: true, message: '설비 정보 수정 성공' };
     } else {
-      return { success: false, message: "수정할 데이터가 없습니다." };
+      return { success: false, message: '수정할 데이터가 없습니다.' };
     }
   } catch (err) {
-    console.error("DB 수정 에러:", err);
-    throw new Error("데이터베이스 수정 실패");
+    console.error('DB 수정 에러:', err);
+    throw new Error('데이터베이스 수정 실패');
   }
 };
 

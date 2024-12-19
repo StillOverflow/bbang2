@@ -54,6 +54,17 @@ router.post('/equip', upload.single('selectedFile'), async (req, res) => {
     // 나머지 폼 데이터
     const eqInfo = { ...req.body, img_path: imgPath };
 
+    // undefined, "null", 빈 문자열인 필드 제거 (쿼리에서 생략 / 명시적 null처리하면 default 못 받아오는 문제)
+    Object.keys(eqInfo).forEach((key) => {
+      if (
+        eqInfo[key] === undefined ||
+        eqInfo[key] === 'null' ||
+        eqInfo[key] === ''
+      ) {
+        delete eqInfo[key]; // 해당 키 삭제
+      }
+    });
+
     // DB 저장(서비스 함수 호출)
     const result = await equipmentService.insertEq(eqInfo);
 
@@ -67,27 +78,42 @@ router.post('/equip', upload.single('selectedFile'), async (req, res) => {
 
 // 설비수정 + 이미지 파일도 같이 수정
 
-router.put('/equip/:eqp_cd', upload.single('selectedFile'), async (req, res) => {
-  try {
-    const eqpCd = req.params.eqp_cd; // URL에서 설비 코드 추출
+router.put(
+  '/equip/:eqp_cd',
+  upload.single('selectedFile'),
+  async (req, res) => {
+    try {
+      const eqpCd = req.params.eqp_cd; // URL에서 설비 코드 추출
 
-    // 이미지 파일 업로드 처리
-    const imgPath = req.file 
-      ? `/uploads/${req.file.filename}` // 새 이미지 경로
-      : req.body.img_path || null;      // 기존 이미지 경로 유지
+      // 이미지 파일 업로드 처리
+      const imgPath = req.file
+        ? `/uploads/${req.file.filename}` // 새 이미지 경로
+        : req.body.img_path || null; // 기존 이미지 경로 유지
 
-    // 수정할 데이터 구성
-    const eqInfo = { ...req.body, img_path: imgPath, eqp_cd: eqpCd };
+      // 수정할 데이터 구성
+      const eqInfo = { ...req.body, img_path: imgPath, eqp_cd: eqpCd };
 
-    // 서비스 호출
-    const result = await equipmentService.updateEq(eqInfo);
+      // undefined, "null", 빈 문자열인 필드 제거 (쿼리에서 생략 / 명시적 null처리하면 default 못 받아오는 문제)
+      Object.keys(eqInfo).forEach((key) => {
+        if (
+          eqInfo[key] === undefined ||
+          eqInfo[key] === 'null' ||
+          eqInfo[key] === ''
+        ) {
+          delete eqInfo[key]; // 해당 키 삭제
+        }
+      });
 
-    // 응답 반환
-    res.json(result);
-  } catch (err) {
-    console.error("설비 수정 에러:", err.message);
-    res.status(500).json({ success: false, message: "설비 수정 실패" });
+      // 서비스 호출
+      const result = await equipmentService.updateEq(eqInfo);
+
+      // 응답 반환
+      res.json(result);
+    } catch (err) {
+      console.error('설비 수정 에러:', err.message);
+      res.status(500).json({ success: false, message: '설비 수정 실패' });
+    }
   }
-});
+);
 
 module.exports = router;
