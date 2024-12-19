@@ -32,6 +32,7 @@ router.get('/quality/test/all', async (req, resp) => {
 // 등록
 router.post('/quality/std', async (req, resp) => {
   let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
+
   let result = await qualityService.stdInsert(values);
   console.log('라우터결과: ' + result); // 비동기함수가 중첩되어 어떻게 해도 결과가 안 받아와지는 문제....
   resp.send(result);
