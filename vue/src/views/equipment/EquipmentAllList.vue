@@ -15,14 +15,15 @@
             <select
               class="form-select custon-width"
               v-model="equipmentData.eqp_type"
-            />
-            <option
-              v-for="(opt, idx) in equipmentData.selectOptions"
-              :key="idx"
-              :value="opt.item"
             >
-              {{ opt.name }}
-            </option>
+              <option
+                v-for="(opt, idx) in equipmentData.selectOptions"
+                :key="idx"
+                :value="opt.item"
+              >
+                {{ opt.name }}
+              </option>
+            </select>
           </div>
         </div>
         <div class="row">
@@ -142,6 +143,7 @@ export default {
   created() {
     this.getEquipList();
 
+    // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 정보 조회' });
 
     // 설비구분 공통코드 로드
@@ -169,6 +171,32 @@ export default {
     },
 
     async getComm(cd) {
+      // 공통코드가 EQ(설비구분)일 때
+      this.getComm('EQ')
+        .then((result) => {
+          //selectOptions에 담아 select 박스에 활용
+          this.leftFields.find(
+            (field) => field.value === 'eqp_type'
+          ).selectOptions = result.map((item) => ({
+            item: item.comm_dtl_cd,
+            name: item.comm_dtl_nm,
+          }));
+        })
+        .catch((err) => console.log(err));
+
+      // 공통코드가 EU(설비상태)일 때
+      this.getComm('EU')
+        .then((result) => {
+          //selectOptions에 담아 select 박스에 활용
+          this.rightFields.find(
+            (field) => field.value === 'is_use'
+          ).selectOptions = result.map((item) => ({
+            item: item.comm_dtl_cd,
+            name: item.comm_dtl_nm,
+          }));
+        })
+        .catch((err) => console.log(err));
+
       // 공통코드 가져오기
       let result = await axios
         .get('/api/commList/' + cd)
