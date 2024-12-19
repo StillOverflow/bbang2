@@ -6,7 +6,7 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         <!-- 대상분류 자재/제품/공정 -->
         <div class="row mb-3">
-          <h6 class="col-2 col-lg-1 mb-2 d-flex justify-content-center" :style="t_overflow">대상분류</h6>
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex justify-content-center" :style="t_overflow">대상분류</h6>
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">
               <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
@@ -20,24 +20,28 @@
     
         <!-- 구분/카테고리/모달 조회조건 선택 -->
         <div class="row">
-          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상구분</h6>
-          <div class="col-10 col-lg-2 mb-2">
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상구분</h6>
+          <div class="col-10 col-lg-4 col-xxl-2 mb-2">
             <select class="form-select" v-model="selected_div">
               <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
-          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">카테고리</h6>
-          <div class="col-10 col-lg-2 mb-2">
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">카테고리</h6>
+          <div class="col-10 col-lg-4 col-xxl-2 mb-2">
             <select class="form-select" v-model="selected_cate" :disabled="noCate">
               <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
-          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">선택</h6>
-          <div class="col-10 col-lg-2 mb-2">
-            <input type="text" class="form-control" :value="modal_val" readonly>
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">선택</h6>
+          <div class="col-10 col-lg-4 col-xxl-2 d-flex">
+            <div class="input-group">
+              <input type="text" class="form-control" :value="modal_val" readonly style="height: 41px;">
+              <button class="btn btn-warning" type="button">SEARCH</button>
+            </div>
+            <!-- <input type="text" class="form-control" :value="modal_val" readonly> -->
           </div>
-          <h6 class="col-2 col-lg-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상명</h6>
-          <div class="col-10 col-lg-2 mb-2">
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상명</h6>
+          <div class="col-10 col-lg-4 col-xxl-2 mb-2">
             <input type="text" class="form-control" :value="modal_val_nm" readonly>
           </div>
         </div>
@@ -48,15 +52,15 @@
       <div class="card-body">
         <div class="row">
           <div class="col-7 col-xl-6">
-            <h4 class="ms-3">선택된 항목</h4>
+            <h4 class="ms-3">적용 가능 항목</h4>
           </div>
           <div class="col-5  col-xl-6">
             <div class="row">
               <div class="col-12 col-md-8">
-                <h4 class="ms-3" :style="t_overflow">적용 가능 항목</h4>
+                <h4 class="ms-3" :style="t_overflow">선택된 항목</h4>
               </div>
               <div class="col-12 col-md-4 text-center">
-                <button class="btn btn-info" :style="t_break" @click="getTList">검사항목 불러오기</button>
+                <button class="btn btn-warning" :style="t_break" @click="getTList">검사항목 불러오기</button>
               </div>
             </div>
           </div>
@@ -64,27 +68,32 @@
   
         <div class="row mb-4">
           <div class="col-5 col-xl-5">
-            <ag-grid-vue class="ag-theme-alpine w-100"  :style="g_height" :columnDefs="defs" :rowData="myData" @grid-ready="myGrid" :gridOptions="gridOptions"/>
+            <ag-grid-vue class="ag-theme-alpine w-100" :style="g_height" :columnDefs="defs" :rowData="yetData" @grid-ready="yetGrid" :gridOptions="gridOptions"/>
           </div>
           <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center">
-            <button class="btn btn-info" :style="t_overflow" @click="getSelected('추가')">추가</button>
-            <button class="btn btn-danger" :style="t_overflow" @click="getSelected()">삭제</button>
+            <button class="btn btn-outline-primary" :style="t_overflow" @click="getSelected('추가')">
+              <i class="fa-solid fa-plus" style="color: #0951ce;"></i>
+            </button>
+            <button class="btn btn-outline-danger" :style="t_overflow" @click="getSelected()">
+              <i class="fa-solid fa-minus" style="color: #fa0000;"></i>
+            </button>
           </div>
           <div class="col-5 col-xl-6">
-            <ag-grid-vue class="ag-theme-alpine w-100" :style="g_height" :columnDefs="defs" :rowData="yetData" @grid-ready="yetGrid" :gridOptions="gridOptions"/>
+            <ag-grid-vue class="ag-theme-alpine w-100"  :style="g_height" :columnDefs="defs" :rowData="myData" @grid-ready="myGrid" :gridOptions="gridOptions"/>
           </div>
         </div>
   
-        <div class="row">
-          <div class="col-2 col-md-1 text-center fw-bolder" :style="t_overflow">
+        <div class="row d-flex justify-content-end">
+          <h6 class="col-2 col-md-1 text-center" :style="t_overflow">
             등록일
-          </div>
+          </h6>
           <div class="col-5 col-md-3 col-xxl-2">
             <input type="text" class="form-control" :value="date_val" readonly>
           </div>
-          <div class="col-5 col-md-4 text-end text-md-start">
-            <button class="btn btn-primary me-3" :style="t_overflow" @click="stdInsert">저장</button>
-            <button class="btn btn-secondary" :style="t_overflow" @click="getTList">초기화</button>
+          <div class="col-5 col-md-4 col-xxl-3 text-center">
+            <button class="btn btn-primary me-3" :style="t_overflow" @click="stdInsert">SUBMIT</button>
+            <!-- <button class="btn btn-success me-3" :style="t_overflow" @click="stdInsert">SAVE</button> -->
+            <button class="btn btn-secondary" :style="t_overflow" @click="getTList">RESET</button>
           </div>
         </div>
       </div>
@@ -119,7 +128,7 @@
 
         // grid API 테이블 데이터 (Defs: thead 구성, Data: tbody 구성)
         defs: [
-          { headerName: '검사명', field: 'test_nm', displayed: false},
+          { headerName: '검사명', field: 'test_nm'},
           { headerName: '검사방식', field: 'test_metd'},
           { headerName: '검사내용', field: 'test_dtl'}
         ],
@@ -196,9 +205,23 @@
                           test_cd: obj.test_cd});
         });
         console.log(insertArr);
+
         let result = await axios.post('/api/quality/std', insertArr)
                                 .catch(err => console.log(err));
-        console.log(result);
+
+        if(result.data == 'success'){
+          this.$swal(
+            '등록완료',
+            '품질기준이 등록되었습니다.',
+            'success'
+          );
+        } else {
+          this.$swal(
+            '오류발생',
+            '품질기준을 등록하지 못했습니다.',
+            'error'
+          );
+        }
       },
       
       // 공통코드 기반으로 검색조건 표시하기

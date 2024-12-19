@@ -6,14 +6,14 @@ const qualityService = require("../service/quality_service.js");
 // 미적용 검사목록 조회
 router.get('/quality/test/yet', async (req, resp) => {
   let val = req.query;
-  let result = await qualityService.getYetList([val.type, val.cd]);
+  let result = await qualityService.getYetList(val.cd);
   resp.send(result);
 });
 
 // 적용 검사목록 조회
 router.get('/quality/test/my', async (req, resp) => {
   let val = req.query;
-  let result = await qualityService.getMyList([val.type, val.cd]);
+  let result = await qualityService.getMyList(val.cd);
   resp.send(result);
 });
 

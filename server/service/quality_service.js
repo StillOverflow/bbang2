@@ -2,7 +2,7 @@ const mariadb = require('../database/mapper.js');
 
 // 검사항목
 const getYetList = async (cd) => { // 적용하지 않은 목록 조회
-    let result = await mariadb.query('getYetList', cd);
+    let result = await mariadb.query('yetList', cd);
     return result;
 };
 
@@ -57,13 +57,15 @@ const stdInsert = async (values) => {
             val.qu_std_cd = mySeq;
         });
         let dtl_res = await mariadb.transQuery('stdDtlInsert', values);
+        console.log('aaaa:'+dtl_res.affectedRows);
         
-        if(header_res.affectedRows > 0 & dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
+        if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
             await mariadb.commit();
             return 'success';
+        } else {
+            await mariadb.rollback();
+            return 'fail';
         }
-        else return 'fail';
-
     });
     
     return result;

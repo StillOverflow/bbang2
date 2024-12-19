@@ -1,38 +1,26 @@
 // 검사항목 (QUALITY_TEST)
 
-let selectTSql = `
-  SELECT  test_cd, 
-          test_nm, 
-          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = test_metd) test_metd, 
-          test_dtl, 
-          pass_min, 
-          pass_max, 
-          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = pass_ispercent) pass_ispercent,
-          target_type,
-          status,
-          create_dt
-  FROM    quality_test 
-  `;
-
-const getYetList = () => { // 적용하지 않은 목록 조회
-  let where = `
-    WHERE   target_type = ?
-      AND   test_cd NOT IN (SELECT d.test_cd
-                            FROM   quality_standard_detail d JOIN quality_standard h
-                                                              ON d.QU_STD_CD = h.QU_STD_CD
-                            WHERE  h.target_cd = ?)`;
-  return selectTSql + where;
-};
+const yetList = `
+  SELECT test_cd, 
+         get_comm(test_metd) test_metd, 
+         test_nm, 
+         test_dtl,
+         target_type
+  FROM   quality_test
+  WHERE  test_cd NOT IN (
+                          SELECT test_cd
+                          FROM   quality_standard_detail
+                          WHERE  qu_std_cd = (
+                                              SELECT qu_std_cd
+                                              FROM   quality_standard
+                                              WHERE  target_cd = ?
+                                              ORDER  BY qu_std_cd DESC LIMIT 1
+                                            )
+                          ) `;
 
 const getMyList = () => { // 적용한 목록 조회
-  let where = `
-    WHERE   target_type = ?
-      AND   test_cd IN (SELECT d.test_cd
-                        FROM   quality_standard_detail d JOIN quality_standard h
-                                                          ON d.QU_STD_CD = h.QU_STD_CD
-                        WHERE  h.target_cd = ?)
-  `;
-  return selectTSql + where;
+  let myListSql = yetList.replace('NOT IN', 'IN');
+  return myListSql;
 };
 
 // 실험용!!!! 검색조건을 포함한 조회
@@ -58,26 +46,23 @@ const testList = (sc) => {
 
 
 // 품질기준 (QUALITY_STANDARD)
-// 시퀀스 조회
+// 다음 번호 조회 (시퀀스 미사용)
 const stdSeq = `
-  SELECT CONCAT('QS', LPAD(nextval(qual_std_seq), 3,'0')) seq
-  FROM   dual
-`;
+  SELECT CONCAT('QS', LPAD(  IFNULL(  MAX(  SUBSTR(qu_std_cd, -3)  ), 0) + 1  , 3, '0'  )  ) seq
+  FROM   quality_standard `;
 
 // 헤더 입력
 const stdInsert = `
   INSERT INTO quality_standard
     (qu_std_cd, target_type, target_cd)
-  VALUES (?, ?, ?)
-`;
+  VALUES (?, ?, ?) `;
 
 // 디테일 입력
 const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT INTO quality_standard_detail
       (qu_std_dtl_cd, qu_std_cd, test_cd)
-    VALES 
-  `;
+    VALUES `;
 
   values.forEach((obj) => {
     sql += `(CONCAT('QSD', LPAD(nextval(qual_std_dtl_seq), 3,'0')), '${obj.qu_std_cd}', '${obj.test_cd}'), `;
@@ -89,7 +74,7 @@ const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 
 
 module.exports = {
-  getYetList,
+  yetList,
   getMyList,
   testList,
   stdSeq,
