@@ -10,11 +10,11 @@ router.get('/plan', async (req, res)=>{
     res.send(planList);
 });
 
-// 단건조회
+// 코드조회
 router.get('/plan/:no', async (req,res)=>{
     let planNo = req.params.no;
-    let info = await produceService.findPlanNo(planNo);
-    res.send(info);
+    let planList = await produceService.findPlanNo(planNo);
+    res.send(planList);
 })
 
 // 제품조회

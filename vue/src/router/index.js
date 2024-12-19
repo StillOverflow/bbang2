@@ -10,7 +10,6 @@ import Sales_OrderList from '../views/sales/Sales_OrderList.vue';
 import Produce from '../views/produce/Produce.vue';
 import Produce_PlanList from '../views/produce/Produce_PlanList.vue';
 import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
-import Produce_InstAdd_test from '../views/produce/Produce_InstAdd_test.vue';
 
 ////////////////////////////// 설비 //////////////////////////////
 import Equipment from '../views/equipment/Equipment.vue';
@@ -91,12 +90,6 @@ const routes = [
     path: '/Produce_InstAdd',
     name: 'Produce_InstAdd',
     component: Produce_InstAdd,
-  },
-  {
-    //생산지시서 등록
-    path: '/Produce_InstAdd_test',
-    name: 'Produce_InstAdd_test',
-    component: Produce_InstAdd_test,
   },
 
   ////////////////////////////// 설비 //////////////////////////////

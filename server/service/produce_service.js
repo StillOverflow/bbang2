@@ -10,9 +10,8 @@ const findAllPlan = async ()=>{
 
 // 단건조회
 const findPlanNo = async (no)=>{
-  let list = await mariadb.query('planInfo', no);
-  let info = list[0];
-  return info;
+  let list = await mariadb.query('planSearch', no);
+  return list;
 }
 
 // 제품조회

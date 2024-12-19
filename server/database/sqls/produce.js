@@ -14,9 +14,19 @@ const planList =
 FROM prod_plan pp;`;
 
 //단건조회
-const planInfo =
-`SELECT * FROM prod_plan
-WHERE PROD_PLAN_CD = ?`;
+const planSearch =
+`SELECT prod_plan_cd, 
+        order_cd, 
+        id, 
+        start_dt, 
+        end_dt, 
+        create_dt, 
+	    (SELECT COUNT(prod_plan_qty) 
+      	 FROM prod_plan_dtl 
+	     WHERE prod_plan_cd=pp.PROD_PLAN_CD ) AS dtl_qty 
+FROM prod_plan pp
+WHERE PROD_PLAN_CD LIKE "%"?"%"`;
+
 
 //등록
 const planInsert =
@@ -174,7 +184,7 @@ WHERE PROC_FLOW_CD = ? `;
 
 module.exports = {
     planList,
-    planInfo,
+    planSearch,
     planInsert,
     planUpdate,
     planDelete,
