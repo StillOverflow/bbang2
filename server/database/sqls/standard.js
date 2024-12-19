@@ -150,7 +150,21 @@ JOIN common_detail cd
 ON cd.COMM_DTL_CD = m.unit
 WHERE pf.proc_cd = ?;
 `;
-//선택한 공정흐름도의 공정코드에대한 자재삭제
+/// 공정 추가
+const insertProcessFlow = `
+INSERT INTO process_flow SET ?
+`;
+// 공정 삭제
+const deleteProcessFlow = `
+DELETE FROM process_flow 
+WHERE  ?
+`;
+// 공정 순서 업데이트
+const updateProcessSequence = `
+ UPDATE process_flow 
+ SET proc_seq = ? 
+ WHERE proc_cd = ?
+`;
 
 module.exports = {
   bomlist,
@@ -166,4 +180,7 @@ module.exports = {
   deleteProcFlow,
   selectPrd,
   selectMatByProc,
+  insertProcessFlow,
+  deleteProcessFlow,
+  updateProcessSequence,
 };

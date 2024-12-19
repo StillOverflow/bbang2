@@ -6,23 +6,34 @@
       <div class="card p-3">
         <div class="row">
           <!-- 제품목록 -->
-          <div class="col-md-5" style="height : auto">
+          <div class="col-md-5" style="height: auto">
             <h4 class="mb-3 text-center">제품 목록</h4>
-            <div class="d-flex justify-content-left align-items-center mb-2" style="width : 100%">
-              <div style="width:15%">
-                <label class="me-2 align-self-center" >제품명</label>
+            <div
+              class="d-flex justify-content-left align-items-center mb-2"
+              style="width: 100%"
+            >
+              <div style="width: 15%">
+                <label class="me-2 align-self-center">제품명</label>
               </div>
-              <div class="d-flex justify-content-left align-items-center" style="width: 85%">
+              <div
+                class="d-flex justify-content-left align-items-center"
+                style="width: 85%"
+              >
                 <input
                   type="text"
                   class="form-control d-inline"
                   v-model="keyword"
                   placeholder="제품명을 입력하세요"
-                  style="width:75%"
+                  style="width: 75%"
                 />
-                <button class="btn btn-primary mb-0" style="width:25%;margin-left: 10px;" @click="searchPrd">검색</button>
+                <button
+                  class="btn btn-primary mb-0"
+                  style="width: 25%; margin-left: 10px"
+                  @click="searchPrd"
+                >
+                  검색
+                </button>
               </div>
-              
             </div>
             <!-- 제품 테이블 ag-gird -->
             <ag-grid-vue
@@ -74,7 +85,9 @@
             <!-- BOM 목록 -->
             <h4 class="mt-4 mb-3">BOM 정보</h4>
             <div class="col-13 text-end">
-              <button class="btn btn-danger ms-10" @click="deleteBom">삭제</button>
+              <button class="btn btn-danger ms-10" @click="deleteBom">
+                삭제
+              </button>
             </div>
             <!-- BOM 테이블 ag-grid -->
             <ag-grid-vue
@@ -91,10 +104,10 @@
           </div>
         </div>
       </div>
-    <!-- bom 관리 -->
+      <!-- bom 관리 -->
+    </div>
   </div>
-  </div>
-  
+
   <div class="col-6 text-end">
     <button
       class="btn btn-success"
@@ -182,8 +195,6 @@ export default {
           field: "usage",
           editable: true,
           enableCellChangeFlash: true,
-          
-          
         },
       ],
       // 자재 테이블 데이터
@@ -196,7 +207,7 @@ export default {
           field: "prd_cd",
           sortable: true,
         },
-        { headerName: "자재코드", field: "mat_cd", sortable: true ,},
+        { headerName: "자재코드", field: "mat_cd", sortable: true },
         { headerName: "자재명", field: "mat_nm", sortable: true },
         { headerName: "BOM양", field: "usage", sortable: true },
         { headerName: "단위", field: "unit", sortable: true },
@@ -262,7 +273,7 @@ export default {
     },
     // this.prdGridApi.sizeColumnsToFit()
     //스크롤없애기
-    onPrdGridReady(params){
+    onPrdGridReady(params) {
       this.prdGridApi = params.api;
     },
     //자재추가
@@ -277,7 +288,7 @@ export default {
     async InsertBomData() {
       try {
         const selectedNodes = this.materialGridApi.getSelectedNodes(); //자재데이터 불러오기
-        
+
         const selectedMat = selectedNodes.map((node) => node.data); //배열로 저장
         if (!this.selectBomData) {
           this.$swal({
@@ -300,7 +311,7 @@ export default {
             price: dup.price || 0,
             unit_cd: dup.unit_cd,
           };
-          
+
           if (
             this.bomData.some((obj) => obj.mat_cd === dup.mat_cd) ||
             this.saveData.some((obj) => obj.mat_cd === dup.mat_cd)
@@ -319,14 +330,13 @@ export default {
             unit: saveBom.unit_cd,
             usage: saveBom.usage,
           };
-          
+
           this.saveData.push(saveRealData); //savaData 배열에 저장
           this.bomGridApi.applyTransaction({
             add: [saveBom],
           }); //ui만 반영
-          console.log('saveBom => ' ,saveBom);
+          console.log("saveBom => ", saveBom);
         }
-        
       } catch (error) {
         console.error("서버 요청 중 오류 발생:", error);
         alert(`오류 발생`);
