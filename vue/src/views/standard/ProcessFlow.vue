@@ -45,11 +45,8 @@
               <div class="col-5">
                 <h4 class="ms-3" :style="t_break">BOM내역</h4>
               </div>
-              <div class="col-7 text-end">
-                <button class="btn btn-secondary" :style="t_break">위로</button>
-                <button class="btn btn-secondary" :style="t_break">아래로</button>
-                <button class="btn btn-success" :style="t_break" @click="modalOpen">공정추가</button>
-                <button class="btn btn-danger" :style="t_break">삭제</button>
+              <div class="col-8 text-end">
+                <button class="btn btn-success" :style="t_break" @click="modalOpen">자재추가</button>
               </div>
             </div>
           </div>
@@ -65,7 +62,10 @@
               :rowData="productData"
               :pagination="true"
               :cellValueChanged ="cellValueChanged"
+              :gridOptions="gridOptions"
+              @gridReady="gridReady"
               @rowClicked="prodClicked"> <!--행선택시 bom데이터 조회-->
+              
             </ag-grid-vue>
           </div>
           
@@ -79,8 +79,9 @@
               :pagination="true"
               :rowSelection="multiple"
               overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
+              :gridOptions="bomOptions"
               @rowClicked="proFlowClicked"
-              @gridReady="onBomGridReady"> 
+              @gridReady="gridReady"> 
             </ag-grid-vue>
           </div>
         </div>
@@ -91,14 +92,20 @@
         <div class="row">
           <div class="col-7">
             <h4 class="ms-3">공정흐름도</h4>
+            <div class="col-8 text-end">
+                <button class="btn btn-secondary" :style="t_break">위로</button>
+                <button class="btn btn-secondary" :style="t_break">아래로</button>
+                <button class="btn btn-success" :style="t_break" @click="modalOpen">공정추가</button>
+                <button class="btn btn-danger" :style="t_break">삭제</button>
+            </div>
           </div>
          
           <div class="col-5">
             <div class="row">
               <div class="col-5">
-                <h4 class="ms-3" :style="t_break">공정별 자재</h4>
+                <h4 class="ms-0">공정별 자재</h4>
               </div>
-              <div class="col-7 text-end">
+              <div class="ms-3 col-10">
                 <button class="btn btn-info" :style="t_break">저장</button>
                 <button class="btn btn-danger" :style="t_break">삭제</button>
               </div>
@@ -118,8 +125,9 @@
               :pagination="true"
               :cellValueChanged ="cellValueChanged"
               overlayNoRowsTemplate="제품을 선택하세요."
+              :gridOptions="gridOptions"
               @rowClicked="proFlowClicked"
-              @gridReady="onProcFlowGridReady">
+              @gridReady="gridReady">
             </ag-grid-vue>
           </div>
           <div class="col-5">
@@ -133,7 +141,7 @@
               :pagination="true"
               :cellValueChanged ="cellValueChanged"
               overlayNoRowsTemplate="공정에 대한 자재정보가 없습니다."
-              @gridReady="onProcFlowMtlGridReady">
+              @gridReady="gridReady">
             </ag-grid-vue>
           </div>
         </div>
@@ -152,6 +160,7 @@
         :columnDefs="modalDefs"
         :rowData="modalData" 
         :pagination="true" 
+        :gridOptions="bomOptions"
         @rowClicked="modalClicked" 
         @grid-ready="gridFit">
       </ag-grid-vue>
@@ -176,10 +185,20 @@ export default {
     this.bringPrdUsa();
     this.bringBomData();
     this.bringMtlData();
+    this.bringProcCd();
   },
   data(){
     return{
-      
+    bomOptions: {
+      rowSelection: { mode: "multiRow" },
+    },
+    gridOptions:{
+      rowSelection: {
+          mode: "singleRow",
+          checkboxes: false,
+          enableClickSelection: true,
+        },
+    } , 
     //제품정보  
     productDefs:[
       { headerName: '제품코드', field: 'prd_cd', sortale:true},
@@ -206,7 +225,7 @@ export default {
         },
         { headerName: "자재코드", field: "mat_cd", sortable: true },
         { headerName: "자재명", field: "mat_nm", sortable: true },
-        { headerName: "BOM양", field: "usage", sortable: true },
+        { headerName: "BOM양", field: "usage", sortable: true, editable: true, },
         { headerName: "단위", field: "unit", sortable: true },
     ],  
     bomData: [],
@@ -259,6 +278,12 @@ export default {
       this.selectProFlowData = params.data.proc_cd;
       this.bringMtlData(this.selectProFlowData);
     },
+    //공정코드 조회
+    async bringProcCd(){
+      let result = await axios.get(`/api/standard/procCd`)
+      .catch((err)=>console.log(err));
+      this.modalData = result.data;
+    },
     //bom조회
     async bringBomData(prdCd){
       let result = await axios.get(`/api/standard/bom/${prdCd}`)
@@ -271,6 +296,37 @@ export default {
       .catch((err)=>console.log(err));
       this.procFlowMtlData=result.data;
     },
+    gridReady(params){
+      this.gridApi = params.api;
+    },
+    //모달 공정 클릭시 정보 전달
+    // modalClicked(params){
+    //   selecteProCdData = params.data.proc_cd;
+    //   추가 메소드
+    // },
+    
+    //공정흐름도 등록
+    // async InsertProcFlowData(){
+    //   try{
+    //     const selectedNodes = this.gridApi.getSelectedNodes();
+    //     const selectedProCd = selectedNodes.map((node)=>node.data);
+
+    //     for(const dup of selectedProCd){ //그리드
+    //       const saveBom ={
+    //         proc_cd: this.selectProData,
+    //         proc_nm: dup.proc_nm,
+
+
+    //       }
+    //     }
+
+
+
+    //   }catch (error) {
+    //     console.error("서버 요청 중 오류 발생:", error);
+    //     alert(`오류 발생`);
+    //   }
+    // },
     gridFit(params) { // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
       params.api.sizeColumnsToFit();
     },
