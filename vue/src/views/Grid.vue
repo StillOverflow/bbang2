@@ -16,9 +16,9 @@
   <button class="btn btn-secondary mlp10">RESET</button>
   <button class="btn btn-outline-success mlp10">EXCEL</button>
   <div class="input-group mb-3 w-30">
-  <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
-  <button class="btn btn-warning" type="button" id="button-addon2">SEARCH</button>
-</div>
+    <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
+    <button class="btn btn-warning" type="button" id="button-addon2">SEARCH</button>
+  </div>
 
 
 </template>

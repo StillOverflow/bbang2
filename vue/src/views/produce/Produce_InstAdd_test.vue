@@ -1,6 +1,7 @@
 <!-- 생산 -->
 <style>
 .modal-container { width:700px; }
+.btn { margin-bottom: 0; }
 </style>
 
 <template>
@@ -9,18 +10,16 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         
         <p class="text-uppercase text-lg font-weight-bolder">기본정보</p>
-        <label for="example-text-input" class="form-control-label">생산계획코드</label>
-        <div class="row">
-          <div class="col-6 col-xxl-2">
-            <input class="form-control" type="text" v-model="plan_cd" @click="modalOpen"/>
-          </div>
-          <div class="col-4 text-end text-md-start">
-            <button class="btn btn-primary me-3" @click="modalOpen">검색</button>
+        <p for="example-text-input" class="text-sm font-weight-bolder">생산계획코드</p>
+          <div class="row">
+            <div class="input-group w-30">
+              <input class="form-control" type="text" v-model="plan_cd" @click="modalOpen" style="height: 41px;">
+            <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
           </div>
         </div>
 
-        <label for="example-text-input" class="form-control-label">작업일자</label>
-        <input class="form-control w-40" type="date" v-model="work_dt"/>
+        <p for="example-text-input" class="text-sm font-weight-bolder">작업일자</p>
+        <input class="form-control w-40" type="date" v-model="work_dt" @click="modalOpen"/>
       </div>
 
       <div class="card-body">
@@ -29,16 +28,6 @@
           <!--기본정보-->
           <div class="col-md-6">
             <p class="text-uppercase text-lg font-weight-bolder">생산제품 목록</p>
-            <ag-grid-vue class="ag-theme-alpine" 
-            style="width: 100%; height: 400px;" 
-            :columnDefs="planDtlDefs"
-            :rowData="planDtlData" 
-            :gridOptions="gridOptions"
-            @rowClicked="prdClicked" 
-            @grid-ready="gridFit"
-            overlayNoRowsTemplate="생산계획코드를 조회해주세요.">
-            </ag-grid-vue>
-            <!--
             <div class="table-responsive">
               <table class="table">
                 <thead class="table-secondary">
@@ -50,7 +39,7 @@
                 </thead>
                 <tbody>
                   <template v-if="planDtlCount >0">
-                    <tr :key="i" v-for="(Dtl, i) in planDtlList" @click="rowClicked(Dtl.prd_cd)" class="text-center planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
+                    <tr :key="i" v-for="(Dtl, i) in planDtlData" @click="prdClicked(Dtl.prd_cd)" class="text-center planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
                         <td>{{ Dtl.prd_cd }}</td>
                         <td>{{ Dtl.prd_nm }}</td>
                         <td>{{ Dtl.prod_plan_qty }}</td>
@@ -64,72 +53,32 @@
                   </tr>
                 </tbody>
               </table>
-            </div>-->
+            </div>
           </div>
 
           <!--공정설정-->
           <div class="col-md-6">
 
             <p class="text-uppercase text-lg font-weight-bolder">공정 및 자재설정</p>
-            <ag-grid-vue class="ag-theme-alpine" 
-            style="width: 100%; height: 400px;" 
-            :columnDefs="planFlowDefs"
-            :rowData="planFlowData" 
-            @grid-ready="gridFit"
-            :gridOptions="FlowGridOptions"
-            overlayNoRowsTemplate="생산계획코드를 조회해주세요.">
-            </ag-grid-vue>
-            
             <div class="table-responsive">
               <table class="table">
                 <thead class="table-secondary">
                   <tr>
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 사용유무 </th>
-                    <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 자재명 </th>
-                    <th class="text-center text-uppercase text-ser opacity-7">자재코드</th>
-                    <th class="text-center text-uppercase text-ser opacity-7">필요수량(개당)</th>
-                    <th class="text-center text-uppercase text-ser opacity-7">현재고</th>
-                    <th class="text-center text-uppercase text-ser opacity-7"></th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 공정코드 </th>
+                    <th class="text-center text-uppercase text-ser opacity-7">공정명</th>
                   </tr>
-                </thead>
-                <tbody class="text-center">
-                  <template v-if="planMatCount >0">
-                    <template :key="i" v-for="(Mat, i) in planMatList" >
-                        <tr v-if="Mat.CATE == 'group'">
-                          <td>
-                            <div class="form-check">
-                              <input class="form-check-input" type="checkbox" 
-                              v-model="flowArr" 
-                              :value="Mat.PROC_FLOW_CD" 
-                              :id="'ck' + Mat.PROC_FLOW_CD"  
-                              @click="matShow(Mat.PROC_FLOW_CD)">
-                              {{ Mat.NAME }}
-                            </div>
-                            
-                          </td>
-                          <td colspan="4"></td>
-                          <td><button v-bind:id="Mat.PROC_FLOW_CD + '_btn'" class="badge rounded-pill text-bg-secondary">▼</button></td>
-                        </tr>
-
-                        <tr v-else v-bind:class="Mat.PROC_FLOW_CD" class="dnone">
-                          <td></td>
-                          <td>
-                            <div class="form-check col-4 col-md-2">
-                              <input class="form-check-input" type="checkbox" v-model="matArr" :value="Mat.MAT_CD" :id="'mt' + Mat.MAT_CD">
-                              {{ Mat.NAME }}
-                            </div>
-                          </td>
-                          <td>{{ Mat.MAT_CD }}</td>
-                          <td>{{ Number(Mat.MAT_QTY).toLocaleString() }}</td>
-                          <td>{{ Number(Mat.MAT_QTY_T).toLocaleString() }}</td>
-                          <td></td>
-                        </tr>
-                    </template>
+                </thead>   
+                <tbody>
+                  <template v-if="planFlowCount >0">
+                    <tr :key="i" v-for="(Flow, i) in planFlowData" class="text-center planDtl" v-bind:id="Flow.PROC_FLOW_CD+'_dtl'" >
+                        <td>{{ Flow.PROC_FLOW_CD }}</td>
+                    </tr>
                   </template>
 
                   <tr v-else>
-                    <td colspan="6">
-                      <div class="list-nodata">생산제품을 선택해주세요.</div>
+                    <td colspan="3">
+                      <div class="list-nodata">생산계획코드를 검색해주세요.</div>
                     </td>
                   </tr>
                 </tbody>
@@ -138,12 +87,22 @@
           </div>
         </div>
         <div class="center mtp30">
-          <button class="btn btn-success" @click="instInsert">등록</button>
-          <button class="btn btn-secondary mlp10">목록</button>
+          <button class="btn btn-primary" @click="instInsert">SUBMIT</button>
+          <button class="btn btn-secondary mlp10">RESET</button>
         </div>
       </div>
     </div>
   </div>
+
+  <draggable v-model="items">
+    <template v-slot:item="{item}">
+        <!-- example -->
+        <div>
+            {{item.title}}
+        </div>
+        <!-- or your own template -->
+    </template>
+</draggable>
 
   <Layout :modalCheck="isModal">
     <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
@@ -162,9 +121,8 @@
       </ag-grid-vue>
     </template>
     <template v-slot:footer>
-      <div class="center text-center">
-      <button type="button" class="btn btn-secondary" @click="modalOpen">닫기</button>
-    </div>
+      <button type="button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
+      <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
     </template>
   </Layout>
 
@@ -174,9 +132,10 @@
 import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
 import Layout from '../components/modalLayout.vue';
+import draggable from "vue3-draggable";
 
 export default {
-  components: { AgGridVue, Layout },
+  components: { AgGridVue, Layout, draggable },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
     this.getPlanList();
@@ -184,14 +143,26 @@ export default {
   computed : {
       planDtlCount(){
           return this.planDtlData.length;
+      },
+      planFlowCount(){
+          return this.planFlowData.length;
       }
 
   },
+  el: '#list',
   data() {
     return {
+      list1: [
+        { name: "John", id: 1 },
+        { name: "Joao", id: 2 },
+        { name: "Jean", id: 3 },
+        { name: "Gerard", id: 4 }
+      ],
       isModal: false,
       flowArr: [],
       matArr: [],
+      planDtlData: [],
+      planFlowData: [],
 
       /* 모달 계획서 목록 */
       planDefs: [
@@ -202,22 +173,6 @@ export default {
         { headerName: '등록일', field: 'create_dt', valueFormatter: this.$comm.dateFormatter, width: 150 },
       ],
       planData: [],
-
-      /* 계획서 제품목록 */
-      planDtlDefs: [
-        { headerName: '제품코드', field: 'prd_cd', sortable: true },
-        { headerName: '제품명', field: 'prd_nm', sortable: true },
-        { headerName: '생산수량', field: 'prod_plan_qty', sortable: true },
-      ],
-      planDtlData: [],
-
-      /* 제품 공정목록 */
-      planFlowDefs: [
-        { lockPosition: "left", valueGetter: "node.rowIndex+1", cellClass: "locked-col", suppressNavigable:true, width: 60 },
-        { headerName: '공정명', field: 'PROC_NM', sortable: true, rowDrag: true },
-        { headerName: '공정코드', field: 'PROC_CD', sortable: true },
-      ],
-      planFlowData: [],
 
       gridOptions: {
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
@@ -268,11 +223,10 @@ export default {
     },
 
     //계획서 제품 리스트 선택
-    prdClicked(params) {
-      this.prd_cd = params.data.prd_cd;
-      this.getPlanFlowList(this.prd_cd); //공정 및 자재설정 리스트 노출
+    prdClicked(prd_cd) {
+      this.getPlanFlowList(); //공정 및 자재설정 리스트 노출
 
-      /*
+      
       //선택된 생산제품 색깔표기[S]
       const elements = document.querySelectorAll('.planDtl');
       for (var i = 0; i < elements.length; i++) {
@@ -280,12 +234,12 @@ export default {
       }
       document.getElementById(prd_cd+'_dtl').classList.add('table-warning');
       //선택된 생산제품 색깔표기[E]
-      */
+      
     },
 
      //제품별 공정 리스트
-     async getPlanFlowList(plan_cd) {
-      let result = await axios.get(`/api/inst/${plan_cd}/flow`)
+     async getPlanFlowList() {
+      let result = await axios.get(`/api/inst/PR01/flow`)
                               .catch(err => console.log(err));                              
       this.planFlowData = result.data;
     },

@@ -12,8 +12,8 @@
             </div>
             <footer class="modal-footer">
                 <slot name="footer">
-                    <button type="button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
-                    <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
+                    <button type="button" class="btn btn-secondary" @click="modalOpen">닫기</button>
+                    <button type="button" class="btn btn-primary" @click="modalOpen">저장</button>
                 </slot>                  
             </footer>
         </div>
