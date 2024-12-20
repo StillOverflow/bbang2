@@ -20,6 +20,13 @@ const findAllPlanDtl = async (no)=>{
   return list;
 }
 
+// 계획서 삭제
+const deletePlan = async (values)=>{
+  console.log(values);
+  let list = await mariadb.query('planDelete', values);
+  return list;
+}
+
 
 /*--------------지시서-------------*/
 // 조회
@@ -101,6 +108,8 @@ module.exports = {
   findPlanNo,
   findAllPlanDtl,
   findAllInst,
+  deletePlan,
+
   findInstNo,
   instInsert,  
   findInstFlow,

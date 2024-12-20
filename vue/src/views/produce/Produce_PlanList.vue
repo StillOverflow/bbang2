@@ -85,9 +85,10 @@ export default {
 
       const val = this.myApi.getSelectedNodes();
       for(let i=0; i<val.length; i++){
-        cancelArr.push({chkVal : val[i].data.prod_plan_cd });
+        cancelArr.push(val[i].data.prod_plan_cd);
       }
-      let result = await axios.delete(`/api/plan/`, {params : cancelArr})
+      
+      let result = await axios.delete(`/api/plan/`,cancelArr )
                               .catch(err => console.log(err));
       return result;
       

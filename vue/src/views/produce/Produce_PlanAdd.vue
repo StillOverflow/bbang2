@@ -28,33 +28,41 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         
         <p class="text-uppercase text-lg font-weight-bolder">기본정보</p>
-        <p for="example-text-input" class="text-sm font-weight-bolder">생산계획코드</p>
-          <div class="row">
-            <div class="input-group w-30">
-              <input class="form-control" type="text" v-model="plan_cd" placeholder="생산계획코드를 검색해주세요" style="height: 41px;">
-              <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
+        <p for="example-text-input" class="text-sm font-weight-bolder">주문코드</p>
+        <div class="row">
+          <div class="input-group w-30">
+            <input class="form-control" type="text" v-model="plan_cd" placeholder="생산계획코드를 검색해주세요" style="height: 41px;">
+            <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
           </div>
         </div>
 
-        <p for="example-text-input" class="text-sm font-weight-bolder">작업일자</p>
-        <input class="form-control w-30" type="date" v-model="work_dt"/>
+        <p for="example-text-input" class="text-sm font-weight-bolder">생산기간</p>
+        <div class="row">
+          <div class="col col-lg-2">
+            <input class="form-control" type="date" v-model="START_DT">
+          </div>
+          <div class="col col-sm-1 text-center mt-2 fw-bolder" :style="t_overflow">~</div>         
+          <div class="col col-lg-2">
+            <input class="form-control" type="date" v-model="END_DT">
+          </div>
+        </div>
+
       </div>
 
        <!--검색모달[S]-->
         <Layout :modalCheck="isModal">
           <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-            <h5 class="modal-title">생산계획코드 검색</h5>
+            <h5 class="modal-title">주문코드 검색</h5>
             <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
           </template>
           <template v-slot:default>
             <ag-grid-vue class="ag-theme-alpine" 
             style="width: 100%; height: 400px;" 
-            :columnDefs="planDefs"
-            :rowData="planData" 
+            :columnDefs="orderDefs"
+            :rowData="orderData" 
             @rowClicked="modalClicked" 
             @grid-ready="gridFit"
-            @rowIndexChanged="RowIndexChangedEvent"
-            overlayNoRowsTemplate="등록된 계획서가 없습니다.">
+            overlayNoRowsTemplate="주문내역이 없습니다.">
             </ag-grid-vue>
           </template>
           <template v-slot:footer>
@@ -164,9 +172,8 @@ export default {
     Layout, 
     draggable: VueDraggableNext},
   created() {
-    this.$store.dispatch('breadCrumb', { title: '생산지시서 관리' });
+    this.$store.dispatch('breadCrumb', { title: '생산계획서 관리' });
     this.getPlanFlowList();
-    this.plan_cd = 'PR001';
   },
   computed : {
       planDtlCount(){
@@ -186,17 +193,16 @@ export default {
       planDtlData: [],
       planFlowData: [],
       dragging: false,
-      
 
       /* 모달 계획서 목록 */
-      planDefs: [
-        { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true, width: 120 },
-        { headerName: '생산시작일', field: 'start_dt', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
-        { headerName: '생산종료일', field: 'end_dt', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150 },
-        { headerName: '제품수량', field: 'dtl_qty', sortable: true, width: 100},
-        { headerName: '등록일', field: 'create_dt', valueFormatter: this.$comm.dateFormatter, width: 150 },
+      orderDefs: [
+        { headerName: '주문서코드', field: 'order_cd', sortable: true, width: 120 },
+        { headerName: '거래처코드', field: 'act_cd', sortable: true, width: 150  },
+        { headerName: '거래처이름', field: 'act_nm', sortable: true, width: 150 },
+        { headerName: '담당자', field: 'name', sortable: true, width: 100},
+        { headerName: '주문일자', field: 'order_dt', valueFormatter: this.$comm.dateFormatter, width: 150 }
       ],
-      planData: [],
+      orderData: [],
 
       gridOptions: {
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
@@ -224,7 +230,7 @@ export default {
     /*모달 [S]*/
     modalOpen() {
       this.isModal = !this.isModal;
-      this.getPlanList();
+      this.getOrderList();
     },
     modalClicked(params) {
       this.getPlanDtlList(params.data.prod_plan_cd);
@@ -234,10 +240,10 @@ export default {
     /*모달 [E]*/
     
     //계획서 리스트
-    async getPlanList() {
-      let result = await axios.get(`/api/plan/${this.plan_cd}`)
+    async getOrderList() {
+      let result = await axios.get('/api/sales')
                               .catch(err => console.log(err));
-      this.planData = result.data;
+      this.orderData = result.data;    
     },
 
     //계획서 제품 리스트

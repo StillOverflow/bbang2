@@ -26,8 +26,10 @@ router.get('/plan/:no/dtl', async (req, res)=>{
 
 // 계획서 삭제
 router.delete("/plan", async (req, res) => {
-    //let result = await produceService.deletePlan(values);
-    //resp.send(result);
+  console.log("☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★");
+    let values = req.body;
+    let result = await produceService.deletePlan(values);
+    res.send(result);
   });
 /*--------------지시서-------------*/
 

@@ -15,6 +15,7 @@ import Sales_ProList from '../views/sales/Sales_ProList.vue';
 ////////////////////////////// 생산 //////////////////////////////
 import Produce from '../views/produce/Produce.vue';
 import Produce_PlanList from '../views/produce/Produce_PlanList.vue';
+import Produce_PlanAdd from '../views/produce/Produce_PlanAdd.vue';
 import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
 
 ////////////////////////////// 설비 //////////////////////////////
@@ -116,7 +117,13 @@ const routes = [
     component: Produce,
   },
   {
-    //생산지시서 조회
+    //생산계획서 등록
+    path: '/Produce_PlanAdd',
+    name: 'Produce_PlanAdd',
+    component: Produce_PlanAdd,
+  },
+  {
+    //생산계획서 조회
     path: '/Produce_PlanList',
     name: 'Produce_PlanList',
     component: Produce_PlanList,
