@@ -124,11 +124,16 @@ const transQuery = (alias, values) => {
 // 수동 커밋
 const commit = () => {
   connection.commit((err) => { 
-    if(err){ // 오류 시 전체 롤백
-      connection.rollback(() => { throw err; });
+    if(err){ // 커밋 도중 오류 시 전체 롤백
+      connection.rollback(() => console.log(err));
     }
     console.log('COMMIT!!');
   });
+};
+
+// 수동 롤백
+const rollback = () => {
+  connection.rollback((err) => console.log(err));
 };
 
 
@@ -136,5 +141,6 @@ module.exports = {
   query,
   transOpen,
   transQuery,
-  commit
+  commit,
+  rollback
 };

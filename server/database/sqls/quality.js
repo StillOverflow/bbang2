@@ -1,42 +1,32 @@
 // 검사항목 (QUALITY_TEST)
+// 특정 대상에 미적용 목록 조회
+const yetList = `
+  SELECT test_cd, 
+         fn_get_codename(test_metd) test_metd, 
+         test_nm, 
+         test_dtl,
+         target_type
+  FROM   quality_test
+  WHERE  test_cd NOT IN (
+                          SELECT test_cd
+                          FROM   quality_standard_detail
+                          WHERE  qu_std_cd = (
+                                              SELECT qu_std_cd
+                                              FROM   quality_standard
+                                              WHERE  target_cd = ?
+                                              ORDER  BY qu_std_cd DESC LIMIT 1
+                                            )
+                          ) `;
 
-let selectTSql = `
-  SELECT  test_cd, 
-          test_nm, 
-          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = test_metd) test_metd, 
-          test_dtl, 
-          pass_min, 
-          pass_max, 
-          (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = pass_ispercent) pass_ispercent,
-          target_type,
-          status,
-          create_dt
-  FROM    quality_test 
-  `;
-
-const getYetList = () => { // 적용하지 않은 목록 조회
-  let where = `
-    WHERE   target_type = ?
-      AND   test_cd NOT IN (SELECT d.test_cd
-                            FROM   quality_standard_detail d JOIN quality_standard h
-                                                              ON d.QU_STD_CD = h.QU_STD_CD
-                            WHERE  h.target_cd = ?)`;
-  return selectTSql + where;
-};
-
-const getMyList = () => { // 적용한 목록 조회
-  let where = `
-    WHERE   target_type = ?
-      AND   test_cd IN (SELECT d.test_cd
-                        FROM   quality_standard_detail d JOIN quality_standard h
-                                                          ON d.QU_STD_CD = h.QU_STD_CD
-                        WHERE  h.target_cd = ?)
-  `;
-  return selectTSql + where;
+// 특정 대상에 현재 적용중인 목록 조회
+const getMyList = () => {
+  let myListSql = yetList.replace('NOT IN', 'IN');
+  return myListSql;
 };
 
 // 실험용!!!! 검색조건을 포함한 조회
 // 매개변수로 검색조건을 유동적으로 받아 쿼리 생성. 값이 없을 시 전체출력
+// 잘 작동하지만 완전일치만 검색 가능한 문제가 있음. (BETWEEN, LIKE 등 미적용)
 const testList = (sc) => {
   let query = selectTSql;
   let scArr = Object.keys(sc);
@@ -58,26 +48,23 @@ const testList = (sc) => {
 
 
 // 품질기준 (QUALITY_STANDARD)
-// 시퀀스 조회
+// 다음 번호 조회 (시퀀스 미사용)
 const stdSeq = `
-  SELECT CONCAT('QS', LPAD(nextval(qual_std_seq), 3,'0')) seq
-  FROM   dual
-`;
+  SELECT CONCAT('QS', LPAD(  IFNULL(  MAX(SUBSTR(qu_std_cd, -3)), 0) + 1  , 3, '0'  )  ) seq
+  FROM   quality_standard `;
 
 // 헤더 입력
 const stdInsert = `
   INSERT INTO quality_standard
     (qu_std_cd, target_type, target_cd)
-  VALUES (?, ?, ?)
-`;
+  VALUES (?, ?, ?) `;
 
 // 디테일 입력
 const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT INTO quality_standard_detail
       (qu_std_dtl_cd, qu_std_cd, test_cd)
-    VALES 
-  `;
+    VALUES `;
 
   values.forEach((obj) => {
     sql += `(CONCAT('QSD', LPAD(nextval(qual_std_dtl_seq), 3,'0')), '${obj.qu_std_cd}', '${obj.test_cd}'), `;
@@ -88,11 +75,39 @@ const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 };
 
 
+// 자재, 공정, 제품 전체 조회 (모달용)
+const searchAll  = (valueObj) => {
+  let nm = valueObj.nm;
+  let cd = valueObj.cd;
+  // 이름이나 카테고리(코드) 둘 중 하나 혹은 둘 다 검색조건으로 들어올 수 있음.
+  return `
+    (SELECT prd_cd, prd_nm nm, category
+    FROM   product
+    WHERE  create_dt IS NOT NULL -- 시작부에 당연한 조건을 줘서 AND만 추가 가능
+      ${!nm ? "" : "AND  prd_nm LIKE '%" + nm + "%' "}
+      ${!cd ? "" : "AND  category = '" + cd + "' " } )
+    UNION
+    (SELECT mat_cd, mat_nm nm, category
+    FROM   material
+    WHERE  create_dt IS NOT NULL
+      ${!nm ? "" : "AND  mat_nm LIKE '%" + nm + "%' "}
+      ${!cd ? "" : "AND  category = '" + cd + "' " } )
+    UNION
+    (SELECT proc_cd, proc_nm nm, eqp_type
+    FROM   process
+    WHERE  create_dt IS NOT NULL
+      ${!nm ? "" : "AND  proc_nm LIKE '%" + nm + "%' "}
+      ${!cd ? "" : "AND  proc_cd = '" + cd + "' " } )
+  `;
+};
+
+
 module.exports = {
-  getYetList,
+  yetList,
   getMyList,
   testList,
   stdSeq,
   stdInsert,
-  stdDtlInsert
+  stdDtlInsert,
+  searchAll
 }

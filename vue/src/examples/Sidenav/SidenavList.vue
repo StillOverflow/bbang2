@@ -550,6 +550,18 @@ export default {
 
       <li class="nav-item">
         <sidenav-item
+          to="/grid"
+          :class="getRoute() === 'grid' ? 'active' : ''"
+          :navText="'💚그리드&버튼예시💨💨'"
+        >
+          <template v-slot:icon>
+            <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
+          </template>
+        </sidenav-item>
+      </li>
+
+      <li class="nav-item">
+        <sidenav-item
           to="/tables"
           :class="getRoute() === 'tables' ? 'active' : ''"
           :navText="isRTL ? 'الجداول' : 'Tables'"
@@ -558,18 +570,6 @@ export default {
             <i
               class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"
             ></i>
-          </template>
-        </sidenav-item>
-      </li>
-
-      <li class="nav-item">
-        <sidenav-item
-          to="/grid"
-          :class="getRoute() === 'grid' ? 'active' : ''"
-          :navText="isRTL ? 'grid' : 'grid'"
-        >
-          <template v-slot:icon>
-            <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
           </template>
         </sidenav-item>
       </li>
