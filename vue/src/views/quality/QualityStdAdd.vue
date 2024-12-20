@@ -10,7 +10,7 @@
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">
               <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
-                @change="getDivs">
+                @change="changeDivs">
               <label class="form-check-label ms-2 me-4 text-start" :for="'radio' + opt.item">
                 {{opt.name}}
               </label>
@@ -73,7 +73,7 @@
              @grid-ready="yetGrid" :gridOptions="gridOptions"/>
           </div>
           <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center">
-            <button class="btn btn-outline-primary" :style="t_overflow" @click="getSelected('추가')">
+            <button class="btn btn-outline-primary" :style="t_overflow" @click="getSelected('plus')">
               <i class="fa-solid fa-plus" style="color: #0951ce;"></i>
             </button>
             <button class="btn btn-outline-danger" :style="t_overflow" @click="getSelected()">
@@ -109,7 +109,7 @@
         </template>
         <template v-slot:default>
           <ag-grid-vue class="ag-theme-alpine" :style="g_height" :columnDefs="modalDefs" :rowData="modalData" 
-            :gridOptions="gridOptions" :rowSelection="false" @rowClicked="null" @grid-ready="gridFit"/>
+            :gridOptions="gridOptions" :rowSelection="false" @rowClicked="modalSelect"/>
         </template>
         <template v-slot:footer> <!-- 아무것도 안 넣으면 기본 버튼이 표시됨. -->
           <button type="button" class="btn btn-secondary" @click="modalToggle">CLOSE</button>
@@ -148,9 +148,9 @@
         modalDefs: [
           { headerName: '유형', field: 'type', width: 70 },
           { headerName: '구분', field: 'cate_type', width: 80 },
-          { headerName: '카테고리', field: 'category', width: 80 },
+          { headerName: '카테고리', field: 'category', width: 90 },
           { headerName: '코드', field: 'cd', width: 80 },
-          { headerName: '이름', field: 'nm', width: 136 },
+          { headerName: '이름', field: 'nm', width: 126 },
           { headerName: '등록현황', 
             field: 'has_std', 
             cellClassRules: {
@@ -158,7 +158,7 @@
               'textGreen': params => params.value == '등록완료'
             },
             width: 100 },
-          { headerName: '등록일', field: 'std_date', width: 120, valueFormatter: this.$comm.dateFormatter_returnNull}
+          { headerName: '마지막 등록일', field: 'std_date', width: 120, valueFormatter: this.$comm.dateFormatter_returnNull}
         ],
         modalData: [],
         modal_val: { // 선택된 값
@@ -174,6 +174,7 @@
         ],
 
         myData: [],
+        myData_save: [], // 등록 시 비교용으로 임시저장하는 변수
         myApi: null,
         myColApi: null,
 
@@ -207,10 +208,6 @@
     },
 
     methods: {
-      gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
-        params.api.sizeColumnsToFit();
-      },
-
       yetGrid(params){ // '적용가능목록' @grid-ready 시 매개변수 속성으로 자동 접근
         params.api.sizeColumnsToFit();
         this.yetApi = params.api;
@@ -244,10 +241,13 @@
         };
       },
 
-      async getDivs(){
+      async changeDivs(){
         // 대상구분 변경될 때, 다시 null부터 시작
         this.selected_div = null;
         this.selected_cate = null;
+        this.modal_val.cd = null;
+        this.myData = [];
+        this.yetData = [];
 
         // 구분 및 카테고리 재호출
         switch(this.selected_radio){
@@ -256,19 +256,9 @@
             this.getCondition('MC', 'cate'); 
             this.noCate = false; 
             break;
-          case 'P02' : { // 공정중 선택한 경우 => 공통코드가 없으므로 따로 실행해야 함.
-            // ** switch - case 조건 안에서 변수 선언 시, 작업 내용을 중괄호로 묶지 않으면 오류남.
-            let result = await axios.get('/api/standard/procCd').catch(err => console.log(err));
-            result.data.forEach((obj) => {
-              this.divs.push({
-                item: obj.proc_cd,
-                name: obj.proc_nm
-              });
-            });
-            this.modal_val = result.data[0].proc_cd;
+          case 'P02' :  // 공정중 선택한 경우
             this.noCate = true; // 구분 선택이 아예 없음.
             break;
-            };
           case 'P03' : // 제품 선택한 경우
             this.getCondition('PD', 'divs');
             this.getCondition('PC', 'cate'); 
@@ -296,41 +286,65 @@
         let result = await axios.get('/api/quality/targetAll', {params: params});
         let data = result.data;
         data.forEach((obj) => {
-          obj.has_std = obj.std_date == null ? '미등록' : '등록완료';
+          obj.has_std = obj.std_date == null ? '미등록' : '등록완료'; // SELECT문에 포함되지 않은 내용이므로 추가
         });
         this.modalData = data;
+      },
+      
+      modalSelect(params){
+        let selected = params.data;
+        if(!this.selected_radio){ // radio 선택 안 되어있으면 선택해줌
+          let type = null;
+          switch(selected.type){
+            case '자재' : type = 'P01'; break;
+            case '공정' : type = 'P02'; break;
+            case '제품' : type = 'P03'; break;
+          }
+          this.selected_radio = type;
+        }
+
+        this.date_val = selected.std_date ? this.$comm.getMyDay(selected.std_date) : this.$comm.getMyDay();
+        this.modal_val.cd = selected.cd;
+        this.modal_val.nm = selected.nm;
+        this.modalToggle();
       },
       // ---------- 모달 메소드 끝 -----------
 
       // 검사항목 버튼 클릭 시 불러오기
       async getTList(){
-        const axiosGet = async (val) => { // 'yet' or 'my'에 따라 같은 동작 실행
-          let query = {cd: 'PR01', type : this.selected_radio};
+        // 'yet' or 'my'에 따라 같은 동작 실행하는 함수 선언
+        const axiosGet = async (val) => { 
+          let query = {cd: this.modal_val.cd, type: this.selected_radio};
 
           let result = await axios.get('/api/quality/test/' + val, {params: query})
                                 .catch(err => console.log(err));
           let data = result.data;
 
-          // 각각의 grid 데이터에 넣기
-          if(val == 'yet') this.yetData = data;
-          else this.myData = data;
+          // 각각의 grid 데이터 넣기 실행
+          if(val == 'yet'){
+            this.yetData = data;
+          } else {
+            this.myData = data;
+            this.myData_save = this.myData; // 저장했을 때 기존값에서 변경됐는지 비교용
+          }
         };
-
-        // if modalVal 있는 경우 실행해야 함. (구현전)
-        await axiosGet('yet');
-        await axiosGet('my');
+        
+        if(this.modal_val.cd){ // 코드가 정확히 선택되었을 경우에만 동작
+          await axiosGet('yet');
+          await axiosGet('my');
+        }
       },
 
-      getSelected(type){ // 추가/삭제버튼 동작
+      getSelected(type){ // 추가(+) / 삭제(-) 버튼 동작
         let selected = null;
-        if(type == '추가') selected = this.yetApi.getSelectedNodes(); // 추가버튼일 시
+        if(type == 'plus') selected = this.yetApi.getSelectedNodes(); // 추가버튼일 시
         else selected = this.myApi.getSelectedNodes(); // 삭제버튼일 시
 
         if(selected.length != 0){ // 선택된 값이 있을 경우에만 실행
           // grid는 참조형식이라 개별값을 직접 조작할 수 없으므로 가상의 배열 선언
           let addArr = [];
           let changeArr = null;
-          if(type == '추가') changeArr = this.yetData;
+          if(type == 'plus') changeArr = this.yetData;
           else changeArr = this.myData;
           
           selected.forEach((val) => { // 선택된 값을 순회, 비교하며 배열에서 추가/삭제 실행
@@ -339,7 +353,7 @@
           });
           
           // 수정된 배열로 반영하기
-          if(type == '추가'){
+          if(type == 'plus'){
             this.yetData = changeArr;
             this.myData = [...this.myData, ...addArr]; // 펼침연산자로 기존의 값에 추가함
           } else {
@@ -350,14 +364,30 @@
       },
 
       async stdInsert(){
+        let target_cd = this.modal_val.cd;
+        
+        if(!target_cd) { // insert값인 target_cd(대상코드) 없으면 실행 불가
+          this.$swal(
+            '대상 미선택',
+            '대상과 항목을 정확히 선택해주세요.',
+            'warning'
+          );
+          return;
+        }
+
+        // let isChanged = null;
+        // console.log(this.myData == this.myData_save);
+        // this.myData_save((obj) => {
+        //   obj.
+        // });
+
         let insertArr = [];
         
-        this.myData.forEach((obj) => {
-          insertArr.push({target_type: obj.target_type, 
-                          target_cd: 'PR01',
-                          test_cd: obj.test_cd});
+        this.myData.forEach((test) => {
+          insertArr.push({target_type: test.target_type, 
+                          target_cd: this.modal_val.cd,
+                          test_cd: test.test_cd});
         });
-        console.log(insertArr);
 
         let result = await axios.post('/api/quality/std', insertArr)
                                 .catch(err => console.log(err));

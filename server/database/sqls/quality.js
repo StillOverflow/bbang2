@@ -7,7 +7,8 @@ const yetList = `
          test_dtl,
          target_type
   FROM   quality_test
-  WHERE  test_cd NOT IN (
+  WHERE  target_type = ?
+    AND  test_cd NOT IN (
                           SELECT test_cd
                           FROM   quality_standard_detail
                           WHERE  qu_std_cd = (
@@ -86,21 +87,26 @@ const searchAll  = (valueObj) => {
     (SELECT '제품' type, prd_cd cd, prd_nm nm, '완제품' cate_type, fn_get_codename(category) category, fn_quality_std_dt(prd_cd) std_date
        FROM  product
       WHERE  create_dt IS NOT NULL
-        ${!cate ? "" : "AND  category = '" + cate + "' " }
-        ${!nm ? "" : "AND  prd_nm LIKE '%" + nm + "%' "} )
+        ${!cate ? "" : "AND  category = '" + cate + "' "}
+        ${!nm ? "" : "AND  prd_nm LIKE '%" + nm + "%' "}
+      ORDER  BY std_date, cd )
   `;
 
   let matQuery = `
       (SELECT '자재' type, mat_cd cd, mat_nm nm, fn_get_codename(type) cate_type, fn_get_codename(category) category, fn_quality_std_dt(mat_cd) std_date
          FROM  material
         WHERE  create_dt IS NOT NULL
-          ${!cate ? "" : "AND  category = '" + cate + "' " } 
-          ${!nm ? "" : "AND  mat_nm LIKE '%" + nm + "%' "} )
+          ${!cate ? "" : "AND  category = '" + cate + "' "} 
+          ${!nm ? "" : "AND  mat_nm LIKE '%" + nm + "%' "}
+        ORDER  BY std_date, cd )
   `;
 
   let procQuery = `
       (SELECT '공정' type, proc_cd cd, proc_nm nm, null cate_type, null category, fn_quality_std_dt(proc_cd) std_date
-        FROM   process)
+        FROM   process
+        WHERE  create_dt IS NOT NULL
+          ${!nm ? "" : "AND  proc_nm LIKE '%" + nm + "%' "}
+        ORDER  BY std_date, cd )
   `;
 
   if(!type){ // 타입 명시하지 않았으면 전체 조회 쿼리문을 반환
