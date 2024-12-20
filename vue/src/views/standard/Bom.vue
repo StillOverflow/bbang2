@@ -3,7 +3,7 @@
 <template>
   <div id="page-inner" class="mx-auto">
     <div class="py-4 container-fluid">
-      <div class="card p-3">
+      <div class="card py-5 px-6">
         <div class="row">
           <!-- 제품목록 -->
           <div class="col-md-5" style="height: auto">
@@ -27,7 +27,7 @@
                   style="width: 75%"
                 />
                 <button
-                  class="btn btn-primary mb-0"
+                  class="btn btn-warning mb-0"
                   style="width: 25%; margin-left: 10px"
                   @click="searchPrd"
                 >
@@ -51,23 +51,26 @@
               <!--행선택시 bom데이터 조회-->
             </ag-grid-vue>
           </div>
-          <div class="col-md-7">
+          <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
+          <div class="col-md-6" style="height: auto">
             <!-- 자재 목록 -->
-            <h4 class="mb-3">자재 목록</h4>
-            <div class="mb-3">
+            <h4 class="mb-3 text-center">자재 목록</h4>
+            <div class="mb-3" >
               <label class="me-2 align-self-center">자재명</label>
               <input
                 type="text"
-                class="form-control w-50 d-inline"
+                class="form-control d-inline"
                 v-model="matkeyword"
                 placeholder="자재명을 입력하세요"
+                style="width: 70%"
               />
-              <button class="btn btn-primary" @click="searchMtl">검색</button>
-            </div>
-            <div class="col-13 text-end">
-              <button class="btn btn-primary" @click="InsertBomData">
+              <button class="btn btn-warning mb-0 ms-2"  @click="searchMtl" >검색</button>
+              <button class="btn btn-outline-primary mb-0 ms-2"  @click="InsertBomData">
                 자재 추가
               </button>
+            </div>
+            <div class="col-13 text-end">
+              
             </div>
             <!-- 자재 테이블 ag-gird -->
             <ag-grid-vue
@@ -81,42 +84,50 @@
               @gridReady="onMatGridReady"
             >
             </ag-grid-vue>
-
-            <!-- BOM 목록 -->
-            <h4 class="mt-4 mb-3">BOM 정보</h4>
+            <!-- BOM 목록 -->          
             <div class="col-13 text-end">
-              <button class="btn btn-danger ms-10" @click="deleteBom">
+              <!-- <h4 class="mt-4 mb-3">BOM 정보</h4> -->
+              <label class="align-self-center me-7 fs-5">BOM 정보</label>
+              <button class="btn btn-outline-danger mt-2 ms-10" @click="deleteBom">
                 삭제
               </button>
             </div>
             <!-- BOM 테이블 ag-grid -->
-            <ag-grid-vue
-              class="ag-theme-alpine"
-              style="width: 100%; height: 300px"
-              :columnDefs="bomDefs"
-              :rowData="bomData"
-              :pagination="true"
-              :gridOptions="gridOptions"
-              overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
-              @gridReady="onBomGridReady"
-            >
-            </ag-grid-vue>
-          </div>
+            <div>
+              <ag-grid-vue
+                class="ag-theme-alpine"
+                style="width: 100%; height: 300px"
+                :columnDefs="bomDefs"
+                :rowData="bomData"
+                :pagination="true"
+                :gridOptions="gridOptions"
+                overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
+                @gridReady="onBomGridReady"
+              >
+              </ag-grid-vue>
+              <div class="text-center">
+                <button
+                  class="btn btn-success mt-3 saveBtn "
+                  @click="save"
+                  v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0">
+                  저장
+                </button>
+              </div>
+              
+            </div>
+          </div> 
         </div>
+        
       </div>
+      
       <!-- bom 관리 -->
     </div>
+    
   </div>
 
-  <div class="col-6 text-end">
-    <button
-      class="btn btn-success"
-      @click="save"
-      v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0"
-    >
-      저장
-    </button>
-  </div>
+  
+    
+ 
 </template>
 
 <script>
@@ -142,12 +153,14 @@ export default {
       // 제품 테이블 컬럼명
       gridOptions: {
         rowSelection: { mode: "multiRow" },
+        suppressMovableColumns: true,
       },
       prdOptions: {
         rowSelection: {
           mode: "singleRow",
           checkboxes: false,
           enableClickSelection: true,
+          suppressMovableColumns: true,
         },
       },
       productDefs: [
@@ -161,9 +174,7 @@ export default {
         {
           headerName: "등록날짜",
           field: "create_dt",
-          cellRenderer: (data) => {
-            return data.value ? new Date(data.value).toLocaleDateString() : "";
-          },
+          valueFormatter: this.$comm.dateFormatter
         },
       ],
       // 제품 테이블 데이터
@@ -271,24 +282,27 @@ export default {
         .catch((err) => console.log(err));
       this.bomData = result.data;
     },
-    // this.prdGridApi.sizeColumnsToFit()
+  
     //스크롤없애기
     onPrdGridReady(params) {
       this.prdGridApi = params.api;
+      params.api.sizeColumnsToFit();
     },
     //자재추가
     onMatGridReady(params) {
       this.materialGridApi = params.api;
+      params.api.sizeColumnsToFit();
     },
     onBomGridReady(params) {
       this.bomGridApi = params.api; // BOM 테이블 gridApi
+      params.api.sizeColumnsToFit();
     },
 
     //bom에 선택한 자재데이터 추가
     async InsertBomData() {
       try {
         const selectedNodes = this.materialGridApi.getSelectedNodes(); //자재데이터 불러오기
-
+        //console.log('selectedNodes => ',selectedNodes);
         const selectedMat = selectedNodes.map((node) => node.data); //배열로 저장
         if (!this.selectBomData) {
           this.$swal({
@@ -332,6 +346,7 @@ export default {
           };
 
           this.saveData.push(saveRealData); //savaData 배열에 저장
+
           this.bomGridApi.applyTransaction({
             add: [saveBom],
           }); //ui만 반영
@@ -346,7 +361,7 @@ export default {
     async deleteBom() {
       const selectedNodes = this.bomGridApi.getSelectedNodes(); //현재행 가져오기
       const selectedBomData = selectedNodes.map((node) => node.data); //가져온 데이터 배열에 저장
-
+      
       for (const bom of selectedBomData) {
         //반복문으로 배열 0 배열1 배열2... 뽑아내기
         this.deleteData.push(bom); //deletedata 배열에 저장
@@ -397,3 +412,11 @@ export default {
   },
 };
 </script>
+<style>
+
+  .saveBtn {
+    width: 130px;
+    height: 50px;
+    display: block;
+  }
+</style>
