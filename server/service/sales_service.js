@@ -15,13 +15,13 @@ const listOrder = async() => {
 //거래처, 날짜 따로 검색
 const searchOrder = async (search, std, etd) => {
     try {
-       let searchObj = {
-        search,
-        std,
-        etd
-       }
-       const list = await mariadb.query('orderSearch', searchObj);
-       return list;
+        let searchObj = {
+            search,
+            std,
+            etd
+        }
+        const list = await mariadb.query('orderSearch', searchObj);
+        return list;
     } catch (err) {
         console.error("Error searching orders 실패:", err);
         throw err;
@@ -51,7 +51,7 @@ console.log(values[0]);
 const listOrderOut = async (no)=>{
     let list = await mariadb.query('outOrderLit', no);
     return list;
-  }
+}
 
 //출고 등록 LOT 선택
 const listLotOut = async (no) => {

@@ -34,8 +34,8 @@
             <div class="input-group w-30">
               <input class="form-control" type="text" v-model="plan_cd" placeholder="생산계획코드를 검색해주세요" style="height: 41px;">
               <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
+            </div>
           </div>
-        </div>
 
         <p for="example-text-input" class="text-sm font-weight-bolder">작업일자</p>
         <input class="form-control w-30" type="date" v-model="work_dt"/>
