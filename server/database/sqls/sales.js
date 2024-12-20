@@ -111,7 +111,12 @@ SELECT p.prd_cd,
 FROM product p 
 JOIN product_in i ON p.prd_cd = i.prd_cd;
 `;
-
+// 주문서 조회(모달)
+const moOrderList = 
+`
+SELECT o.order_cd, a.act_cd, a.act_nm, o.order_dt, o.due_dt 
+FROM \`order\` o JOIN account a ON o.act_cd = a.act_cd
+`;
 
 
 
@@ -125,4 +130,5 @@ module.exports = {
     moAccList,
     moMemList,
     moProList,
+    moOrderList,
 }
