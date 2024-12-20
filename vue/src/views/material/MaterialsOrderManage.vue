@@ -5,7 +5,7 @@
             <div class="card p-3">
                <div class="card-header bg-light mb-4">  
                   <div class="d-flex justify-content-center align-items-center text-center">
-                     <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">주문일자</div>
+                     <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">계획 일자</div>
                      <div class="col-lg-4">
                         <input class="form-control" type="date" :max="endDt" v-model="startDt" />
                      </div>
@@ -130,13 +130,7 @@
 
    const searchForm = async () => {       
       if(startDt.value == '' && endDt.value == '') {
-         Swal.fire({
-            icon: 'warning',
-            title: '날짜를 선택하세요',
-            confirmButtonText: '확인',
-            confirmButtonColor: '#f5bbd0', // 버튼 배경색
-         });
-         return;
+         getPlanHeaderList();
       }
 
       // 시작 날짜가 종료 날짜보다 큰 경우 처리
@@ -151,35 +145,37 @@
       }
 
       const searchDt = { startDt: startDt.value, endDt: endDt.value };
-      console.log('검색 조건:', searchDt);
       
       try {
          const result = await axios.get('/api/material/planList/search/', { params: searchDt });
          if (result.data && result.data.length > 0) {
             prodPlanListData.value = result.data;
+
             if (planListGrid.value.api) {
                 planListGrid.value.api.hideOverlay(); // "데이터 없음" 메시지 숨김
             }
          } else {
-            prodPlanListData.value = [];
+            prodPlanListData.value = []; // 그리드 데이터 값 초기화
+
             if (planListGrid.value.api) {
                planListGrid.value.api.showNoRowsOverlay(); // "데이터 없음" 메시지 표시
             }
          }
       } catch (err) {
-         console.error('AXIOS 실패', err);
-         prodPlanListData.value = [];
+         prodPlanListData.value = []; // 그리드 데이터 값 초기화
+
          if (planListGrid.value.api) {
-            planListGrid.value.api.showNoRowsOverlay(); // 오류 시에도 "데이터 없음" 표시
+            planListGrid.value.api.showNoRowsOverlay(); // 에러가 난 상황에도 "데이터 없음" 표시
          }
+
          Swal.fire({
             icon: 'error',
             title: '데이터 로드 실패',
-            text: '검색 중 오류가 발생했습니다.',
+            text: err,
             confirmButtonText: '확인',
          });
       } 
-      
+      resetBtn();
    };
 
    // 날짜 초기화 함수
