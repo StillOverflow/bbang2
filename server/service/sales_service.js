@@ -53,7 +53,11 @@ const listOrderOut = async (no)=>{
     return list;
   }
 
-
+//출고 등록 LOT 선택
+const listLotOut = async (no) => {
+    let list = await mariadb.query('outLotList', no);
+    return list;
+}
 
 
 
@@ -91,6 +95,8 @@ module.exports = {
 
     //제품출고
     listOrderOut,
+    listLotOut,
+    
 
 
 

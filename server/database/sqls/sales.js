@@ -100,6 +100,14 @@ FROM order_detail o JOIN product_out_detail d ON o.ORDER_DTL_CD = d.ORDER_DTL_CD
 WHERE order_cd = ?
 `;
 
+//출고 등록 LOT 선택
+const outLotList =
+`
+SELECT p.prd_cd, p.prd_nm, i.prd_qty, i.prd_lot_cd, i.exp_dt
+FROM product p JOIN product_in i ON p.prd_cd = i.prd_cd
+WHERE p.prd_cd = ?
+`;
+
 
 
 
@@ -161,6 +169,7 @@ module.exports = {
 
     //제품출고
     outOrderLit,
+    outLotList,
 
 
 
