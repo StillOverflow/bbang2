@@ -5,6 +5,12 @@ import Dashboard from '../views/Dashboard.vue';
 import Sales from '../views/sales/Sales.vue';
 import Sales_OrderAdd from '../views/sales/Sales_OrderAdd.vue';
 import Sales_OrderList from '../views/sales/Sales_OrderList.vue';
+import Sales_ProOutAdd from '../views/sales/Sales_ProOutAdd.vue';
+import Sales_ProOutList from '../views/sales/Sales_ProOutList.vue';
+import Sales_ResultAdd from '../views/sales/Sales_ResultAdd.vue';
+import Sales_ResultList from '../views/sales/Sales_ResultList.vue';
+import Sales_ProList from '../views/sales/Sales_ProList.vue';
+
 
 ////////////////////////////// 생산 //////////////////////////////
 import Produce from '../views/produce/Produce.vue';
@@ -70,6 +76,36 @@ const routes = [
     path: '/sales_orderlist',
     name: 'sales_orderlist',
     component: Sales_OrderList,
+  },
+  {
+    //출고제품 등록
+    path: '/sales_ProOutAdd',
+    name: 'sales_ProOutAdd',
+    component: Sales_ProOutAdd,
+  },
+  {
+    //출고제품 목록
+    path: '/sales_ProOutList',
+    name: 'sales_ProOutList',
+    component: Sales_ProOutList,
+  },
+  {
+    //반품제품 등록
+    path: '/sales_ResultAdd',
+    name: 'sales_ResultAdd',
+    component: Sales_ResultAdd,
+  },
+  {
+    //반품제품 목록
+    path: '/sales_ResultList',
+    name: 'sales_ResultList',
+    component: Sales_ResultList,
+  },
+  {
+    //제품 목록
+    path: '/sales_ProList',
+    name: 'sales_ProList',
+    component: Sales_ProList,
   },
 
   ////////////////////////////// 생산 //////////////////////////////

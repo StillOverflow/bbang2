@@ -6,14 +6,14 @@ const qualityService = require("../service/quality_service.js");
 // 미적용 검사목록 조회
 router.get('/quality/test/yet', async (req, resp) => {
   let val = req.query;
-  let result = await qualityService.getYetList([val.type, val.cd]);
+  let result = await qualityService.getYetList(val.cd);
   resp.send(result);
 });
 
 // 적용 검사목록 조회
 router.get('/quality/test/my', async (req, resp) => {
   let val = req.query;
-  let result = await qualityService.getMyList([val.type, val.cd]);
+  let result = await qualityService.getMyList(val.cd);
   resp.send(result);
 });
 
@@ -35,6 +35,14 @@ router.post('/quality/std', async (req, resp) => {
 
   let result = await qualityService.stdInsert(values);
   console.log('라우터결과: ' + result); // 비동기함수가 중첩되어 어떻게 해도 결과가 안 받아와지는 문제....
+  resp.send(result);
+});
+
+
+// 자재, 공정, 제품 전체 조회 (모달용)
+router.get('/quality/targetAll', async (req, resp) => {
+  let valueObj = req.body;
+  let result = await qualityService.searchAll(valueObj);
   resp.send(result);
 });
 

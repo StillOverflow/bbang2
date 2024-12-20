@@ -5,14 +5,14 @@
             <!-- 검색조건 -->
             <div class="card-header bg-light ps-5 ps-md-4">  
                 <div class="row">
-                    <div class="col-6 col-lg-3"></div>
+                    <div class="col-6 col-lg-2"></div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처 명</div> 
                     <div class="col-6 col-lg-5 mb-2">
                         <input class="form-control " type="text" v-model="search" />         
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-6 col-lg-3"></div>
+                    <div class="col-6 col-lg-2"></div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주문일자</div>
                     <div class="col-6 col-lg-2 mb-2">
                         <input class="form-control" type="date" v-model="sdt" />
@@ -23,7 +23,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-6 col-lg-6 mb-2"></div>
+                    <div class="col-6 col-lg-5 mb-2"></div>
                     <div class="col-6 col-lg-1 mb-2">
                         <button type="button" class="btn mb-0 btn-warning btn-xsm null null ms-auto" @click="searchForm">검색</button>
                     </div>
