@@ -11,11 +11,9 @@
                         style="width: 100%; height: 300px;"
                         :rowData="prodPlanListData"
                         :pagination="true"
-                        :paginationPageSize="10"
                         :gridOptions="planOptions"
                         @rowClicked="rowClicked"
-                        @grid-ready="gridReady"
-                        overlayNoRowsTemplate="미지시 생산계획서가 없습니다.">
+                        @grid-ready="gridReady">
                      </ag-grid-vue>
                   </div>
                </div>
@@ -33,21 +31,19 @@
                         style="width: 100%; height: 500px;"
                         :rowData="planToMaterialStk"
                         :pagination="true"
-                        :paginationPageSize="10"
                         :gridOptions="materialOptions"
-                        @grid-ready="gridReady, materialReady"
-                        overlayNoRowsTemplate="Loding중~~">
+                        @grid-ready="gridReady"
+                        @first-data-rendered="materialReady">
                      </ag-grid-vue>
                   </div>
                </div>
             </div>
             <div class="text-center">
-               <button class="mt-3 btn btn-primary" @click="orderFormFunc">SUBMIT</button>
+               <button class="mt-3 btn btn-primary" @click="orderFormClickFunc">SUBMIT</button>
             </div>
          </div>
       </div>
-  </div>
-
+   </div>
 </template>
 
 <script setup>
@@ -55,8 +51,9 @@
    import axios from 'axios';
    import { shallowRef, onBeforeMount, ref, watch } from 'vue';
    import { useStore } from 'vuex';
+   import Swal from 'sweetalert2';
    
-// ---------------------------------------- Vue Hook ----------------------------------------
+// ^ ---------------------------------------- Vue Hook ----------------------------------------
    // Vuex store 사용
    const store = useStore();
 
@@ -73,12 +70,13 @@
    
    // 감시자
    watch(planToMaterialStk, () => {
-      const api = materialOptions.api;
-      if (api) {
+      const api = materialOptions.api; // 자재 그리드 감시
+      if(api) {
          api.sizeColumnsToFit();
       }
    });
-// ---------------------------------------- 공통 함수 ----------------------------------------
+
+// ^ ---------------------------------------- 공통 함수 ----------------------------------------
    // 날짜포맷
    const dateFormat = (value) => {
       let date = value == null ? new Date() : new Date(value);
@@ -91,39 +89,88 @@
       return result;
    };
 
-// ------------------------------------------------------------------------------------------
+   // 숫자 포맷
+   // const numberFormatter = (params) => {
+   //    if (!params.value || isNaN(params.value)) return '0';
+   //    return Number(params.value).toLocaleString()
+   // };
+
+// ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
    // 그리드 준비
    const gridReady = (params) => {
       params.api.sizeColumnsToFit(); // 그리드 열을 컨테이너 크기에 맞춤
    };
 
-   const selectedData = ref(''); // 선택한 행 저장
+   // 선택한 행 저장
+   const materialGrid = ref([]); 
    const materialReady = (params) => {
-      console.log(params.api)
-      selectedData.value = params.api
+      materialGrid.value = params.api
    };
 
-   // // const materialList = ref([]);
-   // const orderFormFunc = () => {
-   //    const selectedRows = selectedData.value.getSelectedNodes();
-   //    console.log("Selected Rows:", selectedRows);
-   //    // if (selectedRows.value.length > 0) {
-   //    //    console.log("Selected Rows:", selectedRows);
-   //    //    materialList.value = selectedRows.value.map((node) => node.data);
-   //    // } else {
-   //    //    console.log("No rows selected.");
-   //    // }
-   // };
+   // 미지시 생산 계획서 클릭 시 자재 정보 넘기기
+   const rowClicked = (params) => {
+      prodPlanCode.value= params.data.prod_plan_cd;
+      planToMaterialStkStock(prodPlanCode.value);
+   };
 
+   // SUBMIT 버튼 클릭 시
+   const orderFormClickFunc = () => {
+      // 그리드에 전체선택된 값을 가져옴
+      const materials = materialGrid.value.getSelectedRows();
+      console.log("selectedNodes.value : ", materialGrid.value);
+      console.log("materials =? ", materials);
+      if (materials.length > 0) {
+         store.commit("materialStore/setMaterial", materials);
+      } else {
+         Swal.fire({
+            icon: 'warning',
+            title: '선택된 데이터가 없습니다.',
+         });
+      }
+   };
+
+    // 
+   const handleInputEvent = (params) => (event) => {
+      // 이벤트 타입이 blur이거나 이벤트 타입이 keydown && 키가 엔터일 때 실행 ~~
+      if (event.type === 'blur' || (event.type === 'keydown' && event.key === 'Enter')) {
+         let value = event.target.value;
+         
+         if(typeof value !== 'number') {
+            if(isNaN(value) || value == '') {
+               value = 0; // 기본값 설정
+            }
+         }
+
+         // rowData 업데이트
+         const rowNode = params.node;
+         rowNode.setDataValue(params.colDef.field, value);
+
+      }
+   };
+
+   // Custom CellRenderer 정의
+   const customCellRenderer = (params) => {
+      const input = document.createElement('input');  // input 태그 생성
+      input.type = 'number';
+      input.value = params.value || ''; // 초기 값 설정
+      input.style.width = '70%';                // 너비
+      input.style.height = '30px';              // 높이
+      input.style.border = '1px solid #b5b5b5'; // input테두리
+      input.style.borderRadius = '5%';          
+
+      // 이벤트 핸들러 추가
+      const handler = handleInputEvent(params);
+      input.addEventListener('blur', handler); // 포커스 아웃 이벤트
+      input.addEventListener('keydown', handler); // 키 입력 이벤트
+
+      return input;
+   };
    
-   
-   
-// ------------------------------------------------------------------------------------------
-   // ~ 미지시 생산계획서 조회
+// ^ ------------------------------ 미지시 계획서 조회 그리드 ------------------------------
    // 그리드 컬럼명
    const planOptions = {
       columnDefs : [
-         { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true },
+         { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true,  },
          { 
             headerName: '시작예정일', 
             field: 'start_dt', 
@@ -150,27 +197,15 @@
          prodPlanListData.value = response.data || [];
       } catch (err) {
          prodPlanListData.value = [];
-         this.$swal({
+         Swal.fire({
             icon: "error",
             title: "API 요청 오류:",
             text: err.message || err
          });
       }
    };
-   
-// ------------------------------------------------------------------------------------------
-   // 미지시 생산 계획서 클릭 시 ~~
-   //  let plan_cd = null;
-   const rowClicked = (params) => {
-      prodPlanCode.value= params.data.prod_plan_cd;
-      planToMaterialStkStock(prodPlanCode.value);
-   };
 
-   // watch(plan_cd, (plan_cd) => {
-   //    prodPlanCode.value = plan_cd;
-   // });
-   
-// ------------------------------------------------------------------------------------------
+// ^ ------------------------------ 자재 재고 조회 그리드 ------------------------------
    // 계획서에 대한 자재 재고 컬럼명
    const materialOptions = {
       columnDefs : [
@@ -182,35 +217,25 @@
             headerName: '필요수량',
             field: 'require_qty',
             sortable: true,
-            // valueFormatter: numberFormatter,
-            
          },
-         { headerName: '재고수량', field: 'stock_qty', sortable: true },
-         { headerName: '부족수량', field: 'lack_qty', sortable: true },
+         { 
+            headerName: '재고수량', 
+            field: 'stock_qty', 
+            sortable: true,
+         },
+         { 
+            headerName: '부족수량', 
+            field: 'lack_qty', 
+            sortable: true, 
+         },
          {
             headerName: "발주 수량",
             field: "orderingQty",
-            cellRenderer: (params) => {
-               const input = document.createElement('input');
-               input.type = 'number';
-               input.value = params.value || ''; // 초기 값 설정
-               input.style.width = '100%';
-               input.style.boxSizing = 'border-box';
-
-               // 포커스 아웃 시점에 input 값 가져오기
-               input.addEventListener('blur', (event) => {
-                  params.setValue(event.target.value);
-                  console.log("포커스 아웃 값:", event.target.value);
-               });
-
-               return input;
-            },
+            cellRenderer: customCellRenderer,
          },
       ],
-      
-      // 체크박스 다중선택
       rowSelection: {
-         mode: "multiRow",
+         mode: "multiRow", // 체크박스 다중선택
       },
 
       overlayNoRowsTemplate: "데이터가 없습니다.", // 데이터 없을 때 메시지
@@ -222,7 +247,7 @@
          const response = await axios.get(`/api/material/matStockList/${plan_cd}`);
          planToMaterialStk.value = response.data;
       } catch (err) {
-         this.$swal({
+         Swal.fire({
             icon: "error",
             title: "API 요청 오류:",
             text: err.message || err
@@ -230,9 +255,17 @@
       }
    };
 
-
-   const orderFormFunc = () => {
-      console.log("클릭!")
-   }
-
+// ------------------------------------------------------------------------------------------
+   
 </script>
+<style>
+   input[type=number]::-webkit-inner-spin-button,
+   input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;             
+      margin: 0;
+      border: 1px solid #b5b5b5;  
+   }
+   .lack-quantity {
+      background-color: lightcoral !important; /* 셀 색상 */
+   }
+</style>
