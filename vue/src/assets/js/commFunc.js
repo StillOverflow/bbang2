@@ -1,3 +1,5 @@
+import axios from "axios";
+
 export default {
   // 단순 날짜 포맷팅용 전역 함수 (value 있으면 해당 날짜를, 없으면 오늘 날짜를 반환)
   getMyDay(value){
@@ -30,7 +32,19 @@ export default {
                     .replace('dd', day);
     return result;
   },
-  // 날짜 포맷 변환 ag-grid 적용 가능 [E]
+
+  // 숫자 포맷 변환 ag-grid 적용 가능 (천단위 콤마 표시)
+  currencyFormatter(params){
+    if (!params.value || isNaN(params.value)) return '0';
+    return Number(params.value).toLocaleString();
+  },
+
+   // 공통코드 가져오기 (리턴값 : [{comm_dtl_cd, comm_dtl_nm}, ....])
+  async getComm(cd){
+    let result = await axios.get('/api/commList/' + cd)
+                            .catch(err => console.log(err));
+    return result.data;
+  }
 
 };
 

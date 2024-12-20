@@ -5,13 +5,23 @@ const sqlList = require("./sql.js");
 
 // 단일 작업 시
 // createPool (자동 커밋)
+
+const host = process.env.HOST 
+const user = 'bbang2'
 const connectionPool = mariadb.createPool({
-  host: process.env.HOST,
+  host: host,//process.env.HOST,
   port: process.env.PORT,
-  user: process.env.USER,
-  password: process.env.PWD,
-  database: process.env.DB,
+  user: user,//process.env.USER,
+  password: user,//process.env.PWD,
+  database: user,//process.env.DB,
   connectionLimit: process.env.LIMIT,
+  
+  // host: process.env.HOST,
+  // port: process.env.PORT,
+  // user: process.env.USER,
+  // password: process.env.PWD,
+  // database: process.env.DB,
+  // connectionLimit: process.env.LIMIT,
 
   trace: true, // log
   permitSetMultiParamEntries: true, // parameter가 객체일 경우 escape작업
@@ -47,12 +57,19 @@ const query = (alias, values) => {
 // 다중 작업 시
 // createConnection (다중 작업에서 트랜잭션 제어 가능)
 const connection = mariadb.createConnection({
-  host: process.env.HOST,
+  host: host,//process.env.HOST,
   port: process.env.PORT,
-  user: process.env.USER,
-  password: process.env.PWD,
-  database: process.env.DB,
+  user: user,//process.env.USER,
+  password: user,//process.env.PWD,
+  database: user,//process.env.DB,
   connectionLimit: process.env.LIMIT,
+  
+  // host: process.env.HOST,
+  // port: process.env.PORT,
+  // user: process.env.USER,
+  // password: process.env.PWD,
+  // database: process.env.DB,
+  // connectionLimit: process.env.LIMIT,
 
   trace: true, // log
   permitSetMultiParamEntries: true, // parameter가 객체일 경우 escape작업
@@ -107,11 +124,16 @@ const transQuery = (alias, values) => {
 // 수동 커밋
 const commit = () => {
   connection.commit((err) => { 
-    if(err){ // 오류 시 전체 롤백
-      connection.rollback(() => { throw err; });
+    if(err){ // 커밋 도중 오류 시 전체 롤백
+      connection.rollback(() => console.log(err));
     }
     console.log('COMMIT!!');
   });
+};
+
+// 수동 롤백
+const rollback = () => {
+  connection.rollback((err) => console.log(err));
 };
 
 
@@ -119,5 +141,6 @@ module.exports = {
   query,
   transOpen,
   transQuery,
-  commit
+  commit,
+  rollback
 };

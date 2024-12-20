@@ -37,6 +37,16 @@ router.post('/sales/ord', async (req, resp) => {
   resp.send(result);
 });
 
+
+/* ---------------------------------출고제품--------------------------------------- */
+
+
+
+
+
+
+
+/* -----------------------------------모달창----------------------------------------- */
 //거래처 조회(모달)
 router.get('/moacc', async (req, res)=>{
     let moAccList = await salesService.listAccMo();
@@ -52,7 +62,10 @@ router.get('/mopro', async (req, res)=>{
     let moProList = await salesService.listProMo();
     res.send(moProList);
 });
-
-
+//주문서 조회(모달)
+router.get('/moord', async (req, res)=>{
+    let moOrdList = await salesService.listOrderMo();
+    res.send(moOrdList);
+});
 
 module.exports = router;

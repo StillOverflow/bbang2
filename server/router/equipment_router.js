@@ -36,6 +36,18 @@ router.get('/equip', async (req, res) => {
   res.send(eqAllList);
 });
 
+// 필터링된 설비 정보 조회
+router.get('/equipFiltered', async (req, res) => {
+  try {
+    const filters = req.query; // 클라이언트에서 전달된 필터링 조건
+    const result = await equipmentService.getFilteredEq(filters); // 필터링된 서비스 호출
+    res.json(result);
+  } catch (err) {
+    console.error('필터링된 설비 조회 실패:', err);
+    res.status(500).json({ error: '필터링된 설비 조회 실패' });
+  }
+});
+
 //설비 단건 조회
 router.get('/equip/:no', async (req, res) => {
   let equipNo = req.params.no;

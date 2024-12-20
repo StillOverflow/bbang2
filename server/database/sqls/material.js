@@ -12,32 +12,25 @@ const produceHeadPlanList = `
 `
 
 const getPlanMaterialStock = `
-   SELECT  
-            b.mat_cd,
+   SELECT   b.mat_cd,
             c.mat_nm,
-            f.comm_dtl_nm,
-            CONCAT(SUM(IFNULL(b.\`usage\`, 0)), d.comm_dtl_nm) AS "usage",
-            CONCAT(CAST(SUM(IFNULL(b.\`usage\`, 0))* IFNULL(a.prod_plan_qty, 0) AS CHAR), d.comm_dtl_nm) AS require_qty,
-            CONCAT(SUM(IFNULL(e.mat_stock, 0)), d.comm_dtl_nm) AS stock_qty,
-            CONCAT(SUM(IFNULL(e.mat_stock, 0)) - (IFNULL(b.\`usage\`, 0) * IFNULL(a.prod_plan_qty, 0)), d.comm_dtl_nm) AS lack_qty,
-            a.prod_plan_cd
-   FROM     prod_plan_dtl a LEFT JOIN bom b
-                                   ON a.prd_cd = b.prd_cd
-                             LEFT JOIN material c 
-                                    ON b.mat_cd = c.mat_cd
-                             LEFT JOIN common_detail d 
-                                    ON d.comm_dtl_cd = b.unit
-                             LEFT JOIN common_detail f
-                                    ON f.comm_dtl_cd = c.\`type\`
-                            LEFT OUTER JOIN material_in e 
-                                    ON b.mat_cd = e.mat_cd
-   WHERE    a.prod_plan_cd = UPPER( ? )
-   GROUP BY
-            a.prod_plan_qty, 
-            b.mat_cd, 
-            c.mat_nm, 
-            d.comm_dtl_nm, 
-            a.prod_plan_cd
+            fn_get_codename(c.type) \`type\`,
+            b.require_qty,
+            CONCAT(IFNULL(b.require_qty, 0), fn_get_codename(c.unit)) AS total_qty,
+            CONCAT(IFNULL(e.mat_stock, 0), fn_get_codename(c.unit)) AS stock_qty,
+            CONCAT(IFNULL(e.mat_stock, 0) - IFNULL(b.require_qty, 0), fn_get_codename(c.unit)) AS lack_qty
+   FROM    (SELECT  mat_cd ,
+                    SUM(a.qty) AS require_qty
+            FROM    (SELECT z.prd_cd,
+                           p.mat_cd,
+                           (z.prod_plan_qty * p.\`usage\`) AS qty
+                     FROM   prod_plan_dtl z LEFT JOIN bom p
+                                          ON z.prd_cd = p.prd_cd 
+                     WHERE  z.prod_plan_cd = UPPER( ? )) a
+            GROUP BY mat_cd ) b LEFT JOIN material c
+                                       ON b.mat_cd = c.mat_cd
+                              LEFT OUTER JOIN (select mat_cd, sum(mat_stock) mat_stock from material_in GROUP BY mat_cd)  e 
+                                       ON b.mat_cd = e.mat_cd
    ORDER BY b.mat_cd
 `
 

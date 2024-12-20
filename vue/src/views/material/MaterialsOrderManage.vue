@@ -53,10 +53,10 @@
 <script setup>
    import { AgGridVue } from 'ag-grid-vue3';
    import axios from 'axios';
-   import { shallowRef, onBeforeMount, ref } from 'vue';
+   import { shallowRef, onBeforeMount, ref, watch } from 'vue';
    import { useStore } from 'vuex';
    
-// ------------------------------------------------------------------------------------------
+// ---------------------------------------- Vue Hook ----------------------------------------
    // Vuex store 사용
    const store = useStore();
 
@@ -64,15 +64,21 @@
    const prodPlanListData = shallowRef([]);
    const planToMaterialStk = shallowRef([]);
 
-   // onBeforeMount 훅
+   // created와 비슷~~
    onBeforeMount(() => {
       store.dispatch('breadCrumb', { title: '미지시 계획서 자재 조회' });
       getPlanHeaderList();
       planToMaterialStkStock();
    });
    
-   
-// ------------------------------------------------------------------------------------------
+   // 감시자
+   watch(planToMaterialStk, () => {
+      const api = materialOptions.api;
+      if (api) {
+         api.sizeColumnsToFit();
+      }
+   });
+// ---------------------------------------- 공통 함수 ----------------------------------------
    // 날짜포맷
    const dateFormat = (value) => {
       let date = value == null ? new Date() : new Date(value);
@@ -132,26 +138,8 @@
          },
          { headerName: '담당자번호', field: 'id', sortable: true },
          { headerName: '담당자', field: 'name', sortable: true },
-         {
-            headerName: "발주 수량",
-            field: "orderingQty",
-            cellRenderer: (params) => {
-               const input = document.createElement('input');
-               input.type = 'text';
-               input.value = params.value || ''; // Set the initial value
-               input.style.width = '100%';
-               input.style.boxSizing = 'border-box';
-
-               return input;
-            },
-         },
       ],
-
-      // defaultColDef: {
-      //    flex: 1,
-      //    minWidth: 100,
-      // },
-
+      overlayNoRowsTemplate: "미지시 생산계획서가 없습니다.", // 데이터 없을 때 메시지
    };
 
    // 데이터 조회 함수
@@ -159,12 +147,13 @@
    const getPlanHeaderList = async () => {
       try {
          const response = await axios.get('/api/material/planList');
-         prodPlanListData.value = response.data;
+         prodPlanListData.value = response.data || [];
       } catch (err) {
+         prodPlanListData.value = [];
          this.$swal({
             icon: "error",
             title: "API 요청 오류:",
-            text : err
+            text: err.message || err
          });
       }
    };
@@ -188,31 +177,62 @@
          //{ headerName: '계획서상세코드', field: 'prod_plan_dtl_cd', sortable: true },
          { headerName: '자재코드', field: 'mat_cd', sortable: true },
          { headerName: '자재명', field: 'mat_nm', sortable: true },
-         { headerName: '자재구분', field: 'comm_dtl_nm', sortable: true },
-         { headerName: 'bom양', field: 'usage', sortable: true },
-         { headerName: '필요수량', field: 'require_qty', sortable: true },
+         { headerName: '자재구분', field: 'type', sortable: true },
+         {
+            headerName: '필요수량',
+            field: 'require_qty',
+            sortable: true,
+            valueFormatter: numberFormatter,
+            
+         },
          { headerName: '재고수량', field: 'stock_qty', sortable: true },
          { headerName: '부족수량', field: 'lack_qty', sortable: true },
-      ],
+         {
+            headerName: "발주 수량",
+            field: "orderingQty",
+            cellRenderer: (params) => {
+               const input = document.createElement('input');
+               input.type = 'number';
+               input.value = params.value || ''; // 초기 값 설정
+               input.style.width = '100%';
+               input.style.boxSizing = 'border-box';
 
+               // 포커스 아웃 시점에 input 값 가져오기
+               input.addEventListener('blur', (event) => {
+                  params.setValue(event.target.value);
+                  console.log("포커스 아웃 값:", event.target.value);
+               });
+
+               return input;
+            },
+         },
+      ],
+      
       // 체크박스 다중선택
       rowSelection: {
          mode: "multiRow",
       },
-   }
+
+      overlayNoRowsTemplate: "데이터가 없습니다.", // 데이터 없을 때 메시지
+   };
 
    // 계획서에 대한 자재 재고 조회
    const planToMaterialStkStock = async (plan_cd) => {
       try {
-         const result = await axios.get(`/api/material/matStockList/${plan_cd}`)
-                                    .catch((err) => console.log(err));
-         planToMaterialStk.value = result.data;
+         const response = await axios.get(`/api/material/matStockList/${plan_cd}`);
+         planToMaterialStk.value = response.data;
       } catch (err) {
          this.$swal({
             icon: "error",
             title: "API 요청 오류:",
-            text : err
+            text: err.message || err
          });
       }
    };
+
+
+   const orderFormFunc = () => {
+      console.log("클릭!")
+   }
+
 </script>

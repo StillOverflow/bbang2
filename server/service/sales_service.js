@@ -61,6 +61,11 @@ const listProMo = async() => {
     let list = await mariadb.query('moProList');
     return list;
 }
+//주문서 조회(모달)
+ const listOrderMo = async() => {
+    let list = await mariadb.query('moOrderList');
+    return list;
+ }
 
 
 module.exports = {
@@ -71,4 +76,5 @@ module.exports = {
      listAccMo,
      listMemMo,
      listProMo,
+     listOrderMo,
 };

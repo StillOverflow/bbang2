@@ -1,26 +1,31 @@
 <!--ag-grid 테스트 뷰-->
 <template>
-  <div>
-    <!--그리드 사용법-->
-    <div>
-      <ag-grid-vue style="width:500px; height: 500px;" class="ag-theme-alpine" :columnDefs="columnDefs"
-        :rowData="rowData" :gridOptions="gridOptions" @grid-ready="myGrid">
-      </ag-grid-vue>
-      <button type="button" class="btn btn-light m-3" @click="getGridVal">선택된 값 콘솔로 확인하기</button>
+  <div class="py-4 container-fluid">
+    <div class="bg-white p-4">
+      <div>
+        <h4>그리드 사용법</h4>
+        <div>
+          <ag-grid-vue style="width:600px; height: 500px;" class="ag-theme-alpine" :columnDefs="columnDefs"
+            :rowData="rowData" :gridOptions="gridOptions" @grid-ready="myGrid" @rowClicked="rowClicked">
+          </ag-grid-vue>
+          <button type="button" class="btn btn-light m-3" @click="getGridVal">선택된 값 콘솔로 확인하기</button>
+        </div>
+      </div>
+
+      <hr>
+
+      <h4>버튼 예시</h4>
+      <button class="btn btn-primary">SUBMIT</button> <!-- 등록 -->
+      <button class="btn btn-success mlp10">SAVE</button> <!-- 수정 -->
+      <button class="btn btn-danger mlp10">DELETE</button>
+      <button class="btn btn-secondary mlp10">RESET</button>
+      <button class="btn btn-outline-success mlp10">EXCEL</button>
+      <div class="input-group mb-3 w-30">
+        <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
+        <button class="btn btn-warning" type="button" id="button-addon2">SEARCH</button>
+      </div>
     </div>
   </div>
-
-  <button class="btn btn-primary">SUBMIT</button>
-  <button class="btn btn-success mlp10">SAVE</button>
-  <button class="btn btn-danger mlp10">DELETE</button>
-  <button class="btn btn-secondary mlp10">RESET</button>
-  <button class="btn btn-outline-success mlp10">EXCEL</button>
-  <div class="input-group mb-3 w-30">
-    <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
-    <button class="btn btn-warning" type="button" id="button-addon2">SEARCH</button>
-  </div>
-
-
 </template>
 
 <script>
@@ -47,7 +52,7 @@ export default {
         rowSelection: {
           mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
           // enableClickSelection: true // (행을 클릭하는 것만으로 singleRow 선택 가능.)
-        }
+        },
       }
     }
   },
@@ -56,20 +61,22 @@ export default {
   },
   beforeMount() {
     this.columnDefs = [
-      { headerName: '제조사', field: 'make', minWidth: 200 }, // minWidth 옵션으로 각 열의 최소 너비 지정 가능
-      { headerName: '모델', field: 'model' },
-      { headerName: '가격', field: 'price' },
+      { headerName: '품번', field: 'no' }, 
+      { headerName: '이름', field: 'name', minWidth: 200},  // minWidth 옵션으로 각 열의 최소 너비 지정 가능
+      { headerName: '가격', field: 'price', valueFormatter: this.$comm.currencyFormatter }, // valueFormatter 천단위 콤마 포맷 함수
+      { headerName: '등록일', field: 'date', valueFormatter: this.$comm.dateFormatter } // 날짜 포맷 함수
     ];
 
     this.rowData = [
-      { make: 'Toyota', model: 'Celica', price: 35000 },
-      { make: 'Ford', model: 'Mondeo', price: 32000 },
-      { make: 'JoJang', model: 'Boxter', price: 72000 },
-      { make: 'Ford', model: 'Mondeo', price: 32000 }
+      { no: 'MIL021', name: '신선한 Milk', price: 3500, date: this.$comm.getMyDay() },
+      { no: 'MAC133', name: '맥모닝 세트', price: 8000, date: '2024-12-02' },
+      { no: 'FRU452', name: '금사과', price: 72000, date: '2024-12-03' },
+      { no: 'DOM56', name: '도미노 피자', price: 32000, date: '2024-12-04' }
     ];
   },
   methods: {
     myGrid(params) { // 매개변수 속성으로 자동 접근
+      console.log(params); // params를 확인해보면 grid에서 쓸 수 있는 모든 메소드가 나옴. (유료버전 포함..)
       params.api.sizeColumnsToFit(); // 가로스크롤 삭제
       this.myApi = params.api;
       this.myColApi = params.columnApi; // api, columnApi 둘 다 꼭 있어야 함
@@ -78,8 +85,16 @@ export default {
       const val = this.myApi.getSelectedNodes();
       console.log(val);
       if (val.length != 0) { // data 속성에 접근할 시, 선택된 값이 없으면 오류남
-        console.log(val[0].data);
+        val.forEach((each => console.log(each.data)));
       }
+    },
+    rowClicked(params){ // 매개변수 속성으로 자동 접근
+      this.$swal( // SweetAlert
+        '클릭!',
+        `행이 클릭되었습니다.
+        <br>${params.data.name}를 클릭하셨네요.`,
+        'info'
+      );
     }
   }
 }
