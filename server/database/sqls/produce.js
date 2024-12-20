@@ -75,13 +75,6 @@ WHERE INST_CD = ?`;
 
 
 /* 지시서 등록[S] */
-/*
-PROD_PLAN_CD: this.plan_cd, 
-WORK_DT: this.work_dt,
-PRD_CD: this.prd_cd,
-PROC_FLOW_CD : val[i].data.PROC_FLOW_CD,
-PROC_SEQ : i+1,
-*/
 // 시퀀스 조회
 const instSeq = `
   SELECT CONCAT('PI', LPAD(nextval(inst_seq), 3,'0')) seq
@@ -97,15 +90,31 @@ const instInsert = `
 const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT prod_inst_dtl
-      (qu_std_dtl_cd, qu_std_cd, test_cd)
-    VALES 
+      (INST_DTL_CD, INST_CD,PRD_CD, TOTAL_QTY)
+    VALUES 
   `;
 
   values.forEach((obj) => {
-    sql += `(CONCAT('PID', LPAD(nextval(inst_dtl_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '0'), `;
+    sql += `(CONCAT('PID', LPAD(nextval(inst_dtl_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.total_qty}'), `;
   });
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
+  return sql;
+};
+
+// 공정흐름 입력
+const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
+  let sql = `
+    INSERT prod_proc_step
+      (INST_PROC_CD, INST_CD, PRD_CD, PROC_CD, STEP)
+    VALUES 
+  `;
+
+  values.forEach((obj) => {
+    sql += `(CONCAT('PIF', LPAD(nextval(inst_flow_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
+  });
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+  
   return sql;
 };
 /* 지시서 등록[E] */
@@ -197,6 +206,7 @@ module.exports = {
     instInsert,
     instUpdate,
     instDtlInsert,
+    instFlowInsert,
 
     instDtlInsert,
     instDtlUpdate,

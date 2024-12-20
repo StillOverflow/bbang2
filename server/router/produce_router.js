@@ -26,7 +26,6 @@ router.get('/plan/:no/dtl', async (req, res)=>{
 
 // 계획서 삭제
 router.delete("/plan", async (req, res) => {
-    console.log("히히"+req.body);
     //let result = await produceService.deletePlan(values);
     //resp.send(result);
   });
@@ -46,7 +45,6 @@ router.get('/inst/:no', async (req,res)=>{
   })
 
 // 등록
-
 router.post('/inst', async(req, res)=>{
   let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
   let result = await produceService.stdInsert(values);

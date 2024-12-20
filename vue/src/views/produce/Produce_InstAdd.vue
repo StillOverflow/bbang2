@@ -37,7 +37,7 @@
         </div>
 
         <p for="example-text-input" class="text-sm font-weight-bolder">작업일자</p>
-        <input class="form-control w-40" type="date" v-model="work_dt" @click="modalOpen"/>
+        <input class="form-control w-30" type="date" v-model="work_dt"/>
       </div>
 
        <!--검색모달[S]-->
@@ -84,7 +84,7 @@
                     <tr :key="i" v-for="(Dtl, i) in planDtlData" @click="prdClicked(Dtl.prd_cd)" class="text-center planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
                       <td>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" v-model="prdArr" :value="Dtl.prd_cd" :id="'fl' + Dtl.prd_cd">
+                          <input class="form-check-input" type="checkbox" v-model="prdArr" :value="Dtl" :id="'fl' + Dtl.prd_cd">
                         </div>
                       </td>
                       <td>{{ Dtl.prd_cd }}</td>
@@ -124,8 +124,8 @@
                         :key="Flow.PROC_FLOW_CD">
                         <td>
                           <div class="form-check col-4 col-md-2">
-                            <input class="form-check-input" type="checkbox" v-model="flowArr" :value="Flow.PROC_FLOW_CD" :id="'fl' + Flow.PROC_FLOW_CD">
-                            <span id="'num' + Flow.PROC_FLOW_CD">{{ Flow.PROC_SEQ }}</span>
+                            <input class="form-check-input" type="checkbox" v-model="flowArr" :value="Flow" :id="'fl' + Flow.PROC_FLOW_CD">
+                            <span id="'num' + Flow.PROC_FLOW_CD">{{Flow.PROC_SEQ}}</span>
                           </div>
                         </td>
                         <td>{{ Flow.PROC_FLOW_CD }}</td>
@@ -166,7 +166,6 @@ export default {
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 등록' });
     this.getPlanFlowList();
-    this.plan_cd = 'PR001';
   },
   computed : {
       planDtlCount(){
@@ -268,8 +267,11 @@ export default {
       this.planFlowData = result.data;
     },
 
-    changeDrag(event) {
-      console.log(event.moved.oldIndex);
+    changeDrag() {
+      this.planFlowData.forEach((obj, index) => {
+          obj.PROC_SEQ = index+1;
+      });
+      
 
     },
 
@@ -283,25 +285,54 @@ export default {
           });
           return;
       }
-
-      console.log(this.flowArr);
-      let insertArr = [];
-
-      const val = this.myApi.getSelectedNodes();
-      for(let i=0; i<val.length; i++){
-        insertArr.push({
-                        PROD_PLAN_CD: this.plan_cd, 
-                        WORK_DT: this.work_dt,
-                        PRD_CD: this.prd_cd,
-                        PROC_FLOW_CD : val[i].data.PROC_FLOW_CD,
-                        PROC_SEQ : i+1,
-                      });
-      }
-      console.log(insertArr);
-
-      await axios.post('/api/inst', insertArr)
-                 .catch(err => console.log(err));
+      let insertInst = []; //생산지시서
+      insertInst.push({
+        PROD_PLAN_CD: this.plan_cd, 
+        STATUS: 'Z01',
+        WORK_DT: this.work_dt
+      });
+      let insertPrd = [];  //생산지시서 제품
+      let insertFlow = [];  //생산지시서 공정흐름
       
+      this.prdArr.forEach((obj) => {
+        insertPrd.push({
+          PRD_CD: obj.prd_cd,
+          total_qty: obj.prod_plan_qty
+        });
+      });
+
+      this.flowArr.forEach((obj) => {
+        insertFlow.push({
+          PRD_CD: obj.PRD_CD,
+          PROC_CD: obj.PROC_CD,
+          STEP: obj.PROC_SEQ
+        });
+      });
+
+      let insertArr = [...insertInst, insertPrd, insertFlow];
+
+      let result = await axios.post('/api/inst', insertArr)
+                 .catch(err => console.log(err));
+
+      if(result.data == 'success'){
+          this.$swal({
+              icon: "success",
+              title: "등록에 성공 하였습니다.",
+              text: "등록한 지시서는 목록에서 확인 해주세요.",
+          })
+          .then(() => {
+              this.resetForm();   //등록 후 값 초기화
+          });          
+      }
+      return result;
+    },
+    // 등록 후 초기화 기능
+    resetForm() {
+      this.plan_cd = '';
+      this.work_dt = '';
+      this.planDtlData = [];
+      this.planFlowData = [];
+                
     },
   }
 };

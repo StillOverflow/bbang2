@@ -31,12 +31,11 @@ const searchOrder = async (search, std, etd) => {
 const insertOrder = async (values) => {
 
     let seq = (await mariadb.query('orderSeq'))[0].order_cd;
-
+console.log(values[0]);
     let samples = values[0]; // 배열로 넘긴게 첫번째가 헤드부분이고 두번째가 데테일 부분임(2개가 끝 헷갈렸음)
     samples.seq = seq; //seq 넘기기 { } (배열로 받은걸 여기서 객체로 하나씩 만들어서 set절로 바꿔보기)
     
     let order = await mariadb.query('orderInsert', samples);
-
     let order_dtl = await mariadb.query('orderDtlInsert', [seq, values[1]]); // 배열에 디테일 부분이랑 시퀀스를 같이 넘김
 
     if(order.affectedRows > 0 & order_dtl.affectedRows > 0){

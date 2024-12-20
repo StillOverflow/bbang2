@@ -57,46 +57,43 @@ const findInstMatFlow = async (no)=>{
   return list;
 }
 
-/*
-PROD_PLAN_CD: this.plan_cd, 
-WORK_DT: this.work_dt,
-PRD_CD: this.prd_cd,
-PROC_FLOW_CD : val[i].data.PROC_FLOW_CD,
-PROC_SEQ : i+1,
-*/
+//지시서 등록
 const stdInsert = async (values) => { 
+  
 
   let result = await mariadb.transOpen( async () => {
 
-        // 헤더 시퀀스 nextval 얻기
-        let seq_res = await mariadb.transQuery('stdSeq');
-        let mySeq = seq_res[0].seq;
-        
-        // 헤더 삽입
-        let header = values[0]; // 공통되는 부분은 헤더값으로 빼기
-        let arr = [
-            mySeq,
-            header.PROD_PLAN_CD,
-            header.WORK_DT
-        ];
-        let header_res = await mariadb.transQuery('instInsert', arr);
+      // 헤더 시퀀스 nextval 얻기
+      let seq_res = await mariadb.transQuery('instSeq');
+      let mySeq = seq_res[0].seq;
+              
+      // 헤더 삽입
+      values[0]["INST_CD"] = mySeq;      
 
-        // 디테일 삽입
-        values.forEach((val) => { // 헤더 시퀀스값 추가
-            val.INST_CD = mySeq;
-        });
-        let dtl_res = await mariadb.transQuery('stdDtlInsert', values);
-        
-        if(header_res.affectedRows > 0 & dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
-            await mariadb.commit();
-            return 'success';
-        }
-        else return 'fail';
+      let header_res = await mariadb.transQuery('instInsert', values[0]);
+      
+      // 디테일 삽입
+      values[1].forEach((val) => { // 헤더 시퀀스값 추가
+          val["INST_CD"] = mySeq;
+      });
+      let dtl_res = await mariadb.transQuery('instDtlInsert', values[1]);
+      
 
+      // 공정흐름 삽입
+      values[2].forEach((val) => { // 헤더 시퀀스값 추가
+        val["INST_CD"] = mySeq;
+      });
+      let flow_res = await mariadb.transQuery('instFlowInsert', values[2]);
+
+      if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && flow_res.affectedRows > 0){ // 모두 성공했는지 판단
+        await mariadb.commit();
+        return 'success';
+      } else {
+          await mariadb.rollback();
+          return 'fail';
+      }
     });
-    
     return result;
-
 }; 
 
 module.exports = {
