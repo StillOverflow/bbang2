@@ -5,12 +5,11 @@
       <!-- 검색조건 -->
       <div class="card-header bg-light ps-5 ps-md-4">
         <div class="row">
-          <div
-            class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder"
-            :style="t_overflow"
-          >
+          <div class="col-6 col-lg-2"></div>
+          <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder">
             설비 구분
           </div>
+
           <div class="col-6 col-lg-3 mb-2">
             <select
               class="form-select custon-width"
@@ -27,10 +26,8 @@
           </div>
         </div>
         <div class="row">
-          <div
-            class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder"
-            :style="t_overflow"
-          >
+          <div class="col-6 col-lg-2"></div>
+          <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder">
             사용 유무
           </div>
           <div class="col-6 col-lg-3 mb-2">
@@ -49,10 +46,8 @@
           </div>
         </div>
         <div class="row">
-          <div
-            class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder"
-            :style="t_overflow"
-          >
+          <div class="col-6 col-lg-2"></div>
+          <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder">
             설비 상태
           </div>
           <div class="col-6 col-lg-3 mb-2">
@@ -75,10 +70,10 @@
           <div class="col-6 col-lg-1 mb-2">
             <button
               type="button"
-              class="btn mb-0 btn-success btn-xsm null null ms-auto"
+              class="btn mb-0 btn-warning btn-xsm null null ms-auto"
               @click="searchEquipments"
             >
-              조회
+              검색
             </button>
           </div>
         </div>
