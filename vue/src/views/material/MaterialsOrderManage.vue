@@ -103,17 +103,17 @@
       selectedData.value = params.api
    };
 
-   // const materialList = ref([]);
-   const orderFormFunc = () => {
-      const selectedRows = selectedData.value.getSelectedNodes();
-      console.log("Selected Rows:", selectedRows);
-      // if (selectedRows.value.length > 0) {
-      //    console.log("Selected Rows:", selectedRows);
-      //    materialList.value = selectedRows.value.map((node) => node.data);
-      // } else {
-      //    console.log("No rows selected.");
-      // }
-   };
+   // // const materialList = ref([]);
+   // const orderFormFunc = () => {
+   //    const selectedRows = selectedData.value.getSelectedNodes();
+   //    console.log("Selected Rows:", selectedRows);
+   //    // if (selectedRows.value.length > 0) {
+   //    //    console.log("Selected Rows:", selectedRows);
+   //    //    materialList.value = selectedRows.value.map((node) => node.data);
+   //    // } else {
+   //    //    console.log("No rows selected.");
+   //    // }
+   // };
 
    
    
@@ -182,7 +182,7 @@
             headerName: '필요수량',
             field: 'require_qty',
             sortable: true,
-            valueFormatter: numberFormatter,
+            // valueFormatter: numberFormatter,
             
          },
          { headerName: '재고수량', field: 'stock_qty', sortable: true },
