@@ -97,8 +97,11 @@
    // created와 비슷~~
    onBeforeMount(() => {
       store.dispatch('breadCrumb', { title: '미지시 계획서 자재 조회' });
+      
       getPlanHeaderList();
-      planToMaterialStkStock();
+      
+      
+      
    });
    
    // 감시자
@@ -107,6 +110,16 @@
       if(api) {
          api.sizeColumnsToFit();
       }
+   });
+
+   // 계획서 데이터 감시
+   watch(prodPlanListData, () => {
+      const api = materialOptions.api; // 미지시 계획서 그리드 감시
+      if(api) {
+         api.sizeColumnsToFit();
+      }
+      // const pr_cd = api[0].prod_plan_cd; // 첫 번째 계획서 코드
+      // planToMaterialStkStock(pr_cd); // 자재 재고 데이터 로드
    });
 
 // ^ ---------------------------------------- 공통 함수 ----------------------------------------
@@ -138,7 +151,6 @@
          Swal.fire({
             icon: 'warning',
             title: '시작 날짜는 종료 날짜보다 클 수 없습니다.',
-            confirmButtonText: '확인',
             confirmButtonColor: '#f5bbd0',
          });
          return;
@@ -172,7 +184,6 @@
             icon: 'error',
             title: '데이터 로드 실패',
             text: err,
-            confirmButtonText: '확인',
          });
       } 
       resetBtn();
@@ -284,6 +295,11 @@
       try {
          const response = await axios.get('/api/material/planList');
          prodPlanListData.value = response.data || [];
+
+         if(prodPlanListData.value.length > 0) {
+            planToMaterialStkStock(prodPlanListData.value[0].prod_plan_cd)
+         }
+         
       } catch (err) {
          prodPlanListData.value = [];
          Swal.fire({
