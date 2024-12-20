@@ -154,17 +154,17 @@ export default {
     // 필터링된 설비 데이터 가져오기
     async fetchFilteredEquip() {
       try {
-    const params = {
-      eqp_type: this.equipmentData.eqp_type,
-      is_use: this.equipmentData.is_use,
-      status: this.equipmentData.status,
-    };
-    const response = await axios.get('/api/equip', { params });
-    this.rowData = response.data;
-  } catch (error) {
-    console.error('설비 데이터 조회 실패:', error);
-  }
-},
+        const params = {
+          eqp_type: this.equipmentData.eqp_type,
+          is_use: this.equipmentData.is_use,
+          status: this.equipmentData.status,
+        };
+        const response = await axios.get('/api/equip', { params });
+        this.rowData = response.data;
+      } catch (error) {
+        console.error('설비 데이터 조회 실패:', error);
+      }
+    },
     // 조회 버튼 클릭 시 실행
     searchEquipments() {
       this.fetchFilteredEquip();

@@ -278,12 +278,45 @@ export default {
     },
 
     //파일 업로드 핸들러
+    // 파일 업로드 핸들러
     onFileChange(event) {
-      const file = event.target.files[0]; // 파일 객체
-      if (file) {
-        this.selectedFile = file; // 새 파일 저장
-        this.previewImage = URL.createObjectURL(file); // 미리보기 이미지 갱신
+      const file = event.target.files[0]; // 업로드된 파일 객체
+
+      if (!file) {
+        return; // 파일이 선택되지 않았으면 종료
       }
+
+      // 파일 확장자 확인
+      const validExtensions = ['jpeg', 'jpg', 'png'];
+      const fileExtension = file.name.split('.').pop().toLowerCase();
+
+      if (!validExtensions.includes(fileExtension)) {
+        this.$swal({
+          icon: 'error',
+          title: '잘못된 파일 형식',
+          html: `지원되지 않는 파일 형식입니다.<br>(${validExtensions.join(', ')}만 업로드 가능합니다.)`,
+          confirmButtonText: '확인',
+        });
+        event.target.value = ''; // 업로드된 파일 초기화
+        return;
+      }
+
+      // 파일 크기 제한 확인 (5MB 제한)
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        this.$swal({
+          icon: 'error',
+          title: '파일 크기 초과',
+          text: '5MB 이하의 파일만 업로드 가능합니다.',
+          confirmButtonText: '확인',
+        });
+        event.target.value = ''; // 업로드된 파일 초기화
+        return;
+      }
+
+      // 유효한 파일일 경우 처리
+      this.selectedFile = file; // 선택한 파일 저장
+      this.previewImage = URL.createObjectURL(file); // 미리보기 이미지 경로 설정
     },
 
     async getComm(cd) {
@@ -378,10 +411,6 @@ export default {
 
       if (this.selectedFile) {
         formData.append('selectedFile', this.selectedFile);
-      } else if (this.equipmentData.img_path) {
-        formData.append('img_path', this.equipmentData.img_path);
-      } else {
-        formData.append('img_path', null); // 이미지 경로가 없을 경우 null 추가
       }
 
       return formData;
