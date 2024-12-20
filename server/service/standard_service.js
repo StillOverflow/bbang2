@@ -74,7 +74,7 @@ const searchProcCd = async () => {
 
 // 공정 추가
 const InsertProcMat = async (ProcMatInfro) => {
-  let result = await mariadb.query("ProcMatInsert", ProcMatInfro);
+  let result = await mariadb.query("insertProcFlow", ProcMatInfro);
   if (result.affectedRows > 0) {
     return { result: "success" };
   } else {

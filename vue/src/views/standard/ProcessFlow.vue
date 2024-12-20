@@ -18,7 +18,7 @@
               <div class="col-8 text-end">
                 <button
                   class="btn btn-success"
-                  @click="modalOpen"
+                  
                 >
                   자재추가
                 </button>
@@ -157,10 +157,10 @@
     </template>
     <template v-slot:footer>
       <button type="button" class="btn btn-secondary" @click="modalOpen">
-        Cancel
+        취소
       </button>
       <button type="button" class="btn btn-primary" @click="InsertProc">
-        OK
+        추가
       </button>
     </template>
   </Layout>
@@ -341,24 +341,27 @@ onRowDragEnd() { // `event` 제거
       //const selectedModal = selectedNodes.map((node)=>node.data); //배열로
       console.log('selectedNodes =>', selectedNodes);
       for(const dup of selectedNodes) {
-        const saveModal = {//그리드용
-          proc_seq: this.procFlowData.length + 1,
+        const saveBom = {//그리드용
+          proc_seq: this.procFlowData.length + this.saveModal.length + 1,
           proc_cd: dup.proc_cd,
           proc_nm: dup.proc_nm
         };
       
 
       const saveRealModal={
-        proc_cd: saveModal.proc_cd,
-        proc_nm: saveModal.proc_nm,
-        proc_seq: saveModal.proc_seq
+        proc_cd: saveBom.proc_cd,
+        proc_nm: saveBom.proc_nm,
+        proc_seq: saveBom.proc_seq
       };
 
       this.saveModal.push(saveRealModal);
+      
       this.prowFlowApi.applyTransaction({
-        add: [saveModal],
+        add: [saveBom],
       }); //ui반영
-      console.log("saveModal => ", saveModal);
+      console.log('saveBom=>',saveBom)
+      this.isModal = !this.isModal;
+
     };
     },
 
@@ -372,19 +375,19 @@ onRowDragEnd() { // `event` 제거
         this.prowFlowApi.applyTransaction({
           remove: [bom],
         })
-
+        !this.isModal;
       }
     },
     async save(){
       for(const bom of this.deleteModal){
-      await axios.delete(
+        await axios.delete(
         `/api/standard/flow/${bom.proc_flow_cd}`
       );
-      console.log(bom.proc_flow_cd);
+      
       for (const bom of this.saveModal){
-        await axios.post(`/api/standard/procFlow`, bom)
+        await axios.post(`/api/standard/procFlow`, bom);
       }
-
+      console.log('bom=>',bom);
       this.saveModal = [];
       this.deleteModal = [];
       this.bringProFlow(this.selectProData);
