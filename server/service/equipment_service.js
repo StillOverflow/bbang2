@@ -18,14 +18,17 @@ const findAllEq = async () => {
 async function getFilteredEq(filters) {
   try {
     const { filterQuery, queryParams } = generateFilters(filters); // 필터 동적 생성
-    const sqlQuery = equipmentSQL.eqAllListFiltered.replace('{{FILTER}}', filterQuery); // 필터 삽입
+    const sqlQuery = equipmentSQL.eqAllListFiltered.replace(
+      '{{FILTER}}',
+      filterQuery
+    ); // 필터 삽입
     const [rows] = await db.query(sqlQuery, queryParams); // Prepared Statement로 실행
     return rows;
   } catch (err) {
     console.error('필터링된 설비 조회 실패:', err);
     throw err;
   }
-};
+}
 
 // 설비단건조회
 const findEquipNo = async (no) => {
