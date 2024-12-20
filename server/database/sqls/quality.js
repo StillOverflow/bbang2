@@ -77,28 +77,42 @@ const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 
 // 자재, 공정, 제품 전체 조회 (모달용)
 const searchAll  = (valueObj) => {
+  let type = valueObj.type;
+  let cate = valueObj.cd;
   let nm = valueObj.nm;
-  let cd = valueObj.cd;
+  
   // 이름이나 카테고리(코드) 둘 중 하나 혹은 둘 다 검색조건으로 들어올 수 있음.
-  return `
-    (SELECT prd_cd, prd_nm nm, category
-    FROM   product
-    WHERE  create_dt IS NOT NULL -- 시작부에 당연한 조건을 줘서 AND만 추가 가능
-      ${!nm ? "" : "AND  prd_nm LIKE '%" + nm + "%' "}
-      ${!cd ? "" : "AND  category = '" + cd + "' " } )
-    UNION
-    (SELECT mat_cd, mat_nm nm, category
-    FROM   material
-    WHERE  create_dt IS NOT NULL
-      ${!nm ? "" : "AND  mat_nm LIKE '%" + nm + "%' "}
-      ${!cd ? "" : "AND  category = '" + cd + "' " } )
-    UNION
-    (SELECT proc_cd, proc_nm nm, eqp_type
-    FROM   process
-    WHERE  create_dt IS NOT NULL
-      ${!nm ? "" : "AND  proc_nm LIKE '%" + nm + "%' "}
-      ${!cd ? "" : "AND  proc_cd = '" + cd + "' " } )
+  let prodQuery = `
+    (SELECT '제품' type, prd_cd cd, prd_nm nm, '완제품' cate_type, fn_get_codename(category) category, fn_quality_std_dt(prd_cd) std_date
+       FROM  product
+      WHERE  create_dt IS NOT NULL
+        ${!cate ? "" : "AND  category = '" + cate + "' " }
+        ${!nm ? "" : "AND  prd_nm LIKE '%" + nm + "%' "} )
   `;
+
+  let matQuery = `
+      (SELECT '자재' type, mat_cd cd, mat_nm nm, fn_get_codename(type) cate_type, fn_get_codename(category) category, fn_quality_std_dt(mat_cd) std_date
+         FROM  material
+        WHERE  create_dt IS NOT NULL
+          ${!cate ? "" : "AND  category = '" + cate + "' " } 
+          ${!nm ? "" : "AND  mat_nm LIKE '%" + nm + "%' "} )
+  `;
+
+  let procQuery = `
+      (SELECT '공정' type, proc_cd cd, proc_nm nm, null cate_type, null category, fn_quality_std_dt(proc_cd) std_date
+        FROM   process)
+  `;
+
+  if(!type){ // 타입 명시하지 않았으면 전체 조회 쿼리문을 반환
+     let queryArr = [prodQuery, matQuery, procQuery];
+     return queryArr.join(" UNION ");
+  } else {
+    switch(type){
+      case 'P01' : return matQuery; break;
+      case 'P02' : return procQuery; break;
+      case 'P03' : return prodQuery; break;
+    }
+  }
 };
 
 
