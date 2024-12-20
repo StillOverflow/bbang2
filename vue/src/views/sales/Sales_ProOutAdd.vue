@@ -1,5 +1,11 @@
 <!-- 출고제품등록 -->
 
+<style>
+.form-control[readonly] {
+    background-color: rgb(236, 236, 236);
+}
+</style>
+
 <template>
   <div class="py-4 container-fluid">
       <div class="card">
@@ -11,8 +17,8 @@
                   
                   <div class="col-6 col-lg-1 text-center mb-3 mt-2 fw-bolder" :style="t_overflow">주문서 코드</div> 
                   <div class="input-group mb-2 w-25">
-                      <input type="text" class="form-control" id="acc_name" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                      style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
+                      <input type="text" class="form-control" v-model="order_code" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                      style="height: 41px; background-color: rgb(236, 236, 236);"  readonly />
                       <button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen">SEARCH</button>
                   </div>
               
@@ -34,12 +40,12 @@
                   <div class="col-6 col-lg-2"></div>                    
                   <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주문일자</div> 
                   <div class="col-6 col-lg-2 mb-3">
-                      <input class="form-control" type="date" id="order_date" value="" readonly />
+                      <input class="form-control" type="date" v-model="order_date" readonly />
                   </div>
                   <div class="col-6 col-lg-1"></div>
                   <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">납기일자</div> 
                   <div class="col-6 col-lg-2 mb-3">
-                      <input class="form-control" type="date" id="due_date" value="" readonly />
+                      <input class="form-control" type="date" v-model="due_date" readonly />
                   </div>
               </div>
 
@@ -65,11 +71,11 @@
                       <p></p>
                       <ag-grid-vue style="width:100%; height: 350px;"
                       class="ag-theme-alpine"
-                      :columnDefs="columnDefs"
-                      :rowData="rowData"
+                      :columnDefs="OLDefs"
+                      :rowData="OLData"
                       :gridOptions="gridOptions"
                       @grid-ready="gridFit"
-                      overlayNoRowsTemplate="제품 조회 버튼을 이용하여 제품을 추가 해주세요.">
+                      overlayNoRowsTemplate="주문서를 조회 하여주세요.">
                       </ag-grid-vue>
                   </div>
                   <div class="col-md-6">
@@ -94,16 +100,16 @@
       </div>
   </div>
 
-  <!-- 거래처 조회 모달 -->
+  <!-- 주문서 조회 모달 -->
   <Layout :modalCheck="asModal">
       <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-          <h5 class="modal-title">거래처 조회</h5>
+          <h5 class="modal-title">주문서 조회</h5>
           <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
       </template>
       <template v-slot:default>
-          <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="accDefs"
-          :rowData="accData" :pagination="true" @rowClicked="modalClicked" @grid-ready="gridFit"
-          overlayNoRowsTemplate="등록된 거래처가 없습니다.">
+          <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="ordDefs"
+          :rowData="ordData" :pagination="true" @rowClicked="modalClicked" @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 주문서가 없습니다.">
           </ag-grid-vue>
       </template>
       <template v-slot:footer>
@@ -160,18 +166,30 @@ export default {
     name: 'App',
     data() {
         return {
-            columnDefs: [
+            OLDefs: [
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '주문 수량', field: 'order_qty', editable: true, cellDataType: 'number'},
-                {headerName: '비고', field: 'note', editable: true},
+                {headerName: '주문 수량', field: 'order_qty'},
+                {headerName: '기출고수량', field: 'prd_ed'},
+                {headerName: '미출고수량', field: 'no_qty'},
                 {
-                    headerName: '삭제' ,
+                    headerName: '출고 수량', 
+                    field: 'prd_out_qty', 
+                    editable: true, 
+                    cellDataType: 'number',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                    cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
+                },
+                {
+                    headerName: 'LOT보기' ,
                     field: 'delete',
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
-                        button.innerText = 'DELETE';
-                        button.className = 'btn btn-danger';
+                        button.innerText = 'CHECK';
+                        button.className = 'btn btn-warning';
                         button.addEventListener('click', () => {
                             this.rowData = this.rowData.filter(row => row !== params.data);
                         });
@@ -179,13 +197,16 @@ export default {
                     }
                  },
             ],
-            rowData: [ ],
-            accDefs: [
-                {headerName: '거래처 코드', field: 'act_cd'},
-                {headerName: '거래처 명', field: 'act_nm'},
-                {headerName: '구분', field: 'act_type'},
+            OLData: [ ],
+
+            ordDefs: [
+                {headerName: '주문서 코드', field: 'order_cd', filter: 'agTextColumnFilter' },
+                {headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter' },
+                {headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter' },
+                {headerName: '주문 일자', field: 'order_dt', valueFormatter: this.$comm.dateFormatter},
+                {headerName: '납기 일자', field: 'due_dt', valueFormatter: this.$comm.dateFormatter},
             ],
-            accData: [],
+            ordData: [],
             memDefs: [
                 {headerName: '담당자 ID', field: 'ID'},
                 {headerName: '담당자 명', field: 'name'},
@@ -199,9 +220,13 @@ export default {
             ],
             proData: [],
 
+            columnDefs: [],
+            rowData: [ ],
+
             asModal: false,
             msModal: false,
             psModal: false,
+
         }
     },
     components: {
@@ -211,7 +236,8 @@ export default {
     
     created() {
         this.$store.dispatch('breadCrumb', { title: '출고 제품 등록' });
-        this.getAccList();
+
+        this.getOrdList();
         this.getMemList();
         this.getProList();
     },
@@ -226,8 +252,16 @@ export default {
             this.psModal = !this.psModal;
         },
         modalClicked(params) {
+            this.order_code = params.data.order_cd;
             document.getElementById('acc_code').value = params.data.act_cd;
             document.getElementById('acc_name').value = params.data.act_nm;
+            // v-model로 설정 해서 값을 넘겨받는 방식(this.$comm.dateFormatter을 사용해서 날짜 포맷을 맞춰야 값이 들어간다) 
+            this.order_date = this.$comm.dateFormatter(params.data.order_dt);         
+            this.due_date = this.$comm.dateFormatter(params.data.due_dt);
+
+            //모달에서 주문서 코드 선택시 제품조회 메소드가 실행 되므로 여기서 실행
+            this.getOutOrdList();
+
             this.asModal = !this.asModal;
         },
         modalClicked2(params) {
@@ -248,10 +282,26 @@ export default {
             this.rowData = [...this.rowData, newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
             this.psModal = !this.psModal;
         },
-        async getAccList() {
-            let result = await axios.get('/api/moacc')
+        placeholderRenderer(params) {
+            // 주문 수량 값이 없으면 placeholder 텍스트 표시
+            if (!params.value) {
+                return `<span style="color: gray; font-style: italic;">숫자만 입력하세요.</span>`;
+            }
+            return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
+        },
+
+        //주문서 코드를 따라 나오는 제품들
+        async getOutOrdList() { 
+            //console.log(`/api/sales/${this.order_code}`); 변수에 담아서 넘기는게 아니라 바로 값을 넘김
+            let result = await axios.get(`/api/sales/${this.order_code}`)
+                                    .catch(err => console.log("axiosError",err));
+            this.OLData = result.data;
+        },
+
+        async getOrdList() {
+            let result = await axios.get('/api/moord')
                                     .catch(err => console.log(err));
-            this.accData = result.data; 
+            this.ordData = result.data; 
         },
         async getMemList() {
             let result = await axios.get('/api/momem')
