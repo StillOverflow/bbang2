@@ -51,7 +51,12 @@ const planDtlList =
     prod_plan_cd, 
     a.prd_cd as prd_cd, 
     prd_nm, 
-    prod_plan_qty
+    prod_plan_qty,
+    (SELECT COUNT(*) 
+     FROM 
+        prod_inst c JOIN prod_inst_dtl d 
+        ON c.INST_CD=d.INST_CD 
+        WHERE c.PROD_PLAN_CD=a.prod_plan_cd AND d.PRD_CD = a.prd_cd) AS reg_cnt
 FROM prod_plan_dtl a JOIN product b ON a.PRD_CD = b.PRD_CD
 WHERE PROD_PLAN_CD = ? `;
 
