@@ -11,9 +11,11 @@
                         style="width: 100%; height: 300px;"
                         :rowData="prodPlanListData"
                         :pagination="true"
+                        :paginationPageSize="10"
                         :gridOptions="planOptions"
                         @rowClicked="rowClicked"
-                        @grid-ready="gridFit">
+                        @grid-ready="gridReady"
+                        overlayNoRowsTemplate="미지시 생산계획서가 없습니다.">
                      </ag-grid-vue>
                   </div>
                </div>
@@ -31,8 +33,10 @@
                         style="width: 100%; height: 500px;"
                         :rowData="planToMaterialStk"
                         :pagination="true"
+                        :paginationPageSize="10"
                         :gridOptions="materialOptions"
-                        @grid-ready="gridFit">
+                        @grid-ready="gridReady, materialReady"
+                        overlayNoRowsTemplate="Loding중~~">
                      </ag-grid-vue>
                   </div>
                </div>
@@ -87,18 +91,34 @@
       return result;
    };
 
-   // 숫자 포맷
-   const numberFormatter = (params) => {
-      if (!params.value || isNaN(params.value)) return '0';
-      return Number(params.value).toLocaleString()
+// ------------------------------------------------------------------------------------------
+   // 그리드 준비
+   const gridReady = (params) => {
+      params.api.sizeColumnsToFit(); // 그리드 열을 컨테이너 크기에 맞춤
    };
 
-   // 그리드 너비에 열 너비 맞추기
-   const gridFit = (params) => {
-      params.api.sizeColumnsToFit();
+   const selectedData = ref(''); // 선택한 행 저장
+   const materialReady = (params) => {
+      console.log(params.api)
+      selectedData.value = params.api
    };
 
-// ---------------------------------------- 계획서 데이터 조회 ----------------------------------------
+   // const materialList = ref([]);
+   const orderFormFunc = () => {
+      const selectedRows = selectedData.value.getSelectedNodes();
+      console.log("Selected Rows:", selectedRows);
+      // if (selectedRows.value.length > 0) {
+      //    console.log("Selected Rows:", selectedRows);
+      //    materialList.value = selectedRows.value.map((node) => node.data);
+      // } else {
+      //    console.log("No rows selected.");
+      // }
+   };
+
+   
+   
+   
+// ------------------------------------------------------------------------------------------
    // ~ 미지시 생산계획서 조회
    // 그리드 컬럼명
    const planOptions = {
@@ -146,10 +166,15 @@
       planToMaterialStkStock(prodPlanCode.value);
    };
 
-// ---------------------------------------- 자재 재고 조회 ----------------------------------------
+   // watch(plan_cd, (plan_cd) => {
+   //    prodPlanCode.value = plan_cd;
+   // });
+   
+// ------------------------------------------------------------------------------------------
    // 계획서에 대한 자재 재고 컬럼명
    const materialOptions = {
       columnDefs : [
+         //{ headerName: '계획서상세코드', field: 'prod_plan_dtl_cd', sortable: true },
          { headerName: '자재코드', field: 'mat_cd', sortable: true },
          { headerName: '자재명', field: 'mat_nm', sortable: true },
          { headerName: '자재구분', field: 'type', sortable: true },
