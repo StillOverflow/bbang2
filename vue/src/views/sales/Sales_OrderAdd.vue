@@ -351,10 +351,10 @@ export default {
                 due_dt : document.getElementById('due_date').value,
                 order_dt : document.getElementById('order_date').value
             });
-            console.log("vue"+insertOrd);
+            console.log(insertOrd);
 
             let insertOrdArr = [...insertOrd, insertOrdDtl ];   //첫번째가 헤드, 두번째가 디테일
-            console.log(insertOrdDtl);
+            console.log(insertOrdArr);
 
             let result = await axios.post('/api/sales/ord', insertOrdArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
                                 .catch(err => console.log("axios에러",err));

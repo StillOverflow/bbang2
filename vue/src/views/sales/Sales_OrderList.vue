@@ -19,7 +19,7 @@
                     </div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">~</div>
                     <div class="col-6 col-lg-2 mb-2">
-                        <input class="form-control" type="date" v-model="edt" />
+                        <input class="form-control" type="date" :min="sdt" v-model="edt" />
                     </div>
                 </div>
                 <div class="row">
