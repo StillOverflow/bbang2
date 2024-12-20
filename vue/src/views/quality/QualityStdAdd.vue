@@ -376,17 +376,20 @@
         }
 
         // let isChanged = null;
-        // console.log(this.myData == this.myData_save);
-        // this.myData_save((obj) => {
-        //   obj.
-        // });
-
+        
+        
         let insertArr = [];
         
-        this.myData.forEach((test) => {
-          insertArr.push({target_type: test.target_type, 
+        // this.myData_save.forEach((saved) => { // proxy 타입이라 forEach로만 접근되는 듯함.
+        //   if(saved.test_cd == changed.test_cd) return;
+        //   console.log(saved.test_cd == changed.test_cd);
+        //   console.log(saved.test_cd + '  ' + changed.test_cd);
+        // });
+        this.myData.forEach((changed) => {
+          
+          insertArr.push({target_type: changed.target_type, 
                           target_cd: this.modal_val.cd,
-                          test_cd: test.test_cd});
+                          test_cd: changed.test_cd});
         });
 
         let result = await axios.post('/api/quality/std', insertArr)
