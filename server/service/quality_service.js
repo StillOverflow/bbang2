@@ -72,9 +72,10 @@ const stdInsert = async (values) => {
 
 // 자재, 공정, 제품 전체 조회 (모달용)
 const searchAll = async (valueObj) => { 
-    // nm => '소금빵', cate => 'C01' 형태로 들어옴.
-    // 둘 중 하나만 있을 수도, 둘 다 있을 수도 있으므로 null여부에 따라 동적 쿼리 생성
+    // nm => '소금빵', cate => 'C01', type => 'P03'(제품) 형태로 들어옴.
+    // 하나만 있을 수도, 전부 있을 수도 있으므로 null여부에 따라 동적 쿼리 생성
     let result = mariadb.query('searchAll', valueObj);
+    return result;
 };
 
 

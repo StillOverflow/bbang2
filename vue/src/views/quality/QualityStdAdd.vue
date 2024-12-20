@@ -22,26 +22,28 @@
         <div class="row">
           <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상구분</h6>
           <div class="col-10 col-lg-4 col-xxl-2 mb-2">
-            <select class="form-select" v-model="selected_div" @change="divSort">
+            <select class="form-select" v-model="selected_div" :disabled="noCate">
+              <option :value="null" disabled hidden>선택</option>
               <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
           <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">카테고리</h6>
           <div class="col-10 col-lg-4 col-xxl-2 mb-2">
             <select class="form-select" v-model="selected_cate" :disabled="noCate">
+              <option :value="null" disabled hidden>선택</option>
               <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
-          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">선택</h6>
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상선택</h6>
           <div class="col-10 col-lg-4 col-xxl-2 d-flex">
             <div class="input-group">
-              <input type="text" class="form-control" :value="modal_val" readonly style="height: 41px;">
+              <input type="text" class="form-control" v-model="modal_val.nm" style="height: 41px;">
               <button class="btn btn-warning" type="button" @click="modalToggle">SEARCH</button>
             </div>
           </div>
-          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상명</h6>
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상코드</h6>
           <div class="col-10 col-lg-4 col-xxl-2 mb-2">
-            <input type="text" class="form-control" :value="modal_val" readonly>
+            <input type="text" class="form-control" :value="modal_val.cd" readonly>
           </div>
         </div>
   
@@ -102,15 +104,15 @@
 
     <ModalLayout :modalCheck="isModal">
         <template v-slot:header>
-            <h5>ㅇㅇ 조회</h5>
-            <button type="button" aria-label="Close" class="close" @click="modalToggle">×</button>
+          <h5>품질기준 대상선택</h5>
+          <button type="button" aria-label="Close" class="close" @click="modalToggle">×</button>
         </template>
         <template v-slot:default>
-            <ag-grid-vue class="ag-theme-alpine w-100" :style="g_height" :columnDefs="modalDefs" :rowData="modalData" 
-             :gridOptions="gridOptions" :rowSelection="false" @rowClicked="null" @grid-ready="gridFit"/>
+          <ag-grid-vue class="ag-theme-alpine" :style="g_height" :columnDefs="modalDefs" :rowData="modalData" 
+            :gridOptions="gridOptions" :rowSelection="false" @rowClicked="null" @grid-ready="gridFit"/>
         </template>
-        <template v-slot:footer>
-            <div/> <!-- 아무것도 안 넣으면 기본 버튼이 표시됨. -->
+        <template v-slot:footer> <!-- 아무것도 안 넣으면 기본 버튼이 표시됨. -->
+          <button type="button" class="btn btn-secondary" @click="modalToggle">CLOSE</button>
         </template>
     </ModalLayout>
 
@@ -143,15 +145,32 @@
 
         // 모달 내부 grid API 데이터 (Defs: thead 구성, Data: tbody 구성)
         isModal: false, // 토글기능
-        modalDefs: [],
+        modalDefs: [
+          { headerName: '유형', field: 'type', width: 70 },
+          { headerName: '구분', field: 'cate_type', width: 80 },
+          { headerName: '카테고리', field: 'category', width: 80 },
+          { headerName: '코드', field: 'cd', width: 80 },
+          { headerName: '이름', field: 'nm', width: 136 },
+          { headerName: '등록현황', 
+            field: 'has_std', 
+            cellClassRules: {
+              'textRed': params => params.value == '미등록',
+              'textGreen': params => params.value == '등록완료'
+            },
+            width: 100 },
+          { headerName: '등록일', field: 'std_date', width: 120, valueFormatter: this.$comm.dateFormatter_returnNull}
+        ],
         modalData: [],
-        modal_val: null, // 선택된 값
+        modal_val: { // 선택된 값
+          nm: null,
+          cd: null
+        },
 
         // 일반 grid API 데이터
         defs: [
-          { headerName: '검사명', field: 'test_nm'},
-          { headerName: '검사방식', field: 'test_metd'},
-          { headerName: '검사내용', field: 'test_dtl'}
+          { headerName: '검사명', field: 'test_nm' },
+          { headerName: '검사방식', field: 'test_metd' },
+          { headerName: '검사내용', field: 'test_dtl' }
         ],
 
         myData: [],
@@ -192,10 +211,6 @@
         params.api.sizeColumnsToFit();
       },
 
-      modalToggle(){
-        this.isModal = !this.isModal;
-      },
-
       yetGrid(params){ // '적용가능목록' @grid-ready 시 매개변수 속성으로 자동 접근
         params.api.sizeColumnsToFit();
         this.yetApi = params.api;
@@ -216,8 +231,8 @@
 
         switch(type){
           case 'radio' : typesNo = 0; break;
-          case 'divs' : typesNo = 1; this.selected_div = arr[0].comm_dtl_cd; break;
-          case 'cate' : typesNo = 2; this.selected_cate = arr[0].comm_dtl_cd; break;
+          case 'divs' : typesNo = 1; break;
+          case 'cate' : typesNo = 2; break;
         };
         
         types[typesNo].length = 0; // 실행할 때마다 값이 중복되지 않게 비우고 push
@@ -230,15 +245,19 @@
       },
 
       async getDivs(){
-        // 조회대상 선택값이 변경될 때마다 구분 및 카테고리 재호출
+        // 대상구분 변경될 때, 다시 null부터 시작
+        this.selected_div = null;
+        this.selected_cate = null;
+
+        // 구분 및 카테고리 재호출
         switch(this.selected_radio){
           case 'P01' : // 자재 선택한 경우
             this.getCondition('MA', 'divs');
             this.getCondition('MC', 'cate'); 
             this.noCate = false; 
             break;
-          case 'P02' : { // 공정중 선택한 경우
-            // switch - case 조건 안에서 변수 선언 시, 작업 내용을 중괄호로 묶지 않으면 오류남.
+          case 'P02' : { // 공정중 선택한 경우 => 공통코드가 없으므로 따로 실행해야 함.
+            // ** switch - case 조건 안에서 변수 선언 시, 작업 내용을 중괄호로 묶지 않으면 오류남.
             let result = await axios.get('/api/standard/procCd').catch(err => console.log(err));
             result.data.forEach((obj) => {
               this.divs.push({
@@ -246,8 +265,8 @@
                 name: obj.proc_nm
               });
             });
-            this.selected_div = result.data[0].proc_cd;
-            this.noCate = true; 
+            this.modal_val = result.data[0].proc_cd;
+            this.noCate = true; // 구분 선택이 아예 없음.
             break;
             };
           case 'P03' : // 제품 선택한 경우
@@ -258,23 +277,30 @@
         }
       },
 
-      divSort(){
-        // 대상구분 변경될 때, 자재-소모품 혹은 자재-기타인 경우 카테고리도 기타로 표시
-        if(this.selected_div == 'M03' || this.selected_div == 'M04'){
-          this.selected_cate = 'D05';
-        }
+      // ------------ 모달 메소드 ------------
+      modalToggle(){
+        this.isModal = !this.isModal;
+        this.getModalList();
       },
 
       async getModalList(){
-        // let target = this.selected_radio;
-        // if(target == 'P01'){ // 조회대상이 자재인 경우
-        //   let result = await axios.get();
-        // } else if(target == 'P02'){ // 공정인 경우
+        // 조회대상(radio) 미선택 시 => 전체 조회
+        // 조회대상(radio) 선택 시 => 선택한 대상 내에서 카테고리 조건 넣어 조회
+        // ** 이름을 입력하면 유사한(LIKE) 이름으로 조회
+        let params = { 
+          type: this.selected_radio,
+          cate: this.selected_cate,
+          nm: this.modal_val.nm 
+        };
 
-        // } else { // 제품인 경우
-          
-        // }
-      }, 
+        let result = await axios.get('/api/quality/targetAll', {params: params});
+        let data = result.data;
+        data.forEach((obj) => {
+          obj.has_std = obj.std_date == null ? '미등록' : '등록완료';
+        });
+        this.modalData = data;
+      },
+      // ---------- 모달 메소드 끝 -----------
 
       // 검사항목 버튼 클릭 시 불러오기
       async getTList(){
@@ -353,3 +379,15 @@
     }
   };
 </script>
+
+<style>
+  .textRed {
+    color : red;
+    font-weight: bold;
+    text-align: center;
+  }
+  .textGreen {
+    color : rgb(13, 184, 13);
+    text-align: center;
+  }
+</style>

@@ -17,11 +17,12 @@ export default {
     return ('0' + num).slice(-2);
   },
 
-  // 날짜 포맷 변환 ag-grid 적용 가능 [S]
+  // 날짜 포맷 변환 ag-grid용 [S]
   dateFormatter(params) { //여기서 ag grid에 date형식을 보냄
     let value = params.value; // getMyDay() 와의 차이점!
     let format = 'yyyy-MM-dd';
-    let date = value == null ? new Date() : new Date(value);
+    let date = value == null ? new Date() : new Date(value); // null이면 오늘 날짜 입력
+    date = new Date(date.getTime() + (9 * 60 * 60 * 1000)); // 밀리초 단위 계산
 
     let year = date.getFullYear();
     let month = ('0' + (date.getMonth() + 1)).slice(-2);
@@ -31,6 +32,21 @@ export default {
                     .replace('MM', month)
                     .replace('dd', day);
     return result;
+  },
+
+  // 날짜 포맷 변환 ag-grid용 (null 리턴 버전)
+  dateFormatter_returnNull(params) {
+    let value = params.value; // ag-grid용 params.value
+    if(!value) return null; // null이면 null 그대로 리턴
+
+    let date = new Date(value);
+    date = new Date(date.getTime() + (9 * 60 * 60 * 1000)); // 밀리초 단위 계산
+
+    let year = date.getFullYear();
+    let month = ('0' + (date.getMonth() + 1)).slice(-2);
+    let day = ('0' + (date.getDate())).slice(-2);
+
+    return year + '-' + month + '-' + day;
   },
 
   // 숫자 포맷 변환 ag-grid 적용 가능 (천단위 콤마 표시)

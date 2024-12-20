@@ -63,7 +63,13 @@ export default {
     this.columnDefs = [
       { headerName: '품번', field: 'no' }, 
       { headerName: '이름', field: 'name', minWidth: 200},  // minWidth 옵션으로 각 열의 최소 너비 지정 가능
-      { headerName: '가격', field: 'price', valueFormatter: this.$comm.currencyFormatter }, // valueFormatter 천단위 콤마 포맷 함수
+      { headerName: '가격', 
+        field: 'price', 
+        valueFormatter: this.$comm.currencyFormatter, // valueFormatter 천단위 콤마 포맷 함수
+        cellClassRules: {
+          'textGreen': params => params.value >= 30000
+        },
+      }, 
       { headerName: '등록일', field: 'date', valueFormatter: this.$comm.dateFormatter } // 날짜 포맷 함수
     ];
 
@@ -104,4 +110,12 @@ export default {
 //그리드 사용시 아래 스타일 임포트 해야하고 경로 확인이 필요함
 @import"../../node_modules/ag-grid-community/styles/ag-grid.css";
 @import"../../node_modules/ag-grid-community/styles/ag-theme-alpine.css"
+</style>
+
+<style>
+  .textGreen {
+    color : rgb(13, 184, 13);
+    font-weight: bold;
+    text-align: left;
+  }
 </style>

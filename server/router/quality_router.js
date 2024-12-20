@@ -31,17 +31,17 @@ router.get('/quality/test/all', async (req, resp) => {
 // 품질기준
 // 등록
 router.post('/quality/std', async (req, resp) => {
-  let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
+  let values = req.body; // body: 배열로 값을 받음.
 
   let result = await qualityService.stdInsert(values);
-  console.log('라우터결과: ' + result); // 비동기함수가 중첩되어 어떻게 해도 결과가 안 받아와지는 문제....
+  console.log('트랜잭션 결과: ' + result);
   resp.send(result);
 });
 
 
 // 자재, 공정, 제품 전체 조회 (모달용)
 router.get('/quality/targetAll', async (req, resp) => {
-  let valueObj = req.body;
+  let valueObj = req.query; // query: 객체로 값을 받음.
   let result = await qualityService.searchAll(valueObj);
   resp.send(result);
 });
