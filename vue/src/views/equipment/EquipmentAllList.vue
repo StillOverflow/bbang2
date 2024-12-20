@@ -69,11 +69,12 @@
           <div class="col-6 col-lg-4 mb-2"></div>
           <div class="col-6 col-lg-1 mb-2">
             <button
+              id="button-addon2"
               type="button"
-              class="btn mb-0 btn-warning btn-xsm null null ms-auto"
+              class="btn btn-warning"
               @click="searchEquipments"
             >
-              검색
+              SEARCH
             </button>
           </div>
         </div>
@@ -118,7 +119,7 @@ export default {
         { field: 'model', headerName: '모델' },
         { field: 'status', headerName: '설비상태' },
         { field: 'create_dt', headerName: '등록일자' },
-        { field: 'end_dt', headerName: '최종점검일자' },
+        { field: 'last_insp_dt', headerName: '최종점검일자' },
         { field: 'id', headerName: '담당자' },
       ],
     };
@@ -127,6 +128,8 @@ export default {
     AgGridVue,
   },
   created() {
+    // 페이지 제목 저장
+    this.$store.dispatch('breadCrumb', { title: '설비 정보 조회' });
     // 공통코드 및 초기 데이터 가져오기
     this.fetchCommonCodes();
     this.fetchFilteredEquip();
@@ -136,12 +139,12 @@ export default {
     async fetchCommonCodes() {
       try {
         const eqpTypeResponse = await axios.get('/api/commList/EQ');
-        const isUseResponse = await axios.get('/api/commList/T');
-        const statusResponse = await axios.get('/api/commList/S');
+        const isUseResponse = await axios.get('/api/commList/EU');
+        const statusResponse = await axios.get('/api/commList/ES');
 
-        this.equipmentData.selectOptions.EQP_TYPE = eqpTypeResponse.data;
-        this.equipmentData.selectOptions.IS_USE = isUseResponse.data;
-        this.equipmentData.selectOptions.STATUS = statusResponse.data;
+        this.equipmentData.selectOptions.EQP_TYPE = eqpTypeResponse.data || [];
+        this.equipmentData.selectOptions.IS_USE = isUseResponse.data || [];
+        this.equipmentData.selectOptions.STATUS = statusResponse.data || [];
       } catch (error) {
         console.error('공통코드 가져오기 실패:', error);
       }
@@ -150,12 +153,24 @@ export default {
     async fetchFilteredEquip() {
       try {
         const params = {
-          eqp_type: this.equipmentData.eqp_type,
-          is_use: this.equipmentData.is_use,
-          status: this.equipmentData.status,
+          eqp_type: this.equipmentData.eqp_type || null,
+          is_use: this.equipmentData.is_use || null,
+          status: this.equipmentData.status || null,
         };
-        const response = await axios.get('/api/equip', { params });
-        this.rowData = response.data;
+        console.log('fetchFilteredEquip에 전달되는 params: ', params);
+        const result = await axios.get('/api/equipFiltered', { params });
+
+        if (result.data) {
+          //배열데이터 처리
+          this.rowData = result.data.map((item) => ({
+            ...item,
+            create_dt: item.create_dt ? item.create_dt.split('T')[0] : '',
+            last_insp_dt: item.last_insp_dt
+              ? item.last_insp_dt.split('T')[0]
+              : '',
+          }));
+        }
+        this.rowData = result.data;
       } catch (error) {
         console.error('설비 데이터 조회 실패:', error);
       }

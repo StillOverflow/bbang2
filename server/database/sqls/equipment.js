@@ -29,28 +29,27 @@ const eqAllList = `SELECT eqp_cd,
                           note 
 FROM equipment`;
 
-
 //설비 정보 조회(필터링 적용)
-const eqAllListFiltered = ` SELECT e.eqp_cd,
-                                   e.eqp_type,
-                                   e.eqp_nm,
-                                   e.model,
-                                   e.pur_dt,
-                                   e.pur_act,
-                                   e.mfg_act,
-                                   e.insp_cycle,
-                                   e.status,
-                                   e.id,
-                                   e.is_use,
-                                   e.opt_temp,
-                                   e.opt_humid,
-                                   e.opt_rpm,
-                                   e.last_insp_dt,
-                                   e.next_insp_dt,
-                                   e.uph,
-                                   e.create_dt,
-                                   e.update_dt,
-                                   e.note
+const eqAllListFiltered = ` SELECT  e.eqp_cd,
+                                    e.eqp_type,
+                                    e.eqp_nm,
+                                    e.model,
+                                    e.pur_dt,
+                                    e.pur_act,
+                                    e.mfg_act,
+                                    e.insp_cycle,
+                                    e.status,
+                                    e.id,
+                                    e.is_use,
+                                    e.opt_temp,
+                                    e.opt_humid,
+                                    e.opt_rpm,
+                                    e.last_insp_dt,
+                                    e.next_insp_dt,
+                                    e.uph,
+                                    e.create_dt,
+                                    e.update_dt,
+                                    e.note
 FROM equipment e
 LEFT JOIN repair_log r ON e.eqp_cd = r.eqp_cd
 WHERE 1=1
@@ -59,20 +58,20 @@ ORDER BY e.create_dt DESC
 `;
 
 // 필터 동적 생성
-function generateFilters(filters){
+function generateFilters(filters) {
   const { eqp_type, is_use, status } = filters;
   let filterQuery = '';
   // Prepared Statement용 파라미터 배열
   // (리터럴 그대로 넣으면 SQL Injection 공격에 취약하다고 함)
-  const queryParams = []; 
+  const queryParams = [];
 
   //설비구분 필터
-  if (eqp_type){
+  if (eqp_type) {
     filterQuery += `AND e.eqp_type = ? `;
   }
 
   //사용유무 필터
-  if (is_use){
+  if (is_use) {
     filterQuery += `AND e.is_use = ? `;
   }
 
@@ -83,7 +82,6 @@ function generateFilters(filters){
 
   return { filterQuery, queryParams };
 }
-
 
 //정보단건조회
 const equipInfo = `SELECT eqp_cd,

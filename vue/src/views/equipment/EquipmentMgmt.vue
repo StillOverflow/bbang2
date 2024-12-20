@@ -24,7 +24,7 @@
               type="button"
               @click="modalOpen"
             >
-              조회
+              SEARCH
             </button>
           </div>
         </div>
@@ -277,7 +277,6 @@ export default {
       this.isModal = !this.isModal;
     },
 
-    //파일 업로드 핸들러
     // 파일 업로드 핸들러
     onFileChange(event) {
       const file = event.target.files[0]; // 업로드된 파일 객체
@@ -365,31 +364,46 @@ export default {
     async equipInsert() {
       let obj = this.getInsertData();
 
-      let result = await axios
-        .post('/api/equip', obj, {
+      // 이미지 파일이 없으면 selectedFile 필드를 추가하지 않음
+      if (this.selectedFile) {
+        obj.append('selectedFile', this.selectedFile);
+      }
+
+      try {
+        let result = await axios.post('/api/equip', obj, {
           headers: {
-            'Content-Type': 'multipart/form-data', // multer와 관련
+            'Content-Type': 'multipart/form-data',
           },
-          transformRequest: [
-            function () {
-              return obj;
-            },
-          ],
-        })
-        .catch((err) => console.log(err));
-      let addRes = result.data; // { success: true, data: result, img_path: imgPath }
-      if (addRes.success) {
-        this.$swal({
-          icon: 'success',
-          title: '등록완료',
-          text: '설비가 등록되었습니다.',
         });
 
-        this.equipData.push({
-          eqp_cd: addRes.data.eqp_cd,
-          ...this.equipmentData,
+        let addRes = result.data; // 서버에서 반환된 응답 처리
+        if (addRes.success) {
+          this.$swal({
+            icon: 'success',
+            title: '등록완료',
+            text: '설비가 등록되었습니다.',
+          });
+
+          // 추가된 데이터를 모달에 반영
+          this.equipData.push({
+            eqp_cd: addRes.data.eqp_cd,
+            eqp_type: this.equipmentData.eqp_type,
+            eqp_nm: this.equipmentData.eqp_nm,
+            model: this.equipmentData.model,
+            status: this.equipmentData.status,
+            create_dt: new Date().toISOString().split('T')[0], // 현재 날짜
+            id: this.equipmentData.id,
+          });
+
+          this.resetForm();
+        }
+      } catch (err) {
+        console.error('설비 등록 오류:', err);
+        this.$swal({
+          icon: 'error',
+          title: '등록 실패',
+          text: '설비 등록 중 오류가 발생했습니다.',
         });
-        this.resetForm();
       }
     },
 
