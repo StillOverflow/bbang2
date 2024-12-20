@@ -393,8 +393,8 @@ export default {
             }
             for (const bom of this.saveData) {
               await axios.post(`/api/standard/bom`, bom);
+              console.log(bom);
             }
-
             this.saveData = [];
             this.deleteData = [];
             this.bringBomData(this.selectBomData);

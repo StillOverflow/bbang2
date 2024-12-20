@@ -121,19 +121,14 @@ proc_cd
 ,duration
 FROM process;
 `;
+
+
 //공정흐름도에 선택한 공정코드 등록
-const insertProcFlow = `
+const insertProcFlow =
+`
 insert into process_flow
 set ?
 `;
-
-//공정흐름도 추가
-
-//공정흐름도의 공정코드 삭제
-const deleteProcFlow = `
-
-`;
-
 //선택한 제품의 bom조회 위에있음(o)
 
 //bom내역에서 선택한 자재 공정흐름도 공정코드 조회
@@ -181,7 +176,6 @@ matSearch,
 procFlowByProd,
 selectProcCd,
 insertProcFlow,
-deleteProcFlow,
 selectPrd,
 selectMatByProc,
 insertProcessFlow,
