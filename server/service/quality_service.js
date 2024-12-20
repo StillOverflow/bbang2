@@ -1,13 +1,13 @@
 const mariadb = require('../database/mapper.js');
 
 // 검사항목
-const getYetList = async (cd) => { // 적용하지 않은 목록 조회
-    let result = await mariadb.query('yetList', cd);
+const getYetList = async (values) => { // 적용하지 않은 목록 조회
+    let result = await mariadb.query('yetList', values);
     return result;
 };
 
-const getMyList = async (cd) => { // 적용한 목록 조회
-    let result = await mariadb.query('getMyList', cd);
+const getMyList = async (values) => { // 적용한 목록 조회
+    let result = await mariadb.query('getMyList', values);
     return result;
 };
 

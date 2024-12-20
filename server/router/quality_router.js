@@ -3,21 +3,21 @@ const router = express.Router();
 const qualityService = require("../service/quality_service.js");
 
 // 검사항목
-// 미적용 검사목록 조회
+// 미적용 검사항목 조회
 router.get('/quality/test/yet', async (req, resp) => {
-  let val = req.query;
-  let result = await qualityService.getYetList(val.cd);
+  let values = [req.query.type, req.query.cd];
+  let result = await qualityService.getYetList(values);
   resp.send(result);
 });
 
-// 적용 검사목록 조회
+// 적용 검사항목 조회
 router.get('/quality/test/my', async (req, resp) => {
-  let val = req.query;
-  let result = await qualityService.getMyList(val.cd);
+  let values = [req.query.type, req.query.cd];
+  let result = await qualityService.getMyList(values);
   resp.send(result);
 });
 
-// 전체 검사목록 조회
+// 전체 검사항목 조회
 router.get('/quality/test/all', async (req, resp) => {
   let val = null;
   // axios에서 '링크', {params: valueObj} 식으로 넘겨준 값을 req.query로 받음.
