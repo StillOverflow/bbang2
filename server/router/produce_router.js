@@ -10,11 +10,11 @@ router.get('/plan', async (req, res)=>{
     res.send(planList);
 });
 
-// 단건조회
+// 코드조회
 router.get('/plan/:no', async (req,res)=>{
     let planNo = req.params.no;
-    let info = await produceService.findPlanNo(planNo);
-    res.send(info);
+    let planList = await produceService.findPlanNo(planNo);
+    res.send(planList);
 })
 
 // 제품조회
@@ -26,7 +26,6 @@ router.get('/plan/:no/dtl', async (req, res)=>{
 
 // 계획서 삭제
 router.delete("/plan", async (req, res) => {
-    console.log("히히"+req.body);
     //let result = await produceService.deletePlan(values);
     //resp.send(result);
   });
@@ -47,9 +46,9 @@ router.get('/inst/:no', async (req,res)=>{
 
 // 등록
 router.post('/inst', async(req, res)=>{
-    let instInfo = req.body;
-    let result = await produceService.instInsert(instInfo);
-    res.send(result);
+  let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
+  let result = await produceService.stdInsert(values);
+  res.send(result);
 });
 
 //제품별 공정 조회

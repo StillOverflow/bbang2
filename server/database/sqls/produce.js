@@ -14,9 +14,19 @@ const planList =
 FROM prod_plan pp;`;
 
 //단건조회
-const planInfo =
-`SELECT * FROM prod_plan
-WHERE PROD_PLAN_CD = ?`;
+const planSearch =
+`SELECT prod_plan_cd, 
+        order_cd, 
+        id, 
+        start_dt, 
+        end_dt, 
+        create_dt, 
+	    (SELECT COUNT(prod_plan_qty) 
+      	 FROM prod_plan_dtl 
+	     WHERE prod_plan_cd=pp.PROD_PLAN_CD ) AS dtl_qty 
+FROM prod_plan pp
+WHERE PROD_PLAN_CD LIKE "%"?"%"`;
+
 
 //등록
 const planInsert =
@@ -63,21 +73,57 @@ const instInfo =
 `SELECT * FROM prod_inst
 WHERE INST_CD = ?`;
 
-//등록
-const instInsert =
-`INSERT INTO prod_inst 
-SET ? `;
+
+/* 지시서 등록[S] */
+// 시퀀스 조회
+const instSeq = `
+  SELECT CONCAT('PI', LPAD(nextval(inst_seq), 3,'0')) seq
+  FROM dual
+`;
+
+// 헤더 입력
+const instInsert = `
+  INSERT INTO prod_inst SET ?
+`;
+
+// 디테일 입력
+const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
+  let sql = `
+    INSERT prod_inst_dtl
+      (INST_DTL_CD, INST_CD,PRD_CD, TOTAL_QTY)
+    VALUES 
+  `;
+
+  values.forEach((obj) => {
+    sql += `(CONCAT('PID', LPAD(nextval(inst_dtl_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.total_qty}'), `;
+  });
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+  return sql;
+};
+
+// 공정흐름 입력
+const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
+  let sql = `
+    INSERT prod_proc_step
+      (INST_PROC_CD, INST_CD, PRD_CD, PROC_CD, STEP)
+    VALUES 
+  `;
+
+  values.forEach((obj) => {
+    sql += `(CONCAT('PIF', LPAD(nextval(inst_flow_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
+  });
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+  
+  return sql;
+};
+/* 지시서 등록[E] */
 
 //수정
 const instUpdate =
 `UPDATE prod_inst 
 SET ? 
 WHERE INST_CD = ?`;
-
-//제품등록
-const instDtlInsert =
-`INSERT INTO prod_inst_dtl
-SET ? `;
 
 //제품수정
 const instDtlUpdate =
@@ -147,7 +193,7 @@ WHERE PROC_FLOW_CD = ? `;
 
 module.exports = {
     planList,
-    planInfo,
+    planSearch,
     planInsert,
     planUpdate,
     planDelete,
@@ -156,9 +202,11 @@ module.exports = {
 
     instList,
     instInfo,
+    instSeq,
     instInsert,
     instUpdate,
     instDtlInsert,
+    instFlowInsert,
 
     instDtlInsert,
     instDtlUpdate,

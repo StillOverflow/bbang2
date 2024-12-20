@@ -14,8 +14,8 @@
         overlayNoRowsTemplate="등록된 계획서가 없습니다.">
         </ag-grid-vue>
         <div class="center mtp30">
-          <button class="btn btn-warning" @click="PlanCancel">계획취소</button>
-          <button class="btn btn-success mlp10">엑셀다운로드</button>
+          <button class="btn btn-danger" @click="PlanCancel">계획취소</button>
+          <button class="btn btn-outline-success mlp10">엑셀다운로드</button>
         </div>
       </div>
     </div>
