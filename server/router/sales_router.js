@@ -46,6 +46,12 @@ router.get('/sales/:no', async (req, res) => {
     res.send(info);
 });
 
+//출고 등록 LOT 선택
+router.get('/sales/lot/:no', async (req, res) => {
+    let lotNo = req.params.no;
+    let info = await salesService.listLotOut(lotNo);
+    res.send(info);
+});
 
 
 

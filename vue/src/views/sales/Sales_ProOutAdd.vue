@@ -137,10 +137,10 @@
       </template>
   </Layout>
 
-  <!-- 제품 조회 모달 -->
+  <!-- LOT 조회 모달 -->
   <Layout :modalCheck="psModal">
       <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-          <h5 class="modal-title">제품 조회</h5>
+          <h5 class="modal-title">LOT를 선택 해주세요.</h5>
           <button type="button" aria-label="Close" class="close" @click="modalOpen3">×</button>
       </template>
       <template v-slot:default>
@@ -166,38 +166,54 @@ export default {
     name: 'App',
     data() {
         return {
+            
             OLDefs: [
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
                 {headerName: '주문 수량', field: 'order_qty'},
                 {headerName: '기출고수량', field: 'prd_ed'},
                 {headerName: '미출고수량', field: 'no_qty'},
-                {
-                    headerName: '출고 수량', 
-                    field: 'prd_out_qty', 
-                    editable: true, 
-                    cellDataType: 'number',
-                    valueFormatter: (params) => {
-                        if (params.value == null || params.value === '') return '';
-                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
-                    },
-                    cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
-                },
+                // {
+                //     headerName: '출고 수량', 
+                //     field: 'prd_out_qty', 
+                //     editable: true,
+                //     hide: true, //숨김
+                //     cellDataType: 'number',
+                //     valueFormatter: (params) => {
+                //         if (params.value == null || params.value === '') return '';
+                //         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                //     },
+                //     cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
+                // },
                 {
                     headerName: 'LOT보기' ,
-                    field: 'delete',
+                    field: 'lotlist',
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
-                        button.innerText = 'CHECK';
+                        button.innerText = 'SEARCH';
                         button.className = 'btn btn-warning';
                         button.addEventListener('click', () => {
-                            this.rowData = this.rowData.filter(row => row !== params.data);
+                            this.modalOpen3(); //LOT모달 오픈
+                            this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
+                            console.log("grid",this.lotMo);
+                            this.getOutLotList(); //단건조회로 보내기
+
+                            //this.rowData = this.rowData.filter(row => row !== params.data);
                         });
                         return button;
                     }
                  },
             ],
             OLData: [ ],
+            proDefs: [
+                {headerName: '제품 코드', field: 'prd_cd', hide: true},
+                {headerName: '제품 이름', field: 'prd_nm'},
+                {headerName: '제품 수량', field: 'prd_qty'},
+                {headerName: 'LOT', field: 'prd_lot_cd'},
+                {headerName: '유통기한', field: 'exp_dt'},
+            ],
+            lotMo: "",
+            proData: [],
 
             ordDefs: [
                 {headerName: '주문서 코드', field: 'order_cd', filter: 'agTextColumnFilter' },
@@ -213,12 +229,7 @@ export default {
                 {headerName: '부서', field: 'dpt_nm'},
             ],
             memData: [],
-            proDefs: [
-                {headerName: '제품 코드', field: 'prd_cd'},
-                {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '제품 수량', field: 'stock'},
-            ],
-            proData: [],
+            
 
             columnDefs: [],
             rowData: [ ],
@@ -239,7 +250,6 @@ export default {
 
         this.getOrdList();
         this.getMemList();
-        this.getProList();
     },
     methods: {
         modalOpen() {
@@ -294,8 +304,18 @@ export default {
         async getOutOrdList() { 
             //console.log(`/api/sales/${this.order_code}`); 변수에 담아서 넘기는게 아니라 바로 값을 넘김
             let result = await axios.get(`/api/sales/${this.order_code}`)
-                                    .catch(err => console.log("axiosError",err));
+                                    .catch(err => console.log(err));
             this.OLData = result.data;
+        },
+
+        //제품의 이름을 따라서 나오는 LOT조회
+        async getOutLotList() {
+            alert(`/sales/lot/${this.prd_cd}`);
+            
+            let result = await axios.get(`/api/sales/lot/${this.prd_cd}`) 
+                                    .catch(err => console.log("axiosERROR",err));
+                                    console.log("axios",this.prd_cd)
+            this.proData = result.data;
         },
 
         async getOrdList() {
@@ -308,11 +328,11 @@ export default {
                                     .catch(err => console.log(err));
             this.memData = result.data; 
         },
-        async getProList() {
-            let result = await axios.get('/api/mopro')
-                                    .catch(err => console.log(err));
-            this.proData = result.data;
-        },
+        // async getProList() {
+        //     let result = await axios.get('/api/mopro')
+        //                             .catch(err => console.log(err));
+        //     this.proData = result.data;
+        // },
 
         async ordInsert() {
 

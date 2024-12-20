@@ -20,6 +20,7 @@
   cursor: pointer;
 }
 
+
 </style>
 
 <template>
@@ -117,9 +118,9 @@
                     <th class="text-center text-uppercase text-ser opacity-7">공정설명</th>
                   </tr>
                 </thead>   
-                  <draggable :list="planFlowData" tag="tbody" @change="changeDrag">
+                  <draggable :list="planFlowData" tag="tbody" @change="changeDrag" >
                     <template v-if="planFlowCount >0">
-                      <tr class="text-center drag-item"
+                      <tr  class="text-center drag-item"
                         v-for="Flow in planFlowData"
                         :key="Flow.PROC_FLOW_CD">
                         <td>
