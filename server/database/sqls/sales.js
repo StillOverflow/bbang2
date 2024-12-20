@@ -1,4 +1,5 @@
-/* --------------------주문서---------------------- */
+
+/* -------------------------------------------주문서------------------------------------------------- */
 
 //주문서 목록 조회
 const orderList = 
@@ -84,6 +85,36 @@ values.forEach((obj) => {
   return sql;
 };
 
+/* --------------------------------------------------제품 출고------------------------------------------------------------------ */
+
+// 출고 등록 주문서 조회
+const outOrderLit =
+`
+SELECT p.prd_cd, 
+       p.prd_nm, 
+       o.order_qty, 
+       (d.prd_out_qty) AS prd_ed, 
+       (o.order_qty - d.prd_out_qty) AS no_qty
+FROM order_detail o JOIN product_out_detail d ON o.ORDER_DTL_CD = d.ORDER_DTL_CD
+					JOIN product p ON o.PRD_CD = p.PRD_CD
+WHERE order_cd = ?
+`;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ----------------------------------------------------모달------------------------------------------------------------- */
 
 // 거래처 조회(모달)
 const moAccList = 
@@ -121,14 +152,25 @@ FROM \`order\` o JOIN account a ON o.act_cd = a.act_cd
 
 
 module.exports = {
+    //주문서
     orderList,
     orderSearch,
     orderSeq,
     orderInsert,
     orderDtlInsert,
 
+    //제품출고
+    outOrderLit,
+
+
+
+
+
+
+    //모달창
     moAccList,
     moMemList,
     moProList,
     moOrderList,
+
 }

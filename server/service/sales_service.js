@@ -1,6 +1,7 @@
 const mariadb = require('../database/mapper.js');
 
-/* ----------------------주문서------------------------ */
+/* --------------------------------------------------주문서-------------------------------------------------------- */
+
 //주문서 목록 조회
 const listOrder = async() => {
     try {
@@ -45,6 +46,20 @@ console.log(values[0]);
     }
 };
 
+/* --------------------------------------------------제품 출고-------------------------------------------------------- */
+//출고 등록 주문서 조회
+const listOrderOut = async (no)=>{
+    let list = await mariadb.query('outOrderLit', no);
+    return list;
+  }
+
+
+
+
+
+
+/* ----------------------------------------------------모달창--------------------------------------------------------- */
+
 //거래처 조회(모달)
 const listAccMo = async() => {
     let list = await mariadb.query('moAccList');
@@ -68,12 +83,22 @@ const listProMo = async() => {
 
 
 module.exports = {
-     listOrder,
-     searchOrder,
-     insertOrder,
+    //주문서
+    listOrder,
+    searchOrder,
+    insertOrder,
 
-     listAccMo,
-     listMemMo,
-     listProMo,
-     listOrderMo,
+
+    //제품출고
+    listOrderOut,
+
+
+
+
+    //모달창
+    listAccMo,
+    listMemMo,
+    listProMo,
+    listOrderMo,
+
 };

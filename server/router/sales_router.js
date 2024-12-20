@@ -39,7 +39,12 @@ router.post('/sales/ord', async (req, resp) => {
 
 
 /* ---------------------------------출고제품--------------------------------------- */
-
+// 출고 등록 주문서 조회
+router.get('/sales/:no', async (req, res) => {
+    let orderNo = req.params.no;
+    let info = await salesService.listOrderOut(orderNo);
+    res.send(info);
+});
 
 
 
