@@ -6,7 +6,7 @@
         class="card-header bg-light d-flex justify-content-center align-items-center"
       >
         <div class="d-flex align-items-center gap-2 flex-wrap">
-          <div class="input-group mb-3 w-30">
+          <div class="input-group">
             <input
               id="eqp_cd"
               type="text"
@@ -215,7 +215,6 @@ export default {
         opt_power: '',
         uph: '',
         is_use: '',
-        end_dt: '',
       },
 
       equipDefs: [
