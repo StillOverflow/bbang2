@@ -85,12 +85,12 @@ router.put("/processFlow/seq", async (req, res) => {
   let result = await standardService.updateProcessSequence(updatedProcesses);
   res.send(result);
 });
-// // 공정 흐름도 삭제
-// router.delete('/standard/flow/:flow_code', async (req, res) => {
-//     let { flow_code } = req.params;
-//     let result = await standardService.deleteFlow(flow_code);
-//     res.send(result);
-// });
+// 공정 흐름도 삭제
+router.delete('/standard/flow/:proc_flow_cd', async (req, res) => {
+    let procFlowCd = req.params.proc_flow_cd;
+    let result = await standardService.deleteProcessFlow(procFlowCd);
+    res.send(result);
+});
 
 //------------------공통코드-----------------------
 router.get("/standard/commList/:cd", async (req, res) => {

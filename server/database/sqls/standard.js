@@ -74,7 +74,7 @@ b.prd_cd
 from bom b
 join material m ON b.mat_cd = m.mat_cd
 join common_detail cd ON b.unit = cd.comm_dtl_cd
-						and cd.comm_cd = 'UN'
+                        and cd.comm_cd = 'UN'
 where b.prd_cd=?
 `;
 //bom 자재추가
@@ -95,9 +95,9 @@ SELECT
 prd_cd
 ,prd_nm,
 (SELECT EXISTS(
-					SELECT 1
-					FROM prod_inst_dtl
-					WHERE prd_cd = 'pr01')) AS "useSta"
+        SELECT 1
+        FROM prod_inst_dtl
+        WHERE prd_cd = 'pr01')) AS "useSta"
 FROM product; 
 `;
 //선택한 제품의 공정흐름도 조회
@@ -106,6 +106,7 @@ SELECT
 p.proc_cd
 ,p.proc_nm
 ,pf.proc_seq
+,pf.proc_flow_cd
 FROM process_flow pf
 JOIN process p
 ON p.proc_cd = pf.proc_cd
@@ -125,6 +126,9 @@ const insertProcFlow = `
 insert into process_flow
 set ?
 `;
+
+//공정흐름도 추가
+
 //공정흐름도의 공정코드 삭제
 const deleteProcFlow = `
 
@@ -157,30 +161,30 @@ INSERT INTO process_flow SET ?
 // 공정 삭제
 const deleteProcessFlow = `
 DELETE FROM process_flow 
-WHERE  ?
+WHERE proc_flow_cd = ?
 `;
 // 공정 순서 업데이트
 const updateProcessSequence = `
- UPDATE process_flow 
- SET proc_seq = ? 
- WHERE proc_cd = ?
+    UPDATE process_flow 
+    SET proc_seq = ? 
+    WHERE proc_cd = ?
 `;
 
 module.exports = {
-  bomlist,
-  prdList,
-  matList,
-  bomInsert,
-  bomDel,
-  prdSearch,
-  matSearch,
-  procFlowByProd,
-  selectProcCd,
-  insertProcFlow,
-  deleteProcFlow,
-  selectPrd,
-  selectMatByProc,
-  insertProcessFlow,
-  deleteProcessFlow,
-  updateProcessSequence,
+bomlist,
+prdList,
+matList,
+bomInsert,
+bomDel,
+prdSearch,
+matSearch,
+procFlowByProd,
+selectProcCd,
+insertProcFlow,
+deleteProcFlow,
+selectPrd,
+selectMatByProc,
+insertProcessFlow,
+deleteProcessFlow,
+updateProcessSequence,
 };

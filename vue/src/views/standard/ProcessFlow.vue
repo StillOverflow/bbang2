@@ -2,68 +2,7 @@
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
-      <div class="card-header bg-light ps-5 ps-md-4">
-        <!-- 대상분류 자재/제품/공정 -->
-        <div class="row mb-3">
-          <div
-            class="col-12 col-md-1 text-center me-5 mb-2 fw-bolder"
-            :style="t_overflow"
-          >
-            대상분류
-          </div>
-          <div
-            class="form-check col-4 col-md-2"
-            v-for="(opt, idx) in radios"
-            :key="idx"
-          >
-            <input
-              class="form-check-input"
-              type="radio"
-              v-model="selected_radio"
-              :value="opt.item"
-              :id="'radio' + opt.item"
-              @change="getDivs"
-            />
-            <label class="form-check-label" :for="'radio' + opt.item">
-              {{ opt.name }}
-            </label>
-          </div>
-        </div>
-
-        <!-- 구분/카테고리/모달 조회조건 선택 -->
-        <div class="row">
-          <div
-            class="col-6 col-lg-1 text-center mb-2 fw-bolder"
-            :style="t_overflow"
-          >
-            구분
-          </div>
-          <div class="col-6 col-lg-2 mb-2">
-            <select class="form-select" v-model="selected_div">
-              <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">
-                {{ opt.name }}
-              </option>
-            </select>
-          </div>
-          <div
-            class="col-6 col-lg-1 text-center mb-2 fw-bolder"
-            :style="t_overflow"
-          >
-            카테고리
-          </div>
-          <div class="col-6 col-lg-2 mb-2">
-            <select
-              class="form-select"
-              v-model="selected_cate"
-              :disabled="noCate"
-            >
-              <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">
-                {{ opt.name }}
-              </option>
-            </select>
-          </div>
-        </div>
-      </div>
+      
 
       <!-- 제품/공정흐름도 -->
       <div class="card-body">
@@ -74,12 +13,11 @@
           <div class="col-5">
             <div class="row">
               <div class="col-5">
-                <h4 class="ms-3" :style="t_break">BOM내역</h4>
+                <h4 class="ms-3" >BOM내역</h4>
               </div>
               <div class="col-8 text-end">
                 <button
                   class="btn btn-success"
-                  :style="t_break"
                   @click="modalOpen"
                 >
                   자재추가
@@ -106,7 +44,7 @@
               <!--행선택시 bom데이터 조회-->
             </ag-grid-vue>
           </div>
-
+          <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
           <div class="col-5">
             <!-- BOM 목록 -->
             <ag-grid-vue
@@ -132,16 +70,15 @@
           <div class="col-7">
             <h4 class="ms-3">공정흐름도</h4>
             <div class="col-8 text-end">
-              <button class="btn btn-secondary" :style="t_break">위로</button>
-              <button class="btn btn-secondary" :style="t_break">아래로</button>
+              <button class="btn btn-secondary mb-0 ms-2" >위로</button>
+              <button class="btn btn-secondary mb-0 ms-2" >아래로</button>
               <button
-                class="btn btn-success"
-                :style="t_break"
+                class="btn btn-success mb-0 ms-2"
                 @click="modalOpen"
               >
                 공정추가
               </button>
-              <button class="btn btn-danger" :style="t_break">삭제</button>
+              <button class="btn btn-danger mb-0 ms-2" @click="deleteProc">삭제</button>
             </div>
           </div>
 
@@ -151,7 +88,7 @@
                 <h4 class="ms-0">공정별 자재</h4>
               </div>
               <div class="ms-3 col-10">
-                <button class="btn btn-danger" :style="t_break">삭제</button>
+                <button class="btn btn-danger " >삭제</button>
               </div>
             </div>
           </div>
@@ -168,13 +105,15 @@
               :rowSelection="multiple"
               :pagination="true"
               :cellValueChanged="cellValueChanged"
-              overlayNoRowsTemplate="제품을 선택하세요."
-              :gridOptions="gridOptions"
+              :gridOptions="proFlowOptions"
               @rowClicked="proFlowClicked"
-              @gridReady="gridReady"
+              @gridReady="onProFlowgridReady"
+
+              overlayNoRowsTemplate="제품을 선택하세요."
             >
             </ag-grid-vue>
           </div>
+          <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
           <div class="col-5">
             <!-- 공정별 자재 흐름도 -->
             <ag-grid-vue
@@ -212,7 +151,7 @@
         :pagination="true"
         :gridOptions="bomOptions"
         @rowClicked="modalClicked"
-        @grid-ready="gridFit"
+        @gridReady="onModalGridReady"
       >
       </ag-grid-vue>
     </template>
@@ -220,13 +159,13 @@
       <button type="button" class="btn btn-secondary" @click="modalOpen">
         Cancel
       </button>
-      <button type="button" class="btn btn-primary" @click="modalOpen">
+      <button type="button" class="btn btn-primary" @click="InsertProc">
         OK
       </button>
     </template>
   </Layout>
   <div class="col-6 text-end">
-    <button class="btn btn-success">저장</button>
+    <button class="btn btn-success" @click="save">저장</button>
   </div>
 </template>
 
@@ -249,6 +188,12 @@ export default {
     return {
       bomOptions: {
         rowSelection: { mode: "multiRow" },
+        suppressMovableColumns: true,
+      },
+      proFlowOptions:{
+        rowDragManaged :true,
+        rowDragEntireRow: true,
+        rowSelection: { mode: "multiRow" },
       },
       gridOptions: {
         rowSelection: {
@@ -269,9 +214,9 @@ export default {
         {
           headerName: "순서",
           field: "proc_seq",
-          valueGetter: "node.rowIndex+1",
+          valueGetter: "node.rowIndex + 1",
           sortale: true,
-          rowDrag: true,
+          rowDrag: true,         
         },
         { headerName: "공정코드", field: "proc_cd", sortale: true },
         { headerName: "공정명", field: "proc_nm", sortale: true },
@@ -306,7 +251,9 @@ export default {
         { headerName: "공정명", field: "proc_nm", sortable: true },
       ],
       modalData: [],
-
+      //저장 버튼 누르기전 담아둘 장소
+      saveModal: [],
+      deleteModal:[],
       isModal: false,
     };
   },
@@ -341,6 +288,10 @@ export default {
       this.selectProFlowData = params.data.proc_cd;
       this.bringMtlData(this.selectProFlowData);
     },
+    //모달선택정보
+    modalClicked(params){
+      this.selectModalData = params.data.prod_cd;
+    },
     //공정코드 조회
     async bringProcCd() {
       let result = await axios
@@ -365,35 +316,88 @@ export default {
     gridReady(params) {
       this.gridApi = params.api;
     },
-    //모달 공정 클릭시 정보 전달
-    // modalClicked(params){
-    //   selecteProCdData = params.data.proc_cd;
-    //   추가 메소드
-    // },
-
-    //공정흐름도 등록
-    // async InsertProcFlowData(){
-    //   try{
-    //     const selectedNodes = this.gridApi.getSelectedNodes();
-    //     const selectedProCd = selectedNodes.map((node)=>node.data);
-
-    //     for(const dup of selectedProCd){ //그리드
-    //       const saveBom ={
-    //         proc_nm: dup.proc_nm,
-    //         proc_cd: dup.proc_cd,
-
-    //       }
-    //     }
-
-    //   }catch (error) {
-    //     console.error("서버 요청 중 오류 발생:", error);
-    //     alert(`오류 발생`);
-    //   }
-    // },
-    gridFit(params) {
-      // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
-      params.api.sizeColumnsToFit();
+    onModalGridReady(params){
+      this.modalApi = params.api;
     },
+    onProFlowgridReady(params){
+      this.prowFlowApi = params.api;
+    },
+    //순서변경
+//     onRowDragEnd(event) {
+//       const newOrder = this.prowFlowApi.getDisplayedRowAtIndex(0).data;
+//       console.log(newOrder, event);
+//       return newOrder;
+// },
+onRowDragEnd() { // `event` 제거
+  const updatedSequence = [];
+  const newOrder = this.prowFlowApi.getDisplayedRowAtIndex(0).data;
+  updatedSequence.push(newOrder);
+  this.saveData = updatedSequence; // Track updates for saving
+},
+    //모달 공정 클릭시 추가
+    async InsertProc(){
+      const selectedNodes =this.modalApi.getSelectedRows(); //정보 배열로 담기
+
+      //const selectedModal = selectedNodes.map((node)=>node.data); //배열로
+      console.log('selectedNodes =>', selectedNodes);
+      for(const dup of selectedNodes) {
+        const saveModal = {//그리드용
+          proc_seq: this.procFlowData.length + 1,
+          proc_cd: dup.proc_cd,
+          proc_nm: dup.proc_nm
+        };
+      
+
+      const saveRealModal={
+        proc_cd: saveModal.proc_cd,
+        proc_nm: saveModal.proc_nm,
+        proc_seq: saveModal.proc_seq
+      };
+
+      this.saveModal.push(saveRealModal);
+      this.prowFlowApi.applyTransaction({
+        add: [saveModal],
+      }); //ui반영
+      console.log("saveModal => ", saveModal);
+    };
+    },
+
+    //공정흐름도 삭제
+    async deleteProc(){
+      const selectedNodes = this.prowFlowApi.getSelectedRows();
+      console.log(selectedNodes);
+      for(const bom of selectedNodes){
+        this.deleteModal.push(bom);
+
+        this.prowFlowApi.applyTransaction({
+          remove: [bom],
+        })
+
+      }
+    },
+    async save(){
+      for(const bom of this.deleteModal){
+      await axios.delete(
+        `/api/standard/flow/${bom.proc_flow_cd}`
+      );
+      console.log(bom.proc_flow_cd);
+      for (const bom of this.saveModal){
+        await axios.post(`/api/standard/procFlow`, bom)
+      }
+
+      this.saveModal = [];
+      this.deleteModal = [];
+      this.bringProFlow(this.selectProData);
+    }
+    }
+
+
+
+
+
+
+
+    
   },
 };
 </script>

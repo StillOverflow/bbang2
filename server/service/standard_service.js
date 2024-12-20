@@ -82,10 +82,14 @@ const InsertProcMat = async (ProcMatInfro) => {
   }
 };
 
-// 공정 삭제
-const deleteProcessFlow = async (info) => {
-  let result = await mariadb.query("deleteProcessFlow", info); //info 객체형태 전달
-  return result;
+// 공정흐름도 삭제
+const deleteProcessFlow = async (proc_flow_cd) => {
+  let result = await mariadb.query("deleteProcessFlow", proc_flow_cd); //info 객체형태 전달
+  if (result.affectedRows > 0) {
+    return { result: "success", proc_flow_cd: proc_flow_cd};
+  } else {
+    return { result: "fail" };
+  }
 };
 // 공정 순서 업데이트
 const updateProcessSequence = async (updatedProcesses) => {
