@@ -1,4 +1,5 @@
 import { createStore } from "vuex";
+import materialStore from './material';
 
 export default createStore({
   state: {
@@ -18,9 +19,6 @@ export default createStore({
     showMain: true,
     layout: "default",
     navDirectory: "" // Breadcrumbs에 데이터 전송하는 용
-
-
-
   },
   mutations: {
     toggleConfigurator(state) {
@@ -51,15 +49,6 @@ export default createStore({
     navText(state, payload){ // Breadcrumbs에 데이터 전송하는 용
       state.navDirectory = payload;
     }
-
-
-
-
-
-
-
-
-
   },
   actions: {
     toggleSidebarColor({ commit }, payload) {
@@ -68,18 +57,11 @@ export default createStore({
     breadCrumb({ commit }, payload){ // Breadcrumbs에 데이터 전송하는 용
       commit("navText", payload);
     }
-
-
-
-
-
-
-
-
-
-
-    
-    
   },
   getters: {},
+
+  modules: {
+    materialStore,
+  },
 });
+

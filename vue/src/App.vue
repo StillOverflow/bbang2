@@ -15,12 +15,18 @@ Coded by www.creative-tim.com
 <script setup>
 import { computed } from "vue";
 import { useStore } from "vuex";
+
 import Sidenav from "./examples/Sidenav";
 import Configurator from "@/examples/Configurator.vue";
 import Navbar from "@/examples/Navbars/Navbar.vue";
 import AppFooter from "@/examples/Footer.vue";
+// import VueSweetalert2 from 'vue-sweetalert2';
+// import 'sweetalert2/dist/sweetalert2.min.css';
+
+// app.use(VueSweetalert2);
 
 const store = useStore();
+
 const isNavFixed = computed(() => store.state.isNavFixed);
 const darkMode = computed(() => store.state.darkMode);
 const isAbsolute = computed(() => store.state.isAbsolute);
