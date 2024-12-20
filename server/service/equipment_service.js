@@ -15,7 +15,7 @@ const findAllEq = async () => {
 };
 
 // 필터링된 설비 정보 조회
-async function getFilteredEq(filters) {
+async function findFilteredEq(filters) {
   try {
     const { filterQuery, queryParams } = generateFilters(filters); // 필터 동적 생성
     const sqlQuery = equipmentSQL.eqAllListFiltered.replace(
@@ -78,5 +78,5 @@ module.exports = {
   findEquipNo,
   insertEq,
   updateEq,
-  getFilteredEq,
+  findFilteredEq,
 };

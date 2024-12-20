@@ -57,7 +57,7 @@ router.get('/equip', async (req, res) => {
 router.get('/equipFiltered', async (req, res) => {
   try {
     const filters = req.query; // 클라이언트에서 전달된 필터링 조건
-    const result = await equipmentService.getFilteredEq(filters); // 필터링된 서비스 호출
+    const result = await equipmentService.findFilteredEq(filters); // 필터링된 서비스 호출
     res.json(result);
   } catch (err) {
     console.error('필터링된 설비 조회 실패:', err);
@@ -76,31 +76,36 @@ router.get('/equip/:no', async (req, res) => {
 
 router.post('/equip', upload.single('selectedFile'), async (req, res) => {
   try {
-    if (!req.file) {
-      throw new Error('파일 업로드가 실패했습니다.');
-    }
+    // 업로드된 파일 경로 처리 (파일이 없으면 null로 설정)
+    const imgPath = req.file ? `/uploads/${req.file.filename}` : null;
 
-    const imgPath = `/uploads/${req.file.filename}`; // 업로드된 파일 경로
+    // 요청 데이터에 이미지 경로 추가
     const eqInfo = { ...req.body, img_path: imgPath };
 
+    // undefined, "null", 빈 문자열인 필드 제거
     Object.keys(eqInfo).forEach((key) => {
       if (
         eqInfo[key] === undefined ||
         eqInfo[key] === 'null' ||
         eqInfo[key] === ''
       ) {
-        delete eqInfo[key]; // 빈 값 제거
+        delete eqInfo[key]; // 해당 키 삭제
       }
     });
 
-    // DB 저장(서비스 함수 호출)
+    // DB 저장 (서비스 함수 호출)
     const result = await equipmentService.insertEq(eqInfo);
 
-    //결과 반환
+    // 결과 반환
     res.json({ success: true, data: result, img_path: imgPath });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ success: false, message: '설비 등록 실패' });
+    console.error('설비 등록 실패:', err);
+    res.status(500).json({
+      success: false,
+      message: req.file
+        ? '설비 등록 중 오류가 발생했습니다.'
+        : '이미지 파일이 업로드되지 않았습니다.',
+    });
   }
 });
 
