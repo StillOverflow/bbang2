@@ -10,7 +10,7 @@
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">
               <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
-                @change="changeDivs">
+               @change="changeDivs()">
               <label class="form-check-label ms-2 me-4 text-start" :for="'radio' + opt.item">
                 {{opt.name}}
               </label>
@@ -37,7 +37,7 @@
           <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상선택</h6>
           <div class="col-10 col-lg-4 col-xxl-2 d-flex">
             <div class="input-group">
-              <input type="text" class="form-control" v-model="modal_val.nm" style="height: 41px;">
+              <input type="search" class="form-control" v-model="modal_val.nm" style="height: 41px;">
               <button class="btn btn-warning" type="button" @click="modalToggle">SEARCH</button>
             </div>
           </div>
@@ -95,7 +95,6 @@
           </div>
           <div class="col-5 col-md-4 col-xxl-3 text-center">
             <button class="btn btn-primary me-3" :style="t_overflow" @click="stdInsert">SUBMIT</button>
-            <!-- <button class="btn btn-success me-3" :style="t_overflow" @click="stdInsert">SAVE</button> -->
             <button class="btn btn-secondary" :style="t_overflow" @click="getTList">RESET</button>
           </div>
         </div>
@@ -174,7 +173,7 @@
         ],
 
         myData: [],
-        myData_save: [], // 등록 시 비교용으로 임시저장하는 변수
+        myData_save: new Set(), // 등록 시 비교용으로 임시저장하는 변수
         myApi: null,
         myColApi: null,
 
@@ -205,6 +204,12 @@
 
       // 조회대상 불러오기
       this.getCondition('QT', 'radio');
+    },
+
+    watch: {
+      // selected_radio(){ // 조회대상에 따라 구분과 카테고리를 바꿔서 출력함.
+      //   this.changeDivs();
+      // }
     },
 
     methods: {
@@ -241,13 +246,16 @@
         };
       },
 
-      async changeDivs(){
+      async changeDivs(modal){ // 모달에서 실행한 경우 매개변수를 넘겨받음
         // 대상구분 변경될 때, 다시 null부터 시작
-        this.selected_div = null;
-        this.selected_cate = null;
         this.modal_val.cd = null;
         this.myData = [];
         this.yetData = [];
+      
+        if(!modal){ // 매개변수가 없이 실행되면 선택된 div, cate도 모두 null로 초기화
+          this.selected_div = null;
+          this.selected_cate = null;
+        }
 
         // 구분 및 카테고리 재호출
         switch(this.selected_radio){
@@ -286,14 +294,14 @@
         let result = await axios.get('/api/quality/targetAll', {params: params});
         let data = result.data;
         data.forEach((obj) => {
-          obj.has_std = obj.std_date == null ? '미등록' : '등록완료'; // SELECT문에 포함되지 않은 내용이므로 추가
+          obj.has_std = obj.std_date == null ? '미등록' : '등록완료'; // SELECT문 컬럼에 포함되지 않았으므로 추가
         });
         this.modalData = data;
       },
       
       modalSelect(params){
         let selected = params.data;
-        if(!this.selected_radio){ // radio 선택 안 되어있으면 선택해줌
+        if(!this.selected_radio){ // 검색만 하고 radio 선택 안 되어있으면 선택해줌
           let type = null;
           switch(selected.type){
             case '자재' : type = 'P01'; break;
@@ -301,14 +309,28 @@
             case '제품' : type = 'P03'; break;
           }
           this.selected_radio = type;
+          this.changeDivs('modal');
         }
+        this.selected_div = selected.cate_type_cd;
+        this.selected_cate = selected.category_cd;
+        console.log(selected.cate_type_cd + selected.category_cd);
 
         this.date_val = selected.std_date ? this.$comm.getMyDay(selected.std_date) : this.$comm.getMyDay();
         this.modal_val.cd = selected.cd;
         this.modal_val.nm = selected.nm;
+        this.myData_save = new Set(); // 다른 대상에 똑같은 내용을 삽입할 수 있도록 하기 위함 (저장 비교조건 통과)
         this.modalToggle();
       },
       // ---------- 모달 메소드 끝 -----------
+
+      // 임시저장 (기존 값과 변경되었는지 확인하기 위한 비교용)
+      saveData(data){
+        let myDataSet = new Set(); // 버튼 클릭 시 순서에 상관없이 비교하기 위해 Set 사용
+        data.forEach((obj) => {
+          myDataSet.add(obj.test_cd);
+        });
+        this.myData_save = myDataSet; 
+      },
 
       // 검사항목 버튼 클릭 시 불러오기
       async getTList(){
@@ -321,17 +343,23 @@
           let data = result.data;
 
           // 각각의 grid 데이터 넣기 실행
-          if(val == 'yet'){
+          if(val == 'yet'){ // 미적용 항목들
             this.yetData = data;
-          } else {
+          } else { // 적용중인 항목들
             this.myData = data;
-            this.myData_save = this.myData; // 저장했을 때 기존값에서 변경됐는지 비교용
+            this.saveData(data);
           }
         };
         
         if(this.modal_val.cd){ // 코드가 정확히 선택되었을 경우에만 동작
           await axiosGet('yet');
           await axiosGet('my');
+        } else {
+          this.$swal(
+            '대상 미선택',
+            '대상을 정확히 선택해주세요.',
+            'warning'
+          );
         }
       },
 
@@ -364,34 +392,55 @@
       },
 
       async stdInsert(){
-        let target_cd = this.modal_val.cd;
+        let isChanged = false; // getTList()에서 임시저장했던 기존 내용이 변경되었는지 확인할 변수
+        let originSize = this.myData_save.size; // 원래 데이터 길이
+        let insertSize = this.myData.length; // 새로 적용할 길이
+        let targetCd = this.modal_val.cd;
         
-        if(!target_cd) { // insert값인 target_cd(대상코드) 없으면 실행 불가
+        if(!targetCd) { // 대상코드 없으면 실행 불가
           this.$swal(
             '대상 미선택',
-            '대상과 항목을 정확히 선택해주세요.',
+            '대상을 정확히 선택해주세요.',
+            'warning'
+          );
+          return;
+        } else if(insertSize == 0){
+          this.$swal(
+            '항목 미선택',
+            '최소 1개 이상의 항목이 선택되어야 합니다.',
+            'warning'
+          );
+          return;
+        } else if(this.myData.length != originSize){
+          isChanged = true;  // 길이가 달라졌으면 한 개라도 변한 것으로 인식하고 진행
+        } 
+        
+        let insertArr = [];
+        let originCnt = 0;
+        
+        this.myData.forEach((changed) => { // 일반 배열이 아닌 proxy 타입이라 forEach로만 접근 가능
+          // 길이가 달라지지 않았다면, 저장된 데이터와 똑같은 개수를 체크
+          if(!isChanged & this.myData_save.has(changed.test_cd)) originCnt++;
+
+          insertArr.push({target_type: changed.target_type, 
+                          target_cd: targetCd,
+                          test_cd: changed.test_cd});
+        });
+        
+        // 길이가 달라졌거나, 저장된 데이터와 내용이 하나라도 달라졌으면 실행 가능
+        if(originCnt != originSize) isChanged = true;
+
+        // 변경사항이 없다면 알림 띄우고 종료
+        if(!isChanged){ 
+          this.$swal(
+            '변경사항 없음',
+            '변경된 항목이 없습니다.',
             'warning'
           );
           return;
         }
 
-        // let isChanged = null;
-        
-        
-        let insertArr = [];
-        
-        // this.myData_save.forEach((saved) => { // proxy 타입이라 forEach로만 접근되는 듯함.
-        //   if(saved.test_cd == changed.test_cd) return;
-        //   console.log(saved.test_cd == changed.test_cd);
-        //   console.log(saved.test_cd + '  ' + changed.test_cd);
-        // });
-        this.myData.forEach((changed) => {
-          
-          insertArr.push({target_type: changed.target_type, 
-                          target_cd: this.modal_val.cd,
-                          test_cd: changed.test_cd});
-        });
-
+        // 변경사항이 있는 경우에만 실행
         let result = await axios.post('/api/quality/std', insertArr)
                                 .catch(err => console.log(err));
 
@@ -401,6 +450,7 @@
             '품질기준이 등록되었습니다.',
             'success'
           );
+          this.saveData(this.myData);
         } else {
           this.$swal(
             '오류발생',
