@@ -232,6 +232,14 @@ export default {
         </li>
         <li class="nav-item">
           <sidenav-item
+            to="/materials/planStock/list"
+            :class="getRoute() === 'MaterialsPlanStockList' ? 'active' : ''"
+            :navText="'미지시 계획서 자재 조회'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
             to="/materials/order/manage"
             :class="getRoute() === 'MaterialsOrderManage' ? 'active' : ''"
             :navText="'자재 발주 관리'"

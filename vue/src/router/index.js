@@ -25,7 +25,8 @@ import EquipmentAllList from '../views/equipment/EquipmentAllList.vue';
 
 ////////////////////////////// 자재 //////////////////////////////
 import MaterialOrderList from '../views/material/MaterialsOrderList.vue';
-import MaterialOrderManage from '../views/material/MaterialsOrderManage.vue';
+import MaterialsPlanStockList from '../views/material/ProductionPlanAndStock.vue';
+import MaterialsOrderManage from '../views/material/MaterialsOrderManage.vue';
 
 ////////////////////////////// 품질 //////////////////////////////
 import QualityStdAdd from '../views/quality/QualityStdAdd.vue';
@@ -157,16 +158,22 @@ const routes = [
 
   ////////////////////////////// 자재 //////////////////////////////
   {
-    //자재 발주서 조회
+    // 자재 발주서 조회
     path: '/materials/order/list',
     name: 'MaterialsOrderList',
     component: MaterialOrderList,
   },
   {
-    //자재 발주서 관리
+    // 미지시 생산 계획서 조회 및 자재 재고 조회ㄱ
+    path: '/materials/planStock/list',
+    name: 'MaterialsPlanStockList',
+    component: MaterialsPlanStockList,
+  },
+  {
+    // 자재 발주서 관리
     path: '/materials/order/manage',
     name: 'MaterialsOrderManage',
-    component: MaterialOrderManage,
+    component: MaterialsOrderManage,
   },
 
   ////////////////////////////// 품질 //////////////////////////////

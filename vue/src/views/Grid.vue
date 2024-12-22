@@ -24,6 +24,12 @@
         <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
         <button class="btn btn-warning" type="button" id="button-addon2">SEARCH</button>
       </div>
+      <div class="input-group mb-3 w-30">
+        <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
+        <button class="btn btn-warning" type="button" id="button-addon3">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </button>
+      </div>
     </div>
   </div>
 </template>
