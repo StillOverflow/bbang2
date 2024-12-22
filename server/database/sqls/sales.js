@@ -90,7 +90,8 @@ values.forEach((obj) => {
 // 출고 등록 주문서 조회
 const outOrderLit =
 `
-SELECT p.prd_cd, 
+SELECT o.order_dtl_cd,
+       p.prd_cd, 
        p.prd_nm, 
        o.order_qty, 
        (d.prd_out_qty) AS prd_ed, 

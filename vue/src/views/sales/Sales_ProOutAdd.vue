@@ -73,7 +73,6 @@
                       class="ag-theme-alpine"
                       :columnDefs="OLDefs"
                       :rowData="OLData"
-                      :gridOptions="gridOptions"
                       @grid-ready="gridFit"
                       overlayNoRowsTemplate="주문서를 조회 하여주세요.">
                       </ag-grid-vue>
@@ -82,11 +81,10 @@
                       <p></p>
                       <ag-grid-vue style="width:100%; height: 350px;"
                       class="ag-theme-alpine"
-                      :columnDefs="colDefs"
-                      :rowData="nrowData"
-                      :gridOptions="gridOptions"
+                      :columnDefs="proOutDefs"
+                      :rowData="proOutData"
                       @grid-ready="gridFit"
-                      overlayNoRowsTemplate="제품 조회 버튼을 이용하여 제품을 추가 해주세요.">
+                      overlayNoRowsTemplate="제품의 LOT를 선택해주세요.">
                       </ag-grid-vue>
                   </div>
               </div>
@@ -144,14 +142,21 @@
           <button type="button" aria-label="Close" class="close" @click="modalOpen3">×</button>
       </template>
       <template v-slot:default>
-          <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="proDefs"
-          :rowData="proData" :pagination="true" @rowClicked="modalClicked3" @grid-ready="gridFit"
+          <ag-grid-vue class="ag-theme-alpine" 
+          ref="lotGrid"
+          style="width: 100%; height: 400px;" 
+          :columnDefs="proDefs"
+          :rowData="proData" 
+          :pagination="true" 
+          :gridOptions="gridOptions"
+          rowClicked="multiple" 
+          @grid-ready="gridFit"
           overlayNoRowsTemplate="등록된 제품이 없습니다.">
           </ag-grid-vue>
       </template>
       <template v-slot:footer>
-          <button v-show="hidden" type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
-          <button v-show="hidden" type="button" class="btn btn-primary" @click="modalOpen3">OK</button>
+          <button  type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
+          <button  type="button" class="btn btn-primary" @click="modalClicked3">OK</button>
       </template>
   </Layout>
 </template>
@@ -168,23 +173,12 @@ export default {
         return {
             
             OLDefs: [
+                {headerName: '제품상세코드', field: 'order_dtl_cd'},
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
                 {headerName: '주문 수량', field: 'order_qty'},
                 {headerName: '기출고수량', field: 'prd_ed'},
                 {headerName: '미출고수량', field: 'no_qty'},
-                // {
-                //     headerName: '출고 수량', 
-                //     field: 'prd_out_qty', 
-                //     editable: true,
-                //     hide: true, //숨김
-                //     cellDataType: 'number',
-                //     valueFormatter: (params) => {
-                //         if (params.value == null || params.value === '') return '';
-                //         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
-                //     },
-                //     cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
-                // },
                 {
                     headerName: 'LOT보기' ,
                     field: 'lotlist',
@@ -195,25 +189,60 @@ export default {
                         button.addEventListener('click', () => {
                             this.modalOpen3(); //LOT모달 오픈
                             this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
-                            console.log("grid",this.lotMo);
                             this.getOutLotList(); //단건조회로 보내기
-
-                            //this.rowData = this.rowData.filter(row => row !== params.data);
                         });
                         return button;
                     }
                  },
             ],
             OLData: [ ],
+
             proDefs: [
                 {headerName: '제품 코드', field: 'prd_cd', hide: true},
                 {headerName: '제품 이름', field: 'prd_nm'},
                 {headerName: '제품 수량', field: 'prd_qty'},
                 {headerName: 'LOT', field: 'prd_lot_cd'},
-                {headerName: '유통기한', field: 'exp_dt'},
+                {headerName: '유통기한', field: 'exp_dt', valueFormatter: this.$comm.dateFormatter},
             ],
             lotMo: "",
             proData: [],
+            
+            gridOptions: {
+                rowSelection: { mode: "multiRow" },
+                suppressMovableColumns: true,
+            },
+
+            proOutDefs: [
+                {headerName: 'LOT', field: 'prd_lot_cd'},
+                {headerName: '제품 이름', field: 'prd_nm'},
+                {headerName: '제품 수량', field: 'prd_qty'},
+                {
+                    headerName: '출고 수량', 
+                    field: 'prd_out_qty', 
+                    editable: true, 
+                    cellDataType: 'number',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                    cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
+                },
+                {headerName: '비고', field: 'note', editable: true},
+                {
+                    headerName: '삭제' ,
+                    field: 'delete',
+                    cellRenderer: (params) => {
+                        const button = document.createElement('button');
+                        button.innerText = 'DELETE';
+                        button.className = 'btn btn-danger';
+                        button.addEventListener('click', () => {
+                            this.proOutData = this.proOutData.filter(row => row !== params.data);
+                        });
+                        return button;
+                    }
+                },
+            ],
+            proOutData: [],
 
             ordDefs: [
                 {headerName: '주문서 코드', field: 'order_cd', filter: 'agTextColumnFilter' },
@@ -225,8 +254,8 @@ export default {
             ordData: [],
             memDefs: [
                 {headerName: '담당자 ID', field: 'ID'},
-                {headerName: '담당자 명', field: 'name'},
-                {headerName: '부서', field: 'dpt_nm'},
+                {headerName: '담당자 명', field: 'name', filter: 'agTextColumnFilter'},
+                {headerName: '부서', field: 'dpt_nm', filter: 'agTextColumnFilter'},
             ],
             memData: [],
             
@@ -279,17 +308,22 @@ export default {
             document.getElementById('mem_name').value = params.data.name;
             this.msModal = !this.msModal;
         },
-        modalClicked3(params) {
-            // 선택한 제품 rowData에 추가
-            const newRowData = {
-                prd_cd: params.data.prd_cd, 
-                prd_nm: params.data.prd_nm, 
+        modalClicked3() {
+            
+            const selectedRows = this.$refs.lotGrid.api.getSelectedRows();
+
+            const newRowData = selectedRows.map(row => ({
+                prd_lot_cd: row.prd_lot_cd,
+                prd_nm: row.prd_nm,
+                prd_qty: row.prd_qty, 
                 order_qty: '', 
                 note: '',  
                 delete: 'delete', 
-            };
+            }));
+            
 
-            this.rowData = [...this.rowData, newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
+            this.proOutData = [...this.proOutData, ...newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
+            
             this.psModal = !this.psModal;
         },
         placeholderRenderer(params) {
@@ -308,13 +342,10 @@ export default {
             this.OLData = result.data;
         },
 
-        //제품의 이름을 따라서 나오는 LOT조회
+        //제품의 이름을 따라서 나오는 LOT조회(모달창)
         async getOutLotList() {
-            alert(`/sales/lot/${this.prd_cd}`);
-            
             let result = await axios.get(`/api/sales/lot/${this.prd_cd}`) 
                                     .catch(err => console.log("axiosERROR",err));
-                                    console.log("axios",this.prd_cd)
             this.proData = result.data;
         },
 
@@ -333,6 +364,7 @@ export default {
         //                             .catch(err => console.log(err));
         //     this.proData = result.data;
         // },
+
 
         async ordInsert() {
 
@@ -376,16 +408,19 @@ export default {
                 return;
             }
 
-            //주문서 등록
+            //주문서 등록  변경중 출고등록으로
             let insertOrd = [];
             let insertOrdDtl = [];
 
             this.rowData.forEach((obj) => {
-                    insertOrdDtl.push({prd_cd: obj.prd_cd, 
-                    prd_nm: obj.prd_nm, 
-                    order_qty: obj.order_qty, 
-                    note: obj.note,});
+                    insertOrdDtl.push({
+                        prd_cd: obj.prd_cd, 
+                        prd_nm: obj.prd_nm, 
+                        order_qty: obj.order_qty, 
+                        note: obj.note,
+                    });
             });
+            
             console.log(insertOrdDtl);
             insertOrd.push({
                 mem_id : document.getElementById('mem_id').value,
@@ -429,6 +464,8 @@ export default {
             document.getElementById('order_date').value = "";
             this.rowData = [];         
         },
+
+
 
         gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
             params.api.sizeColumnsToFit();
