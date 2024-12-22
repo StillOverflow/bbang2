@@ -28,6 +28,37 @@ const deletePlan = async (values)=>{
 }
 
 
+//지시서 등록
+const planInsert = async (values) => { 
+  let result = await mariadb.transOpen( async () => {
+
+      // 헤더 시퀀스 nextval 얻기
+      let seq_res = await mariadb.transQuery('planSeq');
+      let mySeq = seq_res[0].seq;
+              
+      // 헤더 삽입
+      values[0]["PROD_PLAN_CD"] = mySeq;      
+
+      let header_res = await mariadb.transQuery('planInsert', values[0]);
+      
+      // 디테일 삽입
+      values[1].forEach((val) => { // 헤더 시퀀스값 추가
+          val["PROD_PLAN_CD"] = mySeq;
+      });
+      let dtl_res = await mariadb.transQuery('planDtlInsert', values[1]);
+      
+      if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
+        await mariadb.commit();
+        return 'success';
+      } else {
+          await mariadb.rollback();
+          return 'fail';
+      }
+    });
+    return result;
+}; 
+
+
 /*--------------지시서-------------*/
 // 조회
 const findAllInst = async ()=>{
@@ -40,16 +71,6 @@ const findInstNo = async (no)=>{
   let list = await mariadb.query('instInfo', no);
   let info = list[0];
   return info;
-}
-
-// 등록
-const instInsert = async (instInfo)=>{
-  let result = await mariadb.query('instInsert', instInfo);
-  if( result.insertId > 0){
-    return { inst_cd : result.insertId }; 
-  }else{
-    return {};
-  }
 }
 
 //제품별 공정 조회
@@ -65,9 +86,7 @@ const findInstMatFlow = async (no)=>{
 }
 
 //지시서 등록
-const stdInsert = async (values) => { 
-  
-
+const instInsert = async (values) => { 
   let result = await mariadb.transOpen( async () => {
 
       // 헤더 시퀀스 nextval 얻기
@@ -103,16 +122,31 @@ const stdInsert = async (values) => {
     return result;
 }; 
 
+// 주문서 제품조회
+const findOrderNo = async (no)=>{
+  let list = await mariadb.query('orderDtlList', no);
+  return list;
+}
+
+// 제품 전체조회
+const findAllProduct = async ()=>{
+  let list = await mariadb.query('productList');
+  return list;
+}
+
 module.exports = {
   findAllPlan,
   findPlanNo,
   findAllPlanDtl,
   findAllInst,
+  planInsert,
   deletePlan,
 
   findInstNo,
   instInsert,  
   findInstFlow,
   findInstMatFlow,
-  stdInsert
+  instInsert,
+  findAllProduct,
+  findOrderNo
 };
