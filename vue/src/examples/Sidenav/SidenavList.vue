@@ -433,9 +433,9 @@ export default {
           </li>
           <li class="nav-item">
             <sidenav-item
-              to="/Quality_list4"
-              :class="getRoute() === 'Quality_list4' ? 'active' : ''"
-              :navText="'공정별 품질검사'"
+              to="/Quality_test"
+              :class="getRoute() === 'Quality_test' ? 'active' : ''"
+              :navText="'제품 품질검사'"
             >
             </sidenav-item>
           </li>
@@ -443,7 +443,7 @@ export default {
             <sidenav-item
               to="/Quality_list5"
               :class="getRoute() === 'Quality_list5' ? 'active' : ''"
-              :navText="'자재 품질검사'"
+              :navText="'자재 입고검사'"
             >
             </sidenav-item>
           </li>

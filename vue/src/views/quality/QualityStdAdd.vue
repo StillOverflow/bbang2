@@ -4,7 +4,7 @@
     <div class="card">
   
       <div class="card-header bg-light ps-5 ps-md-4">
-        <!-- 대상분류 자재/제품/공정 -->
+        <!-- 조회대상 자재/제품/공정 -->
         <div class="row mb-3">
           <h6 class="col-2 col-xxl-1 mb-2 d-flex justify-content-center" :style="t_overflow">조회대상</h6>
           <div class="form-check col-10 d-flex">
@@ -23,14 +23,14 @@
           <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상구분</h6>
           <div class="col-10 col-lg-4 col-xxl-2 mb-2">
             <select class="form-select" v-model="selected_div" :disabled="noCate">
-              <option :value="null" disabled hidden>선택</option>
+              <option :value="null">전체</option>
               <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
           <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">카테고리</h6>
           <div class="col-10 col-lg-4 col-xxl-2 mb-2">
             <select class="form-select" v-model="selected_cate" :disabled="noCate">
-              <option :value="null" disabled hidden>선택</option>
+              <option :value="null">전체</option>
               <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.name}}</option>
             </select>
           </div>
@@ -93,9 +93,9 @@
           <div class="col-5 col-md-3 col-xxl-2">
             <input type="text" class="form-control" :value="date_val" readonly>
           </div>
-          <div class="col-5 col-md-4 col-xxl-3 text-center">
-            <button class="btn btn-primary me-3" :style="t_overflow" @click="stdInsert">SUBMIT</button>
-            <button class="btn btn-secondary" :style="t_overflow" @click="getTList">RESET</button>
+          <div class="col-4 col-md-2 text-center">
+            <button class="btn btn-primary" :style="t_overflow" @click="stdInsert">SUBMIT</button>
+            <!-- <button class="btn btn-secondary" :style="t_overflow" @click="getTList">RESET</button> -->
           </div>
         </div>
       </div>
@@ -188,6 +188,13 @@
           suppressMovableColumns: true, // 컬럼 드래그 이동 방지
           rowSelection: { 
             mode: 'multiRow'
+          },
+          onRowClicked: (params) => {
+            this.$swal({
+              title: `<h4>${params.data.test_nm} 검사</h4>`,
+              text: params.data.test_dtl,
+              showConfirmButton: false
+            });
           }
         }
       }
@@ -200,16 +207,10 @@
 
     created(){ 
       // 페이지 제목 저장
-      this.$store.dispatch('breadCrumb', {title: '품질기준 등록'});
+      this.$store.dispatch('breadCrumb', {title: '품질기준 관리'});
 
       // 조회대상 불러오기
       this.getCondition('QT', 'radio');
-    },
-
-    watch: {
-      // selected_radio(){ // 조회대상에 따라 구분과 카테고리를 바꿔서 출력함.
-      //   this.changeDivs();
-      // }
     },
 
     methods: {
@@ -246,8 +247,8 @@
         };
       },
 
-      async changeDivs(modal){ // 모달에서 실행한 경우 매개변수를 넘겨받음
-        // 대상구분 변경될 때, 다시 null부터 시작
+      async changeDivs(modal){ // 모달에서 실행한 경우 매개변수를 넘겨받음 (선택된 값 초기화 방지)
+        // 대상구분 변경될 때, 그리드 테이블 내용과 대상을 null로 초기화
         this.modal_val.cd = null;
         this.myData = [];
         this.yetData = [];
@@ -287,6 +288,7 @@
         // ** 이름을 입력하면 유사한(LIKE) 이름으로 조회
         let params = { 
           type: this.selected_radio,
+          cate_type: this.selected_div,
           cate: this.selected_cate,
           nm: this.modal_val.nm 
         };
@@ -301,7 +303,7 @@
       
       modalSelect(params){
         let selected = params.data;
-        if(!this.selected_radio){ // 검색만 하고 radio 선택 안 되어있으면 선택해줌
+        if(!this.selected_radio){ // 이름으로 검색만 하고 radio 선택 안 되어있으면 선택해줌
           let type = null;
           switch(selected.type){
             case '자재' : type = 'P01'; break;
@@ -325,7 +327,7 @@
 
       // 임시저장 (기존 값과 변경되었는지 확인하기 위한 비교용)
       saveData(data){
-        let myDataSet = new Set(); // 버튼 클릭 시 순서에 상관없이 비교하기 위해 Set 사용
+        let myDataSet = new Set(); // 순서에 상관없이 비교하기 위해 Set 사용
         data.forEach((obj) => {
           myDataSet.add(obj.test_cd);
         });
@@ -407,7 +409,7 @@
         } else if(insertSize == 0){
           this.$swal(
             '항목 미선택',
-            '최소 1개 이상의 항목이 선택되어야 합니다.',
+            '최소한 1개 이상의 항목이 선택되어야 합니다.',
             'warning'
           );
           return;
@@ -440,7 +442,7 @@
           return;
         }
 
-        // 변경사항이 있는 경우에만 실행
+        // 최종적으로 변경사항이 있는 경우에만 실행
         let result = await axios.post('/api/quality/std', insertArr)
                                 .catch(err => console.log(err));
 
