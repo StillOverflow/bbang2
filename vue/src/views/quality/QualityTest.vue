@@ -25,7 +25,9 @@
           <div class="col-12 col-md-6 col-xl-3 row d-flex align-items-center justify-content-center p-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산지시</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="memo" readonly>
+              <span class="form-control text-end" :value="memo" readonly @click="null" style="cursor: pointer">
+                dddd<i class="fa-solid fa-magnifying-glass ms-1" style="color: #787878;"/>
+              </span>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">제품코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -53,9 +55,9 @@
               <div class="card-body">
                 <div class="form-check p-0 d-flex justify-content-center">
                   <span style="cursor: pointer" :style="t_break">검사검사 검사검사검</span>
-                  <input class="form-check-input ms-4" type="radio" :value="null" :id="'check'">
+                  <input class="form-check-input ms-4" type="radio" :value="null" :id="'check'" :disabled="!isActive">
                   <label class="form-check-label ms-2 me-1 text-start" :for="'check'" :style="t_overflow">적합</label>
-                  <input class="form-check-input ms-2" type="radio" :value="null" :id="'check'">
+                  <input class="form-check-input ms-2" type="radio" :value="null" :id="'check'" :disabled="!isActive">
                   <label class="form-check-label ms-2 me-4 text-start" :for="'check'" :style="t_overflow">부적합</label>
                 </div>
               </div>
@@ -69,19 +71,19 @@
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">검사량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="memo">
+              <input type="text" class="form-control text-end" :value="memo" :disabled="!isActive">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">합격량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="memo">
+              <input type="text" class="form-control text-end" :value="memo" :disabled="!isActive">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">불량양</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="memo">
+              <input type="text" class="form-control text-end" :value="memo" :disabled="!isActive">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">검사일자</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="date" class="form-control" :value="memo">
+              <input type="date" class="form-control" :value="memo" :disabled="!isActive">
             </div>
           </div>
 
@@ -96,7 +98,7 @@
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">불량명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="memo" placeholder="선택" @click="modalToggle">
+              <input type="text" class="form-control" :value="memo" placeholder="선택" @click="modalToggle" :disabled="!isActive">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">담당자</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -112,7 +114,7 @@
           <div class="col-9 col-md-10 col-xl-11 row">
             <h6 class="col-2 col-xl-1 d-flex align-items-center justify-content-center" :style="t_overflow">비고</h6>
             <div class="col-10 col-xl-11">
-              <input type="text" class="form-control" :value="memo">
+              <input type="text" class="form-control" :value="memo" :disabled="!isActive">
             </div>
           </div>
           <div class="col-3 col-md-2 col-xl-1 text-end">
