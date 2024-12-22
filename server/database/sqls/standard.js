@@ -100,6 +100,8 @@ prd_cd
         WHERE prd_cd = 'pr01')) AS "useSta"
 FROM product; 
 `;
+// ----------------------공정흐름 관리---------------------
+
 //선택한 제품의 공정흐름도 조회
 const procFlowByProd = `
 SELECT 
@@ -111,6 +113,7 @@ FROM process_flow pf
 JOIN process p
 ON p.proc_cd = pf.proc_cd
 WHERE prd_cd = ?
+order by pf.proc_seq
 `;
 //공정코드 조회(모달)
 const selectProcCd = `
@@ -122,63 +125,79 @@ proc_cd
 FROM process;
 `;
 
-
-//공정흐름도에 선택한 공정코드 등록
-const insertProcFlow =
-`
+//공정흐름도에 공정코드 등록
+const insertProcFlow = `
 insert into process_flow
 set ?
 `;
-//선택한 제품의 bom조회 위에있음(o)
 
-//bom내역에서 선택한 자재 공정흐름도 공정코드 조회
-
-//선택한 공정흐름도의 공정코드에대한 자재정보 조회
-const selectMatByProc = `
-SELECT 
-m.mat_cd
-,m.mat_nm
-,pfm.mat_qty
-,cd.comm_dtl_nm AS unit
-FROM process_flow pf
-JOIN proc_flow_mtl pfm
-ON pfm.PROC_FLOW_CD = pf.PROC_FLOW_CD
-JOIN material m
-ON m.mat_cd = pfm.mat_cd
-JOIN common_detail cd
-ON cd.COMM_DTL_CD = m.unit
-WHERE pf.proc_cd = ?;
-`;
-/// 공정 추가
-const insertProcessFlow = `
-INSERT INTO process_flow SET ?
+//공정흐릌도 코드 시퀀스 생성
+const procFlowSeq = `
+SELECT CONCAT('PF', LPAD(nextval(proc_flow_seq), 3, '0')) AS seq
+FROM dual;
 `;
 // 공정 삭제
 const deleteProcessFlow = `
 DELETE FROM process_flow 
 WHERE proc_flow_cd = ?
 `;
-// 공정 순서 업데이트
-const updateProcessSequence = `
-    UPDATE process_flow 
-    SET proc_seq = ? 
-    WHERE proc_cd = ?
+//------------------------공정별 자재관리--------------------------
+//공정자재 조회
+const selectMatByProc = `
+SELECT 
+m.mat_cd
+,m.mat_nm
+,pfm.mat_qty
+,pfm.proc_mat_flow_cd
+,cd.comm_dtl_nm AS unit
+from proc_flow_mtl pfm
+join process_flow pf
+ON pfm.PROC_FLOW_CD = pf.PROC_FLOW_CD
+JOIN material m
+ON m.mat_cd = pfm.mat_cd
+JOIN common_detail cd
+ON cd.COMM_DTL_CD = m.unit
+WHERE pf.proc_flow_cd = ?
+`;
+
+//공정별자재코드 시퀀스 생성
+const procMtlSeq = `
+  SELECT CONCAT('PMF', LPAD(nextval(proc_mat_flow_seq), 3, '0')) AS seq
+  FROM dual;
+`;
+//공정별 자재 추가
+const insertProcessMtlFlow = `
+INSERT INTO proc_flow_mtl SET ?
+`;
+//공정별 자재 삭제
+const deleteProcessMtlFlow = `
+DELETE FROM proc_flow_mtl 
+WHERE proc_mat_flow_cd = ? 
+`;
+// 공정 순서
+const ProcessSeq = `
+    SELECT MAX(proc_seq) AS maxSeq 
+    FROM process_flow 
+    WHERE prd_cd = ?
 `;
 
 module.exports = {
-bomlist,
-prdList,
-matList,
-bomInsert,
-bomDel,
-prdSearch,
-matSearch,
-procFlowByProd,
-selectProcCd,
-insertProcFlow,
-selectPrd,
-selectMatByProc,
-insertProcessFlow,
-deleteProcessFlow,
-updateProcessSequence,
+  bomlist,
+  prdList,
+  matList,
+  bomInsert,
+  bomDel,
+  prdSearch,
+  matSearch,
+  procFlowByProd,
+  selectProcCd,
+  insertProcFlow,
+  selectPrd,
+  selectMatByProc,
+  deleteProcessFlow,
+  ProcessSeq,
+  insertProcessMtlFlow,
+  procFlowSeq,
+  procMtlSeq,
+  deleteProcessMtlFlow,
 };

@@ -72,9 +72,9 @@ const searchProcCd = async () => {
   return list;
 };
 
-// 공정 추가
-const InsertProcMat = async (ProcMatInfro) => {
-  let result = await mariadb.query("insertProcFlow", ProcMatInfro);
+// 공정흐름도 삭제
+const deleteProcessFlow = async (proc_flow_cd) => {
+  let result = await mariadb.query("deleteProcessFlow", proc_flow_cd); //info 객체형태 전달
   if (result.affectedRows > 0) {
     return { result: "success" };
   } else {
@@ -82,33 +82,108 @@ const InsertProcMat = async (ProcMatInfro) => {
   }
 };
 
-// 공정흐름도 삭제
-const deleteProcessFlow = async (proc_flow_cd) => {
-  let result = await mariadb.query("deleteProcessFlow", proc_flow_cd); //info 객체형태 전달
+//공정흐름 등록 + 자재추가
+const insertProcMat = async (values) => {
+  let result = await mariadb.transOpen(async () => {
+    // 1. 공정흐름코드가 없으면 시퀀스 새로 생성
+
+    const seqResult = await mariadb.transQuery("procFlowSeq");
+    let procFlowCode = seqResult[0].seq;
+    values[0]["PROC_FLOW_CD"] = procFlowCode; // 새 공정흐름코드 추가
+    // 공정흐름 추가
+    let flowRes = await mariadb.transQuery("insertProcFlow", values[0]);
+    if (flowRes.affectedRows <= 0) {
+      await mariadb.rollback();
+      return "fail";
+    } else {
+      await mariadb.commit();
+    }
+
+    // 2. 공정별 자재 추가
+    let materials = values[1]; // 자재 리스트
+    if (!Array.isArray(materials)) {
+      materials = [materials];
+    }
+    if (materials.length > 0) {
+      for (const material of materials) {
+        const seqResult = await mariadb.transQuery("procMtlSeq");
+        material["PROC_MAT_FLOW_CD"] = seqResult[0].seq;
+        material["PROC_FLOW_CD"] = procFlowCode;
+
+        const matRes = await mariadb.transQuery(
+          "insertProcessMtlFlow",
+          material
+        );
+        if (matRes.affectedRows <= 0) {
+          await mariadb.rollback();
+        }
+      }
+    } else {
+      console.log("자재추가할게 없음");
+    }
+
+    // 3. 성공
+    await mariadb.commit();
+    return { result: "success" };
+  });
+
+  return result;
+};
+
+//공정흐름도만 추가
+const insertProcFlow = async (procFlowData) => {
+  return await mariadb.transOpen(async () => {
+    // 공정흐름 코드 시퀀스 생성
+    const seqResult = await mariadb.transQuery("procFlowSeq");
+    const procFlowCode = seqResult[0].seq;
+    procFlowData["PROC_FLOW_CD"] = procFlowCode;
+
+    // 공정흐름 등록
+    const result = await mariadb.transQuery("insertProcFlow", procFlowData);
+    if (result.affectedRows <= 0) {
+      await mariadb.rollback();
+      return { result: "fail" };
+    }
+
+    await mariadb.commit();
+    return { result: "success" };
+  });
+};
+// 공정별 자재만 추가
+const insertProcessMaterial = async (materialData) => {
+  return await mariadb.transOpen(async () => {
+    const seqResult = await mariadb.transQuery("procMtlSeq");
+    const procMatFlowCode = seqResult[0].seq; // 공정별 자재 코드 시퀀스 생성
+    materialData["PROC_MAT_FLOW_CD"] = procMatFlowCode;
+
+    const result = await mariadb.transQuery(
+      "insertProcessMtlFlow",
+      materialData
+    );
+    if (result.affectedRows <= 0) {
+      await mariadb.rollback();
+      return { result: "fail" };
+    }
+
+    await mariadb.commit();
+    return { result: "success" };
+  });
+};
+
+//공정별 자재 삭제
+const deleteProcessMtlFlow = async (proc_mtl_flow_cd) => {
+  let result = await mariadb.query("deleteProcessMtlFlow", proc_mtl_flow_cd); //info 객체형태 전달
   if (result.affectedRows > 0) {
-    return { result: "success", proc_flow_cd: proc_flow_cd};
+    return { result: "success" };
   } else {
     return { result: "fail" };
   }
 };
-// 공정 순서 업데이트
-const updateProcessSequence = async (updatedProcesses) => {
-  // updatedProcesses는 [{ proc_seq, proc_cd }] 배열
-  for (const process of updatedProcesses) {
-    const result = await mariadb.query("updateProcessSequence", [
-      process.proc_seq,
-      process.proc_cd,
-    ]);
-    return result;
-  }
+//순서
+const getMaxProcSeq = async (prdCd) => {
+  const result = await mariadb.query("ProcessSeq", prdCd);
+  return result; // 순서가 없으면 0 반환
 };
-
-//------------------공통코드----------------------
-const findAllComm = async (comm_cd) => {
-  let list = await mariadb.query("commList", comm_cd);
-  return list;
-};
-
 module.exports = {
   //메소드명
   findBomByPc,
@@ -118,12 +193,14 @@ module.exports = {
   deleteBom,
   searchPrd,
   searchMtl,
-  findAllComm,
   searchFlow,
   searchPrdUsage,
   searchProMtl,
   searchProcCd,
-  InsertProcMat,
+  insertProcMat,
   deleteProcessFlow,
-  updateProcessSequence,
+  insertProcFlow,
+  insertProcessMaterial,
+  getMaxProcSeq,
+  deleteProcessMtlFlow,
 };

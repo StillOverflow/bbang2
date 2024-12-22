@@ -2,8 +2,6 @@
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
-      
-
       <!-- 제품/공정흐름도 -->
       <div class="card-body">
         <div class="row">
@@ -13,13 +11,10 @@
           <div class="col-5">
             <div class="row">
               <div class="col-5">
-                <h4 class="ms-3" >BOM내역</h4>
+                <h4 class="ms-3">BOM내역</h4>
               </div>
               <div class="col-8 text-end">
-                <button
-                  class="btn btn-success"
-                  
-                >
+                <button class="btn btn-success" @click="InsertProcMtl">
                   자재추가
                 </button>
               </div>
@@ -44,7 +39,9 @@
               <!--행선택시 bom데이터 조회-->
             </ag-grid-vue>
           </div>
-          <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
+          <div
+            class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"
+          ></div>
           <div class="col-5">
             <!-- BOM 목록 -->
             <ag-grid-vue
@@ -56,7 +53,7 @@
               :rowSelection="multiple"
               overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
               :gridOptions="bomOptions"
-              @rowClicked="proFlowClicked"
+              @rowClicked="bomClicked"
               @gridReady="gridReady"
             >
             </ag-grid-vue>
@@ -70,15 +67,14 @@
           <div class="col-7">
             <h4 class="ms-3">공정흐름도</h4>
             <div class="col-8 text-end">
-              <button class="btn btn-secondary mb-0 ms-2" >위로</button>
-              <button class="btn btn-secondary mb-0 ms-2" >아래로</button>
-              <button
-                class="btn btn-success mb-0 ms-2"
-                @click="modalOpen"
-              >
+              <button class="btn btn-secondary mb-0 ms-2">위로</button>
+              <button class="btn btn-secondary mb-0 ms-2">아래로</button>
+              <button class="btn btn-success mb-0 ms-2" @click="modalOpen">
                 공정추가
               </button>
-              <button class="btn btn-danger mb-0 ms-2" @click="deleteProc">삭제</button>
+              <button class="btn btn-danger mb-0 ms-2" @click="deleteProc">
+                삭제
+              </button>
             </div>
           </div>
 
@@ -88,7 +84,9 @@
                 <h4 class="ms-0">공정별 자재</h4>
               </div>
               <div class="ms-3 col-10">
-                <button class="btn btn-danger " >삭제</button>
+                <button class="btn btn-danger" @click="deleteProcMtl">
+                  삭제
+                </button>
               </div>
             </div>
           </div>
@@ -108,12 +106,13 @@
               :gridOptions="proFlowOptions"
               @rowClicked="proFlowClicked"
               @gridReady="onProFlowgridReady"
-
               overlayNoRowsTemplate="제품을 선택하세요."
             >
             </ag-grid-vue>
           </div>
-          <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
+          <div
+            class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"
+          ></div>
           <div class="col-5">
             <!-- 공정별 자재 흐름도 -->
             <ag-grid-vue
@@ -125,7 +124,9 @@
               :pagination="true"
               :cellValueChanged="cellValueChanged"
               overlayNoRowsTemplate="공정에 대한 자재정보가 없습니다."
-              @gridReady="gridReady"
+              :gridOptions="bomOptions"
+              @rowClicked="ProFlowMtlClicked"
+              @gridReady="onProFlowMtl"
             >
             </ag-grid-vue>
           </div>
@@ -187,13 +188,14 @@ export default {
   data() {
     return {
       bomOptions: {
-        rowSelection: { mode: "multiRow" },
+        rowSelection: { mode: "singleRow", enableClickSelection: true },
         suppressMovableColumns: true,
       },
-      proFlowOptions:{
-        rowDragManaged :true,
+      proFlowOptions: {
+        rowDragManaged: true,
         rowDragEntireRow: true,
-        rowSelection: { mode: "multiRow" },
+        rowSelection: { mode: "singleRow", enableClickSelection: true },
+        onRowDragEnd: this.onRowDragEnd,
       },
       gridOptions: {
         rowSelection: {
@@ -216,7 +218,7 @@ export default {
           field: "proc_seq",
           valueGetter: "node.rowIndex + 1",
           sortale: true,
-          rowDrag: true,         
+          rowDrag: true,
         },
         { headerName: "공정코드", field: "proc_cd", sortale: true },
         { headerName: "공정명", field: "proc_nm", sortale: true },
@@ -252,8 +254,10 @@ export default {
       ],
       modalData: [],
       //저장 버튼 누르기전 담아둘 장소
+      saveProwMtlData: [],
+      deleteProwMtlData: [],
       saveModal: [],
-      deleteModal:[],
+      deleteModal: [],
       isModal: false,
     };
   },
@@ -285,12 +289,16 @@ export default {
     },
     //공정흐름도선택정보
     proFlowClicked(params) {
-      this.selectProFlowData = params.data.proc_cd;
+      this.selectProFlowData = params.data.proc_flow_cd;
       this.bringMtlData(this.selectProFlowData);
     },
     //모달선택정보
-    modalClicked(params){
+    modalClicked(params) {
       this.selectModalData = params.data.prod_cd;
+    },
+    //공정별 자재 선택
+    ProFlowMtlClicked(params) {
+      this.selectroFlowMtllData = params.data.proc_mat_flow_cd;
     },
     //공정코드 조회
     async bringProcCd() {
@@ -316,91 +324,174 @@ export default {
     gridReady(params) {
       this.gridApi = params.api;
     },
-    onModalGridReady(params){
+    onModalGridReady(params) {
       this.modalApi = params.api;
     },
-    onProFlowgridReady(params){
+    onProFlowgridReady(params) {
       this.prowFlowApi = params.api;
     },
-    //순서변경
-//     onRowDragEnd(event) {
-//       const newOrder = this.prowFlowApi.getDisplayedRowAtIndex(0).data;
-//       console.log(newOrder, event);
-//       return newOrder;
-// },
-onRowDragEnd() { // `event` 제거
-  const updatedSequence = [];
-  const newOrder = this.prowFlowApi.getDisplayedRowAtIndex(0).data;
-  updatedSequence.push(newOrder);
-  this.saveData = updatedSequence; // Track updates for saving
-},
-    //모달 공정 클릭시 추가
-    async InsertProc(){
-      const selectedNodes =this.modalApi.getSelectedRows(); //정보 배열로 담기
+    onProFlowMtl(params) {
+      this.procFlowMtlApi = params.api;
+    },
 
-      //const selectedModal = selectedNodes.map((node)=>node.data); //배열로
-      console.log('selectedNodes =>', selectedNodes);
-      for(const dup of selectedNodes) {
-        const saveBom = {//그리드용
-          proc_seq: this.procFlowData.length + this.saveModal.length + 1,
+    //모달 공정 클릭시 공정흐름도 추가
+    async InsertProc() {
+      const selectedNodes = this.modalApi.getSelectedRows(); //정보 배열로 담기
+      let maxSeq = 0;
+
+      const response = await axios.get(
+        `/api/standard/flowSeq/${this.selectProData}`
+      );
+      maxSeq = response.data[0].maxSeq;
+
+      let index = 1;
+      for (const dup of selectedNodes) {
+        const procSeq = maxSeq + index;
+        index++;
+        const saveBom = {
+          //그리드용
+          proc_seq: procSeq,
           proc_cd: dup.proc_cd,
-          proc_nm: dup.proc_nm
+          proc_nm: dup.proc_nm,
         };
-      
 
-      const saveRealModal={
-        proc_cd: saveBom.proc_cd,
-        proc_nm: saveBom.proc_nm,
-        proc_seq: saveBom.proc_seq
-      };
+        const saveRealModal = {
+          prd_cd: this.selectProData,
+          proc_cd: saveBom.proc_cd,
+          proc_seq: saveBom.proc_seq,
+        };
 
-      this.saveModal.push(saveRealModal);
-      
-      this.prowFlowApi.applyTransaction({
-        add: [saveBom],
-      }); //ui반영
-      console.log('saveBom=>',saveBom)
-      this.isModal = !this.isModal;
+        this.saveModal.push(saveRealModal);
 
-    };
+        this.prowFlowApi.applyTransaction({
+          add: [saveBom],
+        }); //ui반영
+        this.isModal = !this.isModal;
+      }
     },
 
     //공정흐름도 삭제
-    async deleteProc(){
+    async deleteProc() {
       const selectedNodes = this.prowFlowApi.getSelectedRows();
       console.log(selectedNodes);
-      for(const bom of selectedNodes){
+      for (const bom of selectedNodes) {
         this.deleteModal.push(bom);
 
         this.prowFlowApi.applyTransaction({
           remove: [bom],
-        })
+        });
         !this.isModal;
       }
     },
-    async save(){
-      for(const bom of this.deleteModal){
-        await axios.delete(
-        `/api/standard/flow/${bom.proc_flow_cd}`
-      );
-      
-      for (const bom of this.saveModal){
-        await axios.post(`/api/standard/procFlow`, bom);
+
+    //공정 자재추가
+    async InsertProcMtl() {
+      const selectedNodes = this.gridApi.getSelectedRows(); // 선택된 BOM 데이터
+      for (const material of selectedNodes) {
+        //그리드용
+        const saveMaterial = {
+          mat_cd: material.mat_cd,
+          mat_nm: material.mat_nm,
+          mat_qty: parseFloat(material.usage) || 0,
+          unit: material.unit,
+          proc_flow_cd: this.selectProFlowData,
+        };
+
+        const newMaterial = {
+          mat_cd: saveMaterial.mat_cd,
+          mat_qty: saveMaterial.mat_qty,
+          prd_cd: this.selectProData,
+          proc_flow_cd: this.selectProFlowData,
+        };
+
+        this.saveProwMtlData.push(newMaterial);
+
+        this.procFlowMtlApi.applyTransaction({
+          add: [saveMaterial],
+        }); // 그리드
       }
-      console.log('bom=>',bom);
+    },
+    //공정별 자재 삭제
+    async deleteProcMtl() {
+      const selectedNodes = this.procFlowMtlApi.getSelectedRows();
+      console.log(selectedNodes);
+      for (const bom of selectedNodes) {
+        this.deleteProwMtlData.push(bom);
+
+        this.procFlowMtlApi.applyTransaction({
+          remove: [bom],
+        });
+      }
+    },
+    //저장
+    async save() {
+      console.log("Save 메소드");
+      //공정흐름삭제
+      if (this.deleteModal.length > 0) {
+        for (const bom of this.deleteModal) {
+          await axios.delete(`/api/standard/flow/${bom.proc_flow_cd}`);
+        }
+      }
+      //공정별 자재 삭제
+      if (this.deleteProwMtlData.length > 0) {
+        for (const bom of this.deleteProwMtlData) {
+          await axios.delete(`/api/standard/flowMtl/${bom.proc_mat_flow_cd}`);
+        }
+      }
+      // 공정흐름도만 등록
+      if (this.saveModal.length > 0 && this.saveProwMtlData.length == 0) {
+        //공정흐름등록 데이터 존재 자재등록데이터 비존재
+        for (const procFlow of this.saveModal) {
+          try {
+            await axios.post(`/api/standard/flow`, procFlow);
+          } catch (error) {
+            console.error("공정흐름도 등록 실패:", error);
+          }
+        }
+      }
+      // 공정흐름도등록 + 등록한 공정에 자재 등록
+      if (this.saveModal.length > 0 && this.saveProwMtlData.length > 0) {
+        //공정흐름등록 데이터 존재 자재등록데이터 존재
+        const sendProcFlowMtl = [...this.saveModal, ...this.saveProwMtlData];
+        try {
+          await axios.post(`/api/standard/procFlowMtl`, sendProcFlowMtl);
+        } catch (error) {
+          console.error("공정흐름도와 자재 등록 실패:", error);
+        }
+      }
+      // 기존 흐름도 공정별 자재만 등록
+      if (this.saveModal.length == 0 && this.saveProwMtlData.length > 0) {
+        //공정흐름도 데이터 비존재 자재등록데이터 존재
+        for (const material of this.saveProwMtlData) {
+          try {
+            await axios.post(`/api/standard/processMaterial`, material);
+          } catch (error) {
+            console.error("공정별 자재 등록 실패:", error);
+          }
+        }
+      }
+
+      //
+      if (
+        this.saveModal.length > 0 &&
+        this.saveProwMtlData.some((material) => material.proc_flow_cd) //공정흐름도 데이터 존재 자재등록데이터에서 공정흐름도가 존재하는경우
+      ) {
+        for (const material of this.saveProwMtlData) {
+          if (material.proc_flow_cd) {
+            try {
+              await axios.post(`/api/standard/processMaterial`, material);
+            } catch (error) {
+              console.error("기존 공정흐름 자재 등록 실패:", error);
+            }
+          }
+        }
+      }
       this.saveModal = [];
       this.deleteModal = [];
+      this.saveProwMtlData = [];
+      this.deleteProwMtlData = [];
       this.bringProFlow(this.selectProData);
-    }
-    }
-
-
-
-
-
-
-
-    
+    },
   },
 };
 </script>
