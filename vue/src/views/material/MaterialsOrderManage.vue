@@ -64,24 +64,31 @@
             </template>
          </Layout>
 
-         <div class="card-body">
-            <div class="row">
-               <div class="col-md-12">
-                  <ag-grid-vue
-                     class="ag-theme-alpine"
-                     style="width: 100%; height: 300px;"
-                     :rowData="orderFormData"
-                     :pagination="true"
-                     :gridOptions="orderFormOptions"
-                     @rowClicked="rowClicked"
-                     @grid-ready="gridReady"
-                     @first-data-rendered="orderFormGrid">
-                  </ag-grid-vue>
+         <div class="row">
+            <div class="col-12">
+               <div class="card p-3">
+                  <div class="card-action mb-2">
+                     <h5>자재 발주서 관리</h5>
+                  </div>
+                  <div class="card-content">
+                     <div class="table-responsive">
+                        <ag-grid-vue
+                           class="ag-theme-alpine"
+                           style="width: 100%; height: 300px;"
+                           :rowData="orderFormData"
+                           :pagination="true"
+                           :gridOptions="orderFormOptions"
+                           @rowClicked="rowClicked"
+                           @grid-ready="gridReady"
+                           @first-data-rendered="orderFormGrid">
+                        </ag-grid-vue>
+                     </div>
+                  </div>
+                  <div class="center mtp30">
+                     <button class="btn btn-primary">SAVE</button>
+                     <button class="btn btn-secondary mlp10">RESET</button>
+                  </div>
                </div>
-            </div>
-            <div class="center mtp30">
-               <button class="btn btn-primary">SAVE</button>
-               <button class="btn btn-secondary mlp10">RESET</button>
             </div>
          </div>
       </div>
