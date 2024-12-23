@@ -64,12 +64,12 @@
                     <div class="col-6 col-lg-2"></div>                    
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주문일자</div> 
                     <div class="col-6 col-lg-2">
-                        <input class="form-control" type="date" id="order_date" value="" />
+                        <input class="form-control" type="date" :max="due_date"  v-model="order_date" />
                     </div>
                     <div class="col-6 col-lg-1"></div> 
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">납기일자</div> 
                     <div class="col-6 col-lg-2">
-                        <input class="form-control" type="date" id="due_date" value="" />
+                        <input class="form-control" type="date" :min="order_date" v-model="due_date" />
                     </div>
                 </div>
             </div>
@@ -164,6 +164,9 @@ export default {
     name: 'App',
     data() {
         return {
+            //테스트 값을 넘기기 위해 담을 곳 만들기
+            test: '',
+            
             columnDefs: [
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
@@ -252,6 +255,11 @@ export default {
         },
         modalClicked2(params) {
             document.getElementById('mem_id').value = params.data.ID;
+
+            //테스트 다른 데이터에 넘기기 위해 담기
+            this.test = params.data.ID;
+            console.log(this.test);
+
             document.getElementById('mem_name').value = params.data.name;
             this.msModal = !this.msModal;
         },
@@ -285,6 +293,7 @@ export default {
             let result = await axios.get('/api/momem')
                                     .catch(err => console.log(err));
             this.memData = result.data; 
+            console.log(this.memData);
         },
         async getProList() {
             let result = await axios.get('/api/mopro')
@@ -295,8 +304,10 @@ export default {
         async ordInsert() {
 
             // 필수값 입력 알람
-            let dueDt = document.getElementById('due_date').value;
-            let ordDt = document.getElementById('order_date').value;
+            //let dueDt = document.getElementById('due_date').value;
+            let dueDt = this.due_date;
+            //let ordDt = document.getElementById('order_date').value;
+            let ordDt = this.order_date;
             let accCode = document.getElementById('acc_code').value;
             let memId = document.getElementById('mem_id').value;
             let rowQty = this.rowData.filter(row => !row.order_qty || row.order_qty <= 0);
@@ -342,24 +353,26 @@ export default {
                     insertOrdDtl.push({prd_cd: obj.prd_cd, 
                     prd_nm: obj.prd_nm, 
                     order_qty: obj.order_qty, 
-                    note: obj.note,});
+                    note: obj.note,
+
+                    //테스트 다른 데이터에 값 가져오기
+                    ID: this.test});
             });
-            console.log(insertOrdDtl);
+
+            console.log("insert확인",insertOrdDtl);
             insertOrd.push({
                 mem_id : document.getElementById('mem_id').value,
                 act_cd : document.getElementById('acc_code').value,
-                due_dt : document.getElementById('due_date').value,
-                order_dt : document.getElementById('order_date').value
+                //due_dt : document.getElementById('due_date').value,
+                due_dt : this.due_date,
+                //order_dt : document.getElementById('order_date').value
+                order_dt : this.order_date
             });
-            console.log("vue"+insertOrd);
 
             let insertOrdArr = [...insertOrd, insertOrdDtl ];   //첫번째가 헤드, 두번째가 디테일
-            console.log(insertOrdDtl);
 
             let result = await axios.post('/api/sales/ord', insertOrdArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
                                 .catch(err => console.log("axios에러",err));
-            console.log(result.data.result);
-            console.log(result.data);
 
             if(result.data.result == 'success'){
                 this.$swal({
@@ -383,8 +396,10 @@ export default {
             document.getElementById('acc_code').value = "";
             document.getElementById('mem_name').value = "";
             document.getElementById('mem_id').value = "";
-            document.getElementById('due_date').value = "";
-            document.getElementById('order_date').value = "";
+            //document.getElementById('due_date').value = "";
+            this.due_date = "";
+            //document.getElementById('order_date').value = "";
+            this.order_date = "";
             this.rowData = [];         
         },
 
