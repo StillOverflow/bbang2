@@ -1,6 +1,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/visualstudiocode,vue,vuejs,node,macos,windows
 # Edit at https://www.toptal.com/developers/gitignore?templates=visualstudiocode,vue,vuejs,node,macos,windows
 
+*.mapper.js
+
 ### macOS ###
 # General
 .DS_Store
@@ -238,3 +240,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,vue,vuejs,node,macos,windows
+server/database/mapper.js

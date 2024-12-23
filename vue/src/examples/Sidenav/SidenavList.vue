@@ -223,87 +223,95 @@ export default {
             </sidenav-item>
           </li>
 
-          <li class="nav-item">
-            <sidenav-item
-              to="/materials/order/list"
-              :class="getRoute() === 'MaterialsOrderList' ? 'active' : ''"
-              :navText="'자재 발주 조회'"
-            >
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item
-              to="/materials/order/manage"
-              :class="getRoute() === 'MaterialsOrderManage' ? 'active' : ''"
-              :navText="'자재 발주 관리'"
-            >
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item
-              to="/Material_list12"
-              :class="getRoute() === 'Material_list12' ? 'active' : ''"
-              :navText="'자재 입고 조회'"
-            >
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item
-              to="/Material_list2"
-              :class="getRoute() === 'Material_list2' ? 'active' : ''"
-              :navText="'자재 입고 관리'"
-            >
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item
-              to="/Material_list8"
-              :class="getRoute() === 'Material_list8' ? 'active' : ''"
-              :navText="'자재 재고 조회'"
-            >
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item
-              to="/Material_list9"
-              :class="getRoute() === 'Material_list9' ? 'active' : ''"
-              :navText="'자재 LOT별 재고 조회'"
-            >
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item
-              to="/Material_list10"
-              :class="getRoute() === 'Material_list10' ? 'active' : ''"
-              :navText="'자재 출고 조회'"
-            >
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item
-              to="/Material_list7"
-              :class="getRoute() === 'Material_list7' ? 'active' : ''"
-              :navText="'자재 재고 조정'"
-            >
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item
-              to="/Material_list13"
-              :class="getRoute() === 'Material_list13' ? 'active' : ''"
-              :navText="'자재 반품  조회'"
-            >
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item
-              to="/Material_list4"
-              :class="getRoute() === 'Material_list4' ? 'active' : ''"
-              :navText="'자재 반품 관리'"
-            >
-            </sidenav-item>
-          </li>
-        </ul>
+        <li class="nav-item">
+          <sidenav-item
+            to="/materials/order/list"
+            :class="getRoute() === 'MaterialsOrderList' ? 'active' : ''"
+            :navText="'자재 발주 조회'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/materials/planStock/list"
+            :class="getRoute() === 'MaterialsPlanStockList' ? 'active' : ''"
+            :navText="'미지시 계획서 자재 조회'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/materials/order/manage"
+            :class="getRoute() === 'MaterialsOrderManage' ? 'active' : ''"
+            :navText="'자재 발주 관리'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/Material_list12"
+            :class="getRoute() === 'Material_list12' ? 'active' : ''"
+            :navText="'자재 입고 조회'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/Material_list2"
+            :class="getRoute() === 'Material_list2' ? 'active' : ''"
+            :navText="'자재 입고 관리'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/Material_list8"
+            :class="getRoute() === 'Material_list8' ? 'active' : ''"
+            :navText="'자재 재고 조회'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/Material_list9"
+            :class="getRoute() === 'Material_list9' ? 'active' : ''"
+            :navText="'자재 LOT별 재고 조회'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/Material_list10"
+            :class="getRoute() === 'Material_list10' ? 'active' : ''"
+            :navText="'자재 출고 조회'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/Material_list7"
+            :class="getRoute() === 'Material_list7' ? 'active' : ''"
+            :navText="'자재 재고 조정'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/Material_list13"
+            :class="getRoute() === 'Material_list13' ? 'active' : ''"
+            :navText="'자재 반품  조회'"
+          >
+          </sidenav-item>
+        </li>
+        <li class="nav-item">
+          <sidenav-item
+            to="/Material_list4"
+            :class="getRoute() === 'Material_list4' ? 'active' : ''"
+            :navText="'자재 반품 관리'"
+          >
+          </sidenav-item>
+        </li>
+      </ul>
 
         <!-- 설비  -->
         <li class="nav-item head" id="Equipment" @click="showList('Equipment')">
