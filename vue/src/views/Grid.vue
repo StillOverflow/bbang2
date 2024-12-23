@@ -19,7 +19,7 @@
       <button class="btn btn-success mlp10">SAVE</button> <!-- 수정 -->
       <button class="btn btn-danger mlp10">DELETE</button>
       <button class="btn btn-secondary mlp10">RESET</button>
-      <button class="btn btn-outline-success mlp10">EXCEL</button>
+      <button class="btn btn-outline-success mlp10" @click="excelDownload()"><i class="fa-regular fa-file-excel"></i>EXCEL</button>
       <div class="input-group mb-3 w-30">
         <input type="search" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
         <button class="btn btn-warning" type="button" id="button-addon2">SEARCH</button>
@@ -38,6 +38,7 @@
 // 그리드 사용법
 // AG-Grid 공식문서 : https://www.ag-grid.com/javascript-data-grid/row-selection-multi-row/
 import { AgGridVue } from "ag-grid-vue3";
+import * as XLSX from 'xlsx';
 
 export default {
   name: 'App',
@@ -107,6 +108,24 @@ export default {
         <br>${params.data.name}를 클릭하셨네요.`,
         'info'
       );
+    },
+    excelDownload() {
+      var today = new Date();
+      today = this.$comm.dateFormatter(today);
+      let selected = null;
+
+      selected = this.myApi.getSelectedNodes();
+      const selectedData = selected.map(item => ({
+            '품번': item.data.no,
+            '이름': item.data.name,
+            '가격': item.data.price,
+            '등록일': item.data.date
+        }));
+
+        const workBook = XLSX.utils.book_new()
+        const workSheet = XLSX.utils.json_to_sheet(selectedData)
+        XLSX.utils.book_append_sheet(workBook, workSheet, 'example')
+        XLSX.writeFile(workBook, `엑셀예시_${today}.xlsx`); 
     }
   }
 }

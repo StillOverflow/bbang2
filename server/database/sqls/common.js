@@ -20,8 +20,35 @@ FROM   common_detail
 WHERE  UPPER(comm_cd) = UPPER( ? )
 `;
 
+
+//주문서별 제품목록
+const orderDtlList = 
+`
+SELECT ORDER_DTL_CD,
+		 ORDER_CD,
+		 o.PRD_CD, 
+		 PRD_NM, 
+		 ORDER_QTY, 
+		 (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=o.PRD_CD) AS IN_CNT
+FROM 
+		order_detail o JOIN product p ON o.PRD_CD=p.PRD_CD 
+		WHERE order_cd=?
+`;
+
+//제품목록
+const productList = 
+`
+SELECT PRD_CD, 
+       PRD_NM, 
+       PRICE, 
+       (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=p.PRD_CD) AS IN_CNT 
+FROM product p
+`;
+
 module.exports = {
   findComm,
   findCommList,
-  commList
+  commList,
+  orderDtlList,
+  productList
 };

@@ -12,7 +12,7 @@
         <div class="row">
           <div class="input-group w-30">
             <input class="form-control" type="text" v-model="order_cd" placeholder="주문코드를 검색해주세요" style="height: 41px;">
-            <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
+            <button class="btn btn-warning" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
         </div>
 
@@ -38,9 +38,9 @@
             <ag-grid-vue class="ag-theme-alpine" 
             style="width: 100%; height: 400px;" 
             :columnDefs="orderDefs"
-            :rowData="orderData" 
-            @rowClicked="modalClicked" 
+            :rowData="orderData"              
             @grid-ready="gridFit"
+            @rowClicked="modalClicked"
             overlayNoRowsTemplate="주문내역이 없습니다.">
             </ag-grid-vue>
           </template>
@@ -72,8 +72,8 @@
             :columnDefs="productDefs" 
             :rowData="productData" 
             :pagination="true" 
-             @grid-ready="productGrid" 
-             :gridOptions="gridOptions"
+            @grid-ready="productGrid" 
+            :gridOptions="gridOptions"
              overlayNoRowsTemplate="주문내역이 없습니다."/>
           </div>
           <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center">
@@ -183,7 +183,7 @@ export default {
   },
   mounted() {
     //제품목록
-    axios.get('/api/product')
+    axios.get('/api/comm/product')
         .then(response =>{
             this.productData = response.data;
         })
@@ -223,7 +223,7 @@ export default {
 
     //주문서 제품 리스트
     async getOrderDtlList(order_cd) {
-      let result = await axios.get(`/api/product/${order_cd}/order`)
+      let result = await axios.get(`/api/comm/order/dtl/${order_cd}`)
                               .catch(err => console.log(err));                              
       this.orderDtlData = result.data;
     },

@@ -2,58 +2,58 @@ const express = require("express");
 const router = express.Router();
 const produceService = require("../service/produce_service.js");
 
-/*--------------계획서-------------*/
+/*--------------생산계획서-------------*/
 
-// 전체조회
+//계획서 전체조회
 router.get('/plan', async (req, res)=>{
     let planList = await produceService.findAllPlan();
     res.send(planList);
 });
 
-// 코드조회
+//계획서 단건조회
 router.get('/plan/:no', async (req,res)=>{
     let planNo = req.params.no;
     let planList = await produceService.findPlanNo(planNo);
     res.send(planList);
 })
 
-// 제품조회
+//계획서 제품조회
 router.get('/plan/:no/dtl', async (req, res)=>{
     let planNo = req.params.no;
     let result = await produceService.findAllPlanDtl(planNo);
     res.send(result);
 });
 
-// 계획서 삭제
+//계획서 삭제
 router.delete("/plan", async (req, res) => {
     let values = req.body;
     let result = await produceService.deletePlan(values);
     res.send(result);
   });
 
-// 등록
+//계획서 등록
 router.post('/plan', async(req, res)=>{
   let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
   let result = await produceService.planInsert(values);
   res.send(result);
 });
 
-/*--------------지시서-------------*/
+/*--------------생산지시서-------------*/
 
-// 전체조회
+//지시서 전체조회
 router.get('/inst', async (req, res)=>{
     let instList = await produceService.findAllInst();
     res.send(instList);
 });
 
-// 단건조회
+//지시서 단건조회
 router.get('/inst/:no', async (req,res)=>{
     let instNo = req.params.no;
     let info = await produceService.findInstNo(instNo);
     res.send(info);
   })
 
-// 등록
+//지시서 등록
 router.post('/inst', async(req, res)=>{
   let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
   let result = await produceService.instInsert(values);
@@ -73,20 +73,5 @@ router.get('/inst/:no/mat', async (req,res)=>{
     let info = await produceService.findInstMatFlow(prodNo);
     res.send(info);
   })
-
-
-// 주문서 제품조회
-router.get('/product/:no/order', async (req,res)=>{
-  let planNo = req.params.no;
-  let planList = await produceService.findOrderNo(planNo);
-  res.send(planList);
-})
-
-
-// 제품 전체조회
-router.get('/product', async (req, res)=>{
-  let productList = await produceService.findAllProduct();
-  res.send(productList);
-});
 
 module.exports = router;
