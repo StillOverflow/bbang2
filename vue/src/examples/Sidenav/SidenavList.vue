@@ -205,16 +205,16 @@ export default {
           </li>
           <li class="nav-item">
             <sidenav-item
-              to="/Produce_planAdd"
-              :class="getRoute() === 'Produce_planAdd' ? 'active' : ''"
+              to="/Produce_PlanAdd"
+              :class="getRoute() === 'Produce_PlanAdd' ? 'active' : ''"
               :navText="'생산계획서 관리'"
             >
             </sidenav-item>
           </li>
           <li class="nav-item">
             <sidenav-item
-              to="/Produce_ol"
-              :class="getRoute() === 'Produce_ol' ? 'active' : ''"
+              to="/Produce_InstList"
+              :class="getRoute() === 'Produce_InstList' ? 'active' : ''"
               :navText="'생산지시서 조회'"
             >
             </sidenav-item>
@@ -720,8 +720,8 @@ export default {
           </li>
           <li class="nav-item">
             <sidenav-item
-              to="/Standard_list3"
-              :class="getRoute() === 'Standard_list3' ? 'active' : ''"
+              to="/MaterialAdd"
+              :class="getRoute() === 'MaterialAdd' ? 'active' : ''"
               :navText="'자재관리'"
             >
             </sidenav-item>

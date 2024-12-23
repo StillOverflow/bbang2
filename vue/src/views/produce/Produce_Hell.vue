@@ -5,13 +5,13 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         
         <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" 
-        :columnDefs="planDefs"
-        :rowData="planData"
+        :columnDefs="instDefs"
+        :rowData="instData"
         :pagination="true" 
         @grid-ready="myGrid"        
-        @rowClicked="modalClicked"
-        :gridOptions="gridOptions"       
-        overlayNoRowsTemplate="등록된 계획서가 없습니다.">
+        @rowClicked="modalClicked" 
+        :gridOptions="gridOptions"        
+        overlayNoRowsTemplate="등록된 지시서가 없습니다.">
         </ag-grid-vue>
         <div class="center mtp30">
           <button class="btn btn-danger" @click="PlanCancel">DELETE</button>
@@ -31,13 +31,13 @@ import * as XLSX from 'xlsx';
 export default {
   components: { AgGridVue },
   created() {
-    this.$store.dispatch('breadCrumb', { title: '생산계획서 조회' });
+    this.$store.dispatch('breadCrumb', { title: '생산지시서 조회' });
     this.getPlanList();
     
   },
   computed : {
       planCount(){
-          return this.planData.length;
+          return this.instData.length;
       }
   },
   data() {
@@ -45,15 +45,15 @@ export default {
       rowData: null,
       myApi: null,
       myColApi: null,
-      
-      planDefs: [
-        { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 120 },
-        { headerName: '생산시작일', field: 'START_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
-        { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150 },
-        { headerName: '제품수량', field: 'DTL_QTY', sortable: true, width: 100},
-        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
+
+      instDefs: [
+        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },        
+        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true },
+        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true},
+        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter },
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter},
       ],
-      planData: [],
+      instData: [],
       gridOptions: {
           pagination: true,
           paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
@@ -74,22 +74,22 @@ export default {
     
     //계획서 리스트
     async getPlanList() {
-      let result = await axios.get('/api/plan')
+      let result = await axios.get('/api/inst')
                               .catch(err => console.log(err));
-      this.planData = result.data;
+      this.instData = result.data;
     },
 
-    //계획서 삭제
-    async PlanCancel() {
+    //지시서 삭제
+    async InstCancel() {
       
       let cancelArr = [];
 
       const val = this.myApi.getSelectedNodes();
       for(let i=0; i<val.length; i++){
-        cancelArr.push(val[i].data.prod_plan_cd);
+        cancelArr.push(val[i].data.inst_cd);
       }
       
-      let result = await axios.delete(`/api/plan/`,cancelArr )
+      let result = await axios.delete(`/api/inst/`,cancelArr )
                               .catch(err => console.log(err));
       return result;
       
@@ -101,17 +101,16 @@ export default {
 
       selected = this.myApi.getSelectedNodes();
       const selectedData = selected.map(item => ({
-            '계획서코드': item.data.PROD_PLAN_CD,
-            '생산시작일': item.data.START_DT,
-            '생산종료일': item.data.END_DT,
-            '제품수량': item.data.DTL_QTY,
+            '지시코드': item.data.INST_CD,
+            '작업일자': item.data.WORK_DT,
+            '진행상태': item.data.ACT_TYPE,
             '등록일': item.data.CREATE_DT
         }));
 
         const workBook = XLSX.utils.book_new()
         const workSheet = XLSX.utils.json_to_sheet(selectedData)
         XLSX.utils.book_append_sheet(workBook, workSheet, 'example')
-        XLSX.writeFile(workBook, `생산계획서_${today}.xlsx`); 
+        XLSX.writeFile(workBook, `생산지시서_${today}.xlsx`); 
     }
   }
     

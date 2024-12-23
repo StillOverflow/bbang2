@@ -91,7 +91,7 @@
               <div class="row">
                   <div class="col-6 col-lg-6"></div>
                   <div class="col-6 col-lg-1 mt-2">
-                      <button class="btn btn-primary " @click="ordInsert()">등록</button>
+                      <button class="btn btn-primary " @click="prdOutInsert()">등록</button>
                   </div>
               </div>
           </div>
@@ -171,9 +171,10 @@ export default {
     name: 'App',
     data() {
         return {
+            odtCd: '',
             
             OLDefs: [
-                {headerName: '제품상세코드', field: 'order_dtl_cd'},
+                {headerName: '주문상세코드', field: 'order_dtl_cd'},
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
                 {headerName: '주문 수량', field: 'order_qty'},
@@ -190,6 +191,8 @@ export default {
                             this.modalOpen3(); //LOT모달 오픈
                             this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
                             this.getOutLotList(); //단건조회로 보내기
+
+                            this.odtCd = params.data.order_dtl_cd //등록할 때 필요한 코드 변수에 담기
                         });
                         return button;
                     }
@@ -200,7 +203,7 @@ export default {
             proDefs: [
                 {headerName: '제품 코드', field: 'prd_cd', hide: true},
                 {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '제품 수량', field: 'prd_qty'},
+                {headerName: '제품 수량', field: 'stock'},
                 {headerName: 'LOT', field: 'prd_lot_cd'},
                 {headerName: '유통기한', field: 'exp_dt', valueFormatter: this.$comm.dateFormatter},
             ],
@@ -213,9 +216,11 @@ export default {
             },
 
             proOutDefs: [
+                {headerName: '주문상세코드', field: 'order_dtl_cd', hide: true},
                 {headerName: 'LOT', field: 'prd_lot_cd'},
+                {headerName: '제품코드', field: 'prd_cd', hide: true},
                 {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '제품 수량', field: 'prd_qty'},
+                {headerName: '제품 수량', field: 'stock'},
                 {
                     headerName: '출고 수량', 
                     field: 'prd_out_qty', 
@@ -313,9 +318,12 @@ export default {
             const selectedRows = this.$refs.lotGrid.api.getSelectedRows();
 
             const newRowData = selectedRows.map(row => ({
+                
+                order_dtl_cd: this.odtCd, //행 선택할 때 담은 변수 코드 여기서 넣어주기
                 prd_lot_cd: row.prd_lot_cd,
+                prd_cd: row.prd_cd,
                 prd_nm: row.prd_nm,
-                prd_qty: row.prd_qty, 
+                stock: row.stock, 
                 order_qty: '', 
                 note: '',  
                 delete: 'delete', 
@@ -366,74 +374,83 @@ export default {
         // },
 
 
-        async ordInsert() {
+        async prdOutInsert() {
 
             // 필수값 입력 알람
-            let dueDt = document.getElementById('due_date').value;
-            let ordDt = document.getElementById('order_date').value;
             let accCode = document.getElementById('acc_code').value;
             let memId = document.getElementById('mem_id').value;
-            let rowQty = this.rowData.filter(row => !row.order_qty || row.order_qty <= 0);
+            let rowQty = this.proOutData.filter(row => !row.prd_out_qty || row.prd_out_qty <= 0);
 
-            if (!accCode || !memId) {
+            if (!accCode) {
                 this.$swal({
                     icon: "error",
-                    title: "거래처와 담당자를 조회 하세요",
-                    text: "거래처와 담당자를 선택해야 주문을 등록할 수 있습니다.",
+                    title: "주문서 코드를 선택 해주세요.",
+                    text: "검색 후 선택 해주세요.",
                 });
                 return;
             }
-            if (!this.rowData || this.rowData.length === 0) {
+            if (!memId) {
                 this.$swal({
                     icon: "error",
-                    title: "제품을 선택하세요",
-                    text: "최소 한 개 이상의 제품을 선택해야 주문을 등록할 수 있습니다.",
+                    title: "담당자를 선택 해주세요.",
+                    text: "검색 후 선택 해주세요.",
+                });
+                return;
+            }
+            if (!this.proOutData || this.proOutData.length === 0) {
+                this.$swal({
+                    icon: "error",
+                    title: "제품의 LOT를 선택하세요",
+                    text: "최소 한 개 이상의 LOT를 선택해야 출고를 등록할 수 있습니다.",
                 });
                 return;
             }
             if (rowQty.length > 0) {
                 this.$swal({
                     icon: "error",
-                    title: "주문 수량을 입력하세요",
+                    title: "출고 수량을 입력하세요",
                     text: "입력 후 엔터를 쳐주세요",
                 });
                 return;
             }
-            if (!dueDt || !ordDt) {
-                this.$swal({
-                    icon: "error",
-                    title: "납기일자와 주문일자를 입력하세요",
-                    text: "확인을 다시 하여주세요",
-                });
-                return;
-            }
+            
 
-            //주문서 등록  변경중 출고등록으로
-            let insertOrd = [];
-            let insertOrdDtl = [];
+            //출고 등록
+            let insertPrdOut = [];
+            let insertPrdOutDtl = [];
+            let updatePrdOutQty = [];
 
-            this.rowData.forEach((obj) => {
-                    insertOrdDtl.push({
+            this.proOutData.forEach((obj) => {
+                updatePrdOutQty.push({
+                        prd_lot_cd: obj.prd_lot_cd
+                    });
+            });
+            console.log("업데이트조건",updatePrdOutQty)
+
+            this.proOutData.forEach((obj) => {
+                insertPrdOutDtl.push({
+                        order_dtl_cd: obj.order_dtl_cd,
                         prd_cd: obj.prd_cd, 
-                        prd_nm: obj.prd_nm, 
-                        order_qty: obj.order_qty, 
+                        prd_out_qty: obj.prd_out_qty, 
+                        prd_lot_cd: obj.prd_lot_cd,
                         note: obj.note,
                     });
             });
             
-            console.log(insertOrdDtl);
-            insertOrd.push({
-                mem_id : document.getElementById('mem_id').value,
-                act_cd : document.getElementById('acc_code').value,
-                due_dt : document.getElementById('due_date').value,
-                order_dt : document.getElementById('order_date').value
+            console.log("출고디테일",insertPrdOutDtl);
+
+            insertPrdOut.push({
+                order_cd: this.order_code,
+                act_cd: document.getElementById('acc_code').value,
+                ID: document.getElementById('mem_id').value,
+
             });
-            console.log(insertOrd);
+            console.log("출고테이블",insertPrdOut);
 
-            let insertOrdArr = [...insertOrd, insertOrdDtl ];   //첫번째가 헤드, 두번째가 디테일
-            console.log(insertOrdArr);
+            let insertPrdOutArr = [...insertPrdOut, insertPrdOutDtl, updatePrdOutQty ];   //첫번째가 헤드, 두번째가 디테일, 세번째 업데이트
+            console.log("합친거",insertPrdOutArr);
 
-            let result = await axios.post('/api/sales/ord', insertOrdArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
+            let result = await axios.post('/api/sales/prdOut', insertPrdOutArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
                                 .catch(err => console.log("axios에러",err));
             console.log(result.data.result);
             console.log(result.data);
@@ -442,14 +459,11 @@ export default {
                 this.$swal({
                     icon: "success",
                     title: "등록에 성공 하였습니다.",
-                    text: "등록한 주문서는 목록에서 확인 해주세요.",
+                    text: "등록한 출고제품은 목록에서 확인 해주세요.",
                 })
                 .then(() => {
                     this.resetForm();   //등록 후 값 초기화
-                });
-                // .then(() => {    
-                //     window.location.reload();    //페이지 새로고침
-                // });               
+                });              
             }
             return result;
 
@@ -460,9 +474,11 @@ export default {
             document.getElementById('acc_code').value = "";
             document.getElementById('mem_name').value = "";
             document.getElementById('mem_id').value = "";
-            document.getElementById('due_date').value = "";
-            document.getElementById('order_date').value = "";
-            this.rowData = [];         
+            this.due_date = "";
+            this.order_date = "";
+            this.order_code = "";
+            this.OLData = [];
+            this.proOutData = [];         
         },
 
 

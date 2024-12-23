@@ -1,5 +1,3 @@
-<script setup></script>
-
 <template>
   <div id="page-inner" class="mx-auto">
     <div class="py-4 container-fluid">
