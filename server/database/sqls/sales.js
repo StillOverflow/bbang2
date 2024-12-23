@@ -96,7 +96,8 @@ SELECT o.order_dtl_cd,
        o.order_qty, 
        (d.prd_out_qty) AS prd_ed, 
        (o.order_qty - d.prd_out_qty) AS no_qty
-FROM order_detail o JOIN product_out_detail d ON o.ORDER_DTL_CD = d.ORDER_DTL_CD
+FROM order_detail o JOIN (SELECT sum(prd_out_qty) AS prd_out_qty, order_dtl_cd from product_out_detail GROUP BY order_dtl_cd) d 
+                    ON o.ORDER_DTL_CD = d.ORDER_DTL_CD
 					JOIN product p ON o.PRD_CD = p.PRD_CD
 WHERE order_cd = ?
 `;
@@ -104,21 +105,54 @@ WHERE order_cd = ?
 //출고 등록 LOT 선택
 const outLotList =
 `
-SELECT p.prd_cd, p.prd_nm, i.prd_qty, i.prd_lot_cd, i.exp_dt
+SELECT p.prd_cd, p.prd_nm, i.stock, i.prd_lot_cd, i.exp_dt
 FROM product p JOIN product_in i ON p.prd_cd = i.prd_cd
 WHERE p.prd_cd = ?
 `;
 
 
+//출고 코드 시퀀스
+const productOutSeq =
+`
+SELECT CONCAT('POD', LPAD(nextval(prd_out_cd_seq), 3,'0')) AS prd_out_cd FROM DUAL;
+`;
+//출고 등록 
+const productOutInsert = (obj) => {
+    let query = `
+                INSERT INTO product_out (prd_out_cd, order_cd, act_cd, ID)
+                VALUES 
+                `;
+    const {seq, order_cd, act_cd, ID} = obj; 
+    
+    if(Object.keys(obj).length > 0){    // 객체의 길이를 측정(값이 들어온것을 확인) 
 
+        query += `('${seq}', '${order_cd}', '${act_cd}', '${ID}')`;
 
+    }
+    return query;
+};
+//출고 디테일 등록
+const productOutDtlInsert = ([seq, values]) => {
+    let sql = `
+              INSERT INTO product_out_detail (prd_out_dtl_cd, prd_out_cd, order_dtl_cd, prd_cd, prd_out_qty, prd_lot_cd, note)
+              VALUES
+              `;
 
+    values.forEach((obj) => {
+        sql += `(CONCAT('PODT', LPAD(nextval(prd_out_dtl_cd_seq), 3,'0')),'${seq}','${obj.order_dtl_cd}', '${obj.prd_cd}', '${obj.prd_out_qty}', '${obj.prd_lot_cd}', '${obj.note}'), `;
+    });
+    sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
+    return sql;
 
-
-
-
-
+};
+//출고 등록시 제품수량 업데이트
+const productOutQty = 
+` 
+UPDATE product_in i JOIN product_out_detail o ON i.prd_cd = o.prd_cd
+SET i.stock = (i.stock - o.PRD_OUT_QTY)
+WHERE i.prd_lot_cd = ? ; 
+`;
 
 
 
@@ -147,9 +181,10 @@ const moProList =
 `
 SELECT p.prd_cd, 
        p.prd_nm, 
-       i.stock
+       sum(i.stock) AS stock
 FROM product p 
-JOIN product_in i ON p.prd_cd = i.prd_cd;
+JOIN product_in i ON p.prd_cd = i.prd_cd
+GROUP BY p.prd_nm;
 `;
 // 주문서 조회(모달)
 const moOrderList = 
@@ -171,9 +206,10 @@ module.exports = {
     //제품출고
     outOrderLit,
     outLotList,
-
-
-
+    productOutSeq,
+    productOutInsert,
+    productOutDtlInsert,
+    productOutQty,
 
 
 

@@ -22,11 +22,13 @@
                         <input class="form-control" type="date" :min="sdt" v-model="edt" />
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-6 col-lg-5 mb-2"></div>
-                    <div class="col-6 col-lg-1 mb-2">
-                        <button type="button" class="btn mb-0 btn-warning btn-xsm null null ms-auto" @click="searchForm">검색</button>
-                    </div>
+                <div class="d-flex justify-content-center align-items-center mt-3 text-center">
+                    <button type="button" class="btn btn-warning m-2" @click="searchForm">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    <button type="button" class="btn btn-secondary m-2" @click="resetBtn">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
                 </div>
             </div>
             <!-- 주문목록 -->
@@ -106,6 +108,12 @@ export default {
             })
             .catch(err => console.log("AXIOS실패",err));
         },
+        resetBtn() {
+            this.sdt = '';
+            this.edt = '';
+            this.search = '';
+            this.searchForm();
+        }
 
     }
 }

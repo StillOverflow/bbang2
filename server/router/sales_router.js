@@ -53,6 +53,14 @@ router.get('/sales/lot/:no', async (req, res) => {
     res.send(info);
 });
 
+//출고 등록
+router.post('/sales/prdOut', async (req, resp) => {
+    let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
+    console.log("출고router",values);
+    let result = await salesService.insertPrdOut(values);
+    resp.send(result);
+});
+
 
 
 
