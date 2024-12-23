@@ -6,7 +6,7 @@ const commonService =  require('../service/common_service.js');
 router.get('/comm/codeList/:cd', async (req, resp) => {
   let result = await commonService.findCommList(req.params.cd);
   resp.send(result);
-});*/
+});
 
 //! 거래처 조회 => queryString 방식 ~~
 // /comm/account?act_cd=A01&act_nm=가나다
