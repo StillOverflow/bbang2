@@ -19,6 +19,7 @@ import Sales_ProList from '../views/sales/Sales_ProList.vue';
 import Produce from '../views/produce/Produce.vue';
 import Produce_PlanList from '../views/produce/Produce_PlanList.vue';
 import Produce_PlanAdd from '../views/produce/Produce_PlanAdd.vue';
+import Produce_InstList from '../views/produce/Produce_InstList.vue';
 import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
 
 
@@ -175,11 +176,18 @@ const routes = [
     name: 'Produce_InstAdd',
     component: Produce_InstAdd,
   },
-
-
-
-
-
+  {
+    //생산계획서 조회
+    path: '/Produce_InstList',
+    name: 'Produce_InstList',
+    component: Produce_InstList,
+  },
+  {
+    //생산계획서 조회
+    path: '/Produce_InstList',
+    name: 'Produce_InstList',
+    component: Produce_InstList,
+  },
 
 
   
