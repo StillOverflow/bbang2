@@ -12,29 +12,55 @@ import Sales_ResultList from '../views/sales/Sales_ResultList.vue';
 import Sales_ProList from '../views/sales/Sales_ProList.vue';
 
 
+
+
+
 ////////////////////////////// 생산 //////////////////////////////
 import Produce from '../views/produce/Produce.vue';
 import Produce_PlanList from '../views/produce/Produce_PlanList.vue';
 import Produce_PlanAdd from '../views/produce/Produce_PlanAdd.vue';
 import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
 
+
+
+
+
 ////////////////////////////// 설비 //////////////////////////////
 import Equipment from '../views/equipment/Equipment.vue';
 import EquipmentMgmt from '../views/equipment/EquipmentMgmt.vue';
 import EquipmentAllList from '../views/equipment/EquipmentAllList.vue';
+
+
+
+
 
 ////////////////////////////// 자재 //////////////////////////////
 import MaterialOrderList from '../views/material/MaterialsOrderList.vue';
 import MaterialsPlanStockList from '../views/material/ProductionPlanAndStock.vue';
 import MaterialsOrderManage from '../views/material/MaterialsOrderManage.vue';
 
+
+
+
+
 ////////////////////////////// 품질 //////////////////////////////
 import QualityStdAdd from '../views/quality/QualityStdAdd.vue';
 import QualityTest from '../views/quality/QualityTest.vue';
 
+
+
+
+
+
 //////////////////////////// 기준정보 ////////////////////////////
 import ProcessFlow from '../views/standard/ProcessFlow.vue';
 import Bom from '../views/standard/Bom.vue';
+
+
+
+
+
+
 
 //////////////////////////// 통계(미정) ////////////////////////////
 import Statistics from '../views/Statistics.vue'; //통계
@@ -111,6 +137,19 @@ const routes = [
     component: Sales_ProList,
   },
 
+
+
+
+
+
+  
+
+
+
+
+
+
+  
   ////////////////////////////// 생산 //////////////////////////////
   {
     //생산
@@ -137,6 +176,25 @@ const routes = [
     component: Produce_InstAdd,
   },
 
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+  
+
+
+
   ////////////////////////////// 설비 //////////////////////////////
   {
     //설비
@@ -157,6 +215,31 @@ const routes = [
     component: EquipmentAllList,
   },
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  
   ////////////////////////////// 자재 //////////////////////////////
   {
     // 자재 발주서 조회
@@ -177,6 +260,31 @@ const routes = [
     component: MaterialsOrderManage,
   },
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   ////////////////////////////// 품질 //////////////////////////////
   {
     // 품질기준 관리
@@ -190,6 +298,37 @@ const routes = [
     name: 'QualityTest',
     component: QualityTest,
   },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   //////////////////////////// 기준정보 ////////////////////////////
   {
@@ -209,6 +348,52 @@ const routes = [
   //   name: 'ProcessFlow',
   //   component: ProcessFlow,
   // },
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   /////////////////////////// 통계(미정) ///////////////////////////
   {
     //통계
@@ -217,6 +402,22 @@ const routes = [
     component: Statistics,
   },
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
   ///////////////////////// 쓸모없는 거 //////////////////////////
   {
     path: '/tables',
