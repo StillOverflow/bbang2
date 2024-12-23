@@ -11,15 +11,8 @@
           </div>
 
           <div class="col-6 col-lg-3 mb-2">
-            <select
-              class="form-select custon-width"
-              v-model="equipmentData.eqp_type"
-            >
-              <option
-                v-for="(opt, idx) in equipmentData.selectOptions.EQP_TYPE"
-                :key="idx"
-                :value="opt.comm_dtl_cd"
-              >
+            <select class="form-select custon-width" v-model="equipmentData.eqp_type">
+              <option v-for="(opt, idx) in equipmentData.selectOptions.EQP_TYPE" :key="idx" :value="opt.comm_dtl_cd">
                 {{ opt.comm_dtl_nm }}
               </option>
             </select>
@@ -31,15 +24,8 @@
             사용 유무
           </div>
           <div class="col-6 col-lg-3 mb-2">
-            <select
-              class="form-select custon-width"
-              v-model="equipmentData.is_use"
-            >
-              <option
-                v-for="(opt, idx) in equipmentData.selectOptions.IS_USE"
-                :key="idx"
-                :value="opt.comm_dtl_cd"
-              >
+            <select class="form-select custon-width" v-model="equipmentData.is_use">
+              <option v-for="(opt, idx) in equipmentData.selectOptions.IS_USE" :key="idx" :value="opt.comm_dtl_cd">
                 {{ opt.comm_dtl_nm }}
               </option>
             </select>
@@ -51,15 +37,8 @@
             설비 상태
           </div>
           <div class="col-6 col-lg-3 mb-2">
-            <select
-              class="form-select custon-width"
-              v-model="equipmentData.status"
-            >
-              <option
-                v-for="(opt, idx) in equipmentData.selectOptions.STATUS"
-                :key="idx"
-                :value="opt.comm_dtl_cd"
-              >
+            <select class="form-select custon-width" v-model="equipmentData.status">
+              <option v-for="(opt, idx) in equipmentData.selectOptions.STATUS" :key="idx" :value="opt.comm_dtl_cd">
                 {{ opt.comm_dtl_nm }}
               </option>
             </select>
@@ -68,12 +47,7 @@
         <div class="row">
           <div class="col-6 col-lg-4 mb-2"></div>
           <div class="col-6 col-lg-1 mb-2">
-            <button
-              id="button-addon2"
-              type="button"
-              class="btn btn-warning"
-              @click="searchEquipments"
-            >
+            <button id="button-addon2" type="button" class="btn btn-warning" @click="searchEquipments">
               SEARCH
             </button>
           </div>
@@ -81,13 +55,8 @@
       </div>
       <!-- 조회 결과 -->
       <div class="card-body" style="position: relative; height: 600px">
-        <ag-grid-vue
-          style="width: 100%; height: 100%"
-          class="ag-theme-alpine"
-          :columnDefs="columnDefs"
-          :rowData="rowData"
-          :pagination="true"
-        ></ag-grid-vue>
+        <ag-grid-vue style="width: 100%; height: 100%" class="ag-theme-alpine" :columnDefs="columnDefs"
+          :rowData="rowData" :pagination="true"></ag-grid-vue>
       </div>
     </div>
   </div>
