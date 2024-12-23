@@ -19,7 +19,8 @@
                   <div class="input-group mb-2 w-25">
                       <input type="text" class="form-control" v-model="order_code" aria-label="Recipient's username" aria-describedby="button-addon2" 
                       style="height: 41px; background-color: rgb(236, 236, 236);"  readonly />
-                      <button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen">SEARCH</button>
+                      <button class="btn btn-warning" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
+                      <!--<button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen">SEARCH</button>-->
                   </div>
               
               </div>
@@ -55,7 +56,8 @@
                   <div class="input-group w-25">
                       <input type="text" class="form-control" id="mem_name" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
-                      <button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen2">SEARCH</button>
+                      <button class="btn btn-warning" type="button" @click="modalOpen2"><i class="fa-solid fa-magnifying-glass"></i></button>
+                      <!-- <button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen2">SEARCH</button> -->
                   </div>
                   <div class="col-6 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">담당자 ID</div> 
                   <div class="col-6 col-lg-2">
@@ -66,34 +68,32 @@
 
           <!-- 출고디테일 테이블 부분 -->
           <div class="card-body">
-              <div class="row">
-                  <div class="col-md-6">
-                      <p></p>
-                      <ag-grid-vue style="width:100%; height: 350px;"
-                      class="ag-theme-alpine"
-                      :columnDefs="OLDefs"
-                      :rowData="OLData"
-                      @grid-ready="gridFit"
-                      overlayNoRowsTemplate="주문서를 조회 하여주세요.">
-                      </ag-grid-vue>
-                  </div>
-                  <div class="col-md-6">
-                      <p></p>
-                      <ag-grid-vue style="width:100%; height: 350px;"
-                      class="ag-theme-alpine"
-                      :columnDefs="proOutDefs"
-                      :rowData="proOutData"
-                      @grid-ready="gridFit"
-                      overlayNoRowsTemplate="제품의 LOT를 선택해주세요.">
-                      </ag-grid-vue>
-                  </div>
-              </div>
-              <div class="row">
-                  <div class="col-6 col-lg-6"></div>
-                  <div class="col-6 col-lg-1 mt-2">
-                      <button class="btn btn-primary " @click="prdOutInsert()">등록</button>
-                  </div>
-              </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p></p>
+                        <ag-grid-vue style="width:100%; height: 350px;"
+                        class="ag-theme-alpine"
+                        :columnDefs="OLDefs"
+                        :rowData="OLData"
+                        @grid-ready="gridFit"
+                        overlayNoRowsTemplate="주문서를 조회 하여주세요.">
+                        </ag-grid-vue>
+                    </div>
+                    <div class="col-md-6">
+                        <p></p>
+                        <ag-grid-vue style="width:100%; height: 350px;"
+                        class="ag-theme-alpine"
+                        :columnDefs="proOutDefs"
+                        :rowData="proOutData"
+                        @grid-ready="gridFit"
+                        overlayNoRowsTemplate="제품의 LOT를 선택해주세요.">
+                        </ag-grid-vue>
+                    </div>
+                </div>
+                <div class="center mtp30">
+                    <button class="btn btn-primary" @click="prdOutInsert">SUBMIT</button>
+                    <button class="btn btn-secondary mlp10" @click="resetForm">RESET</button>
+                </div>
           </div>
       </div>
   </div>
@@ -177,9 +177,30 @@ export default {
                 {headerName: '주문상세코드', field: 'order_dtl_cd'},
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '주문 수량', field: 'order_qty'},
-                {headerName: '기출고수량', field: 'prd_ed'},
-                {headerName: '미출고수량', field: 'no_qty'},
+                {
+                    headerName: '주문 수량', 
+                    field: 'order_qty',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
+                {
+                    headerName: '기출고수량', 
+                    field: 'prd_ed',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
+                {
+                    headerName: '미출고수량', 
+                    field: 'no_qty',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
                 {
                     headerName: 'LOT보기' ,
                     field: 'lotlist',
@@ -203,7 +224,14 @@ export default {
             proDefs: [
                 {headerName: '제품 코드', field: 'prd_cd', hide: true},
                 {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '제품 수량', field: 'stock'},
+                {
+                    headerName: '제품 수량', 
+                    field: 'stock',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
                 {headerName: 'LOT', field: 'prd_lot_cd'},
                 {headerName: '유통기한', field: 'exp_dt', valueFormatter: this.$comm.dateFormatter},
             ],
@@ -220,7 +248,15 @@ export default {
                 {headerName: 'LOT', field: 'prd_lot_cd'},
                 {headerName: '제품코드', field: 'prd_cd', hide: true},
                 {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '제품 수량', field: 'stock'},
+                {headerName: '유통기한', field: 'exp_dt', valueFormatter: this.$comm.dateFormatter},
+                {
+                    headerName: '제품 수량', 
+                    field: 'stock',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
                 {
                     headerName: '출고 수량', 
                     field: 'prd_out_qty', 
@@ -323,6 +359,7 @@ export default {
                 prd_lot_cd: row.prd_lot_cd,
                 prd_cd: row.prd_cd,
                 prd_nm: row.prd_nm,
+                exp_dt: row.exp_dt,
                 stock: row.stock, 
                 order_qty: '', 
                 note: '',  

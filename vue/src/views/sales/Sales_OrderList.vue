@@ -4,18 +4,16 @@
         <div class="card">
             <!-- 검색조건 -->
             <div class="card-header bg-light ps-5 ps-md-4">  
-                <div class="row">
-                    <div class="col-6 col-lg-2"></div>
-                    <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처 명</div> 
+                <div class="d-flex justify-content-center align-items-center text-center">
+                    <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">거래처 명</div>
                     <div class="col-6 col-lg-5 mb-2">
                         <input class="form-control " type="text" v-model="search" />         
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-6 col-lg-2"></div>
-                    <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주문일자</div>
+                <div class="d-flex justify-content-center align-items-center text-center">
+                    <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">주문 일자</div>
                     <div class="col-6 col-lg-2 mb-2">
-                        <input class="form-control" type="date" v-model="sdt" />
+                        <input class="form-control" type="date" :max="edt" v-model="sdt" />
                     </div>
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">~</div>
                     <div class="col-6 col-lg-2 mb-2">
@@ -71,6 +69,20 @@ export default {
                     valueFormatter: this.$comm.dateFormatter 
                 },
                 {field: 'status', headerName: '현재진행상태'},
+                {
+                    headerName: '상세' ,
+                    field: 'detailed',
+                    cellRenderer: (params) => {
+                        const button = document.createElement('button');
+                        button.innerText = 'DETAILED';
+                        button.className = 'btn btn-warning';
+                        button.addEventListener('click', () => {
+                            params.data
+                            // this.rowData = this.rowData.filter(row => row !== params.data);
+                        });
+                        return button;
+                    }
+                },
             ],
             rowData: [],
             //거래처,날짜 검색어

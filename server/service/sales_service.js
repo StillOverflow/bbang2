@@ -12,7 +12,7 @@ const listOrder = async() => {
     }
 };
 
-//거래처, 날짜 따로 검색
+//주문서조회-거래처, 날짜 따로 검색
 const searchOrder = async (search, std, etd) => {
     try {
         let searchObj = {
@@ -47,6 +47,29 @@ const insertOrder = async (values) => {
 };
 
 /* --------------------------------------------------제품 출고-------------------------------------------------------- */
+
+//출고 제품 목록 조회
+const listOutPrd = async () => {
+    let list = await mariadb.query('prdOutList')
+    return list;
+}
+
+//출고제품조회-거래처, 날짜 따로 검색
+const searchPrdOut = async (search, std, etd) => {
+    try {
+        let searchObj = {
+            search,
+            std,
+            etd
+        }
+        const list = await mariadb.query('prdOutSearch', searchObj);
+        return list;
+    } catch (err) {
+        console.error("Error searching orders 실패:", err);
+        throw err;
+    }
+};
+
 //출고 등록 주문서 조회
 const listOrderOut = async (no)=>{
     let list = await mariadb.query('outOrderLit', no);
@@ -120,6 +143,8 @@ module.exports = {
 
 
     //제품출고
+    listOutPrd,
+    searchPrdOut,
     listOrderOut,
     listLotOut,
     insertPrdOut,
