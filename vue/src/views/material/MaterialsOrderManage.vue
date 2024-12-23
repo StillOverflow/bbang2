@@ -29,7 +29,7 @@
                   :pagination="true"
                   :gridOptions="accountModalGridOptions"
                   @grid-ready="gridReady"
-                  @first-data-rendered="accountModalGridData">
+                  @first-data-rendered="accountModalGrid">
                </ag-grid-vue>
             </template>
             <template v-slot:footer>
@@ -37,13 +37,12 @@
                   <button type="button" class="btn btn-success m-1" @click="accountModalOpen">Save</button>
                   <button type="button" class="btn btn-secondary m-1" @click="accountModalOpen">Cancel</button>
                </div>
-               
             </template>
          </Layout>
 
          <Layout :modalCheck="isOrderModal">
             <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-               <h5 class="modal-title">거래처 조회</h5>
+               <h5 class="modal-title">주문서 조회</h5>
                <button type="button" aria-label="Close" class="close" @click="orderModalOpen">×</button>
             </template>
             <template v-slot:default>
@@ -54,7 +53,7 @@
                   :pagination="true"
                   :gridOptions="orderModalGridOptions"
                   @grid-ready="gridReady"
-                  @first-data-rendered="orderModalGridData">
+                  @first-data-rendered="orderModalGrid">
                </ag-grid-vue>
             </template>
             <template v-slot:footer>
@@ -62,13 +61,12 @@
                   <button type="button" class="btn btn-success m-1" @click="orderModalOpen">Save</button>
                   <button type="button" class="btn btn-secondary m-1" @click="orderModalOpen">Cancel</button>
                </div>
-               
             </template>
          </Layout>
 
          <div class="card-body">
             <div class="row">
-               <div class="col-md-6">
+               <div class="col-md-12">
                   <ag-grid-vue
                      class="ag-theme-alpine"
                      style="width: 100%; height: 300px;"
@@ -76,13 +74,13 @@
                      :pagination="true"
                      :gridOptions="orderFormOptions"
                      @rowClicked="rowClicked"
-                     @grid-ready="orderFormGridReady"
-                     @first-data-rendered="orderFormGridEvent">
+                     @grid-ready="gridReady"
+                     @first-data-rendered="orderFormGrid">
                   </ag-grid-vue>
                </div>
             </div>
             <div class="center mtp30">
-               <button class="btn btn-primary" @click="instInsert">SAVE</button>
+               <button class="btn btn-primary">SAVE</button>
                <button class="btn btn-secondary mlp10">RESET</button>
             </div>
          </div>
@@ -93,7 +91,7 @@
 <script setup>
    import { AgGridVue } from 'ag-grid-vue3';
    //import axios from 'axios';
-   import { ref, onBeforeMount, watch, shallowRef } from 'vue'; //
+   import { ref, onBeforeMount, shallowRef, watch } from 'vue'; //
    import { useStore } from 'vuex';
    //import Swal from 'sweetalert2';
    import Layout from '../components/modalLayout.vue'; // modal Layout 불러오기
@@ -104,8 +102,13 @@
    let isAccountModal = ref(false);  // 거래처 모달
    let isOrderModal = ref(false);  // 주문서 모달
 
-   const accountModalData = shallowRef([]); // 거래처
+   const accountModalGrid = ref(null);
+   const accountModalData = shallowRef([]); // 모달 거래처 데이터
+
+   const orderModalGrid = ref(null);
    const orderModalData = shallowRef([]);  // 주문서
+   
+   const orderFormGrid = ref(null);
 
 //^ ----------------------------------------- Vue Hook -----------------------------------------
    onBeforeMount(() => {
@@ -113,23 +116,27 @@
    });
 
 //^ ----------------------------------------- Vue Method -----------------------------------------
-   // 거래처 검색 그리드
-   watch(accountModalData, () => {
-      const api = gridReady.api; // 거래처 검색 그리드
-      if(api) {
-         api.sizeColumnsToFit();
-      }
-   });
-
-//^ ------------------------------------------- Modal -------------------------------------------   
-   // 주문서 검색 모달
-   const orderModalOpen = () => {
-      isOrderModal.value = !isOrderModal.value;
+   const autoResizeGrid = (grid) => {
+      watch(grid, () => {
+         const api = grid.api;
+         if (api) {
+            api.sizeColumnsToFit();
+         }
+      });
    };
 
+   autoResizeGrid(orderModalGrid);
+   autoResizeGrid(orderFormGrid);
+
+//^ ------------------------------------------- Modal -------------------------------------------   
    // 거래처 검색 모달
    const accountModalOpen = () => {
       isAccountModal.value = !isAccountModal.value;
+   };
+
+   // 주문서 검색 모달
+   const orderModalOpen = () => {
+      isOrderModal.value = !isOrderModal.value;
    };
 
 // ^ ------------------------------------ 거래처 검색 모달 옵션 ------------------------------------
@@ -141,7 +148,7 @@
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
    // 그리드 준비
    const gridReady = (params) => {
-      params.api.sizeColumnsToFit(); // 그리드 열을 컨테이너 크기에 맞춤
+      params.api.sizeColumnsToFit();
    };
    // const modalClicked = (params) => {
    //    console.log(params)
