@@ -1,5 +1,5 @@
 // 검사항목 (QUALITY_TEST)
-// 특정 대상에 미적용 목록 조회
+// 특정 대상에 미적용 검사항목 조회
 const yetList = `
   SELECT test_cd, 
          fn_get_codename(test_metd) test_metd, 
@@ -20,13 +20,13 @@ const yetList = `
                           ) 
   ORDER BY test_nm `;
 
-// 특정 대상에 현재 적용중인 목록 조회
+// 특정 대상에 현재 적용중인 검사항목 조회
 const getMyList = () => {
   let myListSql = yetList.replace('NOT IN', 'IN');
   return myListSql;
 };
 
-// 실험용!!!! 검색조건을 포함한 조회
+// 실험용!!!! 검색조건을 포함한 전체 검사항목 조회
 // 매개변수로 검색조건을 유동적으로 받아 쿼리 생성. 값이 없을 시 전체출력
 // 잘 작동하지만 완전일치만 검색 가능한 문제가 있음. (BETWEEN, LIKE 등 미적용)
 const testList = (sc) => {
@@ -75,7 +75,6 @@ const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 
   return sql;
 };
-
 
 // 자재, 공정, 제품 전체 조회 (모달용)
 const searchAll  = (valueObj) => {
@@ -128,12 +127,28 @@ const searchAll  = (valueObj) => {
 };
 
 
+// 품질검사결과 (QUALITY_TEST_RECORD)
+// 검사대기 내역 조회 (생산지시상태 완료 상태 내역을 가져옴(검사대기) => 검사완료 후 다음 공정이 있다면 진행전 상태로 넘겨줌)
+const waitList = `
+  SELECT d.inst_cd, d.inst_dtl_cd, d.total_qty, d.prd_cd, fn_get_prd_nm(d.prd_cd) prd_nm, 
+         f.proc_cd, fn_get_proc_nm(f.proc_cd) proc_nm, i.update_dt, fn_get_codename(status) status
+  FROM   prod_inst_dtl d JOIN prod_inst i
+                           ON d.inst_cd = i.inst_cd
+                         JOIN process_flow f
+                           ON d.prd_cd = f.prd_cd
+  WHERE  i.status = 'Z01' -- 상태: 완료(Z03) 테스트용으로 Z01 해둠
+`;
+
+
 module.exports = {
   yetList,
   getMyList,
   testList,
+
   stdSeq,
   stdInsert,
   stdDtlInsert,
-  searchAll
+  searchAll,
+
+  waitList
 }

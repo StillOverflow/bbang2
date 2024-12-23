@@ -247,8 +247,9 @@
         };
       },
 
+      // 대상구분 변경될 때 동작
       async changeDivs(modal){ // 모달에서 실행한 경우 매개변수를 넘겨받음 (선택된 값 초기화 방지)
-        // 대상구분 변경될 때, 그리드 테이블 내용과 대상을 null로 초기화
+        // 그리드 테이블 내용과 대상을 null로 초기화
         this.modal_val.cd = null;
         this.myData = [];
         this.yetData = [];
@@ -293,7 +294,8 @@
           nm: this.modal_val.nm 
         };
 
-        let result = await axios.get('/api/quality/targetAll', {params: params});
+        let result = await axios.get('/api/quality/targetAll', {params: params})
+                                .catch(err => console.log(err));
         let data = result.data;
         data.forEach((obj) => {
           obj.has_std = obj.std_date == null ? '미등록' : '등록완료'; // SELECT문 컬럼에 포함되지 않았으므로 추가
@@ -301,7 +303,7 @@
         this.modalData = data;
       },
       
-      modalSelect(params){
+      modalSelect(params){ // @rowClicked
         let selected = params.data;
         if(!this.selected_radio){ // 이름으로 검색만 하고 radio 선택 안 되어있으면 선택해줌
           let type = null;
@@ -320,7 +322,7 @@
         this.date_val = selected.std_date ? this.$comm.getMyDay(selected.std_date) : this.$comm.getMyDay();
         this.modal_val.cd = selected.cd;
         this.modal_val.nm = selected.nm;
-        this.myData_save = new Set(); // 다른 대상에 똑같은 내용을 삽입할 수 있도록 하기 위함 (저장 비교조건 통과)
+        this.myData_save = new Set();
         this.modalToggle();
       },
       // ---------- 모달 메소드 끝 -----------
@@ -341,7 +343,7 @@
           let query = {cd: this.modal_val.cd, type: this.selected_radio};
 
           let result = await axios.get('/api/quality/test/' + val, {params: query})
-                                .catch(err => console.log(err));
+                                  .catch(err => console.log(err));
           let data = result.data;
 
           // 각각의 grid 데이터 넣기 실행
@@ -365,7 +367,8 @@
         }
       },
 
-      getSelected(type){ // 추가(+) / 삭제(-) 버튼 동작
+      // 추가(+) / 삭제(-) 버튼 동작
+      getSelected(type){
         let selected = null;
         if(type == 'plus') selected = this.yetApi.getSelectedNodes(); // 추가버튼일 시
         else selected = this.myApi.getSelectedNodes(); // 삭제버튼일 시
@@ -393,6 +396,7 @@
         }
       },
 
+      // SUBMIT
       async stdInsert(){
         let isChanged = false; // getTList()에서 임시저장했던 기존 내용이 변경되었는지 확인할 변수
         let originSize = this.myData_save.size; // 원래 데이터 길이
