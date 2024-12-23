@@ -39,6 +39,7 @@
               :src="previewImage"
               alt="설비 이미지"
               class="mb-3 imgBSJ"
+              name="selectedFile"
               width="230"
               height="230"
             />
@@ -364,11 +365,6 @@ export default {
     async equipInsert() {
       let formData = this.getInsertData();
 
-      // 이미지 파일이 없으면 selectedFile 필드를 추가하지 않음
-      if (this.selectedFile) {
-        formData.append('selectedFile', this.selectedFile);
-      }
-
       try {
         let result = await axios.post('/api/equip', formData, {
           headers: {
@@ -411,14 +407,11 @@ export default {
       let formData = new FormData();
 
       Object.keys(this.equipmentData).forEach((key) => {
-        // null이나 빈 값은 null로 설정
+        // 빈 문자열 또는 null 값은 추가하지 않음
         if (
-          this.equipmentData[key] === '' ||
-          this.equipmentData[key] === undefined ||
-          this.equipmentData[key] === 'null'
+          this.equipmentData[key] !== '' &&
+          this.equipmentData[key] !== null
         ) {
-          formData.append(key, null); // 실제 null 값 추가
-        } else {
           formData.append(key, this.equipmentData[key]);
         }
       });
