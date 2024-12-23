@@ -111,11 +111,34 @@ router.get("/standard/flowSeq/:prd_cd", async (req, res) => {
   let maxSeq = await standardService.getMaxProcSeq(prdCd);
   res.send(maxSeq);
 });
-//------------------공통코드-----------------------
-router.get("/standard/commList/:cd", async (req, res) => {
-  let comCd = req.params.cd;
-  let result = await standardService.findAllComm(comCd);
+//------------------자재관리-----------------------
+//자재조회
+router.get("/standard/allMaterials", async(req, res)=>{
+  result = await standardService.bringMaterial();
   res.send(result);
-});
+})
+//자재단건조회
+router.get('/standard/findMaterial/:no', async (req,res)=>{
+  let matNo = req.params.no;
+  let info = await standardService.findMatInfo(matNo);
+  res.send(info);
+})
+//자재등록
+router.post('/standard/material', async(req, res)=>{
+  let materials = req.body;
+  let result = await standardService.insertMaterial(materials);
+  res.send(result);
+})
+//자재수정
+router.put('/standard/updateMaterial/:mat_cd', async(req, res)=>{
+  let matCd = req.params.mat_cd;
+  let updateInfo = req.body;
+  let result = await standardService.updateMaterial(matCd, updateInfo);
+  res.send(result);
+})
+
+
+//------------------공통코드-----------------------
+
 
 module.exports = router;

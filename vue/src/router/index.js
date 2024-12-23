@@ -55,7 +55,7 @@ import QualityTest from '../views/quality/QualityTest.vue';
 //////////////////////////// 기준정보 ////////////////////////////
 import ProcessFlow from '../views/standard/ProcessFlow.vue';
 import Bom from '../views/standard/Bom.vue';
-
+import MaterialAdd from'../views/standard/MaterialAdd.vue';
 
 
 
@@ -343,11 +343,12 @@ const routes = [
     name: 'Bom',
     component: Bom,
   },
-  // {
-  //   path: '/ProcessFlow',
-  //   name: 'ProcessFlow',
-  //   component: ProcessFlow,
-  // },
+  {
+    //자재추가
+    path: '/MaterialAdd',
+    name: 'MaterialAdd',
+    component: MaterialAdd,
+  },
 
 
 
