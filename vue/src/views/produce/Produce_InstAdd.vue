@@ -1,39 +1,20 @@
 <!-- 생산 -->
 <style>
 .modal-container { width:700px; }
-.flip-list-move {
-  -webkit-transition: -webkit-transform 0.5s;
-  transition: -webkit-transform 0.5s;
-  transition: transform 0.5s;
-  transition: transform 0.5s, -webkit-transform 0.5s;
-}
-.no-move {
-  -webkit-transition: -webkit-transform 0s;
-  transition: -webkit-transform 0s;
-  transition: transform 0s;
-  transition: transform 0s, -webkit-transform 0s;
-}
-.drag-item {
-  cursor: move;
-}
-.drag-item td {
-  cursor: pointer;
-}
-
-
 </style>
 
 <template>
   <div class="py-4 container-fluid">
     <div class="card">      
       <div class="card-header bg-light ps-5 ps-md-4">
-        
+
+        <!--기본정보-->
         <p class="text-uppercase text-lg font-weight-bolder">기본정보</p>
         <p for="example-text-input" class="text-sm font-weight-bolder">생산계획코드</p>
           <div class="row">
             <div class="input-group w-30">
               <input class="form-control" type="text" v-model="plan_cd" placeholder="생산계획코드를 검색해주세요" style="height: 41px;">
-              <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
+              <button class="btn btn-warning" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
           </div>
 
@@ -52,8 +33,9 @@
             style="width: 100%; height: 400px;" 
             :columnDefs="planDefs"
             :rowData="planData" 
-            @rowClicked="modalClicked" 
             @grid-ready="gridFit"
+            @rowClicked="modalClicked" 
+            :grid-options="modalOptions"
             @rowIndexChanged="RowIndexChangedEvent"
             overlayNoRowsTemplate="등록된 계획서가 없습니다.">
             </ag-grid-vue>
@@ -67,7 +49,8 @@
 
       <div class="card-body">
         <div class="row">
-          <!--기본정보-->
+
+          <!--생산제품 목록-->
           <div class="col-md-6">
             <p class="text-uppercase text-lg font-weight-bolder">생산제품 목록</p>
             <div class="table-responsive">
@@ -82,15 +65,15 @@
                 </thead>
                 <tbody>
                   <template v-if="planDtlCount >0">
-                    <tr :key="i" v-for="(Dtl, i) in planDtlData" @click="prdClicked(Dtl.prd_cd)" class="text-center planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
+                    <tr :key="i" v-for="(Dtl, i) in planDtlData" @click="prdClicked(Dtl.PRD_CD)" class="text-center planDtl" v-bind:id="Dtl.PRD_CD+'_dtl'" >
                       <td>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" v-model="prdArr" :value="Dtl" :id="'fl' + Dtl.prd_cd">
+                          <input class="form-check-input" type="checkbox" v-model="prdArr" :value="Dtl" :id="'fl' + Dtl.PRD_CD">
                         </div>
                       </td>
-                      <td>{{ Dtl.prd_cd }}</td>
-                      <td>{{ Dtl.prd_nm }}</td>
-                      <td>{{ Dtl.prod_plan_qty }}</td>
+                      <td>{{ Dtl.PRD_CD }}</td>
+                      <td>{{ Dtl.PRD_NM }}</td>
+                      <td>{{ Dtl.PROD_PLAN_QTY }}</td>
                     </tr>
                   </template>
 
@@ -107,7 +90,7 @@
           <!--공정설정-->
           <div class="col-md-6">
 
-            <p class="text-uppercase text-lg font-weight-bolder">공정 및 자재설정</p>
+            <p class="text-uppercase text-lg font-weight-bolder">공정설정</p>
             <div class="table-responsive">
               <table class="table">
                 <thead class="table-secondary">
@@ -118,9 +101,9 @@
                     <th class="text-center text-uppercase text-ser opacity-7">공정설명</th>
                   </tr>
                 </thead>   
-                  <draggable :list="planFlowData" tag="tbody" @change="changeDrag" >
+                  <draggable :list="planFlowData" tag="tbody" @change="changeDrag" :animation="300">
                     <template v-if="planFlowCount >0">
-                      <tr  class="text-center drag-item"
+                      <tr  class="text-center"
                         v-for="Flow in planFlowData"
                         :key="Flow.PROC_FLOW_CD">
                         <td>
@@ -167,7 +150,6 @@ export default {
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 관리' });
     this.getPlanFlowList();
-    this.plan_cd = 'PR001';
   },
   computed : {
       planDtlCount(){
@@ -176,28 +158,34 @@ export default {
       planFlowCount(){
           return this.planFlowData.length;
       }
-
   },
   data() {
     return {
-      enabled: true,
+      clientNameSearch: "",
+      plan_cd : "", //검색어
       isModal: false,
       flowArr: [],
       prdArr: [],
       planDtlData: [],
       planFlowData: [],
-      dragging: false,
       
 
       /* 모달 계획서 목록 */
       planDefs: [
-        { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true, width: 120 },
-        { headerName: '생산시작일', field: 'start_dt', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
-        { headerName: '생산종료일', field: 'end_dt', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150 },
-        { headerName: '제품수량', field: 'dtl_qty', sortable: true, width: 100},
-        { headerName: '등록일', field: 'create_dt', valueFormatter: this.$comm.dateFormatter, width: 150 },
+        { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 120 },
+        { headerName: '생산시작일', field: 'START_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
+        { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150 },
+        { headerName: '제품수량', field: 'DTL_QTY', sortable: true, width: 100},
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
       ],
       planData: [],
+
+      
+      modalOptions: {
+        pagination: true,
+        paginationAutoPageSize: true,
+        suppressMovableColumns: true // 컬럼 드래그 이동 방지                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+      },
 
       gridOptions: {
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
@@ -205,6 +193,7 @@ export default {
             mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
         }                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     
       },
+
       FlowGridOptions: {
         rowDragManaged: true,
         rowDragMultiRow: true,
@@ -221,6 +210,17 @@ export default {
   methods: {
     gridFit(params) { // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
       params.api.sizeColumnsToFit();
+
+      const paginationPanel = document.querySelector('.ag-paging-panel');
+      if(paginationPanel){
+        const button = document.createElement('button');
+        const input = document.createElement('input');
+        input.className = 'form-control w-20';
+        button.textContent = '검색';
+        button.className = 'btn btn-warning mbp0';
+        paginationPanel.insertBefore(button, paginationPanel.firstChild);
+        paginationPanel.insertBefore(input, paginationPanel.firstChild);
+      }
     },
     /*모달 [S]*/
     modalOpen() {
@@ -228,8 +228,8 @@ export default {
       this.getPlanList();
     },
     modalClicked(params) {
-      this.getPlanDtlList(params.data.prod_plan_cd);
-      this.plan_cd= params.data.prod_plan_cd;
+      this.getPlanDtlList(params.data.PROD_PLAN_CD);
+      this.plan_cd= params.data.PROD_PLAN_CD;
       this.isModal = !this.isModal;
     },
     /*모달 [E]*/
@@ -269,12 +269,11 @@ export default {
       this.planFlowData = result.data;
     },
 
+    //공정설정 리스트 드래그 시 이벤트 (공정 순서 재정렬)
     changeDrag() {
       this.planFlowData.forEach((obj, index) => {
           obj.PROC_SEQ = index+1;
       });
-      
-
     },
 
     //지시서 등록
@@ -298,8 +297,8 @@ export default {
       
       this.prdArr.forEach((obj) => {
         insertPrd.push({
-          PRD_CD: obj.prd_cd,
-          total_qty: obj.prod_plan_qty
+          PRD_CD: obj.PRD_CD,
+          total_qty: obj.PROD_PLAN_QTY
         });
       });
 

@@ -1,13 +1,12 @@
 // ^ ------------------------- 자재 발주서(미지시 생산계획) -------------------------
 // 미지시 생산 계획서 조회
 const produceHeadPlanList = `
-   SELECT p.prod_plan_cd,
-         p.start_dt,
-         p.end_dt,
-         m.id,
-         m.name
-   FROM   prod_plan p INNER JOIN member m
-   ON     p.id = m.id
+   SELECT prod_plan_cd,
+         start_dt,
+         end_dt,
+         fn_get_membername(id) AS name,
+         id
+   FROM   prod_plan
    WHERE  prod_plan_cd IN (SELECT prod_plan_cd
                            FROM   prod_inst
                            WHERE  UPPER(status) = 'Z01')
@@ -18,13 +17,12 @@ const planListSearch = (searchObj) => {
    // 시작날짜, 끝나는 날짜 가져와서 담음
    const {startDt, endDt} = searchObj;
    let query = `
-      SELECT p.prod_plan_cd,
-            p.start_dt,
-            p.end_dt,
-            m.id,
-            m.name
-      FROM   prod_plan p INNER JOIN member m
-      ON     p.id = m.id
+      SELECT prod_plan_cd,
+            start_dt,
+            end_dt,
+            fn_get_membername(id) AS name,
+            id
+      FROM   prod_plan
       WHERE  prod_plan_cd IN (SELECT prod_plan_cd
                               FROM   prod_inst
                               WHERE  UPPER(status) = 'Z01')

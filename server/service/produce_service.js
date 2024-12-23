@@ -1,32 +1,31 @@
 const mariadb = require("../database/mapper.js");
 
-/*--------------계획서-------------*/
+/*--------------생산계획서-------------*/
 
-// 전체조회
+//계획서 전체조회
 const findAllPlan = async ()=>{
   let list = await mariadb.query('planList');
   return list;
 }
 
-// 단건조회
+//계획서 단건조회
 const findPlanNo = async (no)=>{
   let list = await mariadb.query('planSearch', no);
   return list;
 }
 
-// 제품조회
+//계획서 제품조회
 const findAllPlanDtl = async (no)=>{
   let list = await mariadb.query('planDtlList', no);
   return list;
 }
 
-// 계획서 삭제
+//계획서 계획서 삭제
 const deletePlan = async (values)=>{
   console.log(values);
   let list = await mariadb.query('planDelete', values);
   return list;
 }
-
 
 //지시서 등록
 const planInsert = async (values) => { 
@@ -59,27 +58,27 @@ const planInsert = async (values) => {
 }; 
 
 
-/*--------------지시서-------------*/
-// 조회
+/*--------------생산지시서-------------*/
+//지시서 조회
 const findAllInst = async ()=>{
   let list = await mariadb.query('instList');
   return list;
 }
 
-// 단건조회
+//지시서 단건조회
 const findInstNo = async (no)=>{
   let list = await mariadb.query('instInfo', no);
   let info = list[0];
   return info;
 }
 
-//제품별 공정 조회
+//지시서 제품별 공정 조회
 const findInstFlow = async (no)=>{
   let list = await mariadb.query('instProcList', no);
   return list;
 }
 
-//제품 공정별 자재 조회
+//지시서 제품 공정별 자재 조회
 const findInstMatFlow = async (no)=>{
   let list = await mariadb.query('instProcMtList', no);
   return list;
@@ -122,17 +121,6 @@ const instInsert = async (values) => {
     return result;
 }; 
 
-// 주문서 제품조회
-const findOrderNo = async (no)=>{
-  let list = await mariadb.query('orderDtlList', no);
-  return list;
-}
-
-// 제품 전체조회
-const findAllProduct = async ()=>{
-  let list = await mariadb.query('productList');
-  return list;
-}
 
 module.exports = {
   findAllPlan,
@@ -146,7 +134,5 @@ module.exports = {
   instInsert,  
   findInstFlow,
   findInstMatFlow,
-  instInsert,
-  findAllProduct,
-  findOrderNo
+  instInsert
 };

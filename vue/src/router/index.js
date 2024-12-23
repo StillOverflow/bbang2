@@ -19,6 +19,7 @@ import Sales_ProList from '../views/sales/Sales_ProList.vue';
 import Produce from '../views/produce/Produce.vue';
 import Produce_PlanList from '../views/produce/Produce_PlanList.vue';
 import Produce_PlanAdd from '../views/produce/Produce_PlanAdd.vue';
+import Produce_InstList from '../views/produce/Produce_InstList.vue';
 import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
 
 
@@ -29,6 +30,7 @@ import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
 import Equipment from '../views/equipment/Equipment.vue';
 import EquipmentMgmt from '../views/equipment/EquipmentMgmt.vue';
 import EquipmentAllList from '../views/equipment/EquipmentAllList.vue';
+import EquipmentInspectionMgmt from '../views/equipment/EquipmentInspectionMgmt.vue';
 
 
 
@@ -55,7 +57,7 @@ import QualityTest from '../views/quality/QualityTest.vue';
 //////////////////////////// 기준정보 ////////////////////////////
 import ProcessFlow from '../views/standard/ProcessFlow.vue';
 import Bom from '../views/standard/Bom.vue';
-
+import MaterialAdd from'../views/standard/MaterialAdd.vue';
 
 
 
@@ -175,11 +177,18 @@ const routes = [
     name: 'Produce_InstAdd',
     component: Produce_InstAdd,
   },
-
-
-
-
-
+  {
+    //생산계획서 조회
+    path: '/Produce_InstList',
+    name: 'Produce_InstList',
+    component: Produce_InstList,
+  },
+  {
+    //생산계획서 조회
+    path: '/Produce_InstList',
+    name: 'Produce_InstList',
+    component: Produce_InstList,
+  },
 
 
   
@@ -214,6 +223,15 @@ const routes = [
     name: 'Equipment_AllList',
     component: EquipmentAllList,
   },
+
+  {
+    //설비 점검 관라
+    path: '/Equipment_InspectionMgmt',
+    name: 'Equipment_InspectionMgmt',
+    component: EquipmentInspectionMgmt,
+  },
+
+  
 
 
 
@@ -343,11 +361,12 @@ const routes = [
     name: 'Bom',
     component: Bom,
   },
-  // {
-  //   path: '/ProcessFlow',
-  //   name: 'ProcessFlow',
-  //   component: ProcessFlow,
-  // },
+  {
+    //자재추가
+    path: '/MaterialAdd',
+    name: 'MaterialAdd',
+    component: MaterialAdd,
+  },
 
 
 
