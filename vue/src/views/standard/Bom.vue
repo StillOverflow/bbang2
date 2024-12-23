@@ -29,13 +29,13 @@
                   style="width: 25%; margin-left: 10px"
                   @click="searchPrd"
                 >
-                  검색
+                <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
               </div>
             </div>
             <!-- 제품 테이블 ag-gird -->
             <ag-grid-vue
-              class="ag-theme-alpine"
+              class="ag-theme-alpine my-4"
               style="width: 100%; height: 600px"
               :columnDefs="productDefs"
               :rowData="productData"
@@ -44,8 +44,7 @@
               :gridOptions="prdOptions"
               :cellValueChanged="cellValueChanged"
               @gridReady="onPrdGridReady"
-              @rowClicked="rowClicked"
-            >
+              @rowClicked="rowClicked" >
               <!--행선택시 bom데이터 조회-->
             </ag-grid-vue>
           </div>
@@ -62,10 +61,8 @@
                 placeholder="자재명을 입력하세요"
                 style="width: 70%"
               />
-              <button class="btn btn-warning mb-0 ms-2"  @click="searchMtl" >검색</button>
-              <button class="btn btn-outline-primary mb-0 ms-2"  @click="InsertBomData">
-                자재 추가
-              </button>
+              <button class="btn btn-warning mb-0 ms-2"  @click="searchMtl" ><i class="fa-solid fa-magnifying-glass"></i></button>
+              
             </div>
             <div class="col-13 text-end">
               
@@ -85,9 +82,12 @@
             <!-- BOM 목록 -->          
             <div class="col-13 text-end">
               <!-- <h4 class="mt-4 mb-3">BOM 정보</h4> -->
-              <label class="align-self-center me-7 fs-5">BOM 정보</label>
-              <button class="btn btn-outline-danger mt-2 ms-10" @click="deleteBom">
-                삭제
+              <label class="align-self-center me-9 fs-5">BOM 정보</label>
+              <button class="btn btn-outline-primary mt-2 mb-2 ms-2"  @click="InsertBomData">
+                자재 추가
+              </button>
+              <button class="btn btn-outline-danger mt-2 mb-2 ms-2" @click="deleteBom">
+                delete
               </button>
             </div>
             <!-- BOM 테이블 ag-grid -->
@@ -105,10 +105,10 @@
               </ag-grid-vue>
               <div class="text-center">
                 <button
-                  class="btn btn-success mt-3 saveBtn "
+                  class="btn btn-primary mt-3 saveBtn "
                   @click="save"
                   v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0">
-                  저장
+                  submit
                 </button>
               </div>
               

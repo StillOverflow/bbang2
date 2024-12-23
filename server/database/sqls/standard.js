@@ -211,8 +211,9 @@ where mat_cd=?
 //등록전 마지막 자재코드 찾기+1
 const getMatCd = 
 `
-SELECT CONCAT('MA', LPAD(IFNULL(MAX(SUBSTR(e.eqp_cd, -3)) + 1,1), 3,'0')) AS mat_cd 
-FROM material m
+SELECT 
+  CONCAT('MA', LPAD(IFNULL(MAX(CAST(SUBSTR(mat_cd, 3) AS UNSIGNED)) + 1, 1), 3, '0')) AS mat_cd
+FROM material
 `
 //자재등록
 const matInsert = 
