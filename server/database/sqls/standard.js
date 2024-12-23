@@ -180,6 +180,49 @@ const ProcessSeq = `
     FROM process_flow 
     WHERE prd_cd = ?
 `;
+//---------------------자재관리--------------------------
+//자재목록전체 조회
+const bringMat = 
+`
+SELECT 
+mat_cd,
+mat_nm,
+fn_get_codename(TYPE) as type,
+price,
+safe_stk,
+fn_get_codename(category) as category,
+fn_get_codename(unit) as unit
+from material
+`;
+//자재단건조회
+const matInfo =
+`
+SELECT 
+mat_cd,
+mat_nm,
+fn_get_codename(TYPE) as type,
+price,
+safe_stk,
+fn_get_codename(category) as category,
+fn_get_codename(unit) as unit
+from material
+where mat_cd=?
+`;
+//등록전 마지막 자재코드 찾기+1
+const getMatCd = 
+`
+SELECT CONCAT('MA', LPAD(IFNULL(MAX(SUBSTR(e.eqp_cd, -3)) + 1,1), 3,'0')) AS mat_cd 
+FROM material m
+`
+//자재등록
+const matInsert = 
+`INSERT INTO material 
+SET ? `;
+//수정
+const matUpdate = `
+UPDATE material 
+SET ? 
+WHERE mat_cd = ?`;
 
 module.exports = {
   bomlist,
@@ -200,4 +243,9 @@ module.exports = {
   procFlowSeq,
   procMtlSeq,
   deleteProcessMtlFlow,
+  bringMat,
+  getMatCd,
+  matInsert,
+  matUpdate,
+  matInfo
 };

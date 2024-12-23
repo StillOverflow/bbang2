@@ -184,6 +184,47 @@ const getMaxProcSeq = async (prdCd) => {
   const result = await mariadb.query("ProcessSeq", prdCd);
   return result;
 };
+
+
+//-----------------------------자재관리----------------------------------
+const bringMaterial = async()=>{
+  let result = await mariadb.query("bringMat");
+  return result;
+};
+//자재단건조회
+const findMatInfo = async(no) =>{
+
+  let list = await mariadb.query('matInfo',no);
+  let info = list[0];
+  return info;
+}
+
+//자재등록
+const insertMaterial = async(matInfo)=>{
+  let result = await mariadb.query('matInsert', matInfo);
+  if( result.insertId > 0){
+    return { mat_no : result.insertId }; 
+  }else{
+    return {};
+  }
+};
+
+//자재수정
+const updateMaterial = async(matCd,updateInfo)=>{
+  let datas = [updateInfo, matCd];
+  let result = await mariadb.query('matUpdate', datas);
+  let sendData = {};
+  if(result.changedRows == 1){
+    sendData.target = { 'mat_cd' : matCd };
+    sendData.result = true;
+  }else{
+    sendData.result = false;
+  }
+  return sendData;
+}
+
+
+
 module.exports = {
   //메소드명
   findBomByPc,
@@ -203,4 +244,8 @@ module.exports = {
   insertProcessMaterial,
   getMaxProcSeq,
   deleteProcessMtlFlow,
+  bringMaterial,
+  insertMaterial,
+  updateMaterial,
+  findMatInfo
 };
