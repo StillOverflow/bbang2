@@ -71,7 +71,7 @@
                     <select class="form-select custon-width" v-model="matInfo.unit">
                         <option v-for="(opt, idx) in selectedData.selectOptions.unit"
                             :key="idx"
-                            :value="selectedData.unit">
+                            :value="opt.comm_dtl_cd">
                             {{ opt.comm_dtl_nm }}
                         </option>
                     </select>
@@ -79,14 +79,24 @@
 
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재유형</div>
                 <div class="input-group mb-3 w-50">
-                        <input type="text" class="form-control" v-model="matInfo.type" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" />
+                    <select class="form-select custon-width" v-model="matInfo.type">
+                        <option v-for="(opt, idx) in selectedData.selectOptions.type"
+                            :key="idx"
+                            :value="opt.comm_dtl_cd">
+                            {{ opt.comm_dtl_nm }}
+                        </option>
+                    </select>
                 </div>
 
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">카테고리</div>
                 <div class="input-group mb-3 w-50">
-                        <input type="text" class="form-control" v-model="matInfo.category" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" />
+                    <select class="form-select custon-width" v-model="matInfo.category">
+                        <option v-for="(opt, idx) in selectedData.selectOptions.category"
+                            :key="idx"
+                            :value="opt.comm_dtl_cd">
+                            {{ opt.comm_dtl_nm }}
+                        </option>
+                    </select>
                 </div>
 
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
@@ -97,13 +107,9 @@
 
             </div> 
                 <div class="text-center">
-                    <button type="button" class="btn btn-success mt-3 saveBtn " @click="isUpdated? matUpdate() : matInsert()">
-                        저장
-                    </button>
-                    <button
-                        class="btn btn-danger mt-3 ms-2 saveBtn ">
-                        삭제
-                    </button>
+                    <button type="button" class="btn btn-success ms-2  mt-3 saveBtn " @click="isUpdated? matUpdate() : matInsert()"> 저장 </button>
+                    <button type="button" class="btn btn-secondary ms-2  mt-3 saveBtn" @click="newMaterial">신규등록</button>
+                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn "> 삭제 </button>
                 </div>
             </div>
         </div>
@@ -152,6 +158,18 @@ export default {
                     unit: [], // 단위 공통코드
                 },
             },
+            newMaterial() {
+                this.matInfo = {
+                mat_cd: '', // 자재코드는 신규등록 시 생성됨
+                mat_nm: '',
+                type: '',
+                category: '',
+                price: '',
+                unit: '',
+                safe_stk: '',
+                };
+                this.isUpdated = false; // 신규등록 모드로 전환
+            },
             materialDefs:[
                 {headerName: '자재코드' , field: 'mat_cd'},
                 {headerName: '자재명' , field: 'mat_nm'},
@@ -173,11 +191,16 @@ export default {
         matClicked(params){
             this.matInfo.mat_cd = params.data.mat_cd;
             this.matInfo.mat_nm = params.data.mat_nm;
-            this.matInfo.type = params.data.type;
-            this.matInfo.category = params.data.category;
+            this.matInfo.type = this.matchCode(this.selectedData.selectOptions.type, params.data.type);
+            this.matInfo.category = this.matchCode(this.selectedData.selectOptions.category, params.data.category);
             this.matInfo.price = params.data.price;
-            this.matInfo.unit = params.data.unit;
-            this.matInfo.safe_stk = params.data.safe_stk;         
+            this.matInfo.unit = this.matchCode(this.selectedData.selectOptions.unit, params.data.unit);
+            this.matInfo.safe_stk = params.data.safe_stk;
+            this.isUpdated = true;         
+        },
+        matchCode(options, value) {
+            const match = options.find((opt) => opt.comm_dtl_nm == value || opt.comm_dtl_cd == value); //코드나 이름에 벨류가 있는지 확인
+            return match ? match.comm_dtl_cd : ''; // 있으면 코드 반환 없으면 공백
         },
         async bringMat(){
             let result = await axios.get('/api/standard/allMaterials')
@@ -191,9 +214,9 @@ export default {
         // 공통코드 가져오기
         async fetchCommonCodes() {
             try {
-                const type = await axios.get('/api/commList/MA');
-                const category = await axios.get('/api/commList/PC');
-                const unit = await axios.get('/api/commList/UN');
+                const type = await axios.get('/api/comm/codeList/MA');
+                const category = await axios.get('/api/comm/codeList/MC');
+                const unit = await axios.get('/api/comm/codeList/UN');
 
                 this.selectedData.selectOptions.type = type.data || [];
                 this.selectedData.selectOptions.category = category.data || [];
@@ -203,37 +226,29 @@ export default {
             }
         },
         async matInsert(){
-            let obj = {
-                mat_nm: this.matInfo.mat_nm,
-                price: this.matInfo.price,
-                unit: this.matInfo.unit,
-                type: this.matInfo.type,
-                category: this.matInfo.category,
-                safe_stk: this.matInfo.safe_stk,
-            }
-
-            let result = await axios.post("/api/standard/material", obj)
-                                    .catch(err=>console.log(err));
-            let addRes = result.data;
-            if(addRes.mat_no > 0){
-                alert('등록되었습니다.');
+            try {
+                let result = await axios.post('/api/standard/material', this.matInfo);
+                if (result.data.result) {
+                    alert('자재 등록');
+                    this.bringMat(); // 목록 갱신
+                } else {
+                    alert('등록에 실패');
+                }
+            } catch (err) {
+            console.error('자재 등록 중 오류:', err);
             }
         },
-        async matUpdate(){
-            let obj = {
-                mat_cd: this.matInfo.mat_cd,
-                mat_nm: this.matInfo.mat_nm,
-                price: this.matInfo.price,
-                unit: this.matInfo.unit,
-                type: this.matInfo.type,
-                category: this.matInfo.category,
-                safe_stk: this.matInfo.safe_stk,
+        async matUpdate() {
+            try {
+                let result = await axios.put(`/api/standard/updateMaterial/${this.matInfo.mat_cd}`, this.matInfo);
+            if (result.data.result) {
+                alert('자재가 수정되었습니다.');
+                this.bringMat(); // 목록 갱신
+            } else {
+                alert('수정에 실패했습니다.');
             }
-            let result = await axios.put(`/api/standard/updateMaterial/${this.matInfo.mat_cd}`, obj)
-                                    .catch(err=>console.log(err));
-            let updateRes = result.data;
-            if(updateRes.readonly){
-                alert('수정완료')
+            } catch (err) {
+            console.error('자재 수정 중 오류:', err);
             }
         }
     },

@@ -201,9 +201,12 @@ const findMatInfo = async(no) =>{
 
 //자재등록
 const insertMaterial = async(matInfo)=>{
+  let new_mat_cd = (await mariadb.query('getMatCd'))[0].mat_cd
+  matInfo.mat_cd = new_mat_cd;
+
   let result = await mariadb.query('matInsert', matInfo);
-  if( result.insertId > 0){
-    return { mat_no : result.insertId }; 
+  if( result.affectedRows  > 0){
+    return { result: true, mat_cd : new_mat_cd }; 
   }else{
     return {};
   }
@@ -214,11 +217,10 @@ const updateMaterial = async(matCd,updateInfo)=>{
   let datas = [updateInfo, matCd];
   let result = await mariadb.query('matUpdate', datas);
   let sendData = {};
-  if(result.changedRows == 1){
-    sendData.target = { 'mat_cd' : matCd };
-    sendData.result = true;
+  if(result.affectedRows > 0){
+    sendData = { 'result' : true };
   }else{
-    sendData.result = false;
+    sendData = { 'result' : false };
   }
   return sendData;
 }

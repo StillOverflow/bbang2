@@ -1,99 +1,49 @@
 <!-- 기준정보 -->
 <template>
-  <div class="py-4 container-fluid">
-    <div class="card">
-      <!-- 제품/공정흐름도 -->
-      <div class="card-body">
+  <div id="page-inner" class="mx-auto">
+    <div class="py-4 container-fluid">
+      <div class="card py-5 px-6">
         <div class="row">
-          <div class="col-7">
-            <h4 class="ms-3">제품</h4>
-          </div>
-          <div class="col-5">
-            <div class="row">
-              <div class="col-5">
-                <h4 class="ms-3">BOM내역</h4>
+          <!-- 제품목록 -->
+          <div class="col-md-5" style="height: auto">
+            <h4 class="d-flex justify-content-start fs-4">제품 목록</h4>
+            <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%">
+              <div style="width: 15%">
+                <label class="me-2 align-self-center">제품명</label>
               </div>
-              <div class="col-8 text-end">
-                <button class="btn btn-success" @click="InsertProcMtl">
-                  자재추가
+              <div class="d-flex justify-content-left align-items-center" style="width: 85%" >
+                <input type="text" class="form-control d-inline" v-model="keyword" placeholder="제품명을 입력하세요" style="width: 75%" />
+                <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" >
+                  <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div class="row mb-4">
-          <div class="col-5">
             <!-- 제품 목록 -->
             <ag-grid-vue
-              class="ag-theme-alpine me-5"
-              style="width: 100%; height: 300px"
+              class="ag-theme-alpine me-5 my-4"
+              style="width: 100%; height: 600px"
               :columnDefs="productDefs"
               :rowData="productData"
               :pagination="true"
               :cellValueChanged="cellValueChanged"
               :gridOptions="gridOptions"
               @gridReady="gridReady"
-              @rowClicked="prodClicked"
-            >
+              @rowClicked="prodClicked" >
               <!--행선택시 bom데이터 조회-->
             </ag-grid-vue>
           </div>
-          <div
-            class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"
-          ></div>
-          <div class="col-5">
-            <!-- BOM 목록 -->
-            <ag-grid-vue
-              class="ag-theme-alpine"
-              style="width: 100%; height: 300px"
-              :columnDefs="bomDefs"
-              :rowData="bomData"
-              :pagination="true"
-              :rowSelection="multiple"
-              overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
-              :gridOptions="bomOptions"
-              @rowClicked="bomClicked"
-              @gridReady="gridReady"
-            >
-            </ag-grid-vue>
-          </div>
-        </div>
-      </div>
-
-      <!-- bom내역/ 공정코드 -->
-      <div class="card-body">
-        <div class="row">
-          <div class="col-7">
-            <h4 class="ms-3">공정흐름도</h4>
-            <div class="col-8 text-end">
-              <button class="btn btn-secondary mb-0 ms-2">위로</button>
-              <button class="btn btn-secondary mb-0 ms-2">아래로</button>
-              <button class="btn btn-success mb-0 ms-2" @click="modalOpen">
-                공정추가
-              </button>
-              <button class="btn btn-danger mb-0 ms-2" @click="deleteProc">
-                삭제
-              </button>
+          <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
+          <div class="col-md-6" style="height: auto">
+            <!-- 자재 목록 -->
+            <h4 class="d-flex justify-content-start">공정흐름도</h4>
+            <div class="mb-3 d-flex justify-content-end" >
+              <button class="btn btn-outline-secondary mb-0 ms-2">  up </button>
+              <button class="btn btn-outline-secondary mb-0 ms-2"> down </button>
+              <button class="btn btn-outline-primary mb-0 ms-2"  @click="modalOpen"> 공정추가 </button>
+              <button class="btn btn-outline-danger mb-0 ms-2"  @click="deleteProc">  delete </button>
             </div>
-          </div>
+            <div class="col-13 text-end"></div>
 
-          <div class="col-5">
-            <div class="row">
-              <div class="col-5">
-                <h4 class="ms-0">공정별 자재</h4>
-              </div>
-              <div class="ms-3 col-10">
-                <button class="btn btn-danger" @click="deleteProcMtl">
-                  삭제
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="row mb-4">
-          <div class="col-5">
             <!-- 공정 흐름도 -->
             <ag-grid-vue
               class="ag-theme-alpine"
@@ -106,15 +56,23 @@
               :gridOptions="proFlowOptions"
               @rowClicked="proFlowClicked"
               @gridReady="onProFlowgridReady"
-              overlayNoRowsTemplate="제품을 선택하세요."
-            >
+              overlayNoRowsTemplate="제품을 선택하세요." >
             </ag-grid-vue>
-          </div>
-          <div
-            class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"
-          ></div>
-          <div class="col-5">
-            <!-- 공정별 자재 흐름도 -->
+
+            <!-- BOM 목록 -->          
+            <div class="col-13 text-end">
+              <!-- <h4 class="mt-4 mb-3">BOM 정보</h4> -->
+              <label class="d-flex justify-content-start fs-4">공정별자재</label>
+              <button class="btn btn-outline-primary mt-2 mb-2 ms-2" @click="bommodalOpen">
+                자재추가
+              </button>
+              <button class="btn btn-outline-danger mt-2 mb-2 ms-2" @click="deleteProcMtl">
+                delete
+              </button>
+            </div>
+            <!-- BOM 테이블 ag-grid -->
+            <div>
+              <!-- 공정별 자재 흐름도 -->
             <ag-grid-vue
               class="ag-theme-alpine"
               style="width: 100%; height: 300px"
@@ -126,49 +84,88 @@
               overlayNoRowsTemplate="공정에 대한 자재정보가 없습니다."
               :gridOptions="bomOptions"
               @rowClicked="ProFlowMtlClicked"
-              @gridReady="onProFlowMtl"
-            >
+              @gridReady="onProFlowMtl" >
             </ag-grid-vue>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <Layout :modalCheck="isModal">
-    <template v-slot:header>
-      <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-      <h5 class="modal-title">공정코드 검색</h5>
-      <button type="button" aria-label="Close" class="close" @click="modalOpen">
-        ×
-      </button>
-    </template>
-    <template v-slot:default>
-      <ag-grid-vue
-        class="ag-theme-alpine"
-        style="width: 100%; height: 400px"
-        :columnDefs="modalDefs"
-        :rowData="modalData"
-        :pagination="true"
-        :gridOptions="bomOptions"
-        @rowClicked="modalClicked"
-        @gridReady="onModalGridReady"
-      >
-      </ag-grid-vue>
-    </template>
-    <template v-slot:footer>
-      <button type="button" class="btn btn-secondary" @click="modalOpen">
-        취소
-      </button>
-      <button type="button" class="btn btn-primary" @click="InsertProc">
-        추가
-      </button>
-    </template>
-  </Layout>
-  <div class="col-6 text-end">
-    <button class="btn btn-success" @click="save">저장</button>
+            <Layout :modalCheck="isModal">
+              <template v-slot:header>
+                  <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+                  <h5 class="modal-title">공정코드 검색</h5>
+                  <button type="button" aria-label="Close" class="close" @click="modalOpen">
+                    ×
+                  </button>
+              </template>
+              <template v-slot:default>
+                <ag-grid-vue
+                  class="ag-theme-alpine"
+                  style="width: 100%; height: 400px"
+                  :columnDefs="modalDefs"
+                  :rowData="modalData"
+                  :pagination="true"
+                  :gridOptions="bomOptions"
+                  @rowClicked="modalClicked"
+                  @gridReady="onModalGridReady" >
+                </ag-grid-vue>
+              </template>
+              <template v-slot:footer>
+                <button type="button" class="btn btn-secondary" @click="modalOpen">
+                  취소
+                </button>
+                <button type="button" class="btn btn-primary" @click="InsertProc">
+                  추가
+                </button>
+              </template>
+            </Layout>
+            <Layout :modalCheck="bomModal">
+              <template v-slot:header>
+                <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+                <h5 class="modal-title">공정코드 검색</h5>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  class="close"
+                  @click="bommodalOpen"
+                >
+                  ×
+                </button>
+              </template>
+              <template v-slot:default>
+                <!-- BOM 목록 -->
+                <ag-grid-vue
+                  class="ag-theme-alpine"
+                  style="width: 100%; height: 300px"
+                  :columnDefs="bomDefs"
+                  :rowData="bomData"
+                  :pagination="true"
+                  :rowSelection="multiple"
+                  overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
+                  :gridOptions="bomOptions"
+                  @rowClicked="bomClicked"
+                  @gridReady="gridReady" >
+                </ag-grid-vue>
+              </template>
+              <template v-slot:footer>
+                <button  type="button" class="btn btn-secondary" @click="bommodalOpen" >
+                  취소
+                </button>
+                <button type="button" class="btn btn-primary" @click="InsertProcMtl" >
+                  추가
+                </button>
+              </template>
+            </Layout>
+              <div class="text-center">
+                <button class="btn btn-success mt-3 saveBtn " @click="save" >
+                  SUBMIT
+                </button>
+              </div>             
+            </div>
+          </div> 
+        </div>      
+      </div>     
+      <!-- bom 관리 -->
+    </div>   
   </div>
 </template>
+
 
 <script>
 import { AgGridVue } from "ag-grid-vue3";
@@ -259,6 +256,7 @@ export default {
       saveModal: [],
       deleteModal: [],
       isModal: false,
+      bomModal: false,
     };
   },
 
@@ -267,6 +265,10 @@ export default {
     modalOpen() {
       this.isModal = !this.isModal;
     },
+    bommodalOpen() {
+      this.bomModal = !this.bomModal;
+    },
+
     //제품조회
     async bringPrdUsa() {
       let result = await axios
@@ -323,15 +325,19 @@ export default {
     },
     gridReady(params) {
       this.gridApi = params.api;
+      params.api.sizeColumnsToFit();
     },
     onModalGridReady(params) {
       this.modalApi = params.api;
+      params.api.sizeColumnsToFit();
     },
     onProFlowgridReady(params) {
       this.prowFlowApi = params.api;
+      params.api.sizeColumnsToFit();
     },
     onProFlowMtl(params) {
       this.procFlowMtlApi = params.api;
+      params.api.sizeColumnsToFit();
     },
 
     //모달 공정 클릭시 공정흐름도 추가
@@ -410,6 +416,7 @@ export default {
           add: [saveMaterial],
         }); // 그리드
       }
+      this.bomModal = !this.bomModal;
     },
     //공정별 자재 삭제
     async deleteProcMtl() {
