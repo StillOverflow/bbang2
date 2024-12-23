@@ -189,6 +189,7 @@
         // 검사결과 데이터
         isRowClicked: false, // 기본값 false (표시 안 함)
         selectedTarget: {}, 
+        tests: null,
         test_qty: null,
         pass_qty: null,
         def_qty: null,
@@ -239,9 +240,19 @@
 
       // 검사대기목록 불러오기
       async getWaitGrid(){
-        let result = await axios.get('/api/quality/rec/wait')
-                                .catch(err => console.log(err));
-        this.waitData = result.data;
+        let waitResult = await axios.get('/api/quality/rec/wait')
+                                    .catch(err => console.log(err));
+
+        // let waitData = waitResult.data;
+
+        // let query = {cd: waitData.prd_cd, type: 'P03'}; // P03: 제품대상 검사항목 
+
+        // let testResult = await axios.get('/api/quality/test/my', {params: query}) // 품질기준으로 적용중인 검사항목 불러옴
+        //                         .catch(err => console.log(err));
+        // let testData = testResult.data;
+
+        // this.tests = test
+        this.waitData = waitResult.data;
       },
 
       // 목록에서 타겟 선택 시 검사결과란에 정보 불러오기
