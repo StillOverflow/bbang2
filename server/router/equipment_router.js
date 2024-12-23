@@ -3,11 +3,18 @@ const router = express.Router();
 const equipmentService = require('../service/equipment_service.js');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+const uploadDir = 'uploads/';
 
 // multer 설정
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/'); // 파일 저장 디렉토리 설정
+    // uploads 디렉토리가 없으면 생성
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true }); // 하위 디렉토리까지 재귀적으로 생성
+      console.log(`'${uploadDir}' 디렉토리가 생성되었습니다.`);
+    }
+    cb(null, uploadDir); // 파일 저장 디렉토리 설정
   },
   filename: function (req, file, cb) {
     const now = new Date(); // 현재 시간 객체
