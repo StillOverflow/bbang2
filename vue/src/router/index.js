@@ -30,6 +30,7 @@ import MaterialsOrderManage from '../views/material/MaterialsOrderManage.vue';
 
 ////////////////////////////// 품질 //////////////////////////////
 import QualityStdAdd from '../views/quality/QualityStdAdd.vue';
+import QualityTest from '../views/quality/QualityTest.vue';
 
 //////////////////////////// 기준정보 ////////////////////////////
 import ProcessFlow from '../views/standard/ProcessFlow.vue';
@@ -178,10 +179,16 @@ const routes = [
 
   ////////////////////////////// 품질 //////////////////////////////
   {
-    //품질
+    // 품질기준 관리
     path: '/Quality_stdAdd',
     name: 'QualityStdAdd',
     component: QualityStdAdd,
+  },
+  {
+    // 품질검사
+    path: '/Quality_test',
+    name: 'QualityTest',
+    component: QualityTest,
   },
 
   //////////////////////////// 기준정보 ////////////////////////////

@@ -62,8 +62,8 @@ router.get("/standard/flow/:prd_cd", async (req, res) => {
 });
 
 //선택한 공정 자재 조회
-router.get("/standard/proessMtl/:proc_cd", async (req, res) => {
-  let procCd = req.params.proc_cd;
+router.get("/standard/proessMtl/:proc_flow_cd", async (req, res) => {
+  let procCd = req.params.proc_flow_cd;
   let procMtllist = await standardService.searchProMtl(procCd);
   res.send(procMtllist);
 });
@@ -73,25 +73,44 @@ router.get("/standard/procCd", async (req, res) => {
   let procCdlist = await standardService.searchProcCd();
   res.send(procCdlist);
 });
-// // 공정 흐름도 추가
-router.post("/standard/procFlow", async (req, res) => {
-  let procFlowInfo = req.body;
-  let result = await standardService.InsertProcMat(procFlowInfo);
+
+//공정흐름 + 자재 추가
+router.post("/standard/procFlowMtl", async (req, res) => {
+  let procFlowMtlInfo = req.body;
+  let result = await standardService.insertProcMat(procFlowMtlInfo);
   res.send(result);
 });
-// 공정 순서 업데이트
-router.put("/processFlow/seq", async (req, res) => {
-  const updatedProcesses = req.body; // [{ proc_seq, proc_cd }]
-  let result = await standardService.updateProcessSequence(updatedProcesses);
+// 공정흐름도만 등록
+router.post("/standard/flow", async (req, res) => {
+  const procFlowData = req.body;
+  const result = await standardService.insertProcFlow(procFlowData);
+  res.send(result);
+});
+// 공정별 자재만 추가
+router.post("/standard/processMaterial", async (req, res) => {
+  const materialData = req.body;
+  const result = await standardService.insertProcessMaterial(materialData);
+  res.send(result);
+});
+// 공정별 자재 삭제
+router.delete("/standard/flowMtl/:proc_mat_flow_cd", async (req, res) => {
+  let procFlowMatCd = req.params.proc_mat_flow_cd;
+  let result = await standardService.deleteProcessMtlFlow(procFlowMatCd);
   res.send(result);
 });
 // 공정 흐름도 삭제
-router.delete('/standard/flow/:proc_flow_cd', async (req, res) => {
-    let procFlowCd = req.params.proc_flow_cd;
-    let result = await standardService.deleteProcessFlow(procFlowCd);
-    res.send(result);
+router.delete("/standard/flow/:proc_flow_cd", async (req, res) => {
+  let procFlowCd = req.params.proc_flow_cd;
+  let result = await standardService.deleteProcessFlow(procFlowCd);
+  res.send(result);
 });
+//순서
+router.get("/standard/flowSeq/:prd_cd", async (req, res) => {
+  let prdCd = req.params.prd_cd;
 
+  let maxSeq = await standardService.getMaxProcSeq(prdCd);
+  res.send(maxSeq);
+});
 //------------------공통코드-----------------------
 router.get("/standard/commList/:cd", async (req, res) => {
   let comCd = req.params.cd;

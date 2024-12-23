@@ -27,12 +27,6 @@ const planSearch =
 FROM prod_plan pp
 WHERE PROD_PLAN_CD LIKE "%"?"%"`;
 
-
-//등록
-const planInsert =
-`INSERT INTO prod_plan 
-SET ? `;
-
 //수정
 const planUpdate =
 `UPDATE prod_plan 
@@ -65,6 +59,34 @@ const planDtlUpdate =
 `UPDATE prod_plan_dtl
 SET ? `;
 
+/* 계획서 등록[S] */
+// 시퀀스 조회
+const planSeq = `
+  SELECT CONCAT('PR', LPAD(nextval(plan_seq), 3,'0')) seq
+  FROM dual
+`;
+
+// 헤더 입력
+const planInsert = `
+  INSERT INTO prod_plan SET ?
+`;
+
+// 디테일 입력
+const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
+  let sql = `
+    INSERT prod_plan_dtl
+      (PROD_PLAN_DTL_CD, PROD_PLAN_CD, PRD_CD, PROD_PLAN_QTY)
+    VALUES 
+  `;
+
+  values.forEach((obj) => {
+    sql += `(CONCAT('PRDTL', LPAD(nextval(plan_dtl_seq), 3,'0')), '${obj.PROD_PLAN_CD}', '${obj.PRD_CD}', '${obj.PROD_PLAN_QTY}'), `;
+  });
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+  return sql;
+};
+/* 계획서 등록[E] */
 
 
 /* -----------생산지시서------------*/
@@ -189,6 +211,29 @@ const instProcMtInsert =
 SET ? `;
 
 
+//주문서 제품목록
+const orderDtlList = 
+`
+SELECT ORDER_DTL_CD,
+		 ORDER_CD,
+		 o.PRD_CD, 
+		 PRD_NM, 
+		 ORDER_QTY, 
+		 (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=o.PRD_CD) AS IN_CNT
+FROM 
+		order_detail o JOIN product p ON o.PRD_CD=p.PRD_CD 
+		WHERE order_cd=?
+`;
+
+//제품목록
+const productList = 
+`
+SELECT PRD_CD, 
+       PRD_NM, 
+       PRICE, 
+       (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=p.PRD_CD) AS IN_CNT 
+FROM product p
+`
 /* -----------생산실적------------*/
 
 //조회
@@ -199,11 +244,14 @@ WHERE PROC_FLOW_CD = ? `;
 module.exports = {
     planList,
     planSearch,
+    planSeq,
     planInsert,
+    planDtlInsert,
     planUpdate,
     planDelete,
     planDtlList,
     planDtlUpdate,
+    productList,
 
     instList,
     instInfo,
@@ -220,5 +268,6 @@ module.exports = {
     instProcUpdate,
     instProcMtList,
     instProcMtInsert,
+    orderDtlList,
     prRsList
 }
