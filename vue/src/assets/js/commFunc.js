@@ -63,7 +63,7 @@ export default {
 
    // 공통코드 가져오기 (리턴값 : [{comm_dtl_cd, comm_dtl_nm}, ....])
   async getComm(cd){
-    let result = await axios.get('/api/commList/' + cd)
+    let result = await axios.get('/api/comm/codeList/' + cd)
                             .catch(err => console.log(err));
     return result.data;
   }

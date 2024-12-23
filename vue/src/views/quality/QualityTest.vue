@@ -26,9 +26,6 @@
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산번호</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control" :value="selectedTarget.inst_cd" readonly>
-              <!-- <span class="form-control text-end" :value="memo" readonly @click="null" style="cursor: pointer">
-                dddd<i class="fa-solid fa-magnifying-glass ms-1" style="color: #787878;"/>
-              </span> -->
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">제품코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -189,6 +186,7 @@
         // 검사결과 데이터
         isRowClicked: false, // 기본값 false (표시 안 함)
         selectedTarget: {}, 
+        tests: [], // 대상에 품질기준으로 적용된 검사항목
         test_qty: null,
         pass_qty: null,
         def_qty: null,
@@ -239,15 +237,20 @@
 
       // 검사대기목록 불러오기
       async getWaitGrid(){
-        let result = await axios.get('/api/quality/rec/wait')
-                                .catch(err => console.log(err));
-        this.waitData = result.data;
+        let waitResult = await axios.get('/api/quality/rec/wait')
+                                    .catch(err => console.log(err));
+        this.waitData = waitResult.data;
       },
 
       // 목록에서 타겟 선택 시 검사결과란에 정보 불러오기
-      selectTarget(params){
+      async selectTarget(params){
         this.isRowClicked = true; // 검사결과 창 open
         this.selectedTarget = params.data;
+
+        let query = {cd: params.data.prd_cd, type: 'P03'}; // P03: 제품대상 검사항목 
+        let testResult = await axios.get('/api/quality/test/my', {params: query}) // 품질기준으로 적용중인 검사항목 불러옴
+                                    .catch(err => console.log(err));
+        this.tests = testResult.data;
       },
 
       // ------------ 모달 메소드 ------------
