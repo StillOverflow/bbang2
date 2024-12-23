@@ -362,15 +362,15 @@ export default {
 
     // 등록 기능 (for in 사용)
     async equipInsert() {
-      let obj = this.getInsertData();
+      let formData = this.getInsertData();
 
       // 이미지 파일이 없으면 selectedFile 필드를 추가하지 않음
       if (this.selectedFile) {
-        obj.append('selectedFile', this.selectedFile);
+        formData.append('selectedFile', this.selectedFile);
       }
 
       try {
-        let result = await axios.post('/api/equip', obj, {
+        let result = await axios.post('/api/equip', formData, {
           headers: {
             'Content-Type': 'multipart/form-data',
           },
