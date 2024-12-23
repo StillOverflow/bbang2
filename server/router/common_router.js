@@ -43,10 +43,4 @@ router.get('/comm/order/dtl/:no', async (req,res)=>{
   res.send(orderDtlList);
 })
 
-// 전체제품 조회
-router.get('/comm/product', async (req, res)=>{
-  console.log("1231322133");
-  let productList = await commonService.findAllProduct();
-  res.send(productList);
-});
 module.exports = router;

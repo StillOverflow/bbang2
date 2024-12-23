@@ -13,7 +13,7 @@
           </div>
         </div>
 
-        <div class="row">
+        <div class="row mb-2">
           <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">진행상태</div>
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">
@@ -23,6 +23,19 @@
                 {{opt.comm_dtl_nm}}
               </label>
             </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">정렬</div>
+          <div class="col-6">
+            <select v-model="selected_list" class="form-select">
+              <option v-for="(val, index) in orderlist" 
+              :value="val.value" 
+              v-bind:key="index">
+              {{val.name}}
+              </option>
+            </select>
           </div>
         </div>
       </div>
@@ -65,6 +78,15 @@ export default {
       myApi: null,
       myColApi: null,
       radios: [],
+      selected_radio:'',
+      selected_list:'',
+      orderlist:[
+        { name: "선택해주세요.", value: "" },
+        { name:'작업일자 최신순', value:'order by work_dt desc'},
+        { name:'작업일자 과거순', value:'order by work asc'},
+        { name:'등록일 최신순', value:'order by create_dt desc'},
+        { name:'등록일 과거순', value:'order by create_dt asc'}
+      ],
 
       instDefs: [
         { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
@@ -88,7 +110,11 @@ export default {
   methods: {
     async getStatus() {
       let arr = await this.$comm.getComm("PS");
+      let arrAdd = {comm_dtl_cd: '', comm_dtl_nm: '전체'};
+      arr.unshift(arrAdd);
+      console.log(arr);
       this.radios = arr;
+      
     },
     myGrid(params) { // 매개변수 속성으로 자동 접근
       params.api.sizeColumnsToFit(); // 가로스크롤 삭제
