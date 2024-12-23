@@ -1,65 +1,62 @@
 /* -----------생산계획서------------*/
 
-//전체조회
+//계획서 전체조회
 const planList =
-`SELECT prod_plan_cd, 
-        order_cd, 
-        id, 
-        start_dt, 
-        end_dt, 
-        create_dt, 
-	    (SELECT COUNT(prod_plan_qty) 
-      	 FROM prod_plan_dtl 
-	     WHERE prod_plan_cd=pp.PROD_PLAN_CD ) AS dtl_qty 
-FROM prod_plan pp;`;
+`SELECT PROD_PLAN_CD, 
+        ORDER_CD, 
+        ID, 
+        START_DT, 
+        END_DT, 
+        CREATE_DT, 
+	      (SELECT 
+            COUNT(PROD_PLAN_QTY) 
+      	 FROM 
+            PROD_PLAN_DTL 
+	       WHERE PROD_PLAN_CD = pp.PROD_PLAN_CD ) AS DTL_QTY 
+FROM PROD_PLAN pp`;
 
-//단건조회
+//계획서 단건조회
 const planSearch =
-`SELECT prod_plan_cd, 
-        order_cd, 
-        id, 
-        start_dt, 
-        end_dt, 
-        create_dt, 
-	    (SELECT COUNT(prod_plan_qty) 
-      	 FROM prod_plan_dtl 
-	     WHERE prod_plan_cd=pp.PROD_PLAN_CD ) AS dtl_qty 
-FROM prod_plan pp
+`SELECT PROD_PLAN_CD, 
+        ORDER_CD, 
+        ID, 
+        START_DT, 
+        END_DT, 
+        CREATE_DT,
+	      (SELECT 
+            COUNT(PROD_PLAN_QTY) 
+      	 FROM 
+            PROD_PLAN_DTL 
+	       WHERE PROD_PLAN_CD = pp.PROD_PLAN_CD ) AS DTL_QTY 
+FROM PROD_PLAN pp
 WHERE PROD_PLAN_CD LIKE "%"?"%"`;
-
-//수정
-const planUpdate =
-`UPDATE prod_plan 
-SET ? 
-WHERE PROD_PLAN_CD = ?`;
 
 //계획서 다중 삭제
 const planDelete =
-`DELETE FROM prod_plan 
+`DELETE FROM PROD_PLAN 
 WHERE PROD_PLAN_CD IN "("?")"`;
 
-//제품조회
+//계획서 제품조회
 const planDtlList =
 `SELECT 
-    prod_plan_dtl_cd, 
-    prod_plan_cd, 
-    a.prd_cd as prd_cd, 
-    prd_nm, 
-    prod_plan_qty,
-    (SELECT COUNT(*) 
-     FROM 
-        prod_inst c JOIN prod_inst_dtl d 
-        ON c.INST_CD=d.INST_CD 
-        WHERE c.PROD_PLAN_CD=a.prod_plan_cd AND d.PRD_CD = a.prd_cd) AS reg_cnt
-FROM prod_plan_dtl a JOIN product b ON a.PRD_CD = b.PRD_CD
+        PROD_PLAN_DTL_CD, 
+        PROD_PLAN_CD, 
+        pp.PRD_CD as PRD_CD, 
+        PRD_NM, 
+        PROD_PLAN_QTY,
+        (SELECT 
+            COUNT(*) 
+         FROM 
+            PROD_INST pi JOIN PROD_INST_DTL pid 
+            ON pi.INST_CD=pid.INST_CD 
+         WHERE pi.PROD_PLAN_CD = pp.prod_plan_cd AND pid.PRD_CD = pp.prd_cd) AS reg_cnt
+FROM 
+        PROD_PLAN_DTL pp JOIN PRODUCT p ON pp.PRD_CD = p.PRD_CD
 WHERE PROD_PLAN_CD = ? `;
 
-//제품수정
-const planDtlUpdate =
-`UPDATE prod_plan_dtl
-SET ? `;
 
 /* 계획서 등록[S] */
+
 // 시퀀스 조회
 const planSeq = `
   SELECT CONCAT('PR', LPAD(nextval(plan_seq), 3,'0')) seq
@@ -68,13 +65,13 @@ const planSeq = `
 
 // 헤더 입력
 const planInsert = `
-  INSERT INTO prod_plan SET ?
+  INSERT INTO PROD_PLAN SET ?
 `;
 
 // 디테일 입력
 const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
-    INSERT prod_plan_dtl
+    INSERT PROD_PLAN_DTL
       (PROD_PLAN_DTL_CD, PROD_PLAN_CD, PRD_CD, PROD_PLAN_QTY)
     VALUES 
   `;
@@ -91,17 +88,24 @@ const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 
 /* -----------생산지시서------------*/
 
-//전체조회
+//지시서 전체조회
 const instList =
-`SELECT * FROM prod_inst`;
+`SELECT INST_CD,
+		 PROD_PLAN_CD,
+		 fn_get_codename(STATUS) as ACT_TYPE,
+		 WORK_DT,
+		 CREATE_DT,
+		(SELECT COUNT(*) FROM prod_inst_dtl WHERE INST_CD=PI.INST_CD) AS PRD_CNT
+FROM PROD_INST pi`;
 
-//단건조회
+//지시서 단건조회
 const instInfo =
-`SELECT * FROM prod_inst
+`SELECT * FROM PROD_INST
 WHERE INST_CD = ?`;
 
 
 /* 지시서 등록[S] */
+
 // 시퀀스 조회
 const instSeq = `
   SELECT CONCAT('PI', LPAD(nextval(inst_seq), 3,'0')) seq
@@ -110,13 +114,13 @@ const instSeq = `
 
 // 헤더 입력
 const instInsert = `
-  INSERT INTO prod_inst SET ?
+  INSERT INTO PROD_INST SET ?
 `;
 
 // 디테일 입력
 const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
-    INSERT prod_inst_dtl
+    INSERT PROD_INST_DTL
       (INST_DTL_CD, INST_CD,PRD_CD, TOTAL_QTY)
     VALUES 
   `;
@@ -132,7 +136,7 @@ const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 // 공정흐름 입력
 const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
-    INSERT prod_proc_step
+    INSERT PROD_PROC_STEP
       (INST_PROC_CD, INST_CD, PRD_CD, PROC_CD, STEP)
     VALUES 
   `;
@@ -146,100 +150,56 @@ const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
 };
 /* 지시서 등록[E] */
 
-//수정
-const instUpdate =
-`UPDATE prod_inst 
-SET ? 
-WHERE INST_CD = ?`;
 
-//제품수정
-const instDtlUpdate =
-`UPDATE prod_inst_dtl
-SET ? 
-WHERE INST_DTL_CD = ?`;
-
-//제품별 공정 조회
+//지시서 제품별 공정 조회
 const instProcList =
-`SELECT PROC_FLOW_CD, p.PROC_CD AS PROC_CD, PROC_NM, PROC_SEQ, PRD_CD, p.NOTE AS NOTE 
-FROM process p JOIN process_flow f ON p.PROC_CD=f.PROC_CD
+`SELECT 
+      PROC_FLOW_CD, 
+      p.PROC_CD AS PROC_CD, 
+      PROC_NM, 
+      PROC_SEQ, 
+      PRD_CD, 
+      p.NOTE AS NOTE 
+FROM 
+      PROCESS p JOIN PROCESS_FLOW f ON p.PROC_CD=f.PROC_CD
 WHERE PRD_CD = ? 
 ORDER BY PROC_SEQ`;
 
-//제품별 공정 등록
-const instProcInsert =
-`INSERT INTO prod_proc_step
-SET ? `;
-
-//제품별 공정 수정
-const instProcUpdate =
-`UPDATE prod_proc_step
-SET ? `;
-
-//제품 공정별 자재 조회
+//지시서 제품 공정별 자재 조회
 const instProcMtList =
 `SELECT 
-		"group" AS CATE,
-        "" AS PRD_CD,
-		PROC_FLOW_CD, 
-		"" AS MAT_CD, 
-        "" AS MAT_QTY,
-		p.PROC_NM as NAME,
-		0 AS MAT_QTY_T
-	FROM 
-		process p join process_flow pf 
-		ON p.proc_cd = pf.proc_cd 
-	WHERE PRD_CD=?
+        "group" AS CATE,
+            "" AS PRD_CD,
+        PROC_FLOW_CD, 
+        "" AS MAT_CD, 
+            "" AS MAT_QTY,
+        p.PROC_NM as NAME,
+        0 AS MAT_QTY_T
+  FROM 
+        PROCESS p join PROCESS_FLOW pf 
+        ON p.PROC_CD = pf.PROC_CD 
+  WHERE PRD_CD=?
 UNION
 	SELECT 
-		"data" AS CATE,
-        "" AS PRD_CD,
-		PROC_FLOW_CD,
-		pm.MAT_CD AS MAT_CD, 
-      pm.MAT_QTY,
-		(SELECT mat_nm FROM material WHERE mat_cd=pm.MAT_CD) AS MAT_NM,
-		m.MAT_QTY_T
+        "data" AS CATE,
+            "" AS PRD_CD,
+        PROC_FLOW_CD,
+        pm.MAT_CD AS MAT_CD, 
+          pm.MAT_QTY,
+        (SELECT MAT_NM FROM MATERIAL WHERE MAT_CD=pm.MAT_CD) AS MAT_NM,
+        m.MAT_QTY_T
 	FROM 
-		proc_flow_mtl pm JOIN (SELECT MAT_CD, SUM(MAT_QTY) AS MAT_QTY_T from material_in GROUP BY MAT_CD) m 
-		ON pm.MAT_CD=m.MAT_CD 
-	WHERE proc_flow_cd=PROC_FLOW_CD
-order BY proc_flow_cd, field (cate, 'group', 'data');
+        PROC_fLOW_MTL pm 
+      JOIN 
+        (SELECT 
+            MAT_CD, 
+            SUM(MAT_QTY) AS MAT_QTY_T 
+         FROM 
+            MATERIAL_IN GROUP BY MAT_CD) m 
+      ON pm.MAT_CD=m.MAT_CD 
+	WHERE PROC_FLOW_CD=PROC_FLOW_CD
+  ORDER BY PROC_FLOW_CD, field (cate, 'group', 'data');
 `;
-
-//제품 공정별 자재 등록
-const instProcMtInsert =
-`INSERT INTO process_flow_mtl
-SET ? `;
-
-
-//주문서 제품목록
-const orderDtlList = 
-`
-SELECT ORDER_DTL_CD,
-		 ORDER_CD,
-		 o.PRD_CD, 
-		 PRD_NM, 
-		 ORDER_QTY, 
-		 (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=o.PRD_CD) AS IN_CNT
-FROM 
-		order_detail o JOIN product p ON o.PRD_CD=p.PRD_CD 
-		WHERE order_cd=?
-`;
-
-//제품목록
-const productList = 
-`
-SELECT PRD_CD, 
-       PRD_NM, 
-       PRICE, 
-       (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=p.PRD_CD) AS IN_CNT 
-FROM product p
-`
-/* -----------생산실적------------*/
-
-//조회
-const prRsList =
-`SELECT * FROM PROD_RESULT
-WHERE PROC_FLOW_CD = ? `;
 
 module.exports = {
     planList,
@@ -247,27 +207,16 @@ module.exports = {
     planSeq,
     planInsert,
     planDtlInsert,
-    planUpdate,
     planDelete,
     planDtlList,
-    planDtlUpdate,
-    productList,
 
     instList,
     instInfo,
     instSeq,
     instInsert,
-    instUpdate,
     instDtlInsert,
     instFlowInsert,
 
-    instDtlInsert,
-    instDtlUpdate,
     instProcList,
-    instProcInsert,
-    instProcUpdate,
-    instProcMtList,
-    instProcMtInsert,
-    orderDtlList,
-    prRsList
+    instProcMtList
 }
