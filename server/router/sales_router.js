@@ -39,6 +39,28 @@ router.post('/sales/ord', async (req, resp) => {
 
 
 /* ---------------------------------출고제품--------------------------------------- */
+
+//출고 제품 목록 조회
+router.get('/sales/prdList', async (req, res) => {
+    let prdOutList = await salesService.listOutPrd();
+    res.send(prdOutList);
+});
+
+//출고 제품 목록 검색
+router.get('/sales/searchPo/', async (req, res) => {
+    try {
+        let salesNo = req.query.no;
+        let std = req.query.st;
+        let etd = req.query.et;
+        
+        let info = await salesService.searchPrdOut(salesNo,std,etd);
+        res.send(info);
+    } catch (error) {
+        console.error(error);
+    }
+    
+});
+
 // 출고 등록 주문서 조회
 router.get('/sales/:no', async (req, res) => {
     let orderNo = req.params.no;

@@ -31,7 +31,8 @@
                     <div class="input-group mb-3 w-25">
                         <input type="text" class="form-control" id="acc_name" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
-                        <button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen">SEARCH</button>
+                        <button class="btn btn-warning" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        <!--<button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen">SEARCH</button>-->
                     </div>
 
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처 코드</div> 
@@ -52,7 +53,8 @@
                     <div class="input-group mb-3 w-25">
                         <input type="text" class="form-control" id="mem_name" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
-                        <button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen2">SEARCH</button>
+                        <button class="btn btn-warning" type="button" @click="modalOpen2"><i class="fa-solid fa-magnifying-glass"></i></button>
+                        <!--<button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen2">SEARCH</button>-->
                     </div>
 
                     <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">담당자 ID</div> 
@@ -89,13 +91,11 @@
                 @grid-ready="gridFit"
                 overlayNoRowsTemplate="제품 조회 버튼을 이용하여 제품을 추가 해주세요.">
                 </ag-grid-vue>
-                <div class="row">
-                    <div class="col-6 col-lg-5"></div>
-                    <div class="col-6 col-lg-1 mt-2">
-                        <button class="btn btn-primary " @click="ordInsert()">등록</button>
-                    </div>
+                <div class="center mtp30">
+                    <button class="btn btn-primary" @click="ordInsert">SUBMIT</button>
+                    <button class="btn btn-secondary mlp10" @click="resetForm">RESET</button>
                 </div>
-            </div>
+            </div> 
         </div>
     </div>
     <!-- 거래처 조회 모달 -->
@@ -166,6 +166,9 @@ export default {
         return {
             //테스트 값을 넘기기 위해 담을 곳 만들기
             test: '',
+            //날짜 검색에 최소값과 최댓값을 위해서 바인딩이 필요하므로 설정
+            due_date: '',
+            order_date: '',
             
             columnDefs: [
                 {headerName: '제품 코드', field: 'prd_cd'},
@@ -212,7 +215,15 @@ export default {
             proDefs: [
                 {headerName: '제품 코드', field: 'prd_cd', filter: 'agTextColumnFilter'},
                 {headerName: '제품 이름', field: 'prd_nm', filter: 'agTextColumnFilter'},
-                {headerName: '제품 수량', field: 'stock', filter: 'agTextColumnFilter'},
+                {
+                    headerName: '제품 수량', 
+                    field: 'stock', 
+                    filter: 'agTextColumnFilter',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
             ],
             proData: [],
 
