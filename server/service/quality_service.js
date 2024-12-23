@@ -41,12 +41,12 @@ const stdInsert = async (values) => {
 
         // 헤더 시퀀스 nextval 얻기
         let seq_res = await mariadb.transQuery('stdSeq');
-        let mySeq = seq_res[0].seq;
+        let headerSeq = seq_res[0].seq;
         
         // 헤더 삽입
         let header = values[0]; // 공통되는 부분은 헤더값으로 빼기
         let arr = [
-            mySeq,
+            headerSeq,
             header.target_type,
             header.target_cd
         ];
@@ -54,7 +54,7 @@ const stdInsert = async (values) => {
 
         // 디테일 삽입
         values.forEach((val) => { // 헤더 시퀀스값 추가
-            val.qu_std_cd = mySeq;
+            val.qu_std_cd = headerSeq;
         });
         let dtl_res = await mariadb.transQuery('stdDtlInsert', values);
         

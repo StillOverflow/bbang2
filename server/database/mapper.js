@@ -101,7 +101,7 @@ const transQuery = (alias, values) => {
   })
   .catch(err => {
     console.log(err); 
-    return false; // 오류 시 뭐라도 리턴해줘야 서비스에서 판단 가능함.
+    return false; // 오류 시 뭐라도 리턴해줘야 서비스에서 .affectedRows 등 판단할 때 오류 안 남.
   });
 };
 

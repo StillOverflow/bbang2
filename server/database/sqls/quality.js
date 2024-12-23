@@ -17,7 +17,8 @@ const yetList = `
                                               WHERE  target_cd = ?
                                               ORDER  BY qu_std_cd DESC LIMIT 1
                                             )
-                          ) `;
+                          ) 
+  ORDER BY test_nm `;
 
 // 특정 대상에 현재 적용중인 목록 조회
 const getMyList = () => {
@@ -79,14 +80,16 @@ const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 // 자재, 공정, 제품 전체 조회 (모달용)
 const searchAll  = (valueObj) => {
   let type = valueObj.type;
-  let cate = valueObj.cd;
+  let cate_type = valueObj.cate_type; // 자재 구분(원자재/부자재/소모품..)
+  let cate = valueObj.cate;
   let nm = valueObj.nm;
   
   // 이름이나 카테고리(코드) 둘 중 하나 혹은 둘 다 검색조건으로 들어올 수 있음.
   let prodQuery = `
     (SELECT '제품' type, prd_cd cd, prd_nm nm, '완제품' cate_type, fn_get_codename(category) category, fn_quality_std_dt(prd_cd) std_date
+            , 'I01' cate_type_cd, category category_cd -- 숨겨둘 값
        FROM  product
-      WHERE  create_dt IS NOT NULL
+      WHERE  create_dt IS NOT NULL -- 당연한 조건 (AND 생성 위함)
         ${!cate ? "" : "AND  category = '" + cate + "' "}
         ${!nm ? "" : "AND  prd_nm LIKE '%" + nm + "%' "}
       ORDER  BY std_date, cd )
@@ -94,17 +97,20 @@ const searchAll  = (valueObj) => {
 
   let matQuery = `
       (SELECT '자재' type, mat_cd cd, mat_nm nm, fn_get_codename(type) cate_type, fn_get_codename(category) category, fn_quality_std_dt(mat_cd) std_date
-         FROM  material
-        WHERE  create_dt IS NOT NULL
+              , type cate_type_cd, category category_cd -- 숨겨둘 값
+      FROM  material
+        WHERE  create_dt IS NOT NULL -- 당연한 조건 (AND 생성 위함)
           ${!cate ? "" : "AND  category = '" + cate + "' "} 
+          ${!cate_type ? "" : "AND  type = '" + cate_type + "' "} 
           ${!nm ? "" : "AND  mat_nm LIKE '%" + nm + "%' "}
         ORDER  BY std_date, cd )
   `;
 
   let procQuery = `
       (SELECT '공정' type, proc_cd cd, proc_nm nm, null cate_type, null category, fn_quality_std_dt(proc_cd) std_date
+              , null cate_type_cd, null category_cd -- 숨겨둘 값
         FROM   process
-        WHERE  create_dt IS NOT NULL
+        WHERE  create_dt IS NOT NULL -- 당연한 조건 (AND 생성 위함)
           ${!nm ? "" : "AND  proc_nm LIKE '%" + nm + "%' "}
         ORDER  BY std_date, cd )
   `;
