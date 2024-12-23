@@ -103,7 +103,7 @@
       getPlanHeaderList(); // 미지시 생산 계획서 조회
    });
    
-   // 감시자
+   // 자재 재고 조회 감시자
    watch(planToMaterialStk, () => {
       const api = materialOptions.api; // 자재 그리드 감시
       if(api) {
@@ -111,7 +111,7 @@
       }
    });
 
-   // 계획서 데이터 감시
+   // 계획서 데이터 감시자
    watch(prodPlanListData, () => {
       const api = materialOptions.api; // 미지시 계획서 그리드 감시
       if(api) {
@@ -335,7 +335,8 @@
       rowClassRules: {
          'rowRedStyle': (params) => {
             if (params.data.lack_qty) { // 부족 수량이 있으면 ~~ 
-               const quantity = parseInt(params.data.lack_qty.match(/^(\d+)/)); // 부족수량에서 10000ml -> 10000만 추출하기
+               const quantity = parseInt(params.data.lack_qty.match(/^(-?\d+)/)); // 부족수량에서 -10000ml -> -10000만 추출하기
+
                return quantity <= 0; // 부족수량이 0 이하일 때 조건 적용하기!
             }
             return false;
@@ -369,7 +370,7 @@
    }
    
    .rowRedStyle {
-      background-color: rgb(252, 182, 182) !important; /* 셀 배경 빨간색 */
+      background-color: rgb(253, 211, 211) !important; /* 셀 배경 빨간색 */
       color: rgb(59, 59, 59) !important; /* 텍스트 흰색으로 변경 */
    }
 

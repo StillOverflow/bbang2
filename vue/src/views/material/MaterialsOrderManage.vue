@@ -3,8 +3,8 @@
       <div class="card">      
          <div class="card-header bg-light ,">
             <div class="d-flex justify-content-end align-items-center">
-               <button class="btn btn-warning m-0 mx-1">
-                  <i class="fa-regular fa-file"></i>조회
+               <button class="btn btn-warning m-0 m-1">
+                  <i class="fa-regular fa-file me-1"></i>조회
                </button>
                <button class="btn btn-outline-primary m-0 mx-1">
                   <i class="fa-solid fa-plus"></i>
