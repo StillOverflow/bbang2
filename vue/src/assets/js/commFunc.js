@@ -17,6 +17,12 @@ export default {
     return ('0' + num).slice(-2);
   },
 
+  // 단순 숫자 포맷팅용 전역 함수 (천단위 콤마 표시)
+  getCurrency(num){
+    if (!num) return '0';
+    return Number(num).toLocaleString();
+  },
+
   // 날짜 포맷 변환 ag-grid용 [S]
   dateFormatter(params) { //여기서 ag grid에 date형식을 보냄
     let value = params.value; // getMyDay() 와의 차이점!
@@ -63,4 +69,43 @@ export default {
   }
 
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

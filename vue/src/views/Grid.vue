@@ -91,7 +91,7 @@ export default {
     myGrid(params) { // 매개변수 속성으로 자동 접근
       console.log(params); // params를 확인해보면 grid에서 쓸 수 있는 모든 메소드가 나옴. (유료버전 포함..)
       params.api.sizeColumnsToFit(); // 가로스크롤 삭제
-      this.myApi = params.api;
+      this.myApi = params.api; // 다중선택값 가져올 시 필요
       this.myColApi = params.columnApi; // api, columnApi 둘 다 꼭 있어야 함
     },
     getGridVal() {
@@ -108,6 +108,7 @@ export default {
         <br>${params.data.name}를 클릭하셨네요.`,
         'info'
       );
+      // this.myApi.exportDataAsCsv();
     },
     excelDownload() {
       var today = new Date();

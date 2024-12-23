@@ -47,4 +47,12 @@ router.get('/quality/targetAll', async (req, resp) => {
 });
 
 
+// 품질검사결과
+// 검사대기 내역 조회 (생산지시상태 완료 상태 내역을 가져옴(검사대기) => 검사완료 후 다음 공정이 있다면 진행전 상태로 넘겨줌)
+router.get('/quality/rec/wait', async (req, resp) => {
+  let result = await qualityService.getWaitList();
+  resp.send(result);
+});
+
+
 module.exports = router;

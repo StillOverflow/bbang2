@@ -1,41 +1,27 @@
 const mariadb = require('../database/mapper.js');
 
 // 검사항목
-const getYetList = async (values) => { // 적용하지 않은 목록 조회
+// 미적용 검사항목 조회
+const getYetList = async (values) => {
     let result = await mariadb.query('yetList', values);
     return result;
 };
 
-const getMyList = async (values) => { // 적용한 목록 조회
+// 적용 검사항목 조회
+const getMyList = async (values) => { 
     let result = await mariadb.query('getMyList', values);
     return result;
 };
 
-const findTestList = async (search) => { // 조건을 받아 목록 조회
+// 전체 검사항목 조회 (조건 받음, 실험용)
+const findTestList = async (search) => { 
     let result = await mariadb.query('testList', search);
     return result;
 };
 
 
 // 품질기준
-
-// - 헤더 & 디테일 삽입
-// 트랜잭션 미적용 버전
-// const stdInsert = async (values) => { 
-//     let sample = values[0];
-//     let arr = [
-//         sample.target_type,
-//         sample.target_cd
-//     ];
-//     let dtl_res = await mariadb.query('stdDtlInsert', values); // 배열 그대로 넣기
-//     if(header_res.affectedRows > 0 & dtl_res.affectedRows > 0){
-        // return {"result" : "success"};
-//     } else {
-        // return {"result" : "fail"};
-//     }
-// };
-
-// 트랜잭션 적용 버전
+// 등록 (트랜잭션 적용 버전)
 const stdInsert = async (values) => {
     let result = await mariadb.transOpen( async () => {
 
@@ -72,9 +58,17 @@ const stdInsert = async (values) => {
 
 // 자재, 공정, 제품 전체 조회 (모달용)
 const searchAll = async (valueObj) => { 
-    // nm => '소금빵', cate => 'C01', type => 'P03'(제품) 형태로 들어옴.
+    // nm => '소금빵', cate_type => null, cate => 'C01', type => 'P03'(제품) 형태로 들어옴.
     // 하나만 있을 수도, 전부 있을 수도 있으므로 null여부에 따라 동적 쿼리 생성
     let result = mariadb.query('searchAll', valueObj);
+    return result;
+};
+
+
+// 품질검사결과
+// 검사대기 내역 조회 (생산지시상태 완료 상태 내역을 가져옴(검사대기) => 검사완료 후 다음 공정이 있다면 진행전 상태로 넘겨줌)
+const getWaitList = async () => { 
+    let result = mariadb.query('waitList');
     return result;
 };
 
@@ -83,6 +77,9 @@ module.exports = {
     getYetList,
     getMyList,
     findTestList,
+
     stdInsert,
-    searchAll
+    searchAll,
+    
+    getWaitList
 }

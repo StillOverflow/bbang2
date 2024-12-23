@@ -5,15 +5,15 @@
       <div class="card-group">
         <div class="card">
           <div class="card-header p-1 fw-bold text-center fs-4" style="cursor: pointer" 
-            :class="activeTab" @click="activeWaitTap">검사대기</div>
+            :class="activeTab" @click="activeWaitTab">검사대기</div>
         </div>
         <div class="card">
           <div class="card-header p-1 fw-bold text-center fs-4" style="cursor: pointer" 
-            :class="activeTabRev" @click="activeCompTap">검사완료</div>
+            :class="activeTabRev" @click="activeCompTab">검사완료</div>
         </div>
       </div>
-      <ag-grid-vue class="ag-theme-alpine" style="height: 250px;" :columnDefs="testDefs" :rowData="testData" 
-        @grid-ready="gridFit" :gridOptions="gridOptions" @rowClicked="null"/>
+      <ag-grid-vue class="ag-theme-alpine" style="height: 250px;" :columnDefs="waitDefs" :rowData="waitData" 
+        @grid-ready="gridFit" :gridOptions="gridOptions" @rowClicked="selectTarget"/>
     </div>
     
     <div class="card">
@@ -23,27 +23,28 @@
         <div class="row mb-1 d-flex justify-content-between">
 
           <div class="col-12 col-md-6 col-xl-3 row d-flex align-items-center justify-content-center p-xl-0">
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산지시</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산번호</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <span class="form-control text-end" :value="memo" readonly @click="null" style="cursor: pointer">
+              <input type="text" class="form-control" :value="selectedTarget.inst_cd" readonly>
+              <!-- <span class="form-control text-end" :value="memo" readonly @click="null" style="cursor: pointer">
                 dddd<i class="fa-solid fa-magnifying-glass ms-1" style="color: #787878;"/>
-              </span>
+              </span> -->
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">제품코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="memo" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.prd_cd" readonly>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">제품명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="memo" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.prd_nm" readonly>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="memo" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.proc_cd" readonly>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="memo" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.proc_nm" readonly>
             </div>
           </div>
 
@@ -55,9 +56,9 @@
               <div class="card-body">
                 <div class="form-check p-0 d-flex justify-content-center">
                   <span style="cursor: pointer" :style="t_break">검사검사 검사검사검</span>
-                  <input class="form-check-input ms-4" type="radio" :value="null" :id="'check'" :disabled="!isActive">
+                  <input class="form-check-input ms-4" type="radio" :value="null" :id="'check'" :disabled="!isWaitList">
                   <label class="form-check-label ms-2 me-1 text-start" :for="'check'" :style="t_overflow">적합</label>
-                  <input class="form-check-input ms-2" type="radio" :value="null" :id="'check'" :disabled="!isActive">
+                  <input class="form-check-input ms-2" type="radio" :value="null" :id="'check'" :disabled="!isWaitList">
                   <label class="form-check-label ms-2 me-4 text-start" :for="'check'" :style="t_overflow">부적합</label>
                 </div>
               </div>
@@ -65,46 +66,46 @@
           </div>
 
           <div class="col-12 col-md-6 col-xl-3 row d-flex align-items-center justify-content-center p-xl-0">
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">전체량</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">전체수량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="memo" readonly>
+              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.total_qty)" readonly>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">검사량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="memo" :disabled="!isActive">
+              <input type="text" class="form-control text-end" v-model="test_qty" :disabled="!isWaitList">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">합격량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="memo" :disabled="!isActive">
+              <input type="text" class="form-control text-end" v-model="pass_qty" :disabled="!isWaitList">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">불량양</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="memo" :disabled="!isActive">
+              <input type="text" class="form-control text-end" v-model="def_qty" :disabled="!isWaitList">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">검사일자</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="date" class="form-control" :value="memo" :disabled="!isActive">
+              <input type="date" class="form-control" v-model="complete_dt" :disabled="!isWaitList">
             </div>
           </div>
 
           <div class="col-12 col-md-6 col-xl-2 row d-flex align-items-center justify-content-center g-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">단위</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="memo" readonly>
+              <input type="text" class="form-control" :value="'kg?? ea??'" readonly>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_break">불량 코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="memo" readonly>
+              <input type="text" class="form-control" :value="null" readonly>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">불량명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="memo" placeholder="선택" @click="modalToggle" :disabled="!isActive">
+              <input type="text" class="form-control" :value="null" placeholder="선택" @click="modalToggle" :disabled="!isWaitList">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">담당자</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <select class="form-select" :disabled="!isActive">
+              <select class="form-select" :disabled="!isWaitList">
               <option :value="null">선택</option>
-              <option>담당</option>
+              <option>빵담당</option>
             </select>
             </div>
           </div>
@@ -114,7 +115,7 @@
           <div class="col-9 col-md-10 col-xl-11 row">
             <h6 class="col-2 col-xl-1 d-flex align-items-center justify-content-center" :style="t_overflow">비고</h6>
             <div class="col-10 col-xl-11">
-              <input type="text" class="form-control" :value="memo" :disabled="!isActive">
+              <input type="text" class="form-control" :value="note" :disabled="!isWaitList">
             </div>
           </div>
           <div class="col-3 col-md-2 col-xl-1 text-end">
@@ -155,7 +156,7 @@
         t_break: {wordBreak: 'keep-all'},
         
         // 탭 색깔 클래스 바인딩용
-        isActive: true, // 기본값 true: 검사대기 탭, false: 검사완료 탭
+        isWaitList: true, // 기본값 true: 검사대기 탭, false: 검사완료 탭
 
         // 모달 내부 grid API 데이터 (Defs: thead 구성, Data: tbody 구성)
         isModal: false, // 토글기능
@@ -167,8 +168,16 @@
         },
 
         // 일반 grid API 데이터
-        testDefs: [],
-        testData: [],
+        waitDefs: [
+          { headerName: '생산번호', field: 'inst_cd' }, // 생산지시서 번호
+          { headerName: '생산일자', field: 'update_dt' }, // 생산지시서에서 완료상태가 된 일자
+          { headerName: '제품코드', field: 'prd_cd' },
+          { headerName: '제품명', field: 'prd_nm' },
+          { headerName: '공정코드', field: 'proc_cd' },
+          { headerName: '공정명', field: 'proc_nm' },
+          { headerName: '전체수량', field: 'total_qty' ,valueFormatter: this.$comm.currencyFormatter }
+        ],
+        waitData: [],
 
         gridOptions: {
           pagination: true,
@@ -178,18 +187,23 @@
         },
 
         // 검사결과 데이터
-        isRowClicked: true, /////////////// 기본값 false (작업용으로 true 해둠)
-        memo: null,
+        isRowClicked: false, // 기본값 false (표시 안 함)
+        selectedTarget: {}, 
+        test_qty: null,
+        pass_qty: null,
+        def_qty: null,
+        complete_dt: null,
+        note: null,
       }
     },
 
     computed: { // this.로 data(){} 참조하려면 data 생성 후 computed에서 계산되어야 함.
       // 탭 색깔 클래스 바인딩용
       activeTab(){ 
-        return {'bg-success': this.isActive, 'bg-light': !this.isActive, 'text-white': this.isActive}
+        return {'bg-success': this.isWaitList, 'bg-light': !this.isWaitList, 'text-white': this.isWaitList}
       },
       activeTabRev(){
-        return {'bg-success': !this.isActive, 'bg-light': this.isActive, 'text-white': !this.isActive}
+        return {'bg-success': !this.isWaitList, 'bg-light': this.isWaitList, 'text-white': !this.isWaitList}
       }
     },
 
@@ -203,29 +217,37 @@
       this.$store.dispatch('breadCrumb', {title: '제품 품질검사'});
 
       // 그리드 데이터 불러오기
+      this.getWaitGrid();
     },
 
     methods: {
-      activeWaitTap(){
-        if(!this.isActive){
-          this.isActive = true;
+      activeWaitTab(){ // 검사대기목록 활성화
+        if(!this.isWaitList){
+          this.isWaitList = true;
         }
       },
 
-      activeCompTap(){
-        if(this.isActive){
-          this.isActive = false;
+      activeCompTab(){ // 검사완료목록 활성화
+        if(this.isWaitList){
+          this.isWaitList = false;
         }
       },
 
-      gridFit(params){ // @grid-ready 시 매개변수 속성으로 자동 접근
+      gridFit(params){ // @grid-ready 시 매개변수 속성으로 자동 접근, 가로스크롤 삭제
         params.api.sizeColumnsToFit();
       },
 
-      myGrid(params){ // '선택목록' @grid-ready 시 매개변수 속성으로 자동 접근
-        params.api.sizeColumnsToFit();
-        this.myApi = params.api;
-        this.myColApi = params.columnApi;
+      // 검사대기목록 불러오기
+      async getWaitGrid(){
+        let result = await axios.get('/api/quality/rec/wait')
+                                .catch(err => console.log(err));
+        this.waitData = result.data;
+      },
+
+      // 목록에서 타겟 선택 시 검사결과란에 정보 불러오기
+      selectTarget(params){
+        this.isRowClicked = true; // 검사결과 창 open
+        this.selectedTarget = params.data;
       },
 
       // ------------ 모달 메소드 ------------
@@ -245,7 +267,7 @@
           nm: this.modal_val.nm 
         };
 
-        let result = await axios.get('/api/quality/targetAll', {params: params});
+        let result = await axios.get('/api/quality/targetAll', {params: params}).catch(err => console.log(err));
         let data = result.data;
         data.forEach((obj) => {
           obj.has_std = obj.std_date == null ? '미등록' : '등록완료'; // SELECT문 컬럼에 포함되지 않았으므로 추가
