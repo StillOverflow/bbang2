@@ -182,7 +182,7 @@ const deleteProcessMtlFlow = async (proc_mtl_flow_cd) => {
 //순서
 const getMaxProcSeq = async (prdCd) => {
   const result = await mariadb.query("ProcessSeq", prdCd);
-  return result; // 순서가 없으면 0 반환
+  return result;
 };
 module.exports = {
   //메소드명
