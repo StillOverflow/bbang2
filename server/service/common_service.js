@@ -24,9 +24,16 @@ const productSelect = async (datas) => {
   return result;
 };
 
+//주문서 제품조회
+const findOrderNo = async (no)=>{
+  let list = await mariadb.query('orderDtlList', no);
+  return list;
+}
+
 module.exports = {
     findCommList,
     accountSelect,
     materialSelect,
-    productSelect
+    productSelect,
+    findOrderNo
 };

@@ -1,8 +1,4 @@
 <!-- 생산 -->
-<style>
-.modal-container { width:700px; }
-</style>
-
 <template>
   <div class="py-4 container-fluid">
     <div class="card">      
@@ -12,7 +8,7 @@
         <div class="row">
           <div class="input-group w-30">
             <input class="form-control" type="text" v-model="order_cd" placeholder="주문코드를 검색해주세요" style="height: 41px;">
-            <button class="btn btn-warning" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
           </div>
         </div>
 
@@ -38,9 +34,9 @@
             <ag-grid-vue class="ag-theme-alpine" 
             style="width: 100%; height: 400px;" 
             :columnDefs="orderDefs"
-            :rowData="orderData"              
+            :rowData="orderData" 
+            @rowClicked="modalClicked" 
             @grid-ready="gridFit"
-            @rowClicked="modalClicked"
             overlayNoRowsTemplate="주문내역이 없습니다.">
             </ag-grid-vue>
           </template>
@@ -72,8 +68,8 @@
             :columnDefs="productDefs" 
             :rowData="productData" 
             :pagination="true" 
-            @grid-ready="productGrid" 
-            :gridOptions="gridOptions"
+             @grid-ready="productGrid" 
+             :gridOptions="gridOptions"
              overlayNoRowsTemplate="주문내역이 없습니다."/>
           </div>
           <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center">
@@ -130,20 +126,22 @@ export default {
 
       //모달 계획서 목록 
       orderDefs: [
-        { headerName: '주문서코드', field: 'order_cd', sortable: true, width: 120 },
-        { headerName: '거래처코드', field: 'act_cd', sortable: true, width: 150  },
+        { headerName: '주문서코드', field: 'order_cd', sortable: true, width: 110 },
+        { headerName: '거래처코드', field: 'act_cd', sortable: true, width: 110  },
         { headerName: '거래처이름', field: 'act_nm', sortable: true, width: 150 },
-        { headerName: '담당자', field: 'name', sortable: true, width: 100},
-        { headerName: '주문일자', field: 'order_dt', valueFormatter: this.$comm.dateFormatter, width: 150 }
+        { headerName: '담당자', field: 'name', sortable: true, width: 80},
+        { headerName: '제품종류', field: 'prd_cnt', sortable: true, width: 100},
+        { headerName: '총 주문건수', field: 'order_cnt', sortable: true, width: 110},
+        { headerName: '주문일자', field: 'order_dt', valueFormatter: this.$comm.dateFormatter, width: 110 }
       ],
       orderData: [],
 
       //제품목록
       productDefs:[
-        { headerName: '제품코드', field: 'PRD_CD', sortable: true, width:150 },
-        { headerName: '제품명', field: 'PRD_NM', sortable: true },
-        { headerName: '금액', field: 'PRICE', sortable: true, valueFormatter:this.$comm.currencyFormatter },
-        { headerName: '현재고', field: 'IN_CNT', sortable: true, valueFormatter:this.$comm.currencyFormatter},
+        { headerName: '제품코드', field: 'prd_cd', sortable: true, width:150 },
+        { headerName: '제품명', field: 'prd_nm', sortable: true },
+        { headerName: '금액', field: 'price', sortable: true, valueFormatter:this.$comm.currencyFormatter },
+        { headerName: '현재고', field: 'in_cnt', sortable: true, valueFormatter:this.$comm.currencyFormatter},
       ],
       productData:[],
       productApi: null,
@@ -151,11 +149,11 @@ export default {
 
       //주문서 제품목록
       orderDtlDefs: [
-        {headerName: '제품 코드', field: 'PRD_CD', width:150},
-        {headerName: '제품 이름', field: 'PRD_NM'},
+        {headerName: '제품 코드', field: 'prd_cd', width:150},
+        {headerName: '제품 이름', field: 'prd_nm'},
         {
             headerName: '제품 수량', 
-            field: 'ORDER_QTY', 
+            field: 'order_qty', 
             editable: true, 
             cellDataType: 'number',
             valueFormatter: (params) => {
@@ -164,7 +162,7 @@ export default {
             },
             cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
         },
-        {headerName: '현 재고', field: 'IN_CNT', valueFormatter:this.$comm.currencyFormatter},
+        {headerName: '현 재고', field: 'in_cnt', valueFormatter:this.$comm.currencyFormatter},
       ],
       orderDtlData: [],
       orderDtlApi: null,
@@ -184,10 +182,10 @@ export default {
   mounted() {
     //제품목록
     axios.get('/api/comm/product')
-        .then(response =>{
-            this.productData = response.data;
-        })
-        .catch(err => console.log("실패",err));           
+         .then(response =>{
+             this.productData = response.data;
+          })
+         .catch(err => console.log("실패",err));           
   },  
   methods: {
     productGrid(params){ // '선택목록' @grid-ready 시 매개변수 속성으로 자동 접근
@@ -231,27 +229,40 @@ export default {
     getSelected(type){ // 추가(+) / 삭제(-) 버튼 동작
       let selected = null;
       if(type == 'plus') selected = this.productApi.getSelectedNodes(); // 추가버튼일 시
-      else selected = this.productApi.getSelectedNodes(); // 삭제버튼일 시
-
+      else selected = this.orderDtlApi.getSelectedNodes(); // 삭제버튼일 시
+      
       if(selected.length != 0){ // 선택된 값이 있을 경우에만 실행
         // grid는 참조형식이라 개별값을 직접 조작할 수 없으므로 가상의 배열 선언
         let addArr = [];
         let changeArr = null;
-        if(type == 'plus') changeArr = this.orderDtlData;
-        else changeArr = this.productData;
+        if(type == 'plus') changeArr = this.productData;
+        else changeArr = this.orderDtlData;
         
         selected.forEach((val) => { // 선택된 값을 순회, 비교하며 배열에서 추가/삭제 실행
-          addArr.push(val.data);
-          changeArr = changeArr.filter(obj => obj.PRD_CD != val.data.PRD_CD); // 선택되지 않은 것만 남김
-        });
-        
+
+          changeArr = changeArr.filter(obj => obj.prd_cd != val.data.prd_cd); // 선택되지 않은 것만 남김
+          
+          if(type == 'plus'){
+            if ( this.orderDtlData.some((obj) => obj.prd_cd === val.data.prd_cd)){ //이미 추가된 제품일 경우
+              this.$swal({
+                icon: "error",
+                title: "존재하는 자재가 있습니다.",
+                text: "다시 선택해주세요",
+              });
+            }else{
+              addArr.push(val.data);
+            }
+            val.setSelected(false); //갑 넣고 체크 해제
+          }
+          
+        });        
+      
         // 수정된 배열로 반영하기
         if(type == 'plus'){
-          //this.productData = changeArr;
           this.orderDtlData = [...this.orderDtlData, ...addArr]; // 펼침연산자로 기존의 값에 추가함
         } else {
           this.orderDtlData = changeArr;
-          this.productData = [...this.productData, ...addArr];
+          //this.productData = [...this.productData, ...addArr];
         }
       }
     },

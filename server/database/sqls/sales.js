@@ -4,13 +4,15 @@
 //주문서 목록 조회
 const orderList = 
 `
-SELECT o.order_cd, 
-       a.act_cd, 
-       a.act_nm, 
-       m.name, 
-       o.order_dt, 
-       o.due_dt, 
-       (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd=o.status) AS status
+SELECT o.order_cd as order_cd, 
+       a.act_cd as act_cd, 
+       a.act_nm as act_nm, 
+       m.name as name, 
+       o.order_dt as order_dt, 
+       o.due_dt as due_dt, 
+       (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd=o.status) AS status,
+       (SELECT IFNULL(sum(order_qty),0) FROM order_detail WHERE order_cd=o.order_cd) AS order_cnt,
+       (SELECT count(*) FROM order_detail WHERE order_cd=o.order_cd) AS prd_cnt
 FROM \`order\` o JOIN account a ON o.act_cd = a.act_cd
                  JOIN member m ON o.ID = m.id
 `;

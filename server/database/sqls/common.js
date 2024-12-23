@@ -58,8 +58,9 @@ const materialSelect = (datas) => {
 //! 상품 조회
 const productSelect = (datas) => {
   let query = `
-    SELECT prd_cd, prd_nm, category, price, \`unit\`, exp_range, safe_stk, create_dt, update_dt, note
-    FROM   product
+    SELECT prd_cd, prd_nm, category, price, \`unit\`, exp_range, safe_stk, create_dt, update_dt, note,
+    (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=p.PRD_CD) AS in_cnt 
+    FROM   product p
   `;
   
   const conditions = [];
@@ -82,25 +83,15 @@ const productSelect = (datas) => {
 //주문서별 제품목록
 const orderDtlList = 
 `
-SELECT ORDER_DTL_CD,
-		 ORDER_CD,
-		 o.PRD_CD, 
-		 PRD_NM, 
-		 ORDER_QTY, 
-		 (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=o.PRD_CD) AS IN_CNT
+SELECT order_dtl_cd,
+		 order_cd,
+		 o.prd_cd as prd_cd, 
+		 prd_nm, 
+		 order_qty, 
+		 (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=o.PRD_CD) AS in_cnt
 FROM 
 		order_detail o JOIN product p ON o.PRD_CD=p.PRD_CD 
 		WHERE order_cd=?
-`;
-
-//제품목록
-const productList = 
-`
-SELECT PRD_CD, 
-       PRD_NM, 
-       PRICE, 
-       (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=p.PRD_CD) AS IN_CNT 
-FROM product p
 `;
 
 module.exports = {
@@ -108,6 +99,5 @@ module.exports = {
   accountSelect,  // 거래처
   materialSelect, // 자재
   productSelect,  // 제품
-  orderDtlList,
-  productList
+  orderDtlList
 };
