@@ -161,5 +161,20 @@ router.put(
   }
 );
 
+
+/*--------------설비 점검-------------*/
+//점검전체조회
+router.get('/equip/insp', async (req, res) => {
+  let eqInspList = await equipmentService.findInspEq();
+  res.send(eqInspList);
+});
+
+//점검단건조회
+router.get('/equip/insp/:no', async (req, res) => {
+  let equipInspNo = req.params.no;
+  let info = await equipmentService.findInspEquipNo(equipNo);
+  res.send(info);
+});
+
 module.exports = router;
 // module.exports = upload;

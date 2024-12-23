@@ -1,5 +1,6 @@
 /* -----------설비------------*/
 
+/* -----------설비 관리------------*/
 //설비상태조회
 const eqStatList = `SELECT * FROM equipment`;
 
@@ -119,6 +120,54 @@ const eqUpdate = `UPDATE equipment
 SET ? 
 WHERE EQP_CD = ?`;
 
+
+
+/* -----------설비 점검 관리------------*/
+//설비점검조회
+const eqInspList = ` SELECT   e.eqp_cd,
+                              e.eqp_type,
+                              e.eqp_nm,
+                              e.model,
+                              e.insp_cycle,
+                              e.img_path,
+                              i.start_time,
+                              i.insp_type,
+                              i.insp_reason,
+                              i.insp_result,
+                              i.insp_action,
+                              i.note,
+                              i.end_time,
+                              i.id,
+                              i.create_dt,
+                              i.update_dt
+FROM equipment e
+RIGHT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
+ORDER BY i.create_dt DESC
+`;
+
+//설비점검 단건조회
+const equipInspInfo = `SELECT   e.eqp_cd,
+                              e.eqp_type,
+                              e.eqp_nm,
+                              e.model,
+                              e.insp_cycle,
+                              e.img_path,
+                              i.start_time,
+                              i.insp_type,
+                              i.insp_reason,
+                              i.insp_result,
+                              i.insp_action,
+                              i.note,
+                              i.end_time,
+                              i.id,
+                              i.create_dt,
+                              i.update_dt
+FROM equipment e
+RIGHT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
+WHERE i.eqp_cd ='EQP010'
+ORDER BY i.create_dt DESC
+`;
+
 module.exports = {
   eqStatList,
   eqAllList,
@@ -127,4 +176,6 @@ module.exports = {
   eqUpdate,
   getEqpCd,
   eqAllListFiltered,
+  eqInspList,
+  equipInspInfo
 };

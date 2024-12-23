@@ -2,28 +2,12 @@
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
-      <div
-        class="card-header bg-light d-flex justify-content-center align-items-center"
-      >
+      <div class="card-header bg-light d-flex justify-content-center align-items-center">
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="input-group">
-            <input
-              id="eqp_cd"
-              type="text"
-              placeholder="설비코드"
-              class="form-control"
-              aria-label="Recipient's username"
-              aria-describedby="button-addon2"
-              style="height: 41px"
-              v-model="selectedEqp"
-              @click="modalOpen"
-            />
-            <button
-              class="btn btn-warning"
-              id="button-addon2"
-              type="button"
-              @click="modalOpen"
-            >
+            <input id="eqp_cd" type="text" placeholder="설비코드" class="form-control" aria-label="설비코드"
+              aria-describedby="button-addon2" style="height: 41px" v-model="selectedEqp" @click="modalOpen" />
+            <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen">
               SEARCH
             </button>
           </div>
@@ -35,14 +19,7 @@
           <!-- 이미지 -->
           <div class="col-lg-2 col-md-2 col-sm-12 text-center">
             <!-- 프록시를 문자열로 박아넣음 배포시 replace로 삭제하기 -->
-            <img
-              :src="previewImage"
-              alt="설비 이미지"
-              class="mb-3 imgBSJ"
-              name="selectedFile"
-              width="230"
-              height="230"
-            />
+            <img :src="previewImage" alt="설비 이미지" class="mb-3 imgBSJ" name="selectedFile" width="230" height="230" />
             <input type="file" class="form-control" @change="onFileChange" />
           </div>
 
@@ -51,63 +28,37 @@
             <div v-for="(field, index) in leftFields" :key="index" class="mb-2">
               <template v-if="field.value == 'eqp_type'">
                 <label class="form-control-label">{{ field.label }}</label>
-                <select
-                  class="form-select custom-width"
-                  v-model="equipmentData[field.value]"
-                  :disabled="isFieldDisabled(field.value)"
-                >
-                  <option
-                    v-for="(opt, idx) in field.selectOptions"
-                    :key="idx"
-                    :value="opt.item"
-                  >
+                <select class="form-select custom-width" v-model="equipmentData[field.value]"
+                  :disabled="isFieldDisabled(field.value)">
+                  <option v-for="(opt, idx) in field.selectOptions" :key="idx" :value="opt.item">
                     {{ opt.name }}
                   </option>
                 </select>
               </template>
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
-                <input
-                  v-model="equipmentData[field.value]"
-                  :type="field.type"
-                  class="form-control custom-width"
-                  :disabled="isFieldDisabled(field.value)"
-                />
+                <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
+                  :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
           </div>
 
           <!-- 오른쪽 입력란 -->
           <div class="col-lg-5 col-md-5 col-sm-12">
-            <div
-              v-for="(field, index) in rightFields"
-              :key="index"
-              class="mb-2"
-            >
+            <div v-for="(field, index) in rightFields" :key="index" class="mb-2">
               <template v-if="field.value == 'is_use'">
                 <label class="form-control-label">{{ field.label }}</label>
-                <select
-                  class="form-select custom-width"
-                  v-model="equipmentData[field.value]"
-                  :disabled="isFieldDisabled(field.value)"
-                >
-                  <option
-                    v-for="(opt, idx) in field.selectOptions"
-                    :key="idx"
-                    :value="opt.item"
-                  >
+                <select class="form-select custom-width" v-model="equipmentData[field.value]"
+                  :disabled="isFieldDisabled(field.value)">
+                  <option v-for="(opt, idx) in field.selectOptions" :key="idx" :value="opt.item">
                     {{ opt.name }}
                   </option>
                 </select>
               </template>
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
-                <input
-                  v-model="equipmentData[field.value]"
-                  :type="field.type"
-                  class="form-control custom-width"
-                  :disabled="isFieldDisabled(field.value)"
-                />
+                <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
+                  :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
           </div>
@@ -115,25 +66,13 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button
-            v-if="isEditMode"
-            class="btn btn-success mlp10"
-            @click="equipUpdate"
-          >
+          <button v-if="isEditMode" class="btn btn-success mlp10" @click="equipUpdate">
             SAVE
           </button>
-          <button
-            v-if="!isEditMode"
-            class="btn btn-success mlp10"
-            @click="equipInsert"
-          >
+          <button v-if="!isEditMode" class="btn btn-success mlp10" @click="equipInsert">
             SAVE
           </button>
-          <button
-            v-if="!isEditMode"
-            class="btn btn-secondary mlp10"
-            @click="resetForm"
-          >
+          <button v-if="!isEditMode" class="btn btn-secondary mlp10" @click="resetForm">
             RESET
           </button>
         </div>
@@ -147,26 +86,14 @@
       <template v-slot:header>
         <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
         <h5 class="modal-title">설비 코드 검색</h5>
-        <button
-          type="button"
-          aria-label="Close"
-          class="close"
-          @click="modalOpen"
-        >
+        <button type="button" aria-label="Close" class="close" @click="modalOpen">
           ×
         </button>
       </template>
       <template v-slot:default>
-        <ag-grid-vue
-          class="ag-theme-alpine"
-          style="width: 100%; height: 400px"
-          :columnDefs="equipDefs"
-          :rowData="equipData"
-          :pagination="true"
-          @rowClicked="modalClicked"
-          @grid-ready="gridFit"
-          overlayNoRowsTemplate="등록된 설비가 없습니다."
-        >
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="equipDefs"
+          :rowData="equipData" :pagination="true" @rowClicked="modalClicked" @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 설비가 없습니다.">
         </ag-grid-vue>
       </template>
       <template v-slot:footer>
@@ -322,7 +249,7 @@ export default {
     async getComm(cd) {
       // 공통코드 가져오기
       let result = await axios
-        .get('/api/commList/' + cd)
+        .get('/api/comm/codeList/' + cd)
         .catch((err) => console.log(err));
       return result.data;
     },
@@ -522,9 +449,11 @@ export default {
   /* opacity: 0; */
   transform: translateY(-1000px);
 }
+
 .fade-enter-active {
   transition: all 0.5s;
 }
+
 .fade-enter-to {
   /* opacity: 1; */
   transform: translateY(0px);
@@ -533,9 +462,11 @@ export default {
 .fade-leave-from {
   opacity: 1;
 }
+
 .fade-leave-active {
   transition: all 0.7s;
 }
+
 .fade-leave-to {
   opacity: 0;
 }
@@ -543,12 +474,15 @@ export default {
 .modal-container {
   width: 700px;
 }
+
 label {
   font-weight: bold;
 }
+
 button {
   white-space: nowrap;
 }
+
 .custom-width {
   max-width: 500px;
   width: 100%;
@@ -570,6 +504,7 @@ button {
     flex: 0 0 100%;
     max-width: 100%;
   }
+
   .w-20 {
     flex: 0 0 100%;
     max-width: 50%;

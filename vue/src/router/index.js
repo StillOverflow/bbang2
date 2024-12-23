@@ -29,6 +29,7 @@ import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
 import Equipment from '../views/equipment/Equipment.vue';
 import EquipmentMgmt from '../views/equipment/EquipmentMgmt.vue';
 import EquipmentAllList from '../views/equipment/EquipmentAllList.vue';
+import EquipmentInspectionMgmt from '../views/equipment/EquipmentInspectionMgmt.vue';
 
 
 
@@ -214,6 +215,15 @@ const routes = [
     name: 'Equipment_AllList',
     component: EquipmentAllList,
   },
+
+  {
+    //설비 점검 관라
+    path: '/Equipment_InspectionMgmt',
+    name: 'Equipment_InspectionMgmt',
+    component: EquipmentInspectionMgmt,
+  },
+
+  
 
 
 
