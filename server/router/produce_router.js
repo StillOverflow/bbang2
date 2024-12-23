@@ -26,11 +26,18 @@ router.get('/plan/:no/dtl', async (req, res)=>{
 
 // 계획서 삭제
 router.delete("/plan", async (req, res) => {
-  console.log("☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★");
     let values = req.body;
     let result = await produceService.deletePlan(values);
     res.send(result);
   });
+
+// 등록
+router.post('/plan', async(req, res)=>{
+  let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
+  let result = await produceService.planInsert(values);
+  res.send(result);
+});
+
 /*--------------지시서-------------*/
 
 // 전체조회
@@ -49,7 +56,7 @@ router.get('/inst/:no', async (req,res)=>{
 // 등록
 router.post('/inst', async(req, res)=>{
   let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
-  let result = await produceService.stdInsert(values);
+  let result = await produceService.instInsert(values);
   res.send(result);
 });
 
@@ -66,5 +73,20 @@ router.get('/inst/:no/mat', async (req,res)=>{
     let info = await produceService.findInstMatFlow(prodNo);
     res.send(info);
   })
+
+
+// 주문서 제품조회
+router.get('/product/:no/order', async (req,res)=>{
+  let planNo = req.params.no;
+  let planList = await produceService.findOrderNo(planNo);
+  res.send(planList);
+})
+
+
+// 제품 전체조회
+router.get('/product', async (req, res)=>{
+  let productList = await produceService.findAllProduct();
+  res.send(productList);
+});
 
 module.exports = router;

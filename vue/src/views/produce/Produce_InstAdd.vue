@@ -146,7 +146,7 @@
         </div>
         <div class="center mtp30">
           <button class="btn btn-primary" @click="instInsert">SUBMIT</button>
-          <button class="btn btn-secondary mlp10">RESET</button>
+          <button class="btn btn-secondary mlp10" @click="resetForm">RESET</button>
         </div>
       </div>
     </div>
