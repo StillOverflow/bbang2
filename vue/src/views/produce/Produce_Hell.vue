@@ -98,7 +98,7 @@
                 <tbody>
                   <template v-if="flowCount >0">
                     <template v-for="flow in flowData" :key="flow.INST_CD">
-                      <tr class="text-center align-middle">
+                      <tr class="text-center align-middle" @click="getFlowEquList(flow.PROC_CD)">
                         <td>{{ flow.STEP }}</td>
                         <td>{{ flow.PROC_NM }}</td>
                         <td>{{ flow.ACT_TYPE }}</td>                      
@@ -167,6 +167,7 @@ export default {
       instData: [],
       instDtlData: [],
       flowData: [],
+      equData: [],
       selected_radio:'',
     };
   },
@@ -211,14 +212,11 @@ export default {
     },
 
     //공정별 설비 리스트
-    async getFlowEquList() {
-      let obj = {
-          INST_CD : this.inst_cd,
-          PRD_CD : this.selected_radio,
-      }
-      let result = await axios.get('/api/progress/equ', {params:obj})
+    async getFlowEquList(PROC_CD) {
+      let result = await axios.get(`/api/progress/equ/${PROC_CD}`)
                               .catch(err => console.log(err));
-      this.instDtlData = result.data;
+      this.equData = result.data;
+      console.log( this.equData);
     },
   }
     

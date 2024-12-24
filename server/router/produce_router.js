@@ -89,10 +89,17 @@ router.get('/inst/:no/mat', async (req,res)=>{
     res.send(info);
   })
 
- //지시서 제품별 커스텀된 제품목록 조회
+ //지시서 제품별 커스텀된 공정목록 조회
 router.get('/progress/flow', async (req,res)=>{
   let setInfo = req.query;
   let info = await produceService.findInstCusFlow(setInfo);
+  res.send(info);
+})
+
+ //지시서 제품별 커스텀된 공정목록 조회 -> 설비목록
+router.get('/progress/equ/:no', async (req,res)=>{
+  let procNo = req.params.no;
+  let info = await produceService.findInstCusEqu(procNo);
   res.send(info);
 })
 

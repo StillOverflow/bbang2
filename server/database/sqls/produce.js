@@ -251,10 +251,12 @@ const instCusFlow = (datas) => {
                 INST_PROC_CD,
                 INST_CD,
                 PRD_CD,
-                PROC_CD,
-                (SELECT PROC_NM FROM process WHERE proc_cd=pps.proc_cd) AS PROC_NM,
+                pps.PROC_CD,
+                PROC_NM,
+                EQP_TYPE,
                 STEP
-            FROM prod_proc_step pps `;
+              FROM prod_proc_step pps JOIN (SELECT PROC_NM, EQP_TYPE, PROC_CD FROM process ) p
+              ON pps.proc_cd=p.proc_cd`;
   
   const queryArr = [];
 
@@ -271,6 +273,15 @@ const instCusFlow = (datas) => {
 
   return sql;
 }
+
+const instCusEqu = 
+`
+SELECT 
+	EQP_CD,
+	EQP_NM,
+	MODEL
+FROM equipment WHERE eqp_type =?;
+`;
 
 //계획서 다중 삭제
 const instDelete = (datas) => {

@@ -153,6 +153,12 @@ const findInstCusFlow = async (values)=>{
   return list;
 }
 
+ //지시서 제품별 커스텀된 공정목록 조회 -> 설비목록
+const findInstCusEqu = async (no)=>{
+  let list = await mariadb.query('instCusEqu', no);
+  return list;
+}
+
 module.exports = {
   findAllPlan,
   findPlanNo,
@@ -167,5 +173,6 @@ module.exports = {
   findInstFlow,
   findInstMatFlow,
   findInstCusFlow,
+  findInstCusEqu,
   deleteInst
 };
