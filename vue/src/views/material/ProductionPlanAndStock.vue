@@ -204,7 +204,9 @@
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
    // 그리드 준비
    const gridReady = (params) => {
-      params.api.sizeColumnsToFit(); // 그리드 열을 컨테이너 크기에 맞춤
+      if (params.api) {
+         params.api.sizeColumnsToFit(); // 그리드 크기에 자동 맞춤
+      }
    };
 
    // 선택한 행 저장
@@ -329,7 +331,7 @@
          mode: "multiRow", // 체크박스 다중선택
       },
 
-      overlayNoRowsTemplate: "데이터가 없습니다.", // 데이터 없을 때 메시지
+      overlayNoRowsTemplate: `<span class="text-danger">데이터가 없습니다.</span>`, // 데이터 없을 때 메시지
 
       // row에 규칙추가
       rowClassRules: {

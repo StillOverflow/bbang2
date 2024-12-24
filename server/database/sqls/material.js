@@ -1,4 +1,4 @@
-// ^ ------------------------- 자재 발주서(미지시 생산계획) -------------------------
+//! ------------------------------ 자재 발주서(미지시 생산계획) ------------------------------
 // 미지시 생산 계획서 조회
 const produceHeadPlanList = `
    SELECT prod_plan_cd,
@@ -42,7 +42,7 @@ const planListSearch = (searchObj) => {
    return query; 
 };
 
-// 생산 계획서에 대한 자재 재고 조회
+// 미지시 생산 계획서에 대한 자재 재고 조회
 const getPlanMaterialStock = `
    SELECT   b.mat_cd,
             c.mat_nm,
@@ -66,10 +66,24 @@ const getPlanMaterialStock = `
                                       ON b.mat_cd = e.mat_cd
    ORDER BY b.mat_cd
 `
-// ^ ------------------------- 자재 발주관리 -------------------------
+//! ----------------------------------- 자재 발주관리 -----------------------------------
+// 주문서 조회
+const getMaterialOrder = `
+   SELECT   mat_order_cd,
+            fn_get_codename(status) AS status,
+            fn_get_membername(id) AS id,
+            (SELECT act_nm FROM account a WHERE m.act_cd = a.act_cd) AS act_cd
+   FROM     material_order m
+   ORDER BY mat_order_cd
+`
+
+
+
+
 
 module.exports = {
    produceHeadPlanList,
    planListSearch,
    getPlanMaterialStock,
+   getMaterialOrder,
 };
