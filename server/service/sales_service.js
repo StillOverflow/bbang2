@@ -109,6 +109,48 @@ const insertPrdOut = async (values) => {
     }
 };
 
+/* ----------------------------------------------------제품 반품--------------------------------------------------------- */
+
+//반품등록 출고목록 조회
+const listPOutReturn = async (no)=>{
+    let list = await mariadb.query('returnPOutList', no);
+    return list;
+}
+
+//반품 등록 LOT 선택
+const searchRTLot = async (pocd,pdcd) => {
+    try {
+        let searchObj = {
+            pocd,
+            pdcd
+        }
+        const list = await mariadb.query('returnLot',searchObj);
+        return list;
+    } catch (err) {
+        console.error("Error searching returnLot 실패:", err);
+        throw err;
+    }
+};
+
+//반품 등록
+const InsertPrdReturn = async (values) => {
+
+    let seq = (await mariadb.query('productReturnSeq'))[0].prd_return_cd;
+
+    console.log(values[0]);
+    let samples = values[0]; 
+    samples.seq = seq; 
+    
+    let prdReturn = await mariadb.query('productReturnInsert', samples);
+    let prdReturnDtl = await mariadb.query('productReturnDtlInsert', [seq, values[1]]); // 배열에 디테일 부분이랑 시퀀스를 같이 넘김
+
+    if(prdReturn.affectedRows > 0 && prdReturnDtl.affectedRows > 0){
+        return {"result" : "success"};
+    } else {
+        return {"result" : "fail"};
+    }
+};
+
 
 
 /* ----------------------------------------------------모달창--------------------------------------------------------- */
@@ -133,7 +175,11 @@ const listProMo = async() => {
     let list = await mariadb.query('moOrderList');
     return list;
  }
-
+//출고목록  조회(모달)
+const listOutPrdMo = async() => {
+    let list = await mariadb.query('moPrdOutList');
+    return list;
+ }
 
 module.exports = {
     //주문서
@@ -149,11 +195,17 @@ module.exports = {
     listLotOut,
     insertPrdOut,
     
+    //제품반품
+    listPOutReturn,
+    searchRTLot,
+    InsertPrdReturn,
+
 
     //모달창
     listAccMo,
     listMemMo,
     listProMo,
     listOrderMo,
+    listOutPrdMo,
 
 };

@@ -41,12 +41,12 @@
                   <div class="col-6 col-lg-2"></div>                    
                   <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주문일자</div> 
                   <div class="col-6 col-lg-2 mb-3">
-                      <input class="form-control" type="date" v-model="order_date" readonly />
+                      <input class="form-control" style="background-color: rgb(236, 236, 236);" type="date" v-model="order_date" readonly />
                   </div>
                   <div class="col-6 col-lg-1"></div>
                   <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">납기일자</div> 
                   <div class="col-6 col-lg-2 mb-3">
-                      <input class="form-control" type="date" v-model="due_date" readonly />
+                      <input class="form-control" style="background-color: rgb(236, 236, 236);" type="date" v-model="due_date" readonly />
                   </div>
               </div>
 
@@ -174,7 +174,7 @@ export default {
             odtCd: '',
             
             OLDefs: [
-                {headerName: '주문상세코드', field: 'order_dtl_cd'},
+                {headerName: '주문상세코드', field: 'order_dtl_cd', hide: true},
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
                 {
@@ -207,7 +207,7 @@ export default {
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'SEARCH';
-                        button.className = 'btn btn-warning';
+                        button.className = 'btn btn-warning btn-xsm';
                         button.addEventListener('click', () => {
                             this.modalOpen3(); //LOT모달 오픈
                             this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
@@ -275,7 +275,7 @@ export default {
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'DELETE';
-                        button.className = 'btn btn-danger';
+                        button.className = 'btn btn-danger btn-xsm';
                         button.addEventListener('click', () => {
                             this.proOutData = this.proOutData.filter(row => row !== params.data);
                         });
@@ -382,7 +382,7 @@ export default {
         //주문서 코드를 따라 나오는 제품들
         async getOutOrdList() { 
             //console.log(`/api/sales/${this.order_code}`); 변수에 담아서 넘기는게 아니라 바로 값을 넘김
-            let result = await axios.get(`/api/sales/${this.order_code}`)
+            let result = await axios.get(`/api/sales/ordList/${this.order_code}`)
                                     .catch(err => console.log(err));
             this.OLData = result.data;
         },

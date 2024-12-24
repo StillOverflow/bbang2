@@ -191,7 +191,7 @@ export default {
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'DELETE';
-                        button.className = 'btn btn-danger';
+                        button.className = 'btn btn-danger btn-xsm';
                         button.addEventListener('click', () => {
                             this.rowData = this.rowData.filter(row => row !== params.data);
                         });
