@@ -117,12 +117,6 @@ router.get("/standard/allMaterials", async(req, res)=>{
   result = await standardService.bringMaterial();
   res.send(result);
 })
-//자재단건조회
-router.get('/standard/findMaterial/:no', async (req,res)=>{
-  let matNo = req.params.no;
-  let info = await standardService.findMatInfo(matNo);
-  res.send(info);
-})
 //자재등록
 router.post('/standard/material', async(req, res)=>{
   let materials = req.body;
@@ -136,7 +130,12 @@ router.put('/standard/updateMaterial/:mat_cd', async(req, res)=>{
   let result = await standardService.updateMaterial(matCd, updateInfo);
   res.send(result);
 })
-
+//자재삭제
+router.delete('/standard/delMaterial/:mat_cd', async(req,res)=>{
+  let matCd = req.params.mat_cd;
+  let result = await standardService.deleteMaterial(matCd);
+  res.send(result);
+})
 
 //------------------공통코드-----------------------
 

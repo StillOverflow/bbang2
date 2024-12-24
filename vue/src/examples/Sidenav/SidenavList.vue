@@ -506,9 +506,7 @@ export default {
           </li>
           <li class="nav-item">
             <sidenav-item
-              to="/MaterialAdd"
-              :class="getRoute() === 'MaterialAdd' ? 'active' : ''"
-              :navText="'자재관리'"
+              to="/MaterialAdd" :class="getRoute() === 'MaterialAdd' ? 'active' : ''" :navText="'자재관리'"
             >
             </sidenav-item>
           </li>

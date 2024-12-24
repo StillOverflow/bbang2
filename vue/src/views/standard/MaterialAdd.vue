@@ -6,32 +6,14 @@
             <!-- 제품목록 -->
             <div class="col-md-6" style="height: auto">
               <h4 class="mb-3 text-center">자재 목록</h4>
-              <div
-                class="d-flex justify-content-left align-items-center mb-2"
-                style="width: 100%"
-              >
+              <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%" >
                 <div style="width: 15%">
                   <label class="me-2 align-self-center">자재명</label>
                 </div>
                 
-                <div
-                  class="d-flex justify-content-left align-items-center"
-                  style="width: 85%"
-                >
-                  <input
-                    type="text"
-                    class="form-control d-inline"
-                    v-model="keyword"
-                    placeholder="자재명을 입력하세요"
-                    style="width: 75%"
-                  />
-                  <button
-                    class="btn btn-warning mb-0"
-                    style="width: 25%; margin-left: 10px"
-                    @click="searchMtl"
-                  >
-                    검색
-                  </button>
+                <div  class="d-flex justify-content-left align-items-center" style="width: 85%" >
+                  <input type="search" class="form-control d-inline" v-model="keyword" placeholder="자재명을 입력하세요" style="width: 75%" />
+                  <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchMtl" > <i class="fa-solid fa-magnifying-glass"></i> </button>
                 </div>
               </div>
               <!-- 자재 테이블 ag-gird -->
@@ -46,26 +28,34 @@
                 @rowClicked="matClicked">
               </ag-grid-vue>
             </div>
+            
             <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
-            <div class="col-md-4" style="height: auto">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재코드</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="text" class="form-control" v-model="matInfo.mat_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
+            <div class="col-md-4 mt-5" style="height: auto">
+                <div class="mb-3 d-flex justify-content-end" >
+                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newMaterial">신규등록</button>
                 </div>
-
+                <div class="d-flex justify-content-left align-items-center mb-2">
+                    <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재코드</div>
+                    <div class="input-group mb-3 w-50">
+                        <input type="text" class="form-control" v-model="matInfo.mat_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                        style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
+                    </div>
+                </div>
+            <div class="d-flex justify-content-left align-items-center mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재명</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="matInfo.mat_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
-
+            </div>
+            <div class="d-flex justify-content-left align-items-center mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단가</div>
                 <div class="input-group mb-3 w-50">
                         <input type="number" class="form-control" v-model="matInfo.price" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;"  />
                 </div>
-
+            </div>    
+            <div class="d-flex justify-content-left align-items-center mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="matInfo.unit">
@@ -76,7 +66,8 @@
                         </option>
                     </select>
                 </div>
-
+            </div>
+            <div class="d-flex justify-content-left align-items-center mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재유형</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="matInfo.type">
@@ -87,7 +78,8 @@
                         </option>
                     </select>
                 </div>
-
+            </div>
+            <div class="d-flex justify-content-left align-items-center mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">카테고리</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="matInfo.category">
@@ -98,18 +90,25 @@
                         </option>
                     </select>
                 </div>
-
+            </div>
+            <div class="d-flex justify-content-left align-items-center mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
                 <div class="input-group mb-3 w-50">
                         <input type="text" class="form-control" v-model="matInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />
                 </div>
-
+            </div>
+            <div class="d-flex justify-content-left align-items-center mb-2">
+                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>
+                
+                        <textarea cols="40" rows="8" type="text" class="form-control" v-model="matInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                        style="height: 41px;" />
+                
+            </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" class="btn btn-success ms-2  mt-3 saveBtn " @click="isUpdated? matUpdate() : matInsert()"> 저장 </button>
-                    <button type="button" class="btn btn-secondary ms-2  mt-3 saveBtn" @click="newMaterial">신규등록</button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn "> 삭제 </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? matUpdate() : matInsert()" :disabled="isDisabled"> submit </button>
+                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delMaterial"> delete </button>
                 </div>
             </div>
         </div>
@@ -135,13 +134,23 @@ export default {
     },
     data(){
         return{
+            isDisabled: true,
+            namePd: '',
+            gridOptinos: {
+                rowSelection: {
+                    mode:"singleRow",
+                    checkboxes: false,
+                    enableClickSelection: true,
+                }
+            },
             matInfo: {
                 mat_nm : '',
                 type : '',
                 category : '',
                 price : '',
                 unit : '',
-                safe_stk : ''
+                safe_stk : '',
+                note:''
             },
             isUpdated : false,
             
@@ -167,6 +176,7 @@ export default {
                 price: '',
                 unit: '',
                 safe_stk: '',
+                note: '',
                 };
                 this.isUpdated = false; // 신규등록 모드로 전환
             },
@@ -183,33 +193,20 @@ export default {
                 {headerName: '단위' , field: 'unit'},        
             ],
             materialData:[],
-            
+            keyword: '',
+            matKeyword: {}
         }        
     },
 
+
     methods:{
-        matClicked(params){
-            this.matInfo.mat_cd = params.data.mat_cd;
-            this.matInfo.mat_nm = params.data.mat_nm;
-            this.matInfo.type = this.matchCode(this.selectedData.selectOptions.type, params.data.type);
-            this.matInfo.category = this.matchCode(this.selectedData.selectOptions.category, params.data.category);
-            this.matInfo.price = params.data.price;
-            this.matInfo.unit = this.matchCode(this.selectedData.selectOptions.unit, params.data.unit);
-            this.matInfo.safe_stk = params.data.safe_stk;
-            this.isUpdated = true;         
-        },
-        matchCode(options, value) {
-            const match = options.find((opt) => opt.comm_dtl_nm == value || opt.comm_dtl_cd == value); //코드나 이름에 벨류가 있는지 확인
-            return match ? match.comm_dtl_cd : ''; // 있으면 코드 반환 없으면 공백
-        },
-        async bringMat(){
-            let result = await axios.get('/api/standard/allMaterials')
-                                    .catch(err=>console.log(err));
-            this.materialData = result.data;
-        },
-        onMatGridReady(params){
-            params.api.sizeColumnsToFit();
-            this.gridApi = params.api;
+
+        //----------------------------공통함수()---------------------------
+        //자재검색
+        async searchMtl() {
+        this.matKeyword = {mat_nm: this.keyword};
+        let result = await axios.get('/api/comm/material/', { params: this.matKeyword });
+        this.materialData = result.data;
         },
         // 공통코드 가져오기
         async fetchCommonCodes() {
@@ -225,6 +222,31 @@ export default {
                 console.error('공통코드 가져오기 실패:', error);
             }
         },
+        matClicked(params){
+            this.matInfo.mat_cd = params.data.mat_cd;
+            this.matInfo.mat_nm = params.data.mat_nm;
+            this.matInfo.type = this.matchCode(this.selectedData.selectOptions.type, params.data.type);
+            this.matInfo.category = this.matchCode(this.selectedData.selectOptions.category, params.data.category);
+            this.matInfo.price = params.data.price;
+            this.matInfo.unit = this.matchCode(this.selectedData.selectOptions.unit, params.data.unit);
+            this.matInfo.safe_stk = params.data.safe_stk;
+            this.matInfo.note = params.data.note
+            this.isUpdated = true;         
+        },
+        matchCode(options, value) { //매칭 메소드
+            const match = options.find((opt) => opt.comm_dtl_nm == value || opt.comm_dtl_cd == value); //코드나 이름에 벨류가 있는지 확인
+            return match ? match.comm_dtl_cd : ''; // 있으면 코드 반환 없으면 공백
+        },
+        async bringMat(){
+            let result = await axios.get('/api/standard/allMaterials')
+                                    .catch(err=>console.log(err));
+            this.materialData = result.data;
+        },
+        onMatGridReady(params){
+            params.api.sizeColumnsToFit();
+            this.gridApi = params.api;
+        },
+        
         async matInsert(){
             try {
                 let result = await axios.post('/api/standard/material', this.matInfo);
@@ -239,17 +261,75 @@ export default {
             }
         },
         async matUpdate() {
-            try {
-                let result = await axios.put(`/api/standard/updateMaterial/${this.matInfo.mat_cd}`, this.matInfo);
-            if (result.data.result) {
-                alert('자재가 수정되었습니다.');
-                this.bringMat(); // 목록 갱신
-            } else {
-                alert('수정에 실패했습니다.');
-            }
-            } catch (err) {
-            console.error('자재 수정 중 오류:', err);
-            }
+                this.$swal({
+                    title: "정말 수정하시겠습니까??",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, modify!"
+                }).then(async(result) => {
+                    if (result.isConfirmed) {
+                        this.$swal({
+                        title: "modify!",
+                        text: "Your file has been modified.",
+                        icon: "success"
+                        });
+                    }
+                    await axios.put(`/api/standard/updateMaterial/${this.matInfo.mat_cd}`, this.matInfo);
+                    this.bringMat(); // 목록 갱신
+                });
+        },
+        async delMaterial(){           
+                this.$swal({
+                    title: "정말 삭제하시겠습니까??",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete!"
+                }).then(async(result) => {
+                    if (result.isConfirmed) {
+                        this.$swal({
+                        title: "delete!",
+                        text: "Your file has been deleted.",
+                        icon: "success"
+                        });
+                        await axios.delete(`/api/standard/delMaterial/${this.matInfo.mat_cd}`);
+                        this.bringMat(); // 목록 갱신
+                    }
+                });
+                
+            
+            
+        }
+
+    },
+    
+    watch : {
+        // mat_nm(newVal, oldVal) {
+        //     console.log('newVal => ', newVal.mat_nm);
+        //     console.log('newVal => ', oldVal.mat_nm);
+            
+        //     // if(this.matInfo){
+        //     //     this.isEditMode=false;
+        //     //     return;
+        //     // }
+        //     // this.matClicked(this.matInfo);
+        //     // this.isEditMode = true; // 조회 시 수정 모드 활성화
+        // }
+        matInfo : {
+            deep: true,
+            handler(newVal, oldVal) {
+                console.log("oldVal => ", oldVal);
+                if(newVal){
+                    this.isDisabled = false;
+                }
+                
+            },
+            
         }
     },
 
