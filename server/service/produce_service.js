@@ -3,8 +3,8 @@ const mariadb = require("../database/mapper.js");
 /*--------------생산계획서-------------*/
 
 //계획서 전체조회
-const findAllPlan = async ()=>{
-  let list = await mariadb.query('planList');
+const findAllPlan = async (searchs)=>{
+  let list = await mariadb.query('planSelect', searchs);
   return list;
 }
 
@@ -22,9 +22,15 @@ const findAllPlanDtl = async (no)=>{
 
 //계획서 계획서 삭제
 const deletePlan = async (values)=>{
-  console.log(values);
-  let list = await mariadb.query('planDelete', values);
-  return list;
+  let del_res = await mariadb.query('planDelete', values);
+
+  if(del_res.affectedRows > 0){ // 모두 성공했는지 판단
+    await mariadb.commit();
+    return 'success';
+  } else {
+      await mariadb.rollback();
+      return 'fail';
+  }
 }
 
 //지시서 등록
@@ -70,6 +76,12 @@ const findInstNo = async (no)=>{
   let list = await mariadb.query('instInfo', no);
   let info = list[0];
   return info;
+}
+
+//지시서 제품목록 조회
+const findInstDtlNo = async (no)=>{
+  let list = await mariadb.query('instDtlList', no);
+  return list;
 }
 
 //지시서 제품별 공정 조회
@@ -121,6 +133,25 @@ const instInsert = async (values) => {
     return result;
 }; 
 
+//지시서 삭제
+const deleteInst = async (values)=>{
+  let del_res = await mariadb.query('instDelete', values);
+
+  if(del_res.affectedRows > 0){ // 모두 성공했는지 판단
+    await mariadb.commit();
+    return 'success';
+  } else {
+      await mariadb.rollback();
+      return 'fail';
+  }
+}
+
+//지시서에 커스텀된 제품별 공정 조회
+const findInstCusFlow = async (values)=>{
+  let list = await mariadb.query('instCusFlow', values);
+  console.log(list);
+  return list;
+}
 
 module.exports = {
   findAllPlan,
@@ -132,7 +163,9 @@ module.exports = {
 
   findInstNo,
   instInsert,  
+  findInstDtlNo,
   findInstFlow,
   findInstMatFlow,
-  instInsert
+  findInstCusFlow,
+  deleteInst
 };

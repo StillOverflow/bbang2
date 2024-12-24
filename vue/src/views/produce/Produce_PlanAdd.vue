@@ -8,7 +8,7 @@
         <div class="row">
           <div class="input-group w-30">
             <input class="form-control" type="text" v-model="order_cd" placeholder="주문코드를 검색해주세요" style="height: 41px;">
-            <button class="btn btn-warning" type="button" @click="modalOpen">SEARCH</button>
+            <button class="btn btn-warning mb-3" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
         </div>
 
@@ -48,22 +48,11 @@
       <!--검색모달[E]-->
 
       <div class="card-body">
-        <div class="row">
-          <div class="col-7 col-xl-6">
-            <h4>제품목록</h4>
-          </div>
-          <div class="col-5 col-xl-6">
-            <div class="row">
-              <div class="col-12 col-md-7 col-xl-9">
-                <h4>주문서 제품목록</h4>
-              </div>
-            </div>
-          </div>
-        </div>
   
-        <div class="row mb-4">
-          <div class="col-5">
-            <ag-grid-vue class="ag-theme-alpine w-100" 
+        <div class="row">
+          <div class="col-5 half">
+            <p class="text-uppercase text-lg font-weight-bolder">전체제품 목록</p>
+            <ag-grid-vue class="ag-theme-alpine " 
             style="width: 100%; height: 400px;"  
             :columnDefs="productDefs" 
             :rowData="productData" 
@@ -72,17 +61,17 @@
              :gridOptions="gridOptions"
              overlayNoRowsTemplate="주문내역이 없습니다."/>
           </div>
-          <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center">
-            <button class="btn btn-outline-primary"  @click="getSelected('plus')">
+          <div class="col-1 d-flex flex-column align-items-center justify-content-center">
+            <button class="btn btn-outline-primary mb-3"  @click="getSelected('plus')">
               <i class="fa-solid fa-plus" style="color: #0951ce;"></i>
             </button>
             <button class="btn btn-outline-danger" @click="getSelected()">
               <i class="fa-solid fa-minus" style="color: #fa0000;"></i>
             </button>
           </div>
-          <div class="col-5 col-xl-6">
-            
-            <ag-grid-vue class="ag-theme-alpine w-100"  
+          <div class="col-5 half">
+            <p class="text-uppercase text-lg font-weight-bolder">주문제품 목록</p>
+            <ag-grid-vue class="ag-theme-alpine"  
             style="width: 100%; height: 400px;" 
             :columnDefs="orderDtlDefs" 
             :rowData="orderDtlData" 
@@ -92,9 +81,9 @@
           </div>
         </div>
   
-        <div class="center mtp30">
-          <button class="btn btn-primary" @click="planInsert">SUBMIT</button>
-          <button class="btn btn-secondary mlp10" @click="resetForm">RESET</button>
+        <div class="center">
+          <button class="btn btn-primary mtp30" @click="planInsert">SUBMIT</button>
+          <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
         </div>
       </div>
     </div>
@@ -303,7 +292,7 @@ export default {
       let insertArr = [...insertPlan, insertPrd];
 
       let result = await axios.post('/api/plan', insertArr)
-                 .catch(err => console.log(err));
+                              .catch(err => console.log(err));
 
       if(result.data == 'success'){
           this.$swal({
@@ -325,9 +314,6 @@ export default {
       this.productData = [];
       this.orderDtlData = [];      
     },
-
   }
-  
 };
-
 </script>
