@@ -1,5 +1,6 @@
 const mariadb = require('../database/mapper.js');
 
+// ^ ------------------------- 자재 발주서(미지시 생산계획) -------------------------
 // 생산 계획서 Header 조회
 const produceHeadPlanList = async() => {
     let list = await mariadb.query('produceHeadPlanList');
@@ -15,7 +16,6 @@ const planListSearch = async (startDt, endDt) => {
         const list = await mariadb.query('planListSearch', searchDate);
         return list;
     } catch (err) {
-        console.error("Error searching orders 실패:", err);
         throw err;
     }
 };
@@ -26,10 +26,16 @@ const getPlanMaterialStock = async(code)=> {
     return list;
 } 
 
-
+// ^ ------------------------- 자재 발주관리 -------------------------
+// 자재 발주서 조회
+const getMaterialOrder = async(code)=> {
+    let list = await mariadb.query('getMaterialOrder', code);
+    return list;
+} 
 
 module.exports = {
     produceHeadPlanList,
     planListSearch,
     getPlanMaterialStock,
+    getMaterialOrder,
 }

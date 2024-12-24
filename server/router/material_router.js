@@ -23,10 +23,14 @@ router.get('/material/planList/search/', async (req, res) => {
 
 router.get("/material/matStockList/:plan_cd", async (req, res) => {
    let code = req.params.plan_cd;
-   let matStockList = await materialService.getPlanMaterialStock(code);
-   res.send(matStockList);
+   let result = await materialService.getPlanMaterialStock(code);
+   res.send(result);
 });
 
 // ^ ------------------------- 자재 발주서 관리 -------------------------
+router.get("/material/orderList", async (req, res) => {
+   let result = await materialService.getMaterialOrder();
+   res.send(result);
+});
 
 module.exports = router;

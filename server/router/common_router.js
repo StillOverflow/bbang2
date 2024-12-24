@@ -26,6 +26,7 @@ router.get('/comm/account', async (req, resp) => {
 
 //! 자재 조회 => queryString 방식 ~~
 router.get('/comm/material', async (req, resp) => {
+  console.log(req.query)
   let datas = req.query; // { }
   console.log("material => ", datas);
   let result = await commonService.materialSelect(datas);
