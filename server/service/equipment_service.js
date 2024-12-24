@@ -15,20 +15,15 @@ const findAllEq = async () => {
 };
 
 // 필터링된 설비 정보 조회
-async function findFilteredEq(filters) {
+const eqAllListSearch = async (values) => {
   try {
-    const { filterQuery, queryParams } = generateFilters(filters); // 필터 동적 생성
-    const sqlQuery = equipmentSQL.eqAllListFiltered.replace(
-      '{{FILTER}}',
-      filterQuery
-    ); // 필터 삽입
-    const [rows] = await db.query(sqlQuery, queryParams); // Prepared Statement로 실행
-    return rows;
+    const list = await mariadb.query('eqAllListSearch', values);
+    return list;
   } catch (err) {
-    console.error('필터링된 설비 조회 실패:', err);
+    console.error("Error searching equips 실패: ", err);
     throw err;
   }
-}
+};
 
 // 설비단건조회
 const findEquipNo = async (no) => {
@@ -94,7 +89,7 @@ module.exports = {
   findEquipNo,
   insertEq,
   updateEq,
-  findFilteredEq,
   findInspEq,
-  findInspEquipNo
+  findInspEquipNo,
+  eqAllListSearch
 };

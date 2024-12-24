@@ -31,115 +31,109 @@ const eqAllList = `SELECT eqp_cd,
 FROM equipment`;
 
 //설비 정보 조회(필터링 적용)
-const eqAllListFiltered = ` SELECT  e.eqp_cd,
-                                    e.eqp_type,
-                                    e.eqp_nm,
-                                    e.model,
-                                    e.pur_dt,
-                                    e.pur_act,
-                                    e.mfg_act,
-                                    e.insp_cycle,
-                                    e.status,
-                                    e.id,
-                                    e.is_use,
-                                    e.opt_temp,
-                                    e.opt_humid,
-                                    e.opt_rpm,
-                                    e.last_insp_dt,
-                                    e.next_insp_dt,
-                                    e.uph,
-                                    e.create_dt,
-                                    e.update_dt,
-                                    e.note
+const eqAllListSearch = (searchObj) => {
+  let query = ` SELECT  e.eqp_cd as eqp_cd,
+                      fn_get_codename(e.eqp_type) as eqp_type,
+                      e.eqp_nm as eqp_nm,
+                      e.insp_cycle as insp_cycle,
+                      e.img_path as img_path,
+                      fn_get_codename(e.is_use) as is_use,
+                      e.model as model,
+                      fn_get_codename(e.status) as status,
+                      i.start_time as start_time,
+                      i.insp_type as insp_type,
+                      i.insp_reason as insp_reason,
+                      i.insp_result as insp_result,
+                      i.insp_action as insp_action,
+                      i.note as note,
+                      i.end_time as end_time,
+                      i.id as id,
+                      date(e.create_dt) as create_dt,
+                      date(e.update_dt) as update_dt
 FROM equipment e
-LEFT JOIN repair_log r ON e.eqp_cd = r.eqp_cd
-WHERE 1=1
-{{FILTER}}
-ORDER BY e.create_dt DESC
+      RIGHT JOIN inspection_log i 
+              ON e.eqp_cd = i.eqp_cd
 `;
 
-// 필터 동적 생성
-function generateFilters(filters) {
-  const { eqp_type, is_use, status } = filters;
-  let filterQuery = '';
-  // Prepared Statement용 파라미터 배열
-  // (리터럴 그대로 넣으면 SQL Injection 공격에 취약하다고 함)
-  const queryParams = [];
+  const conditions = [];
 
-  //설비구분 필터
-  if (eqp_type) {
-    filterQuery += `AND e.eqp_type = ? `;
+  //설비구분
+  if (searchObj.eqp_type)
+    conditions.push(`eqp_type = '${searchObj.eqp_type}'`);
+
+  //사용유무(사용가능/사용불가)
+  if (searchObj.is_use)
+    conditions.push(`is_use = '${searchObj.is_use}'`);
+
+  //설비상태(가동/비가동)
+  if (searchObj.status)
+    conditions.push(`status = '${searchObj.status}'`);
+
+  // WHERE 절 조립
+  if (conditions.length > 0) {
+    query += ` WHERE ` + conditions.join(' AND ');
   }
+  // 쿼리 반환
+  return query;
+};
 
-  //사용유무 필터
-  if (is_use) {
-    filterQuery += `AND e.is_use = ? `;
-  }
-
-  //설비상태 필터(가동/비가동)
-  if (status) {
-    filterQuery += `AND e.status = ? `;
-  }
-
-  return { filterQuery, queryParams };
-}
 
 //정보단건조회
 const equipInfo = `SELECT eqp_cd,
-                          eqp_type, 
-                          eqp_nm,
-                          model,
-                          pur_dt,
-                          pur_act,
-                          mfg_act,
-                          insp_cycle,
-                          repl_cycle,
-                          id,
-                          opt_temp,
-                          opt_humid,
-                          opt_rpm,
-                          opt_speed,
-                          opt_power,
-                          uph,
-                          is_use,
-                          img_path
+  eqp_type,
+  eqp_nm,
+  model,
+  pur_dt,
+  pur_act,
+  mfg_act,
+  insp_cycle,
+  repl_cycle,
+  id,
+  opt_temp,
+  opt_humid,
+  opt_rpm,
+  opt_speed,
+  opt_power,
+  uph,
+  is_use,
+  img_path
 FROM equipment
 WHERE eqp_cd = ?
-`;
+  `;
 
 //등록전 마지막 설비코드 찾기+1
 const getEqpCd = `
-SELECT CONCAT('EQP', LPAD(IFNULL(MAX(SUBSTR(e.eqp_cd, -3)) + 1,1), 3,'0')) AS eqp_cd FROM equipment e`;
+SELECT CONCAT('EQP', LPAD(IFNULL(MAX(SUBSTR(e.eqp_cd, -3)) + 1, 1), 3, '0')) AS eqp_cd FROM equipment e`;
 
 //설비등록
-const eqInsert = `INSERT INTO equipment 
+const eqInsert = `INSERT INTO equipment
 SET ? `;
 
 //수정
-const eqUpdate = `UPDATE equipment 
-SET ? 
-WHERE EQP_CD = ?`;
+const eqUpdate = `UPDATE equipment
+SET ?
+  WHERE EQP_CD = ? `;
 
 
 
 /* -----------설비 점검 관리------------*/
 //설비점검조회
 const eqInspList = ` SELECT   e.eqp_cd,
-                              e.eqp_type,
-                              e.eqp_nm,
-                              e.model,
-                              e.insp_cycle,
-                              e.img_path,
-                              i.start_time,
-                              i.insp_type,
-                              i.insp_reason,
-                              i.insp_result,
-                              i.insp_action,
-                              i.note,
-                              i.end_time,
-                              i.id,
-                              i.create_dt,
-                              i.update_dt
+  e.eqp_type,
+  e.eqp_nm,
+  e.model,
+  e.insp_cycle,
+  e.img_path,
+  i.start_time,
+  i.insp_type,
+  i.insp_reason,
+  i.insp_result,
+  i.insp_action,
+  i.note,
+  i.end_time,
+  i.id,
+  i.create_dt,
+  i.update_dt
 FROM equipment e
 RIGHT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
 ORDER BY i.create_dt DESC
@@ -147,26 +141,26 @@ ORDER BY i.create_dt DESC
 
 //설비점검 단건조회
 const equipInspInfo = `SELECT   e.eqp_cd,
-                              e.eqp_type,
-                              e.eqp_nm,
-                              e.model,
-                              e.insp_cycle,
-                              e.img_path,
-                              i.start_time,
-                              i.insp_type,
-                              i.insp_reason,
-                              i.insp_result,
-                              i.insp_action,
-                              i.note,
-                              i.end_time,
-                              i.id,
-                              i.create_dt,
-                              i.update_dt
+  e.eqp_type,
+  e.eqp_nm,
+  e.model,
+  e.insp_cycle,
+  e.img_path,
+  i.start_time,
+  i.insp_type,
+  i.insp_reason,
+  i.insp_result,
+  i.insp_action,
+  i.note,
+  i.end_time,
+  i.id,
+  i.create_dt,
+  i.update_dt
 FROM equipment e
 RIGHT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
-WHERE i.eqp_cd ='EQP010'
+WHERE i.eqp_cd = 'EQP010'
 ORDER BY i.create_dt DESC
-`;
+  `;
 
 module.exports = {
   eqStatList,
@@ -175,7 +169,7 @@ module.exports = {
   eqInsert,
   eqUpdate,
   getEqpCd,
-  eqAllListFiltered,
+  eqAllListSearch,
   eqInspList,
   equipInspInfo
 };
