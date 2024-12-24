@@ -110,22 +110,13 @@
                   v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0">
                   submit
                 </button>
-              </div>
-              
+              </div>              
             </div>
           </div> 
-        </div>
-        
-      </div>
-      
-      <!-- bom 관리 -->
-    </div>
-    
+        </div>     
+      </div>      
+    </div>    
   </div>
-
-  
-    
- 
 </template>
 
 <script>

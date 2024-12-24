@@ -34,8 +34,17 @@ const accountSelect = (datas) => {
 //! 자재 조회
 const materialSelect = (datas) => {
   let query = `
-    SELECT mat_cd, mat_nm, \`type\`, price, safe_stk, create_dt, update_dt, category, \`unit\`
-    FROM   material
+    SELECT mat_cd, 
+    mat_nm, 
+    fn_get_codename(type) as type, 
+    price, 
+    safe_stk, 
+    create_dt, 
+    update_dt, 
+    fn_get_codename(category) as category, 
+    fn_get_codename(unit) as unit,
+    note
+    FROM material
   `;
   
   const conditions = [];
@@ -58,7 +67,7 @@ const materialSelect = (datas) => {
 //! 상품 조회
 const productSelect = (datas) => {
   let query = `
-    SELECT prd_cd, prd_nm, category, price, \`unit\`, exp_range, safe_stk, create_dt, update_dt, note,
+    SELECT prd_cd, prd_nm, fn_get_codename(category) as category, price, fn_get_codename(unit) as unit, exp_range, safe_stk, create_dt, update_dt, note,
     (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=p.PRD_CD) AS in_cnt 
     FROM   product p
   `;

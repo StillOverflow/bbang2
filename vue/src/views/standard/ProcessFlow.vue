@@ -1,21 +1,21 @@
 <!-- 기준정보 -->
 <template>
-  <div id="page-inner" class="mx-auto">
+  <div id="page-inner" class="mx-auto" @keydown.esc="modalCloseFunc">
     <div class="py-4 container-fluid">
       <div class="card py-5 px-6">
         <div class="row">
           <!-- 제품목록 -->
           <div class="col-md-5" style="height: auto">
-            <h4 class="d-flex justify-content-start fs-4">제품 목록</h4>
-            <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%">
-              <div style="width: 15%">
-                <label class="me-2 align-self-center">제품명</label>
-              </div>
-              <div class="d-flex justify-content-left align-items-center" style="width: 85%" >
-                <input type="text" class="form-control d-inline" v-model="keyword" placeholder="제품명을 입력하세요" style="width: 75%" />
-                <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" >
-                  <i class="fa-solid fa-magnifying-glass"></i>
-                </button>
+            <div class="d-flex justify-content-between align-items-center">
+              <h4 class="m-0">제품 목록</h4>
+              <div class="d-flex justify-content-between align-items-center">
+                <label class="m-0" style="width: 20%;">제품명</label>
+                <div class="input-group d-flex justify-content-between align-items-center" style="width: 80%;">
+                  <input type="text" class="form-control" placeholder="제품명을 입력하세요" v-model="keyword" style="height: 41px;">
+                  <button class="btn btn-warning m-0" type="button" id="button-addon3">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                </div>
               </div>
             </div>
             <!-- 제품 목록 -->
@@ -71,7 +71,7 @@
               </button>
             </div>
             <!-- BOM 테이블 ag-grid -->
-            <div>
+            <div >
               <!-- 공정별 자재 흐름도 -->
             <ag-grid-vue
               class="ag-theme-alpine"
@@ -90,9 +90,7 @@
               <template v-slot:header>
                   <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
                   <h5 class="modal-title">공정코드 검색</h5>
-                  <button type="button" aria-label="Close" class="close" @click="modalOpen">
-                    ×
-                  </button>
+                  <button type="button" aria-label="Close" class="close" @click="modalOpen"> × </button>
               </template>
               <template v-slot:default>
                 <ag-grid-vue
@@ -107,26 +105,15 @@
                 </ag-grid-vue>
               </template>
               <template v-slot:footer>
-                <button type="button" class="btn btn-secondary" @click="modalOpen">
-                  취소
-                </button>
-                <button type="button" class="btn btn-primary" @click="InsertProc">
-                  추가
-                </button>
+                <button type="button" class="btn btn-secondary" @click="modalOpen"> 취소 </button>
+                <button type="button" class="btn btn-primary" @click="InsertProc"> 추가 </button>
               </template>
             </Layout>
             <Layout :modalCheck="bomModal">
               <template v-slot:header>
                 <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
                 <h5 class="modal-title">공정코드 검색</h5>
-                <button
-                  type="button"
-                  aria-label="Close"
-                  class="close"
-                  @click="bommodalOpen"
-                >
-                  ×
-                </button>
+                <button type="button" aria-label="Close" class="close" @click="bommodalOpen" > × </button>
               </template>
               <template v-slot:default>
                 <!-- BOM 목록 -->
@@ -144,24 +131,17 @@
                 </ag-grid-vue>
               </template>
               <template v-slot:footer>
-                <button  type="button" class="btn btn-secondary" @click="bommodalOpen" >
-                  취소
-                </button>
-                <button type="button" class="btn btn-primary" @click="InsertProcMtl" >
-                  추가
-                </button>
+                <button  type="button" class="btn btn-secondary" @click="bommodalOpen" >취소 </button>
+                <button type="button" class="btn btn-primary" @click="InsertProcMtl" > 추가 </button>
               </template>
             </Layout>
               <div class="text-center">
-                <button class="btn btn-success mt-3 saveBtn " @click="save" >
-                  SUBMIT
-                </button>
+                <button class="btn btn-success mt-3 saveBtn " @click="save" > SUBMIT </button>
               </div>             
             </div>
           </div> 
         </div>      
       </div>     
-      <!-- bom 관리 -->
     </div>   
   </div>
 </template>
@@ -261,6 +241,17 @@ export default {
   },
 
   methods: {
+    //모달esc
+    modalCloseFunc(e){
+      if(e.key === "Escape"){
+        if(this.isModal){
+          this.isModal= !this.isModal
+        }
+        if(this.bomModal){
+          this.bomModal=!this.bomModal
+        }
+      }
+    },
     //모달오픈
     modalOpen() {
       this.isModal = !this.isModal;
