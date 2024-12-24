@@ -1,4 +1,4 @@
-품질
+<!-- 품질 -->
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
@@ -73,10 +73,10 @@
              @grid-ready="yetGrid" :gridOptions="gridOptions"/>
           </div>
           <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center">
-            <button class="btn btn-outline-primary" :style="t_overflow" @click="getSelected('plus')">
+            <button class="btn btn-outline-primary" :style="t_overflow" @click="getSelected('plus')"> <!-- (+)버튼 -->
               <i class="fa-solid fa-plus" style="color: #0951ce;"></i>
             </button>
-            <button class="btn btn-outline-danger" :style="t_overflow" @click="getSelected()">
+            <button class="btn btn-outline-danger" :style="t_overflow" @click="getSelected()"> <!-- (-)버튼 -->
               <i class="fa-solid fa-minus" style="color: #fa0000;"></i>
             </button>
           </div>
@@ -87,9 +87,7 @@
         </div>
   
         <div class="row d-flex justify-content-end">
-          <h6 class="col-2 col-md-1 text-center" :style="t_overflow">
-            등록일
-          </h6>
+          <h6 class="col-2 col-md-1 text-center" :style="t_overflow">등록일</h6>
           <div class="col-5 col-md-3 col-xxl-2">
             <input type="text" class="form-control" :value="date_val" readonly>
           </div>
@@ -168,7 +166,7 @@
         // 일반 grid API 데이터
         defs: [
           { headerName: '검사명', field: 'test_nm' },
-          { headerName: '검사방식', field: 'test_metd' },
+          { headerName: '검사방식', field: 'test_metd_nm' },
           { headerName: '검사내용', field: 'test_dtl' }
         ],
 

@@ -6,6 +6,12 @@ const findCommList = async (cd) => {
   return result;
 };
 
+// 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회)
+const findMemList = async (dpt_cd) => {
+  let result = await mariadb.query('memList', dpt_cd);  
+  return result;
+};
+
 //! 거래처 조회 => { act_type : 'E01' } 형태로 넘어감
 const accountSelect = async (datas) => {
   let result = await mariadb.query('accountSelect', datas);  
@@ -32,6 +38,7 @@ const findOrderNo = async (no)=>{
 
 module.exports = {
     findCommList,
+    findMemList,
     accountSelect,
     materialSelect,
     productSelect,

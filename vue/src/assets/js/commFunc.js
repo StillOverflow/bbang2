@@ -61,9 +61,16 @@ export default {
     return Number(params.value).toLocaleString();
   },
 
-   // 공통코드 가져오기 (리턴값 : [{comm_dtl_cd, comm_dtl_nm}, ....])
+  // 공통코드 가져오기 (리턴값 : [{comm_dtl_cd, comm_dtl_nm}, ....])
   async getComm(cd){
     let result = await axios.get('/api/comm/codeList/' + cd)
+                            .catch(err => console.log(err));
+    return result.data;
+  },
+
+  // 사원목록 가져오기 (dpt_cd 넣으면 부서별 사원 조회, 안 넣으면 전체 조회)
+  async getMembers(dpt){
+    let result = await axios.get('/api/comm/member', {params: {dpt_cd: dpt}})
                             .catch(err => console.log(err));
     return result.data;
   }

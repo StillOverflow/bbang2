@@ -6,6 +6,16 @@ const findCommList = `
   ORDER  BY comm_dtl_cd
 `;
 
+// 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회)
+const memList = (dpt_cd) => {
+  return `
+    SELECT mem_cd, name, id, password, phone, addr, email, birth, 
+            hire_dt, quit_dt, status, permission, create_dt, update_dt, dpt_cd
+    FROM   member
+    ${!dpt_cd ? "" : "WHERE  UPPER(dpt_cd) = UPPER('" + dpt_cd + "') "} -- 부서번호 있을 시 동적 조건 생성
+    order  BY name `;
+};
+
 //! 거래처 조회
 // 거래처 코드가 존재하면 Where 조립 없으면 전체조회
 const accountSelect = (datas) => {
@@ -34,8 +44,17 @@ const accountSelect = (datas) => {
 //! 자재 조회
 const materialSelect = (datas) => {
   let query = `
-    SELECT mat_cd, mat_nm, \`type\`, price, safe_stk, create_dt, update_dt, category, \`unit\`
-    FROM   material
+    SELECT mat_cd, 
+    mat_nm, 
+    fn_get_codename(type) as type, 
+    price, 
+    safe_stk, 
+    create_dt, 
+    update_dt, 
+    fn_get_codename(category) as category, 
+    fn_get_codename(unit) as unit,
+    note
+    FROM material
   `;
   
   const conditions = [];
@@ -58,7 +77,7 @@ const materialSelect = (datas) => {
 //! 상품 조회
 const productSelect = (datas) => {
   let query = `
-    SELECT prd_cd, prd_nm, category, price, \`unit\`, exp_range, safe_stk, create_dt, update_dt, note,
+    SELECT prd_cd, prd_nm, fn_get_codename(category) as category, price, fn_get_codename(unit) as unit, exp_range, safe_stk, create_dt, update_dt, note,
     (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=p.PRD_CD) AS in_cnt 
     FROM   product p
   `;
@@ -96,6 +115,7 @@ FROM
 
 module.exports = {
   findCommList,
+  memList,        // 사원
   accountSelect,  // 거래처
   materialSelect, // 자재
   productSelect,  // 제품

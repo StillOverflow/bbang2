@@ -21,6 +21,7 @@ import Produce_PlanList from '../views/produce/Produce_PlanList.vue';
 import Produce_PlanAdd from '../views/produce/Produce_PlanAdd.vue';
 import Produce_InstList from '../views/produce/Produce_InstList.vue';
 import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
+import Produce_Hell from '../views/produce/Produce_Hell.vue';
 
 
 
@@ -188,6 +189,12 @@ const routes = [
     path: '/Produce_InstList',
     name: 'Produce_InstList',
     component: Produce_InstList,
+  },
+  {
+    //생산공정관리
+    path: '/Produce_Hell',
+    name: 'Produce_Hell',
+    component: Produce_Hell,
   },
 
 

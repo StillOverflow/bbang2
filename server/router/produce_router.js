@@ -6,7 +6,8 @@ const produceService = require("../service/produce_service.js");
 
 //계획서 전체조회
 router.get('/plan', async (req, res)=>{
-    let planList = await produceService.findAllPlan();
+    let searchs = req.query;
+    let planList = await produceService.findAllPlan(searchs);
     res.send(planList);
 });
 
@@ -26,7 +27,7 @@ router.get('/plan/:no/dtl', async (req, res)=>{
 
 //계획서 삭제
 router.delete("/plan", async (req, res) => {
-    let values = req.body;
+    let values = req.query;
     let result = await produceService.deletePlan(values);
     res.send(result);
   });
@@ -60,6 +61,20 @@ router.post('/inst', async(req, res)=>{
   res.send(result);
 });
 
+//지시서 삭제
+router.delete("/inst", async (req, res) => {
+  let values = req.query;
+  let result = await produceService.deleteInst(values);
+  res.send(result);
+});
+
+//지시서 제품목록 조회
+router.get('/inst/dtl/:no', async (req,res)=>{
+  let instNo = req.params.no;
+  let info = await produceService.findInstDtlNo(instNo);
+  res.send(info);
+})
+
 //제품별 공정 조회
 router.get('/inst/:no/flow', async (req,res)=>{
     let prodNo = req.params.no;
@@ -73,5 +88,12 @@ router.get('/inst/:no/mat', async (req,res)=>{
     let info = await produceService.findInstMatFlow(prodNo);
     res.send(info);
   })
+
+ //지시서 제품별 커스텀된 제품목록 조회
+router.get('/progress/flow', async (req,res)=>{
+  let setInfo = req.query;
+  let info = await produceService.findInstCusFlow(setInfo);
+  res.send(info);
+})
 
 module.exports = router;

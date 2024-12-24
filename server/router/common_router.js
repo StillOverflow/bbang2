@@ -8,6 +8,12 @@ router.get('/comm/codeList/:cd', async (req, resp) => {
   resp.send(result);
 });
 
+// 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회) => queryString 방식 ~~
+router.get('/comm/member', async (req, resp) => {
+  let result = await commonService.findMemList(req.query.dpt_cd); // dpt_cd(부서코드) 있으면 넘겨줄 것
+  resp.send(result);
+});
+
 //! 거래처 조회 => queryString 방식 ~~
 // /comm/account?act_cd=A01&act_nm=가나다
 router.get('/comm/account', async (req, resp) => {

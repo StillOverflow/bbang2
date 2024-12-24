@@ -5,11 +5,9 @@
       <div class="card-header bg-light ps-5 ps-md-4">
         <div class="row">
           <div class="col-3 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">지시서 코드</div>
-          <div class="input-group w-50">
-            <input class="form-control" type="text" v-model="plan_cd" placeholder="생산계획코드를 검색해주세요"
-              style="height: 41px;">
-            <button class="btn btn-warning" type="button" @click="modalOpen"><i
-                class="fa-solid fa-magnifying-glass"></i></button>
+          <div class="input-group w-30">
+            <input class="form-control" type="text" v-model="inst_cd" placeholder="생산지시서 코드를 검색해주세요" style="height: 41px;">
+            <button class="btn btn-warning mb-3" type="button" @click="searchOrder"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
         </div>
 
@@ -17,8 +15,7 @@
           <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">진행상태</div>
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">
-              <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.comm_dtl_cd" :id="'radio' + opt.comm_dtl_cd"
-               >
+              <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.comm_dtl_cd" :id="'radio' + opt.comm_dtl_cd" @change="searchOrder">
               <label class="form-check-label ms-2 me-4 text-start" :for="'radio' + opt.comm_dtl_cd">
                 {{opt.comm_dtl_nm}}
               </label>
@@ -28,8 +25,8 @@
 
         <div class="row">
           <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">정렬</div>
-          <div class="col-6">
-            <select v-model="selected_list" class="form-select">
+          <div class="col-3">
+            <select v-model="selected_list" class="form-select" @change=searchOrder>
               <option v-for="(val, index) in orderlist" 
               :value="val.value" 
               v-bind:key="index">
@@ -45,9 +42,9 @@
           :rowData="instData" :pagination="true" @grid-ready="myGrid" @rowClicked="modalClicked"
           :gridOptions="gridOptions" overlayNoRowsTemplate="등록된 지시서가 없습니다.">
         </ag-grid-vue>
-        <div class="center mtp30">
-          <button class="btn btn-danger" @click="PlanCancel">DELETE</button>
-          <button class="btn btn-outline-success mlp10" @click="excelDownload()"><i
+        <div class="center">
+          <button class="btn btn-danger mtp30" @click="PlanCancel">DELETE</button>
+          <button class="btn btn-outline-success mlp10 mtp30" @click="excelDownload()"><i
               class="fa-regular fa-file-excel"></i> EXCEL</button>
         </div>
       </div>
@@ -64,7 +61,7 @@ export default {
   components: { AgGridVue },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 조회' });
-    this.getPlanList();
+    this.getInstList();
     this.getStatus();
   },
   computed: {
@@ -80,6 +77,7 @@ export default {
       radios: [],
       selected_radio:'',
       selected_list:'',
+
       orderlist:[
         { name: "선택해주세요.", value: "" },
         { name:'작업일자 최신순', value:'order by work_dt desc'},
@@ -112,7 +110,6 @@ export default {
       let arr = await this.$comm.getComm("PS");
       let arrAdd = {comm_dtl_cd: '', comm_dtl_nm: '전체'};
       arr.unshift(arrAdd);
-      console.log(arr);
       this.radios = arr;
       
     },
@@ -122,27 +119,36 @@ export default {
       this.myColApi = params.columnApi; // api, columnApi 둘 다 꼭 있어야 함
     },
 
-    //계획서 리스트
-    async getPlanList() {
+    //지시서 리스트
+    async getInstList() {
       let result = await axios.get('/api/inst')
-        .catch(err => console.log(err));
+                              .catch(err => console.log(err));
       this.instData = result.data;
     },
 
     //지시서 삭제
     async InstCancel() {
+      
+      let selected = null;
+      let delArr = [];
 
-      let cancelArr = [];
+      selected = this.myApi.getSelectedNodes();
 
-      const val = this.myApi.getSelectedNodes();
-      for (let i = 0; i < val.length; i++) {
-        cancelArr.push(val[i].data.inst_cd);
+      selected.forEach((val) => { 
+        delArr.push("'"+val.data.PROD_PLAN_CD+"'");
+      });            
+      let result = await axios.delete(`/api/inst/`, {params:delArr})
+                              .catch(err => console.log(err));
+                              if(result.data == 'success'){
+      this.$swal({
+            icon: "success",
+            title: "선택한 지시서를 삭제하였습니다.",
+        })
+        .then(() => {
+            this.getInstList();
+        });          
       }
-
-      let result = await axios.delete(`/api/inst/`, cancelArr)
-        .catch(err => console.log(err));
       return result;
-
     },
     excelDownload() {
       var today = new Date();
@@ -161,7 +167,17 @@ export default {
       const workSheet = XLSX.utils.json_to_sheet(selectedData)
       XLSX.utils.book_append_sheet(workBook, workSheet, 'example')
       XLSX.writeFile(workBook, `생산지시서_${today}.xlsx`);
-    }
+    },
+    async searchOrder() {
+      let obj = {
+            INST_CD : this.inst_cd,
+            STATUS : this.selected_radio,
+            ORDER : this.orderlist
+        }
+      let result = await axios.get('/api/inst', {params:obj})
+                              .catch(err => console.log(err));
+      this.instData = result.data;
+    },
   }
 
 };

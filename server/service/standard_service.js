@@ -191,13 +191,7 @@ const bringMaterial = async()=>{
   let result = await mariadb.query("bringMat");
   return result;
 };
-//자재단건조회
-const findMatInfo = async(no) =>{
 
-  let list = await mariadb.query('matInfo',no);
-  let info = list[0];
-  return info;
-}
 
 //자재등록
 const insertMaterial = async(matInfo)=>{
@@ -225,6 +219,16 @@ const updateMaterial = async(matCd,updateInfo)=>{
   return sendData;
 }
 
+//자재삭제
+const deleteMaterial = async(matCd)=>{
+  let result = await mariadb.query('matDelete', matCd);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+}
+
 
 
 module.exports = {
@@ -249,5 +253,5 @@ module.exports = {
   bringMaterial,
   insertMaterial,
   updateMaterial,
-  findMatInfo
+  deleteMaterial
 };

@@ -14,7 +14,7 @@
           <div class="row">
             <div class="input-group w-30">
               <input class="form-control" type="text" v-model="plan_cd" placeholder="생산계획코드를 검색해주세요" style="height: 41px;">
-              <button class="btn btn-warning" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
+              <button class="btn btn-warning mb-3" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
             </div>
           </div>
 
@@ -146,7 +146,8 @@ export default {
   components: { 
     AgGridVue, 
     Layout, 
-    draggable: VueDraggableNext},
+    draggable: VueDraggableNext
+  },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 관리' });
     this.getPlanFlowList();
@@ -161,7 +162,6 @@ export default {
   },
   data() {
     return {
-      clientNameSearch: "",
       plan_cd : "", //검색어
       isModal: false,
       flowArr: [],

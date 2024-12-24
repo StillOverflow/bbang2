@@ -75,7 +75,7 @@ export default {
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'DETAILED';
-                        button.className = 'btn btn-warning';
+                        button.className = 'btn btn-warning btn-xsm';
                         button.addEventListener('click', () => {
                             params.data
                             // this.rowData = this.rowData.filter(row => row !== params.data);

@@ -59,3 +59,13 @@
 .btn[class*="outline"]{
   background-color: #fff;
 }
+
+.center{
+  position: relative;
+  right: auto;
+  margin: 0 auto;
+  float: none;
+  max-width: fit-content;
+}
+
+.half { width: 45.8% !important; }

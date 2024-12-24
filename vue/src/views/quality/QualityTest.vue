@@ -1,4 +1,4 @@
-품질
+<!-- 품질 -->
 <template>
   <div class="py-4 container-fluid">
     <div class="card p-2 mb-3">
@@ -12,8 +12,8 @@
             :class="activeTabRev" @click="activeCompTab">검사완료</div>
         </div>
       </div>
-      <ag-grid-vue class="ag-theme-alpine" style="height: 250px;" :columnDefs="waitDefs" :rowData="waitData" 
-        @grid-ready="gridFit" :gridOptions="gridOptions" @rowClicked="selectTarget"/>
+      <ag-grid-vue class="ag-theme-alpine" style="height: 268px;" :columnDefs="waitDefs" :rowData="waitData" 
+        @grid-ready="gridFit" :gridOptions="gridOptions" :getRowStyle="getRowStyle" @rowClicked="selectTarget"/>
     </div>
     
     <div class="card">
@@ -25,7 +25,7 @@
           <div class="col-12 col-md-6 col-xl-3 row d-flex align-items-center justify-content-center p-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산번호</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.inst_cd" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.prod_result_cd" readonly>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">제품코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -37,7 +37,7 @@
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.proc_cd" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.inst_proc_cd" readonly>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -46,26 +46,37 @@
           </div>
 
           <div class="col-12 col-md-6 col-xl-4 mb-2 g-0">
-            <div class="card me-4 m-md-0">
-              <div class="card-header p-2 bg-light fw-bold text-center">
-                검사항목 (샘플링검사)
-              </div>
+            <div class="card me-4 m-md-0 mb-2 mb-md-2" v-show="samplingTests.length > 0"> <!-- 있을 때만 표시 -->
+              <div class="card-header p-2 bg-light fw-bold text-center">검사항목 (샘플링검사)</div>
               <div class="card-body">
-                <div class="form-check p-0 d-flex justify-content-center">
-                  <span style="cursor: pointer" :style="t_break">검사검사 검사검사검</span>
-                  <input class="form-check-input ms-4" type="radio" :value="null" :id="'check'" :disabled="!isWaitList">
-                  <label class="form-check-label ms-2 me-1 text-start" :for="'check'" :style="t_overflow">적합</label>
-                  <input class="form-check-input ms-2" type="radio" :value="null" :id="'check'" :disabled="!isWaitList">
-                  <label class="form-check-label ms-2 me-4 text-start" :for="'check'" :style="t_overflow">부적합</label>
+                <div class="form-check p-0 d-flex justify-content-center" v-for="(test, idx) in samplingTests" :key="test.test_cd">
+                  <span style="cursor: pointer" :style="t_break" @click="openDtl('샘플링', idx)">{{ test.test_nm }}</span>
+                  <input class="form-check-input ms-4" type="radio" v-model="test.test_value" :value="true" :id="'true' + test.test_cd" :disabled="!isWaitList">
+                  <label class="form-check-label ms-2 me-1 text-start" :for="'true' + test.test_cd" :style="t_overflow">적합</label>
+                  <input class="form-check-input ms-2" type="radio" v-model="test.test_value" :value="false" :id="'false' + test.test_cd" :disabled="!isWaitList">
+                  <label class="form-check-label ms-2 me-4 text-start" :for="'false' + test.test_cd" :style="t_overflow">부적합</label>
+                </div>
+              </div>
+            </div>
+
+            <div class="card me-4 m-md-0" v-show="fullTests.length > 0">
+              <div class="card-header p-2 bg-light fw-bold text-center">검사항목 (전수검사)</div> <!-- 있을 때만 표시 -->
+              <div class="card-body">
+                <div class="form-check p-0 d-flex justify-content-center" v-for="(test, idx) in fullTests" :key="test.test_cd">
+                  <span style="cursor: pointer" :style="t_break" @click="openDtl('전수', idx)">{{ test.test_nm }}</span>
+                  <input class="form-check-input ms-4" type="radio" v-model="test.test_value" :value="true" :id="'true' + test.test_cd" :disabled="!isWaitList">
+                  <label class="form-check-label ms-2 me-1 text-start" :for="'true' + test.test_cd" :style="t_overflow">적합</label>
+                  <input class="form-check-input ms-2" type="radio" v-model="test.test_value" :value="false" :id="'false' + test.test_cd" :disabled="!isWaitList">
+                  <label class="form-check-label ms-2 me-4 text-start" :for="'false' + test.test_cd" :style="t_overflow">부적합</label>
                 </div>
               </div>
             </div>
           </div>
 
           <div class="col-12 col-md-6 col-xl-3 row d-flex align-items-center justify-content-center p-xl-0">
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">전체수량</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.total_qty)" readonly>
+              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.prod_qty)" readonly>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">검사량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -79,9 +90,9 @@
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control text-end" v-model="def_qty" :disabled="!isWaitList">
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">검사일자</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">검사일시</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="date" class="form-control" v-model="complete_dt" :disabled="!isWaitList">
+              <input type="datetime-local" class="form-control" v-model="complete_dt" :disabled="!isWaitList" :max="this.$comm.getMyDay() + 'T23:59'"> <!-- 최대 오늘 날짜까지 선택 가능 -->
             </div>
           </div>
 
@@ -100,9 +111,9 @@
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">담당자</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <select class="form-select" :disabled="!isWaitList">
-              <option :value="null">선택</option>
-              <option>빵담당</option>
+              <select class="form-select" :disabled="!isWaitList" v-model="id">
+              <option :value="null" disabled hidden>선택</option>
+              <option v-for="(mem) in members" :key="mem.id" :value="mem.id">{{ mem.name }}</option>
             </select>
             </div>
           </div>
@@ -166,31 +177,37 @@
 
         // 일반 grid API 데이터
         waitDefs: [
-          { headerName: '생산번호', field: 'inst_cd' }, // 생산지시서 번호
-          { headerName: '생산일자', field: 'update_dt' }, // 생산지시서에서 완료상태가 된 일자
+          { headerName: '생산번호', field: 'prod_result_cd' }, // 생산실적 번호
+          { headerName: '생산일자', field: 'end_time' }, // 생산지시서에서 완료상태가 된 일자
           { headerName: '제품코드', field: 'prd_cd' },
           { headerName: '제품명', field: 'prd_nm' },
-          { headerName: '공정코드', field: 'proc_cd' },
+          { headerName: '공정코드', field: 'inst_proc_cd' },
           { headerName: '공정명', field: 'proc_nm' },
-          { headerName: '전체수량', field: 'total_qty' ,valueFormatter: this.$comm.currencyFormatter }
+          { headerName: '생산량', field: 'prod_qty' ,valueFormatter: this.$comm.currencyFormatter }
         ],
         waitData: [],
+        waitApi: null,
 
         gridOptions: {
           pagination: true,
           paginationAutoPageSize: true,
           overlayNoRowsTemplate: '표시할 항목이 없습니다.', // 표시할 행이 없을 때 적용할 메세지
-          suppressMovableColumns: true // 컬럼 드래그 이동 방지
+          suppressMovableColumns: true, // 컬럼 드래그 이동 방지
         },
 
-        // 검사결과 데이터
+        // 검사결과 입력에 필요한 데이터
         isRowClicked: false, // 기본값 false (표시 안 함)
-        selectedTarget: {}, 
-        tests: [], // 대상에 품질기준으로 적용된 검사항목
+        selectedTarget: {}, // 목록에서 선택한 대상
+        
+        samplingTests: [], // 선택한 대상에 품질기준으로 적용된 검사항목 중 샘플링검사 유형
+        fullTests: [], // 선택한 대상에 품질기준으로 적용된 검사항목 중 전수검사 유형
+        members: [], // 품질부서의 사원들
+        
         test_qty: null,
         pass_qty: null,
         def_qty: null,
         complete_dt: null,
+        id: null, // 선택된 담당자 사원번호
         note: null,
       }
     },
@@ -218,7 +235,7 @@
       this.getWaitGrid();
     },
 
-    methods: {
+    methods: {     
       activeWaitTab(){ // 검사대기목록 활성화
         if(!this.isWaitList){
           this.isWaitList = true;
@@ -233,6 +250,7 @@
 
       gridFit(params){ // @grid-ready 시 매개변수 속성으로 자동 접근, 가로스크롤 삭제
         params.api.sizeColumnsToFit();
+        this.waitApi = params.api;
       },
 
       // 검사대기목록 불러오기
@@ -244,13 +262,72 @@
 
       // 목록에서 타겟 선택 시 검사결과란에 정보 불러오기
       async selectTarget(params){
-        this.isRowClicked = true; // 검사결과 창 open
-        this.selectedTarget = params.data;
+        let clicked = params.data;
+        this.selectedTarget = clicked;
+        params.api.redrawRows(); // 그리드 강제 새로고침 (getRowStyle()에서 적용한 행 스타일 즉시 반영)
 
-        let query = {cd: params.data.prd_cd, type: 'P03'}; // P03: 제품대상 검사항목 
-        let testResult = await axios.get('/api/quality/test/my', {params: query}) // 품질기준으로 적용중인 검사항목 불러옴
+        // 초기화
+        this.samplingTests = [];
+        this.fullTests = [];
+
+        // 검사항목 불러오기
+        if(clicked.is_last == 1){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
+          this.getTests(clicked, 'P03');
+          this.getTests(clicked, 'P02');
+        } else {
+          this.getTests(clicked, 'P02');
+        }
+
+        this.members = await this.$comm.getMembers('DPT2'); // 품질부서 사원목록 불러오기
+        this.isRowClicked = true; // 검사결과 창 open
+      },
+      
+      // 검사할 항목들을 얻어 검사방식에 따라 샘플림검사/전수검사 분리하기
+      async getTests(target, type){
+        let query = null;
+        
+        if(type == 'P03'){
+          query = {cd: target.prd_cd, type: type}; // P03: 완제품대상 검사항목 
+        } else {
+          query = {cd: target.inst_proc_cd, type: type}; // P02: 공정대상 검사항목
+        }
+
+        let testLists = await axios.get('/api/quality/test/my', {params: query}) // 해당 품질기준의 검사항목 불러옴
                                     .catch(err => console.log(err));
-        this.tests = testResult.data;
+
+        testLists.data.forEach((test) => {
+          test.test_value = null; // 적합/부적합 판단용
+        
+          if(test.test_metd == 'O01'){ 
+            this.samplingTests.push(test); // 샘플링검사일 경우
+          } else { 
+            this.fullTests.push(test); // 전수검사인 경우
+          }
+        });
+      },
+
+      // 목록에서 선택된 행 색깔 변경
+      getRowStyle(params){
+        if(params.data.prod_result_cd == this.selectedTarget.prod_result_cd){
+          return {backgroundColor: '#d6d6d6'}
+        }
+      },
+
+      // 검사항목별 측정값 입력 혹은 상세정보 표시
+      openDtl(testMetd, idx){
+        if(testMetd == '샘플링'){
+          this.$swal({
+            title: `<h4>${this.samplingTests[idx].test_nm} 검사</h4>`,
+            text: this.samplingTests[idx].test_dtl,
+            showConfirmButton: false
+          });
+        } else {
+          this.$swal({
+            title: `<h4>${this.fullTests[idx].test_nm} 검사</h4>`,
+            text: this.fullTests[idx].test_dtl,
+            showConfirmButton: false
+          });
+        }
       },
 
       // ------------ 모달 메소드 ------------
