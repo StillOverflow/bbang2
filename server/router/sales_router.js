@@ -62,7 +62,7 @@ router.get('/sales/searchPo/', async (req, res) => {
 });
 
 // 출고 등록 주문서 조회
-router.get('/sales/:no', async (req, res) => {
+router.get('/sales/ordList/:no', async (req, res) => {
     let orderNo = req.params.no;
     let info = await salesService.listOrderOut(orderNo);
     res.send(info);
@@ -83,7 +83,37 @@ router.post('/sales/prdOut', async (req, resp) => {
     resp.send(result);
 });
 
+/* ---------------------------------반품제품--------------------------------------- */
 
+//반품등록 출고목록 조회
+router.get('/sales/POL/:no', async (req, res) => {
+    let prdoutNo = req.params.no;
+    let info = await salesService.listPOutReturn(prdoutNo);
+    res.send(info);
+});
+
+//반품 등록 LOT 선택
+router.get('/sales/returnLot/', async (req, res) => {
+    try {
+        let pocd = req.query.poc;
+        let pdcd = req.query.pdc;
+        
+        let info = await salesService.searchRTLot(pocd,pdcd);
+        res.send(info);
+
+    } catch (error) {
+        console.error(error);
+    }
+    
+});
+
+//반품 등록
+router.post('/sales/prdReturn', async (req, resp) => {
+    let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
+    console.log("반품router",values);
+    let result = await salesService.InsertPrdReturn(values);
+    resp.send(result);
+});
 
 
 
@@ -107,6 +137,11 @@ router.get('/mopro', async (req, res)=>{
 router.get('/moord', async (req, res)=>{
     let moOrdList = await salesService.listOrderMo();
     res.send(moOrdList);
+});
+//출고목록 조회(모달)
+router.get('/moprdout', async (req, res)=>{
+    let moPrdOutList = await salesService.listOutPrdMo();
+    res.send(moPrdOutList);
 });
 
 module.exports = router;

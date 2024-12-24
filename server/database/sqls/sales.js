@@ -210,7 +210,66 @@ WHERE i.prd_lot_cd = ? ;
 
 /* --------------------------------------------------------------제품 반품----------------------------------------------------------------- */
 
+//반품등록 출고목록 조회
+const returnPOutList =
+`
+SELECT d.prd_out_dtl_cd, d.prd_cd, p.prd_nm, sum(d.prd_out_qty) AS prd_out_qty 
+FROM product_out_detail d JOIN product p ON d.prd_cd = p.prd_cd
+WHERE d.prd_out_cd = ?
+GROUP BY prd_cd;
+`;
 
+//반품등록 LOT선택
+const returnLot = (searchObj) => {
+    //prd_ou_cd = pocd, prd_cd = pdcd
+    const {pocd, pdcd} = searchObj;
+
+    let query = `
+    SELECT d.prd_lot_cd, d.prd_cd, p.prd_nm, d.prd_out_qty 
+    FROM product p JOIN product_out_detail d ON d.prd_cd = p.prd_cd
+    WHERE prd_out_cd = '${pocd}' AND d.prd_cd = '${pdcd}'
+    `;
+
+    return  query;
+
+};
+
+//반품 코드 시퀀스
+const productReturnSeq =
+`
+SELECT CONCAT('PRC', LPAD(nextval(prd_out_cd_seq), 3,'0')) AS prd_out_cd FROM DUAL;
+`;
+//반품 등록
+const productReturnInsert = (obj) => {
+    let query = `
+                INSERT INTO product_return (prd_return_cd, prd_out_cd, act_cd, id)
+                VALUES 
+                `;
+    const {seq, prd_out_cd, act_cd, ID} = obj; 
+    
+    if(Object.keys(obj).length > 0){    // 객체의 길이를 측정(값이 들어온것을 확인) 
+
+        query += `('${seq}', '${prd_out_cd}', '${act_cd}', '${ID}')`;
+
+    }
+    return query;
+};
+
+//반품 디테일 등록
+const productReturnDtlInsert = ([seq, values]) => {
+    let sql = `
+              INSERT INTO product_return_detail (prd_return_dtl_cd, prd_return_cd, prd_out_dtl_cd, prd_cd, prd_lot_cd, prd_return_qty, note)
+              VALUES 
+              `;
+
+    values.forEach((obj) => {
+        sql += `(CONCAT('PRDC', LPAD(nextval(prd_out_dtl_cd_seq), 3,'0')),'${seq}','${obj.prd_out_dtl_cd}', '${obj.prd_cd}', '${obj.prd_lot_cd}', '${obj.prd_return_qty}', '${obj.note}'), `;
+    });
+    sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+    return sql;
+
+};
 
 
 
@@ -251,6 +310,13 @@ const moOrderList =
 SELECT o.order_cd, a.act_cd, a.act_nm, o.order_dt, o.due_dt 
 FROM \`order\` o JOIN account a ON o.act_cd = a.act_cd
 `;
+//출고목록 조회(모달)
+const moPrdOutList = 
+`
+SELECT p.prd_out_cd, p.act_cd, a.act_nm, m.name, p.prd_out_dt
+FROM product_out p JOIN account a ON p.ACT_CD = a.act_cd
+						 JOIN member m ON p.id = m.id
+`;
 
 
 
@@ -272,12 +338,18 @@ module.exports = {
     productOutDtlInsert,
     productOutQty,
 
-
+    //제품반품
+    returnPOutList,
+    returnLot,
+    productReturnSeq,
+    productReturnInsert,
+    productReturnDtlInsert,
 
     //모달창
     moAccList,
     moMemList,
     moProList,
     moOrderList,
+    moPrdOutList
 
 }
