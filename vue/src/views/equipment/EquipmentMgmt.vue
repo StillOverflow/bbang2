@@ -8,7 +8,7 @@
             <input id="eqp_cd" type="text" placeholder="설비코드" class="form-control" aria-label="설비코드"
               aria-describedby="button-addon2" style="height: 41px" v-model="selectedEqp" @click="modalOpen" />
             <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen">
-              SEARCH
+              <i class="fa-solid fa-magnifying-glass"></i>
             </button>
           </div>
         </div>
@@ -146,18 +146,18 @@ export default {
       },
 
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true },
+        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 163 },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
-          sortable: true,
+          sortable: true, width: 163
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true,
+          sortable: true, width: 163
         },
-        { headerName: '모델명', field: 'model', sortable: true },
+        { headerName: '모델명', field: 'model', sortable: true, width: 163 },
       ],
 
       equipData: [],

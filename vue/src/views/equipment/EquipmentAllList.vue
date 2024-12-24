@@ -4,55 +4,57 @@
     <div class="card">
       <!-- 검색조건 -->
       <div class="card-header bg-light ps-5 ps-md-4">
-        <div class="row">
-          <div class="col-6 col-lg-2"></div>
-          <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder">
-            설비 구분
+
+        <div class="row mb-3">
+
+          <!-- 설비구분 -->
+          <div class="center me-7">
+            <p for="example-text-input" class="text-sm font-weight-bolder me-3 mt-2">설비구분</p>
+            <div class="col-6 col-lg-3 mb-2">
+              <select class="form-select custon-width" v-model="equipmentData.eqp_type">
+                <option v-for="(opt, idx) in equipmentData.selectOptions.EQP_TYPE" :key="idx" :value="opt.comm_dtl_cd">
+                  {{ opt.comm_dtl_nm }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <!-- 사용유무-->
+          <div class="center  me-7">
+            <p for="example-text-input" class="text-sm font-weight-bolder me-3 mt-2">사용유무</p>
+            <div class="col-6 col-lg-3 mb-2">
+              <select class="form-select custon-width" v-model="equipmentData.is_use">
+                <option v-for="(opt, idx) in equipmentData.selectOptions.IS_USE" :key="idx" :value="opt.comm_dtl_cd">
+                  {{ opt.comm_dtl_nm }}
+                </option>
+              </select>
+            </div>
           </div>
 
-          <div class="col-6 col-lg-3 mb-2">
-            <select class="form-select custon-width" v-model="equipmentData.eqp_type">
-              <option v-for="(opt, idx) in equipmentData.selectOptions.EQP_TYPE" :key="idx" :value="opt.comm_dtl_cd">
-                {{ opt.comm_dtl_nm }}
-              </option>
-            </select>
+          <div class="center  me-7">
+            <p for="example-text-input" class="text-sm font-weight-bolder me-3 mt-2">설비상태</p>
+            <div class="col-6 col-lg-3 mb-2">
+              <select class="form-select custon-width" v-model="equipmentData.status">
+                <option v-for="(opt, idx) in equipmentData.selectOptions.STATUS" :key="idx" :value="opt.comm_dtl_cd">
+                  {{ opt.comm_dtl_nm }}
+                </option>
+              </select>
+            </div>
           </div>
         </div>
+
+        <!-- 버튼 -->
         <div class="row">
-          <div class="col-6 col-lg-2"></div>
-          <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder">
-            사용 유무
-          </div>
-          <div class="col-6 col-lg-3 mb-2">
-            <select class="form-select custon-width" v-model="equipmentData.is_use">
-              <option v-for="(opt, idx) in equipmentData.selectOptions.IS_USE" :key="idx" :value="opt.comm_dtl_cd">
-                {{ opt.comm_dtl_nm }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-6 col-lg-2"></div>
-          <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder">
-            설비 상태
-          </div>
-          <div class="col-6 col-lg-3 mb-2">
-            <select class="form-select custon-width" v-model="equipmentData.status">
-              <option v-for="(opt, idx) in equipmentData.selectOptions.STATUS" :key="idx" :value="opt.comm_dtl_cd">
-                {{ opt.comm_dtl_nm }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-6 col-lg-4 mb-2"></div>
-          <div class="col-6 col-lg-1 mb-2">
-            <button id="button-addon2" type="button" class="btn btn-warning" @click="searchEquipments">
-              SEARCH
+          <div class="center mt-2">
+            <button id="button-addon2" type="button" class="btn btn-warning me-2" @click="searchEquipments">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <button id="button-addon2" type="button" class="btn btn-secondary" @click="resetBtn">
+              <i class="fa-solid fa-rotate"></i>
             </button>
           </div>
         </div>
       </div>
+
       <!-- 조회 결과 -->
       <div class="card-body" style="position: relative; height: 600px">
         <ag-grid-vue style="width: 100%; height: 100%" class="ag-theme-alpine" :columnDefs="columnDefs"
@@ -89,7 +91,7 @@ export default {
         { field: 'status', headerName: '설비상태' },
         { field: 'create_dt', headerName: '등록일자' },
         { field: 'last_insp_dt', headerName: '최종점검일자' },
-        { field: 'id', headerName: '담당자' },
+        { field: 'id', headerName: '담당자 ID' },
       ],
     };
   },
@@ -107,13 +109,15 @@ export default {
     // 공통코드 가져오기
     async fetchCommonCodes() {
       try {
-        const eqpTypeResponse = await axios.get('/api/commList/EQ');
-        const isUseResponse = await axios.get('/api/commList/EU');
-        const statusResponse = await axios.get('/api/commList/ES');
+
+        const eqpTypeResponse = await axios.get('/api/comm/codeList/EQ');
+        const isUseResponse = await axios.get('/api/comm/codeList/EU');
+        const statusResponse = await axios.get('/api/comm/codeList/ES');
 
         this.equipmentData.selectOptions.EQP_TYPE = eqpTypeResponse.data || [];
         this.equipmentData.selectOptions.IS_USE = isUseResponse.data || [];
         this.equipmentData.selectOptions.STATUS = statusResponse.data || [];
+
       } catch (error) {
         console.error('공통코드 가져오기 실패:', error);
       }
@@ -121,13 +125,12 @@ export default {
     // 필터링된 설비 데이터 가져오기
     async fetchFilteredEquip() {
       try {
-        const params = {
+        const obj = {
           eqp_type: this.equipmentData.eqp_type || null,
           is_use: this.equipmentData.is_use || null,
           status: this.equipmentData.status || null,
         };
-        console.log('fetchFilteredEquip에 전달되는 params: ', params);
-        const result = await axios.get('/api/equipFiltered', { params });
+        const result = await axios.get('/api/equipAllList/search', { params: obj });
 
         if (result.data) {
           //배열데이터 처리
