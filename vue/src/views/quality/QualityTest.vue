@@ -22,7 +22,7 @@
       <div class="card-body pb-1 pe-0 pe-md-4" v-show="isRowClicked">
         <div class="row mb-1 d-flex justify-content-between">
 
-          <div class="col-12 col-md-6 col-xl-3 row d-flex align-items-center justify-content-center p-xl-0">
+          <div class="col-12 col-md-6 col-xl-3 row text-end p-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산번호</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control" :value="selectedTarget.prod_result_cd" readonly>
@@ -48,21 +48,27 @@
           <div class="col-12 col-md-6 col-xl-4 mb-2 g-0">
             <div class="card me-4 m-md-0 mb-2 mb-md-2" v-show="samplingTests.length > 0"> <!-- 있을 때만 표시 -->
               <div class="card-header p-2 bg-light fw-bold text-center">검사항목 (샘플링검사)</div>
-              <div class="card-body">
-                <div class="form-check p-0 d-flex justify-content-center" v-for="(test, idx) in samplingTests" :key="test.test_cd">
-                  <span style="cursor: pointer" :style="t_break" @click="openDtl('샘플링', idx)">{{ test.test_nm }}</span>
-                  <input class="form-check-input ms-4" type="radio" v-model="test.test_value" :value="true" :id="'true' + test.test_cd" :disabled="!isWaitList">
-                  <label class="form-check-label ms-2 me-1 text-start" :for="'true' + test.test_cd" :style="t_overflow">적합</label>
-                  <input class="form-check-input ms-2" type="radio" v-model="test.test_value" :value="false" :id="'false' + test.test_cd" :disabled="!isWaitList">
-                  <label class="form-check-label ms-2 me-4 text-start" :for="'false' + test.test_cd" :style="t_overflow">부적합</label>
+              <div class="card-body p-2">
+                
+                <div class="row" v-for="(test, idx) in samplingTests" :key="test.test_cd">
+                  <div class="col-3">
+                    <span style="cursor: pointer" :style="t_break" @click="openDtl('샘플링', idx)">{{ test.test_nm }}</span>
+                  </div>
+                  <div class="col-9 form-check p-0 d-flex">
+                      <input class="form-check-input ms-4" type="radio" v-model="test.test_value" :value="true" :id="'true' + test.test_cd" :disabled="!isWaitList">
+                      <label class="form-check-label ms-2 me-1 text-start" :for="'true' + test.test_cd" :style="t_overflow">적합</label>
+                      <input class="form-check-input ms-2" type="radio" v-model="test.test_value" :value="false" :id="'false' + test.test_cd" :disabled="!isWaitList">
+                      <label class="form-check-label ms-2 me-4 text-start" :for="'false' + test.test_cd" :style="t_overflow">부적합</label>
+                  </div>
                 </div>
+
               </div>
             </div>
 
             <div class="card me-4 m-md-0" v-show="fullTests.length > 0">
               <div class="card-header p-2 bg-light fw-bold text-center">검사항목 (전수검사)</div> <!-- 있을 때만 표시 -->
               <div class="card-body">
-                <div class="form-check p-0 d-flex justify-content-center" v-for="(test, idx) in fullTests" :key="test.test_cd">
+                <div class="form-check p-0 d-flex justify-content-end" v-for="(test, idx) in fullTests" :key="test.test_cd">
                   <span style="cursor: pointer" :style="t_break" @click="openDtl('전수', idx)">{{ test.test_nm }}</span>
                   <input class="form-check-input ms-4" type="radio" v-model="test.test_value" :value="true" :id="'true' + test.test_cd" :disabled="!isWaitList">
                   <label class="form-check-label ms-2 me-1 text-start" :for="'true' + test.test_cd" :style="t_overflow">적합</label>
@@ -73,7 +79,7 @@
             </div>
           </div>
 
-          <div class="col-12 col-md-6 col-xl-3 row d-flex align-items-center justify-content-center p-xl-0">
+          <div class="col-12 col-md-6 col-xl-3 row text-end p-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.prod_qty)" readonly>
@@ -96,20 +102,20 @@
             </div>
           </div>
 
-          <div class="col-12 col-md-6 col-xl-2 row d-flex align-items-center justify-content-center g-xl-0">
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">단위</h6>
+          <div class="col-12 col-md-6 col-xl-2 row text-end g-xl-0">
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-4" :style="t_overflow">단위</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control" :value="'kg?? ea??'" readonly>
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_break">불량 코드</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_break">불량 코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control" :value="null" readonly>
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">불량명</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2 pe-4" :style="t_overflow">불량명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control" :value="null" placeholder="선택" @click="modalToggle" :disabled="!isWaitList">
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">담당자</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-4" :style="t_overflow">담당자</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <select class="form-select" :disabled="!isWaitList" v-model="id">
               <option :value="null" disabled hidden>선택</option>
@@ -121,8 +127,8 @@
         </div>
         <div class="row">
           <div class="col-9 col-md-10 col-xl-11 row">
-            <h6 class="col-2 col-xl-1 d-flex align-items-center justify-content-center" :style="t_overflow">비고</h6>
-            <div class="col-10 col-xl-11">
+            <h6 class="col-3 col-md-2 col-xl-1 text-end pe-4 pe-xl-3" :style="t_overflow">비고</h6>
+            <div class="col-9 col-md-10 col-xl-11">
               <input type="text" class="form-control" :value="note" :disabled="!isWaitList">
             </div>
           </div>
@@ -196,7 +202,7 @@
         },
 
         // 검사결과 입력에 필요한 데이터
-        isRowClicked: false, // 기본값 false (표시 안 함)
+        isRowClicked: true, // 기본값 false (표시 안 함)
         selectedTarget: {}, // 목록에서 선택한 대상
         
         samplingTests: [], // 선택한 대상에 품질기준으로 적용된 검사항목 중 샘플링검사 유형
