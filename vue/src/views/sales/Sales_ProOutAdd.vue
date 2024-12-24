@@ -90,9 +90,9 @@
                         </ag-grid-vue>
                     </div>
                 </div>
-                <div class="center mtp30">
-                    <button class="btn btn-primary" @click="prdOutInsert">SUBMIT</button>
-                    <button class="btn btn-secondary mlp10" @click="resetForm">RESET</button>
+                <div class="center ">
+                    <button class="btn btn-primary mtp30" @click="prdOutInsert">SUBMIT</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
           </div>
       </div>

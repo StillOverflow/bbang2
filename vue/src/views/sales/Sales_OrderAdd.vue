@@ -91,9 +91,9 @@
                 @grid-ready="gridFit"
                 overlayNoRowsTemplate="제품 조회 버튼을 이용하여 제품을 추가 해주세요.">
                 </ag-grid-vue>
-                <div class="center mtp30">
-                    <button class="btn btn-primary" @click="ordInsert">SUBMIT</button>
-                    <button class="btn btn-secondary mlp10" @click="resetForm">RESET</button>
+                <div class="center ">
+                    <button class="btn btn-primary mtp30" @click="ordInsert">SUBMIT</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
             </div> 
         </div>

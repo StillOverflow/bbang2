@@ -74,9 +74,9 @@
                         </ag-grid-vue>
                     </div>
                 </div>
-                <div class="center mtp30">
-                    <button class="btn btn-primary" @click="prdOutInsert">SUBMIT</button>
-                    <button class="btn btn-secondary mlp10" @click="resetForm">RESET</button>
+                <div class="center ">
+                    <button class="btn btn-primary mtp30" @click="prdReturnInsert">SUBMIT</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
           </div>
       </div>
@@ -280,7 +280,7 @@ export default {
     },
     
     created() {
-        this.$store.dispatch('breadCrumb', { title: '출고 제품 등록' });
+        this.$store.dispatch('breadCrumb', { title: '반품 제품 등록' });
 
         this.getOrdList();
         this.getMemList();
@@ -375,17 +375,17 @@ export default {
         },
 
 
-        async prdOutInsert() {
+        async prdReturnInsert() {
 
             // 필수값 입력 알람
-            let accCode = document.getElementById('acc_code').value;
-            let memId = document.getElementById('mem_id').value;
-            let rowQty = this.proOutData.filter(row => !row.prd_out_qty || row.prd_out_qty <= 0);
+            let accCode = this.acc_code;
+            let memId = this.mem_id;
+            let rowQty = this.prdRTData.filter(row => !row.prd_return_qty || row.prd_return_qty <= 0);
 
             if (!accCode) {
                 this.$swal({
                     icon: "error",
-                    title: "주문서 코드를 선택 해주세요.",
+                    title: "출고 코드를 선택 해주세요.",
                     text: "검색 후 선택 해주세요.",
                 });
                 return;
@@ -398,7 +398,7 @@ export default {
                 });
                 return;
             }
-            if (!this.proOutData || this.proOutData.length === 0) {
+            if (!this.prdRTData || this.prdRTData.length === 0) {
                 this.$swal({
                     icon: "error",
                     title: "제품의 LOT를 선택하세요",
@@ -409,14 +409,14 @@ export default {
             if (rowQty.length > 0) {
                 this.$swal({
                     icon: "error",
-                    title: "출고 수량을 입력하세요",
+                    title: "반품 수량을 입력하세요",
                     text: "입력 후 엔터를 쳐주세요",
                 });
                 return;
             }
             
 
-            //출고 등록
+            //반품 등록
             let insertPrdOut = [];
             let insertPrdOutDtl = [];
             let updatePrdOutQty = [];
@@ -471,15 +471,16 @@ export default {
         },
         // 등록 후 초기화 기능
         resetForm() {
-            document.getElementById('acc_name').value = "";
-            document.getElementById('acc_code').value = "";
-            document.getElementById('mem_name').value = "";
-            document.getElementById('mem_id').value = "";
-            this.due_date = "";
-            this.order_date = "";
-            this.order_code = "";
-            this.OLData = [];
-            this.proOutData = [];         
+            
+            this.prdOut_code = "";
+            this.prdOut_date = "";
+            this.acc_name = "";
+            this.acc_code = "";
+            this.mem_name = "";
+            this.mem_id = "";
+
+            this.POLData = [];
+            this.prdRTData = [];         
         },
 
 
