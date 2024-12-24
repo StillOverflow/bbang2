@@ -2,7 +2,8 @@
 // 특정 대상에 미적용 검사항목 조회
 const yetList = `
   SELECT test_cd, 
-         fn_get_codename(test_metd) test_metd, 
+         fn_get_codename(test_metd) test_metd_nm, 
+         test_metd,
          test_nm, 
          test_dtl,
          target_type
@@ -128,15 +129,19 @@ const searchAll  = (valueObj) => {
 
 
 // 품질검사결과 (QUALITY_TEST_RECORD)
-// 검사대기 내역 조회 (생산지시상태 완료 상태 내역을 가져옴(검사대기) => 검사완료 후 다음 공정이 있다면 진행전 상태로 넘겨줌)
+// 검사대기 내역 조회 (생산실적 테이블에서 공정완료 상태 내역을 가져옴(검사대기) => 검사완료 후 다음 공정이 있다면 진행전 상태로 넘겨줌)
+///////////////////// 테스트용이라 쿼리가 달라질 수 있음에 유의.
 const waitList = `
-  SELECT d.inst_cd, d.inst_dtl_cd, d.total_qty, d.prd_cd, fn_get_prd_nm(d.prd_cd) prd_nm, 
-         f.proc_cd, fn_get_proc_nm(f.proc_cd) proc_nm, i.update_dt, fn_get_codename(status) status
-  FROM   prod_inst_dtl d JOIN prod_inst i
-                           ON d.inst_cd = i.inst_cd
-                         JOIN process_flow f
-                           ON d.prd_cd = f.prd_cd
-  WHERE  i.status = 'Z01' -- 상태: 완료(Z03) 테스트용으로 Z01 해둠
+  SELECT r.prod_result_cd, i.inst_cd, r.inst_dtl_cd,             -- PK, 지시번호, 지시상세번호
+		     r.inst_proc_cd, fn_get_proc_nm(r.inst_proc_cd) proc_nm, -- 현재 공정코드/이름
+	       r.prd_cd, fn_get_prd_nm(r.prd_cd) prd_nm,  -- 제품코드/이름
+		     r.prod_qty,                                -- 생산수량
+	       fn_is_last_proc(i.inst_cd, r.prd_cd, r.inst_proc_cd) is_last, -- 마지막 공정인지 여부
+         end_time -- 공정 완료시점 시간
+  FROM   test_prod_result r JOIN test_prod_inst_dtl i
+									            ON r.inst_dtl_cd = i.inst_dtl_cd
+  WHERE  STATUS = 'A01'
+  AND    que_status = 'A02' -- 공정 완료되었으면서 검사상태 진행전인 내역만 조회
 `;
 
 

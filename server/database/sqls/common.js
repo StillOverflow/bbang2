@@ -6,6 +6,16 @@ const findCommList = `
   ORDER  BY comm_dtl_cd
 `;
 
+// 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회)
+const memList = (dpt_cd) => {
+  return `
+    SELECT mem_cd, name, id, password, phone, addr, email, birth, 
+            hire_dt, quit_dt, status, permission, create_dt, update_dt, dpt_cd
+    FROM   member
+    ${!dpt_cd ? "" : "WHERE  UPPER(dpt_cd) = UPPER('" + dpt_cd + "') "} -- 부서번호 있을 시 동적 조건 생성
+    order  BY name `;
+};
+
 //! 거래처 조회
 // 거래처 코드가 존재하면 Where 조립 없으면 전체조회
 const accountSelect = (datas) => {
@@ -96,6 +106,7 @@ FROM
 
 module.exports = {
   findCommList,
+  memList,        // 사원
   accountSelect,  // 거래처
   materialSelect, // 자재
   productSelect,  // 제품
