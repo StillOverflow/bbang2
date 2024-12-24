@@ -84,7 +84,7 @@
                      <div class="table-responsive">
                         <ag-grid-vue
                            class="ag-theme-alpine"
-                           style="width: 100%; height: 300px;"
+                           style="width: 100%; height: 700px;"
                            :rowData="orderFormData"
                            :pagination="true"
                            :gridOptions="orderFormOptions"
@@ -134,19 +134,19 @@
    });
 
 //^ ----------------------------------------- Vue Method -----------------------------------------
-   // const autoResizeGrid = (grid) => {
-   //    watch(grid, () => {
-   //       const api = grid.api;
-   //       if (api) {
-   //          api.sizeColumnsToFit();
-   //       }
-   //    });
-   // };
-
-   // autoResizeGrid(orderModalGrid);
-   // autoResizeGrid(orderFormGrid);
+   watch(accountModalGrid, (newValue) => {
+      if (newValue && newValue.api) {
+         newValue.api.sizeColumnsToFit();
+      }
+   });
 
    watch(orderModalGrid, (newValue) => {
+      if (newValue && newValue.api) {
+         newValue.api.sizeColumnsToFit();
+      }
+   });
+
+   watch(orderFormGrid, (newValue) => {
       if (newValue && newValue.api) {
          newValue.api.sizeColumnsToFit();
       }
@@ -176,6 +176,21 @@
          }
       }
    }
+
+   const onAddRow = () => {
+      const newRow = {
+         act_nm: "",
+         act_type: "",
+         mgr_nm: "",
+         mgr_tel: "",
+      };
+
+      orderFormData.value = [...orderFormData.value, newRow];
+      // if (orderFormGrid.value && orderFormGrid.value.api) {
+      //    orderFormGrid.value.api.setRowData(orderFormData.value);
+      // }
+      console.log("Updated orderFormData:", orderFormData.value);
+   };
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
    const gridReady = (params) => {
       if (params.api) {
@@ -185,7 +200,8 @@
 
    // 주문서 정보 클릭시 상세보기 ~~
    const accountRowClicked = (params) => {
-      console.log(params);
+      console.log("params => ", params);
+      
    };
 
 // ^ ---------------------------------------- axios 서버통신 ----------------------------------------
@@ -231,7 +247,7 @@
       rowSelection: {
          mode: "multiRow", // 체크박스 다중선택
       },
-      overlayNoRowsTemplate: `<span class="text-danger">데이터가 없습니다.</span>`, // 데이터 없음 메시지
+      overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    };
 
    // 거래처 검색 모달 옵션
@@ -246,7 +262,7 @@
       rowSelection: {
          mode: "multiRow", // 체크박스 다중선택
       },
-      overlayNoRowsTemplate: `<span class="text-danger">데이터가 없습니다.</span>`, // 데이터 없음 메시지
+      overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
    // no, 발주코드, 자재명, 수량, 거래처코드, 거래처명, 납기일
    const orderFormOptions = {
@@ -261,7 +277,8 @@
          { headerName: '거래처코드', field: 'mgr_tel', sortable: true, },
          { headerName: '거래처명', field: 'mgr_tel', sortable: true, },
          { headerName: '납기일', field: 'mgr_tel', sortable: true, },
-      ]
+      ],
+      overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
 </script>
 
