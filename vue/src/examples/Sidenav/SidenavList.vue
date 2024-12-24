@@ -165,6 +165,11 @@ export default {
               :navText="'생산지시서 관리'">
             </sidenav-item>
           </li>
+          <li class="nav-item">
+            <sidenav-item to="/Produce_Hell" :class="getRoute() === 'Produce_Hell' ? 'active' : ''"
+              :navText="'생산공정 관리'">
+            </sidenav-item>
+          </li>
         </ul>
 
 

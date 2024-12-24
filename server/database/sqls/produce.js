@@ -1,19 +1,38 @@
 /* -----------생산계획서------------*/
 
 //계획서 전체조회
-const planList =
-`SELECT PROD_PLAN_CD, 
-        ORDER_CD, 
-        ID, 
-        START_DT, 
-        END_DT, 
-        CREATE_DT, 
-	      (SELECT 
-            COUNT(PROD_PLAN_QTY) 
-      	 FROM 
-            PROD_PLAN_DTL 
-	       WHERE PROD_PLAN_CD = pp.PROD_PLAN_CD ) AS DTL_QTY 
-FROM PROD_PLAN pp`;
+const planSelect = (datas) => {
+  let query =
+          `SELECT PROD_PLAN_CD, 
+                  ORDER_CD, 
+                  ID, 
+                  fn_get_codename(STATUS) as ACT_TYPE,
+                  START_DT, 
+                  END_DT, 
+                  CREATE_DT,
+                  (SELECT 
+                      COUNT(PROD_PLAN_QTY) 
+                  FROM 
+                      PROD_PLAN_DTL 
+                  WHERE PROD_PLAN_CD = pp.PROD_PLAN_CD ) AS DTL_QTY 
+          FROM PROD_PLAN pp`;
+
+ const searchOrder = [];
+
+  // 거래처조회 조건
+  if (datas.PROD_PLAN_CD) searchOrder.push(`PROD_PLAN_CD = UPPER('${datas.PROD_PLAN_CD}')`);
+  if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
+  
+
+  if (searchOrder.length > 0) {
+    query += ` WHERE ` + searchOrder.join(' AND ');
+  }
+
+  if (datas.ORDER) query += ` ${datas.ORDER}`; // 정렬
+
+  return query; // 합체한 쿼리 전체
+};
+
 
 //계획서 단건조회
 const planSearch =
@@ -32,9 +51,19 @@ FROM PROD_PLAN pp
 WHERE PROD_PLAN_CD LIKE "%"?"%"`;
 
 //계획서 다중 삭제
-const planDelete =
-`DELETE FROM PROD_PLAN 
-WHERE PROD_PLAN_CD IN "("?")"`;
+const planDelete = (datas) => {
+
+  let sql =
+      `DELETE FROM PROD_PLAN 
+      WHERE PROD_PLAN_CD IN `;
+
+  let delArr = [];
+  delArr.push(Object.values(datas));
+  delArr.join(", ");
+  sql += "("+delArr + ")";
+  
+ return sql;
+}
 
 //계획서 제품조회
 const planDtlList =
@@ -103,6 +132,20 @@ const instInfo =
 `SELECT * FROM PROD_INST
 WHERE INST_CD = ?`;
 
+//지시서별 제품목록
+const instDtlList = 
+`
+SELECT 
+      INST_DTL_CD, 
+      INST_CD, 
+      PRD_CD, 
+      (SELECT PRD_NM 
+      FROM product 
+      WHERE PRD_CD=pid.PRD_CD) AS PRD_NM, 
+      TOTAL_QTY 
+FROM prod_inst_dtl pid WHERE INST_CD=?
+`;
+
 
 /* 지시서 등록[S] */
 
@@ -151,7 +194,7 @@ const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
 /* 지시서 등록[E] */
 
 
-//지시서 제품별 공정 조회
+//제품별 공정 조회
 const instProcList =
 `SELECT 
       PROC_FLOW_CD, 
@@ -165,7 +208,8 @@ FROM
 WHERE PRD_CD = ? 
 ORDER BY PROC_SEQ`;
 
-//지시서 제품 공정별 자재 조회
+
+//제품 공정별 자재 조회
 const instProcMtList =
 `SELECT 
         "group" AS CATE,
@@ -201,8 +245,51 @@ UNION
   ORDER BY PROC_FLOW_CD, field (cate, 'group', 'data');
 `;
 
+//지시서에 커스텀된 제품별 공정 조회
+const instCusFlow = (datas) => {
+  let sql = `SELECT 
+                INST_PROC_CD,
+                INST_CD,
+                PRD_CD,
+                PROC_CD,
+                (SELECT PROC_NM FROM process WHERE proc_cd=pps.proc_cd) AS PROC_NM,
+                STEP
+            FROM prod_proc_step pps `;
+  
+  const queryArr = [];
+
+  // 거래처조회 조건
+  if (datas.INST_CD) queryArr.push(`INST_CD = UPPER('${datas.INST_CD}')`);
+  if (datas.PRD_CD) queryArr.push(`PRD_CD = UPPER('${datas.PRD_CD}')`);
+  
+
+  if (queryArr.length > 0) {
+    sql += ` WHERE ` + queryArr.join(' AND ');
+  }
+
+  sql += ` order by STEP asc`; // 정렬
+
+  return sql;
+}
+
+//계획서 다중 삭제
+const instDelete = (datas) => {
+
+  let sql =
+      `DELETE FROM PROD_INST 
+      WHERE INST_CD IN `;
+
+  let delArr = [];
+  delArr.push(Object.values(datas));
+  delArr.join(", ");
+  sql += "("+delArr + ")";
+  
+ return sql;
+}
+
+
 module.exports = {
-    planList,
+    planSelect,
     planSearch,
     planSeq,
     planInsert,
@@ -211,11 +298,14 @@ module.exports = {
     planDtlList,
 
     instList,
+    instDtlList,
     instInfo,
     instSeq,
     instInsert,
+    instDelete,
     instDtlInsert,
     instFlowInsert,
+    instCusFlow,
 
     instProcList,
     instProcMtList
