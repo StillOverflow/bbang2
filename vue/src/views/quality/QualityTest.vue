@@ -111,11 +111,11 @@
           <div class="col-12 col-md-6 col-xl-3 row text-end g-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_break">불량 코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="null" disabled>
+              <input type="text" class="form-control" :value="def_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2 pe-3" :style="t_overflow">불량명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="null" placeholder="선택" @click="modalToggle" :disabled="!isWaitList">
+              <input type="text" class="form-control" :value="def_nm" placeholder="선택" @click="modalToggle" :disabled="!isWaitList">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow">담당자</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -126,7 +126,7 @@
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_break">검사 일시</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="datetime-local" class="form-control" v-model="complete_dt" :disabled="!isWaitList" :max="this.$comm.getMyDay() + 'T23:59'"> <!-- 최대 오늘 날짜까지 선택 가능 -->
+              <input type="datetime-local" class="form-control" v-model="test_dt" :disabled="!isWaitList" :max="this.$comm.getMyDay() + 'T23:59'"> <!-- 최대 오늘 날짜까지 선택 가능 -->
             </div>
           </div>
 
@@ -139,7 +139,7 @@
             </div>
           </div>
           <div class="col-3 col-md-2 col-xl-1 text-end">
-            <button class="btn btn-primary" :style="t_overflow" @click="null">SUBMIT</button>
+            <button class="btn btn-primary" :style="t_overflow" @click="recInsert">SUBMIT</button>
           </div>
         </div>
       </div>
@@ -147,7 +147,7 @@
     <!-- 불량코드 선택할 모달 -->
     <ModalLayout :modalCheck="isModal">
         <template v-slot:header>
-          <h5>불량내용 선택</h5>
+          <h5>불량명 선택</h5>
           <button type="button" aria-label="Close" class="close" @click="modalToggle">×</button>
         </template>
         <template v-slot:default>
@@ -180,12 +180,16 @@
 
         // 모달 내부 grid API 데이터 (Defs: thead 구성, Data: tbody 구성)
         isModal: false, // 토글기능
-        modalDefs: [],
+        modalDefs: [
+          { headerName: '불량코드', field: 'def_cd', width: 90 },
+          { headerName: '불량명', field: 'def_nm', width: 120 },
+          { headerName: '구분', field: 'def_type_nm', width: 80 },
+          { headerName: '내용', field: 'def_detail', width: 220 },
+          { headerName: '비고', field: 'note', width: 156 }
+        ],
         modalData: [],
-        modal_val: { // 선택된 값
-          nm: null,
-          cd: null
-        },
+        def_nm: null, // 모달에서 선택된 값
+        def_cd: null,
 
         // 일반 grid API 데이터
         waitDefs: [
@@ -214,15 +218,13 @@
         isRowClicked: true, // 기본값 false (표시 안 함)
         selectedTarget: {}, // 목록에서 선택한 대상
         
-        // isDefect: null, // 샘플링검사의 최종결과
         samplingTests: [], // 선택한 대상의 검사항목 중 샘플링검사 유형
         fullTests: [], // 선택한 대상의 검사항목 중 전수검사 유형
         members: [], // 품질부서의 사원들
         
         test_qty: null,
-        // pass_qty: null,
         def_qty: null,
-        complete_dt: null,
+        test_dt: null,
         id: null, // 선택된 담당자 사원번호
         note: null,
       }
@@ -467,116 +469,76 @@
         this.getModalList();
       },
 
-      async getModalList(){
-        // 조회대상(radio) 미선택 시 => 전체 조회
-        // 조회대상(radio) 선택 시 => 선택한 대상 내에서 카테고리 조건 넣어 조회
-        // ** 이름을 입력하면 유사한(LIKE) 이름으로 조회
-        let params = { 
-          type: this.selected_radio,
-          cate_type: this.selected_div,
-          cate: this.selected_cate,
-          nm: this.modal_val.nm 
-        };
-
-        let result = await axios.get('/api/quality/targetAll', {params: params}).catch(err => console.log(err));
-        let data = result.data;
-        data.forEach((obj) => {
-          obj.has_std = obj.std_date == null ? '미등록' : '등록완료'; // SELECT문 컬럼에 포함되지 않았으므로 추가
-        });
-        this.modalData = data;
+      async getModalList(){ // 불량목록 불러오기
+        let params = {
+          type: 'P02', // 불량유형: 공정중
+          subType: this.selectedTarget.is_last == 1 ? 'P03' : null // 마지막 공정일 시 불량유형 제품도 함께 조회
+        }; 
+        
+        let result = await axios.get('/api/quality/defect', {params: params})
+                                .catch(err => console.log(err));
+        this.modalData = result.data;
       },
       
       modalSelect(params){
         let selected = params.data;
-        if(!this.selected_radio){ // 이름으로 검색만 하고 radio 선택 안 되어있으면 선택해줌
-          let type = null;
-          switch(selected.type){
-            case '자재' : type = 'P01'; break;
-            case '공정' : type = 'P02'; break;
-            case '제품' : type = 'P03'; break;
-          }
-          this.selected_radio = type;
-          this.changeDivs('modal');
-        }
-        this.selected_div = selected.cate_type_cd;
-        this.selected_cate = selected.category_cd;
-        console.log(selected.cate_type_cd + selected.category_cd);
-
-        this.date_val = selected.std_date ? this.$comm.getMyDay(selected.std_date) : this.$comm.getMyDay();
-        this.modal_val.cd = selected.cd;
-        this.modal_val.nm = selected.nm;
-        this.myData_save = new Set(); // 다른 대상에 똑같은 내용을 삽입할 수 있도록 하기 위함 (저장 비교조건 통과)
+        this.def_cd = selected.def_cd;
+        this.def_nm = selected.def_nm;
         this.modalToggle();
       },
       // ---------- 모달 메소드 끝 -----------
 
-      async stdInsert(){
-        let isChanged = false; // getTList()에서 임시저장했던 기존 내용이 변경되었는지 확인할 변수
-        let originSize = this.myData_save.size; // 원래 데이터 길이
-        let insertSize = this.myData.length; // 새로 적용할 길이
-        let targetCd = this.modal_val.cd;
-        
-        if(!targetCd) { // 대상코드 없으면 실행 불가
-          this.$swal(
-            '대상 미선택',
-            '대상을 정확히 선택해주세요.',
-            'warning'
-          );
-          return;
-        } else if(insertSize == 0){
-          this.$swal(
-            '항목 미선택',
-            '최소 1개 이상의 항목이 선택되어야 합니다.',
-            'warning'
-          );
-          return;
-        } else if(this.myData.length != originSize){
-          isChanged = true;  // 길이가 달라졌으면 한 개라도 변한 것으로 인식하고 진행
-        } 
-        
-        let insertArr = [];
-        let originCnt = 0;
-        
-        this.myData.forEach((changed) => { // 일반 배열이 아닌 proxy 타입이라 forEach로만 접근 가능
-          // 길이가 달라지지 않았다면, 저장된 데이터와 똑같은 개수를 체크
-          if(!isChanged && this.myData_save.has(changed.test_cd)) originCnt++;
+      async recInsert(){
+        ////////////////////// 유효성검사 해야함................
+        let target = this.selectedTarget;
+        let isLast = target.is_last == 1; // 값이 1인 경우 boolean 타입 true로 담음.
 
-          insertArr.push({target_type: changed.target_type, 
-                          target_cd: targetCd,
-                          test_cd: changed.test_cd});
+        // 등록할 값들을 모은 객체 선언
+        let headerObj = { // 헤더 등록용
+          test_dt: this.test_dt.replace('T', ' '), // 날짜 DB형식으로 바꿈 
+          refer_cd: target.prod_result_cd, 
+          target_type: isLast ? 'P03' : 'P02', // 마지막 공정에서의 검사는 P03(완제품검사)으로 입력 
+          target_cd: isLast ? target.prd_cd : target.inst_proc_cd, 
+          total_qty: target.prod_qty, 
+          test_qty: this.test_qty, 
+          pass_qty: this.pass_qty, 
+          def_qty: this.def_qty, // null 들어갈 수 있음. 
+          id: this.id, 
+          def_cd: this.def_cd, 
+          note: this.note
+        };
+
+        let dtlArr = []; // 디테일 등록용
+        this.samplingTests.forEach((test) => {
+          dtlArr.push({
+            test_cd: test.test_cd,
+            test_value: test.test_value
+          });
         });
+        console.log(headerObj);
+        console.log(dtlArr);
         
-        // 길이가 달라졌거나, 저장된 데이터와 내용이 하나라도 달라졌으면 실행 가능
-        if(originCnt != originSize) isChanged = true;
+        // let result = await axios.post('/api/quality/rec', {header: headerObj, dtl: dtlArr})
+        //                         .catch(err => console.log(err));
 
-        // 변경사항이 없다면 알림 띄우고 종료
-        if(!isChanged){ 
-          this.$swal(
-            '변경사항 없음',
-            '변경된 항목이 없습니다.',
-            'warning'
-          );
-          return;
-        }
-
-        // 최종적으로 변경사항이 있는 경우에만 실행
-        let result = await axios.post('/api/quality/std', insertArr)
-                                .catch(err => console.log(err));
-
-        if(result.data == 'success'){
-          this.$swal(
-            '등록완료',
-            '품질기준이 등록되었습니다.',
-            'success'
-          );
-          this.saveData(this.myData);
-        } else {
-          this.$swal(
-            '오류발생',
-            '품질기준을 등록하지 못했습니다.',
-            'error'
-          );
-        }
+        // if(result.data == 'success'){
+        //   this.$swal(
+        //     '등록완료',
+        //     '검사결과가 등록되었습니다.',
+        //     'success'
+        //   );
+        //   // 후처리: 입력완료한 내역은 목록에서 사라져야 함.
+        //   // filter 메소드로 현재 입력한 것을 제외한 내역만 남김
+        //   let newArr = [];
+        //   newArr = this.waitData.filter(obj => obj.prod_result_cd != target.prod_result_cd);
+        //   this.waitData = newArr; // 변경한 배열로 반영
+        // } else {
+        //   this.$swal(
+        //     '오류발생',
+        //     '검사결과를 등록하지 못했습니다.',
+        //     'error'
+        //   );
+        // }
       }
     }
   };

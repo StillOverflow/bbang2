@@ -54,5 +54,21 @@ router.get('/quality/rec/wait', async (req, resp) => {
   resp.send(result);
 });
 
+// 타입별 불량조회 (모달용)
+router.get('/quality/defect', async (req, resp) => {
+  let valueObj = req.query; // query: 객체로 값을 받음.
+  let result = await qualityService.getDefList(valueObj);
+  resp.send(result);
+});
+
+// 검사결과 등록
+router.post('/quality/rec', async (req, resp) => {
+  let valueObj = req.body; // 객체로 값을 받음. {header: ..., dtl: [...]} 형태
+
+  let result = await qualityService.testRecInsert(valueObj);
+  console.log('트랜잭션 결과: ' + result);
+  resp.send(result);
+});
+
 
 module.exports = router;
