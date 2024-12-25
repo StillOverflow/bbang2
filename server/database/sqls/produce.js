@@ -264,7 +264,6 @@ const instCusFlow = (datas) => {
   if (datas.INST_CD) queryArr.push(`INST_CD = UPPER('${datas.INST_CD}')`);
   if (datas.PRD_CD) queryArr.push(`PRD_CD = UPPER('${datas.PRD_CD}')`);
   
-
   if (queryArr.length > 0) {
     sql += ` WHERE ` + queryArr.join(' AND ');
   }
@@ -278,9 +277,11 @@ const instCusEqu =
 `
 SELECT 
 	EQP_CD,
+  EQP_TYPE,
 	EQP_NM,
-	MODEL
-FROM equipment WHERE eqp_type =?;
+	MODEL,
+  fn_get_codename(STATUS) as ACT_TYPE
+FROM equipment WHERE eqp_type = ?
 `;
 
 //계획서 다중 삭제
@@ -317,6 +318,7 @@ module.exports = {
     instDtlInsert,
     instFlowInsert,
     instCusFlow,
+    instCusEqu,
 
     instProcList,
     instProcMtList

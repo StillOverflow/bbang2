@@ -149,7 +149,6 @@ const deleteInst = async (values)=>{
 //지시서에 커스텀된 제품별 공정 조회
 const findInstCusFlow = async (values)=>{
   let list = await mariadb.query('instCusFlow', values);
-  console.log(list);
   return list;
 }
 
