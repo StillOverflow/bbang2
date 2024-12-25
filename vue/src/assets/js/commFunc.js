@@ -55,6 +55,24 @@ export default {
     return year + '-' + month + '-' + day;
   },
 
+  // 날짜+시간 포맷 변환 ag-grid용 (데이터타입 DATETIME)
+  datetimeFormatter(params){
+    let value = params.value; // ag-grid용 params.value
+    if(!value) return null; // null이면 null 그대로 리턴
+
+    let newDate = new Date(value);
+    // 2024-12-12T03:00:00.000Z => 2024-12-12, 12:00로 변환
+    let strDate = newDate.toLocaleDateString('en-CA', { // en-CA => 국가별 날짜형식(0000-00-00)
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      hour12: false, // 24시간
+      minute: 'numeric'
+    });
+    return strDate.replace(',', ''); // 쉼표 제거 (2024-12-12 23:00)
+  },
+
   // 숫자 포맷 변환 ag-grid 적용 가능 (천단위 콤마 표시)
   currencyFormatter(params){
     if (!params.value || isNaN(params.value)) return '0';

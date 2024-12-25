@@ -12,7 +12,7 @@
             :class="activeTabRev" @click="activeCompTab">검사완료</div>
         </div>
       </div>
-      <ag-grid-vue class="ag-theme-alpine" style="height: 268px;" :columnDefs="waitDefs" :rowData="waitData" 
+      <ag-grid-vue class="ag-theme-alpine" style="height: 242px;" :columnDefs="waitDefs" :rowData="waitData" 
         @grid-ready="gridFit" :gridOptions="gridOptions" :getRowStyle="getRowStyle" @rowClicked="selectTarget"/>
     </div>
     
@@ -25,40 +25,42 @@
           <div class="col-12 col-md-6 col-xl-3 row text-end p-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산번호</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.prod_result_cd" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.prod_result_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">제품코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.prd_cd" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.prd_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">제품명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.prd_nm" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.prd_nm" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.inst_proc_cd" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.inst_proc_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.proc_nm" readonly>
+              <input type="text" class="form-control" :value="selectedTarget.proc_nm" disabled>
             </div>
           </div>
 
           <div class="col-12 col-md-6 col-xl-4 mb-2 g-0">
             <div class="card me-4 m-md-0 mb-2 mb-md-2" v-show="samplingTests.length > 0"> <!-- 있을 때만 표시 -->
-              <div class="card-header p-2 bg-light fw-bold text-center">검사항목 (샘플링검사)</div>
-              <div class="card-body p-2">
+              <div class="card-header p-1 bg-light fw-bold text-center">검사항목 (샘플링검사)</div>
+              <div class="card-body">
                 
                 <div class="row" v-for="(test, idx) in samplingTests" :key="test.test_cd">
-                  <div class="col-3">
-                    <span style="cursor: pointer" :style="t_break" @click="openDtl('샘플링', idx)">{{ test.test_nm }}</span>
+                  <div class="col-6 text-end">
+                    <span style="cursor: pointer" :style="t_break" @click="openDtl('샘플링', idx)">
+                      {{ test.test_nm }} <i class="fa-solid fa-triangle-exclamation" style="color: #ffc800;" v-show="test.test_value == null">입력</i>
+                    </span>
                   </div>
-                  <div class="col-9 form-check p-0 d-flex">
-                      <input class="form-check-input ms-4" type="radio" v-model="test.test_value" :value="true" :id="'true' + test.test_cd" :disabled="!isWaitList">
-                      <label class="form-check-label ms-2 me-1 text-start" :for="'true' + test.test_cd" :style="t_overflow">적합</label>
-                      <input class="form-check-input ms-2" type="radio" v-model="test.test_value" :value="false" :id="'false' + test.test_cd" :disabled="!isWaitList">
-                      <label class="form-check-label ms-2 me-4 text-start" :for="'false' + test.test_cd" :style="t_overflow">부적합</label>
+                  <div class="col-6 d-flex" @click="openDtl('샘플링', idx)">
+                    <span class="me-1" :style="t_overflow">결과</span>
+                    <input type="text" class="form-control w-50 h-75 text-end" v-model="test.test_value" readonly>
+                    <span class="ms-2 me-3 text-success fw-bold" :style="t_overflow" v-show="test.isPass">적합</span>
+                    <span class="ms-2 me-1 text-danger fw-bold" :style="t_overflow" v-show="test.isPass == false">부적합</span>
                   </div>
                 </div>
 
@@ -66,66 +68,70 @@
             </div>
 
             <div class="card me-4 m-md-0" v-show="fullTests.length > 0">
-              <div class="card-header p-2 bg-light fw-bold text-center">검사항목 (전수검사)</div> <!-- 있을 때만 표시 -->
+              <div class="card-header p-1 bg-light fw-bold text-center">검사항목 (전수검사)</div> <!-- 있을 때만 표시 -->
               <div class="card-body">
-                <div class="form-check p-0 d-flex justify-content-end" v-for="(test, idx) in fullTests" :key="test.test_cd">
-                  <span style="cursor: pointer" :style="t_break" @click="openDtl('전수', idx)">{{ test.test_nm }}</span>
-                  <input class="form-check-input ms-4" type="radio" v-model="test.test_value" :value="true" :id="'true' + test.test_cd" :disabled="!isWaitList">
-                  <label class="form-check-label ms-2 me-1 text-start" :for="'true' + test.test_cd" :style="t_overflow">적합</label>
-                  <input class="form-check-input ms-2" type="radio" v-model="test.test_value" :value="false" :id="'false' + test.test_cd" :disabled="!isWaitList">
-                  <label class="form-check-label ms-2 me-4 text-start" :for="'false' + test.test_cd" :style="t_overflow">부적합</label>
+
+                <div class="row" v-for="(test, idx) in fullTests" :key="test.test_cd">
+                  <div class="col-6 text-end">
+                    <span style="cursor: pointer" :style="t_break" @click="openDtl('전수', idx)">
+                      {{ test.test_nm }} <i class="fa-solid fa-magnifying-glass" style="color: #969696;"/>
+                    </span>
+                  </div>
+                  <div class="col-6 form-check p-0 d-flex">
+                      <input class="form-check-input ms-4" type="radio" v-model="test.isPass" :value="true" :id="'pass' + test.test_cd" disabled>
+                      <label class="form-check-label ms-2 me-1 text-start" :for="'pass' + test.test_cd" :style="t_overflow">적합</label>
+                      <input class="form-check-input ms-2" type="radio" v-model="test.isPass" :value="false" :id="'fail' + test.test_cd" disabled>
+                      <label class="form-check-label ms-2 me-4 text-start" :for="'fail' + test.test_cd" :style="t_overflow">부적합</label>
+                  </div>
                 </div>
+
               </div>
             </div>
           </div>
 
-          <div class="col-12 col-md-6 col-xl-3 row text-end p-xl-0">
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산량</h6>
+          <div class="col-12 col-md-6 col-xl-2 row text-end g-xl-0">
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow">생산량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.prod_qty)" readonly>
+              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.prod_qty)" disabled>
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">검사량</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow" v-show="samplingTests.length > 0">샘플량</h6>
+            <div class="col-10 col-md-9 col-xl-8 mb-2" v-show="samplingTests.length > 0">
+              <input type="text" class="form-control text-end" v-model="test_qty" @change="checkNumberAlert('test')" :disabled="!isWaitList || activeDefect">
+            </div>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow">불량양</h6>
+            <div class="col-10 col-md-9 col-xl-8 mb-2"> <!-- 샘플링검사에서 불량이 난 경우, 별도 입력을 못 함. -->
+              <input type="text" class="form-control text-end" v-model="def_qty" @change="checkNumberAlert('def')" :disabled="!isWaitList || !activeDefect">
+            </div>
+            <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2 pe-3" :style="t_overflow">합격량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" v-model="test_qty" :disabled="!isWaitList">
+              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(pass_qty)" disabled>
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">합격량</h6>
+          </div>
+
+          <div class="col-12 col-md-6 col-xl-3 row text-end g-xl-0">
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_break">불량 코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" v-model="pass_qty" :disabled="!isWaitList">
+              <input type="text" class="form-control" :value="null" disabled>
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">불량양</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2 pe-3" :style="t_overflow">불량명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" v-model="def_qty" :disabled="!isWaitList">
+              <input type="text" class="form-control" :value="null" placeholder="선택" @click="modalToggle" :disabled="!isWaitList">
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">검사일시</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow">담당자</h6>
+            <div class="col-10 col-md-9 col-xl-8 mb-2">
+              <select class="form-select" :disabled="!isWaitList" v-model="id">
+                <option :value="null" disabled hidden>선택</option>
+                <option v-for="(mem) in members" :key="mem.id" :value="mem.id">{{ mem.name }}</option>
+              </select>
+            </div>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_break">검사 일시</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="datetime-local" class="form-control" v-model="complete_dt" :disabled="!isWaitList" :max="this.$comm.getMyDay() + 'T23:59'"> <!-- 최대 오늘 날짜까지 선택 가능 -->
             </div>
           </div>
 
-          <div class="col-12 col-md-6 col-xl-2 row text-end g-xl-0">
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-4" :style="t_overflow">단위</h6>
-            <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="'kg?? ea??'" readonly>
-            </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_break">불량 코드</h6>
-            <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="null" readonly>
-            </div>
-            <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2 pe-4" :style="t_overflow">불량명</h6>
-            <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="null" placeholder="선택" @click="modalToggle" :disabled="!isWaitList">
-            </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-4" :style="t_overflow">담당자</h6>
-            <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <select class="form-select" :disabled="!isWaitList" v-model="id">
-              <option :value="null" disabled hidden>선택</option>
-              <option v-for="(mem) in members" :key="mem.id" :value="mem.id">{{ mem.name }}</option>
-            </select>
-            </div>
-          </div>
-
         </div>
-        <div class="row">
+        <div class="row mb-2">
           <div class="col-9 col-md-10 col-xl-11 row">
             <h6 class="col-3 col-md-2 col-xl-1 text-end pe-4 pe-xl-3" :style="t_overflow">비고</h6>
             <div class="col-9 col-md-10 col-xl-11">
@@ -184,7 +190,10 @@
         // 일반 grid API 데이터
         waitDefs: [
           { headerName: '생산번호', field: 'prod_result_cd' }, // 생산실적 번호
-          { headerName: '생산일자', field: 'end_time' }, // 생산지시서에서 완료상태가 된 일자
+          { headerName: '생산일시', field: 'end_time', 
+            valueFormatter: this.$comm.datetimeFormatter,
+            width: 250
+          }, // 공정 완료된 일시
           { headerName: '제품코드', field: 'prd_cd' },
           { headerName: '제품명', field: 'prd_nm' },
           { headerName: '공정코드', field: 'inst_proc_cd' },
@@ -205,12 +214,13 @@
         isRowClicked: true, // 기본값 false (표시 안 함)
         selectedTarget: {}, // 목록에서 선택한 대상
         
-        samplingTests: [], // 선택한 대상에 품질기준으로 적용된 검사항목 중 샘플링검사 유형
-        fullTests: [], // 선택한 대상에 품질기준으로 적용된 검사항목 중 전수검사 유형
+        // isDefect: null, // 샘플링검사의 최종결과
+        samplingTests: [], // 선택한 대상의 검사항목 중 샘플링검사 유형
+        fullTests: [], // 선택한 대상의 검사항목 중 전수검사 유형
         members: [], // 품질부서의 사원들
         
         test_qty: null,
-        pass_qty: null,
+        // pass_qty: null,
         def_qty: null,
         complete_dt: null,
         id: null, // 선택된 담당자 사원번호
@@ -218,13 +228,51 @@
       }
     },
 
-    computed: { // this.로 data(){} 참조하려면 data 생성 후 computed에서 계산되어야 함.
+    computed: { // this.로 참조하려면 data 생성 후 computed에서 계산되어야 함.
       // 탭 색깔 클래스 바인딩용
       activeTab(){ 
         return {'bg-success': this.isWaitList, 'bg-light': !this.isWaitList, 'text-white': this.isWaitList}
       },
       activeTabRev(){
         return {'bg-success': !this.isWaitList, 'bg-light': this.isWaitList, 'text-white': !this.isWaitList}
+      },
+
+      // 샘플링검사에서의 전체 적합 여부 판단
+      isAllPass(){
+        let stLength = this.samplingTests.length;
+        
+        if(stLength > 0){ // 샘플링검사가 있는 경우만 확인
+          let passCnt = 0;
+          this.samplingTests.forEach((test) => {
+            if(test.isPass == true) passCnt++;
+          });
+          
+          if(passCnt == stLength){
+            return true;
+          } else return false;
+        }
+        return null;
+      },
+
+      // 검사방식별 불량양 입력가능여부 조작
+      activeDefect(){
+        let stLength = this.samplingTests.length;
+        let fullLength = this.fullTests.length;
+        
+        if(stLength > 0 && fullLength > 0){ // 샘플링검사와 전수검사가 동시에 있는 경우
+          if(this.isAllPass) return true;
+          else return false; // 샘플링검사에서 하나라도 부적합인 경우 전수검사도 입력 불가
+
+        } else if(stLength > 0){ // 샘플링검사만 있는 경우 입력 불가
+          return false;
+        }
+        return true; // 전수검사만 있는 경우 입력 가능
+      },
+
+      // 합격량 자동계산
+      pass_qty(){
+        let def = this.def_qty == null || isNaN(this.def_qty) ? 0 : this.def_qty;
+        return this.selectedTarget.prod_qty - def;
       }
     },
 
@@ -273,7 +321,11 @@
         params.api.redrawRows(); // 그리드 강제 새로고침 (getRowStyle()에서 적용한 행 스타일 즉시 반영)
 
         // 초기화
-        this.samplingTests = [];
+        this.isDefect = null;
+        this.test_qty = null;
+        this.pass_qty = null;
+        this.def_qty = null;
+        this.samplingTests = []; ///////////////////////// 빠르게 타겟 변경 시 배열이 비워지지 않는 오류가 있음.
         this.fullTests = [];
 
         // 검사항목 불러오기
@@ -302,31 +354,80 @@
                                     .catch(err => console.log(err));
 
         testLists.data.forEach((test) => {
-          test.test_value = null; // 적합/부적합 판단용
+          test.isPass = null; // 적합/부적합 판단용
         
           if(test.test_metd == 'O01'){ 
-            this.samplingTests.push(test); // 샘플링검사일 경우
+            this.samplingTests.push(test); // O01: 샘플링검사일 경우
+            let testQty = target.prod_qty * 0.01;
+            this.test_qty = testQty < 5 ? 5 : testQty; // 샘플량을 전체에서 1%로 자동 입력하되, 적어도 5개는 되어야 함.
           } else { 
-            this.fullTests.push(test); // 전수검사인 경우
+            this.fullTests.push(test); // O02: 전수검사인 경우
           }
         });
       },
 
-      // 목록에서 선택된 행 색깔 변경
+      // 그리드 속성으로 선택된 행 색깔 변경
       getRowStyle(params){
         if(params.data.prod_result_cd == this.selectedTarget.prod_result_cd){
           return {backgroundColor: '#d6d6d6'}
         }
       },
 
-      // 검사항목별 측정값 입력 혹은 상세정보 표시
-      openDtl(testMetd, idx){
-        if(testMetd == '샘플링'){
-          this.$swal({
-            title: `<h4>${this.samplingTests[idx].test_nm} 검사</h4>`,
-            text: this.samplingTests[idx].test_dtl,
-            showConfirmButton: false
+      // 각 검사항목 클릭 시 측정값 입력 혹은 상세정보 표시
+      async openDtl(testMetd, idx){
+        if(testMetd == '샘플링'){ // 샘플량 5개 미만이거나, 비어있거나, 숫자가 아닐 시 입력불가
+          if(this.test_qty < 5 || !this.test_qty || isNaN(this.test_qty)){
+            this.$swal(
+              '샘플량 부족',
+              `샘플량을 정확히 입력해주세요.
+                <br>샘플량은 최소 5개 이상이어야 합니다.`,
+              'warning'
+            );
+            return;
+          }
+
+          let test = this.samplingTests[idx];
+          let passMin = !test.pass_min ? 0 : test.pass_min;
+          let passMax = !test.pass_max ? 0 : test.pass_max;
+          let percent = test.pass_ispercent == 'A01' ? '%' : '';
+
+          // swal에서 제공하는 input 모달 이용 (testVal에 입력결과를 담음)
+          let { value: testVal } = await this.$swal({
+            title: `<h4>${test.test_nm} 검사</h4>`,
+            text: test.test_dtl,
+            input: "text", // 입력유형
+            inputValue: !test.test_value ? 0 : test.test_value, // 기본값
+            inputAttributes: {
+              style: "text-align: right",
+              autocomplete: 'off'
+            },
+            inputLabel: `적합범위 : ${passMin + percent} ~ ${passMax + percent}`,
+            showCancelButton: true,
+            cancelButtonText: 'CLOSE',
+            confirmButtonText: 'SAVE',
+            confirmButtonColor: '#2dce89',
+            inputValidator: (value) => {
+              if(!value){
+                return "측정값을 입력해주세요.";
+              } else if(isNaN(value)) {
+                return "측정값은 숫자로 입력해주세요.";
+              }
+            }
           });
+
+          if(testVal){ // 값이 정상적으로 입력되었을 때의 후처리
+            let val = Number(testVal);
+            test.test_value = val;
+            
+            // 적합/부적합 평가하여 반영
+            if(val >= passMin && val <= passMax){
+              test.isPass = true;
+            } else {
+              test.isPass = false;
+              // 샘플링검사 한 개라도 부적합 시 전량 불량
+              this.def_qty = this.selectedTarget.prod_qty;
+            }
+          }
         } else {
           this.$swal({
             title: `<h4>${this.fullTests[idx].test_nm} 검사</h4>`,
@@ -334,6 +435,30 @@
             showConfirmButton: false
           });
         }
+      },
+
+      // input text에서 숫자 유효성 확인용
+      checkNumberAlert(target){
+        let val = null;
+        if(target == 'def') val = this.def_qty;
+        else if(target == 'test') val = this.test_qty;
+
+        if(isNaN(val)){ // 숫자가 아닌 경우
+          this.$swal(
+            '입력 오류',
+            `숫자를 정확히 입력해주세요.`,
+            'warning'
+          );
+          val = null; // 숫자 아니면 null로 돌려줌.
+        } else if(val < 0){
+          val = val * -1; // 입력값이 음수면 양수로 변환
+        }
+        if(val > this.selectedTarget.prod_qty){ // 입력값이 생산량보다 많다면 최대값 적용
+          val = this.selectedTarget.prod_qty;
+        }
+
+        if(target == 'def') this.def_qty = val;
+        else if(target == 'test') this.test_qty = val;
       },
 
       // ------------ 모달 메소드 ------------
@@ -414,7 +539,7 @@
         
         this.myData.forEach((changed) => { // 일반 배열이 아닌 proxy 타입이라 forEach로만 접근 가능
           // 길이가 달라지지 않았다면, 저장된 데이터와 똑같은 개수를 체크
-          if(!isChanged & this.myData_save.has(changed.test_cd)) originCnt++;
+          if(!isChanged && this.myData_save.has(changed.test_cd)) originCnt++;
 
           insertArr.push({target_type: changed.target_type, 
                           target_cd: targetCd,

@@ -6,7 +6,10 @@ const yetList = `
          test_metd,
          test_nm, 
          test_dtl,
-         target_type
+         target_type,
+         pass_min, -- 샘플링검사인 경우 합격기준이 있음.
+         pass_max,
+         pass_ispercent
   FROM   quality_test
   WHERE  target_type = ?
     AND  test_cd NOT IN (
