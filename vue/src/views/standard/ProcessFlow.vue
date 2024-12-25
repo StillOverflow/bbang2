@@ -37,8 +37,6 @@
             <!-- 자재 목록 -->
             <h4 class="d-flex justify-content-start">공정흐름도</h4>
             <div class="mb-3 d-flex justify-content-end" >
-              <button class="btn btn-outline-secondary mb-0 ms-2">  up </button>
-              <button class="btn btn-outline-secondary mb-0 ms-2"> down </button>
               <button class="btn btn-outline-primary mb-0 ms-2"  @click="modalOpen"> 공정추가 </button>
               <button class="btn btn-outline-danger mb-0 ms-2"  @click="deleteProc">  delete </button>
             </div>
@@ -136,7 +134,7 @@
               </template>
             </Layout>
               <div class="text-center">
-                <button class="btn btn-success mt-3 saveBtn " @click="save" > SUBMIT </button>
+                <button class="btn btn-success mt-3 saveBtn " @click="save" :disabled="isdisabled"> SUBMIT </button>
               </div>             
             </div>
           </div> 
@@ -164,6 +162,7 @@ export default {
   },
   data() {
     return {
+      isdisabled: true,
       bomOptions: {
         rowSelection: { mode: "singleRow", enableClickSelection: true },
         suppressMovableColumns: true,
@@ -334,12 +333,24 @@ export default {
     //모달 공정 클릭시 공정흐름도 추가
     async InsertProc() {
       const selectedNodes = this.modalApi.getSelectedRows(); //정보 배열로 담기
+
+      if(!this.selectProData){
+        this.$swal({
+            icon: "error",
+            title: "제품 선택이 되지 않았습니다.",
+            text: "제품 선택 후 추가해주세요",
+          });
+          this.isModal = !this.isModal;
+          return;
+          
+      }
+
       let maxSeq = 0;
 
-      const response = await axios.get(
-        `/api/standard/flowSeq/${this.selectProData}`
+      const result = await axios.get(
+        `/api/standard/flowSeq/${this.selectProData}`//순서 최대값조회
       );
-      maxSeq = response.data[0].maxSeq;
+      maxSeq = result.data[0].maxSeq; //순서 최대값조회
 
       let index = 1;
       for (const dup of selectedNodes) {
@@ -370,7 +381,6 @@ export default {
     //공정흐름도 삭제
     async deleteProc() {
       const selectedNodes = this.prowFlowApi.getSelectedRows();
-      console.log(selectedNodes);
       for (const bom of selectedNodes) {
         this.deleteModal.push(bom);
 
@@ -384,6 +394,7 @@ export default {
     //공정 자재추가
     async InsertProcMtl() {
       const selectedNodes = this.gridApi.getSelectedRows(); // 선택된 BOM 데이터
+
       for (const material of selectedNodes) {
         //그리드용
         const saveMaterial = {
@@ -393,6 +404,15 @@ export default {
           unit: material.unit,
           proc_flow_cd: this.selectProFlowData,
         };
+
+        if(this.procFlowMtlData.some((obj)=>obj.mat_cd == material.mat_cd)){
+          this.$swal({
+              icon: "error",
+              title: "존재하는 자재가 있습니다.",
+              text: "다시 선택해주세요",
+            });
+            continue;
+        }
 
         const newMaterial = {
           mat_cd: saveMaterial.mat_cd,
@@ -412,22 +432,49 @@ export default {
     //공정별 자재 삭제
     async deleteProcMtl() {
       const selectedNodes = this.procFlowMtlApi.getSelectedRows();
-      console.log(selectedNodes);
       for (const bom of selectedNodes) {
-        this.deleteProwMtlData.push(bom);
+        // this.deleteProwMtlData.push(bom);
+        this.deleteModal.push({ 
+        proc_flow_cd: bom.proc_flow_cd });
 
         this.procFlowMtlApi.applyTransaction({
           remove: [bom],
         });
       }
     },
+
+    //------------------------------드래그 실험-------------------------------------
+    onRowDragEnd() {
+      const renderedNodes = this.prowFlowApi.getRenderedNodes();//드래그한 공정흐름도불러오기
+      this.procFlowData = renderedNodes.map((obj, idx) => { //새롭게 배치
+        obj.data.proc_seq = idx + 1; // 순서 재정렬(1번부터)
+        return obj.data;
+      });
+    },
+//------------------------------드래그 실험-------------------------------------
+
     //저장
     async save() {
-      console.log("Save 메소드");
+
+      //드래그실험-----------------------------
+        // 공정 흐름 순서 업데이트
+        try {
+          const updatedProcFlow = this.procFlowData.map((obj) => ({
+            proc_flow_cd: obj.proc_flow_cd,
+            proc_seq: obj.proc_seq,
+          }));
+
+          await axios.put(`/api/standard/updateFlowSeq`, updatedProcFlow);
+          console.log("저장완", updatedProcFlow);
+        } catch (error) {
+          console.error("공정 흐름 순서 업데이트 실패:", error);
+        }
+      //드래거실험----------------------------------------
+
       //공정흐름삭제
       if (this.deleteModal.length > 0) {
         for (const bom of this.deleteModal) {
-          await axios.delete(`/api/standard/flow/${bom.proc_flow_cd}`);
+          await axios.delete(`/api/standard/flow/${bom.proc_flow_cd}/${this.selectProData}`);
         }
       }
       //공정별 자재 삭제
@@ -469,10 +516,10 @@ export default {
         }
       }
 
-      //
+      //공정흐름도 등록하고 다른 공정데이터에 자재 추가하는경우
       if (
         this.saveModal.length > 0 &&
-        this.saveProwMtlData.some((material) => material.proc_flow_cd) //공정흐름도 데이터 존재 자재등록데이터에서 공정흐름도가 존재하는경우
+        this.saveProwMtlData.some((material) => material.proc_flow_cd) 
       ) {
         for (const material of this.saveProwMtlData) {
           if (material.proc_flow_cd) {
@@ -484,6 +531,7 @@ export default {
           }
         }
       }
+      this.isdisabled = false;
       this.saveModal = [];
       this.deleteModal = [];
       this.saveProwMtlData = [];
@@ -491,5 +539,28 @@ export default {
       this.bringProFlow(this.selectProData);
     },
   },
+  watch:{//얘가있으면안됨 왜지
+    procFlowData: {
+    deep: true,
+    handler(newVal) {
+      console.log("procFlowData 변경 감지됨:", newVal);
+      this.isdisabled = false; // 데이터 변경 시 상태를 false 설정
+    },
+  },
+  // procFlowMtlData 변경 감지
+  procFlowMtlData: {
+    deep: true,
+    handler() {
+      this.isdisabled = false;
+    },
+  },
+  // 기타 변경 상태 감지 필요 시 추가
+  saveModal: {
+    deep: true,
+    handler() {
+      this.isdisabled = false;
+    },
+  },
+  }
 };
 </script>

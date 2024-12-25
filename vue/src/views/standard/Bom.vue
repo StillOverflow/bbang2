@@ -316,7 +316,7 @@ export default {
           };
 
           if (
-            this.bomData.some((obj) => obj.mat_cd === dup.mat_cd) ||
+            this.bomData.some((obj) => obj.mat_cd === dup.mat_cd) || //그리드와 실제정보비교
             this.saveData.some((obj) => obj.mat_cd === dup.mat_cd)
           ) {
             this.$swal({
@@ -356,8 +356,8 @@ export default {
         this.deleteData.push(bom); //deletedata 배열에 저장
 
         this.saveData = this.saveData.filter(
-          (item) => item.mat_cd !== bom.mat_cd
-        ); //세이브데이터에서 자재코드가 bom자재코드랑 같은거만 남겨두기
+          (obj) => obj.mat_cd !== bom.mat_cd
+        ); //세이브데이터에서 자재코드가 삭제하려는 자재코드랑 같지 않은거만 남겨두기
 
         this.bomGridApi.applyTransaction({
           // applyTransaction : 실시간으로
