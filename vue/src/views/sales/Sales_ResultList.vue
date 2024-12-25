@@ -53,17 +53,17 @@ export default {
   data() {
       return {
           columnDefs: [
-              {field: 'prd_out_cd', headerName: '반품코드'},
+              {field: 'prd_return_cd', headerName: '반품코드'},
               {field: 'act_cd', headerName: '거래처코드'},
               {field: 'act_nm', headerName: '거래처이름'},
               {field: 'name', headerName: '담당자'},
               {
-                  field: 'prd_out_dt',
+                  field: 'prd_return_dt',
                   headerName: '반품일자',
                   valueFormatter: this.$comm.dateFormatter // 날짜 포맷터 추가
               },
               {
-                  field: 'prd_out_qty',
+                  field: 'prd_return_qty',
                   headerName: '반품수량',
                   valueFormatter: (params) => {
                       if (params.value == null || params.value === '') return '';
@@ -71,6 +71,7 @@ export default {
                       
                   },
               },
+              {field: 'prd_return_receipt', headerName: '반품접수상태'},
               {
                   headerName: '상세' ,
                   field: 'detailed',
@@ -100,7 +101,7 @@ export default {
       this.$store.dispatch('breadCrumb', { title: '출고 제품 목록 조회' });
   },
   mounted() {
-      axios.get('/api/sales/prdList')
+      axios.get('/api/sales/returnList')
           .then(response =>{
               this.rowData = response.data;
           })
@@ -116,7 +117,7 @@ export default {
           //this.$router.push({ name : 'sales_orderlist', query : { query : this.search, st : this.std, et : this.etd}});
           let searchdt = {no : this.search , st : this.sdt , et : this.edt};
           
-          axios.get('/api/sales/searchPo/', {params : searchdt})
+          axios.get('/api/sales/searchRT/', {params : searchdt})
               .then(response =>{
               this.rowData = response.data;
           })

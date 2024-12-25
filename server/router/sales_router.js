@@ -85,6 +85,27 @@ router.post('/sales/prdOut', async (req, resp) => {
 
 /* ---------------------------------반품제품--------------------------------------- */
 
+//반품 제품 목록 조회
+router.get('/sales/returnList', async (req, res) => {
+    let returnList = await salesService.listReturn();
+    res.send(returnList);
+});
+
+//반품 제품 목록 검색
+router.get('/sales/searchRT/', async (req, res) => {
+    try {
+        let salesNo = req.query.no;
+        let std = req.query.st;
+        let etd = req.query.et;
+        
+        let info = await salesService.searchReturn(salesNo,std,etd);
+        res.send(info);
+    } catch (error) {
+        console.error(error);
+    }
+    
+});
+
 //반품등록 출고목록 조회
 router.get('/sales/POL/:no', async (req, res) => {
     let prdoutNo = req.params.no;

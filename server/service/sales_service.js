@@ -111,6 +111,28 @@ const insertPrdOut = async (values) => {
 
 /* ----------------------------------------------------제품 반품--------------------------------------------------------- */
 
+//반품 제품 목록 조회
+const listReturn = async () => {
+    let list = await mariadb.query('returnList')
+    return list;
+}
+
+//반품제품조회-거래처, 날짜 따로 검색
+const searchReturn = async (search, std, etd) => {
+    try {
+        let searchObj = {
+            search,
+            std,
+            etd
+        }
+        const list = await mariadb.query('returnSearch', searchObj);
+        return list;
+    } catch (err) {
+        console.error("Error searching orders 실패:", err);
+        throw err;
+    }
+};
+
 //반품등록 출고목록 조회
 const listPOutReturn = async (no)=>{
     let list = await mariadb.query('returnPOutList', no);
@@ -196,6 +218,8 @@ module.exports = {
     insertPrdOut,
     
     //제품반품
+    listReturn,
+    searchReturn,
     listPOutReturn,
     searchRTLot,
     InsertPrdReturn,

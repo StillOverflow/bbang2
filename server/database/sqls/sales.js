@@ -210,6 +210,60 @@ WHERE i.prd_lot_cd = ? ;
 
 /* --------------------------------------------------------------제품 반품----------------------------------------------------------------- */
 
+//반품 제품 목록 조회
+const returnList =
+`
+SELECT r.prd_return_cd,
+		 m.name, 
+		 a.act_nm, 
+		 r.act_cd, 
+		 r.prd_return_dt, 
+		 sum(d.prd_return_qty) AS prd_return_qty, 
+		 (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = r.prd_return_receipt) AS prd_return_receipt
+FROM product_return r JOIN account a ON r.act_cd = a.act_cd
+                        JOIN member m ON r.id = m.id
+                        JOIN product_return_detail d ON r.prd_return_cd = d.prd_return_cd
+GROUP BY r.prd_return_cd;
+`;
+
+//반품제품조회-거래처, 날짜 따로 검색
+const returnSearch = (searchObj) => {
+    //검색 조건인 거래처명, 시작날짜, 끝나는 날짜 가져와서 담음
+    const {search, std, etd} = searchObj;
+    let query = `
+        SELECT r.prd_return_cd,
+		 m.name, 
+		 a.act_nm, 
+		 r.act_cd, 
+		 r.prd_return_dt, 
+		 sum(d.prd_return_qty) AS prd_return_qty, 
+		 (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = r.prd_return_receipt) AS prd_return_receipt
+        FROM product_return r JOIN account a ON r.act_cd = a.act_cd
+                                JOIN member m ON r.id = m.id
+                                JOIN product_return_detail d ON r.prd_return_cd = d.prd_return_cd
+    `;
+    
+    const conditions = [];
+
+    // 거래처명 조건 추가
+    if (search) {
+        conditions.push(`a.act_nm LIKE '%${search}%'`);
+    }
+    // 날짜 조건 추가
+    if (std && etd) {
+        conditions.push(`DATE(r.prd_return_dt) BETWEEN '${std}' AND '${etd}'`);
+    }
+    // WHERE 절 조립
+    if (conditions.length > 0) {
+        query += " WHERE " + conditions.join(" AND ") + " GROUP BY r.prd_return_cd ";
+    }else { // 조건이 없을때 GROUP BY절만 실행
+        query += " GROUP BY r.prd_return_cd ";
+    }
+    
+    // 쿼리 반환
+    return query; 
+};
+
 //반품등록 출고목록 조회
 const returnPOutList =
 `
@@ -225,7 +279,7 @@ const returnLot = (searchObj) => {
     const {pocd, pdcd} = searchObj;
 
     let query = `
-    SELECT d.prd_lot_cd, d.prd_cd, p.prd_nm, d.prd_out_qty 
+    SELECT d.prd_lot_cd, d.prd_cd, p.prd_nm, d.prd_out_qty, d.prd_out_dtl_cd 
     FROM product p JOIN product_out_detail d ON d.prd_cd = p.prd_cd
     WHERE prd_out_cd = '${pocd}' AND d.prd_cd = '${pdcd}'
     `;
@@ -237,7 +291,7 @@ const returnLot = (searchObj) => {
 //반품 코드 시퀀스
 const productReturnSeq =
 `
-SELECT CONCAT('PRC', LPAD(nextval(prd_out_cd_seq), 3,'0')) AS prd_out_cd FROM DUAL;
+SELECT CONCAT('PRC', LPAD(nextval(prd_out_cd_seq), 3,'0')) AS prd_return_cd FROM DUAL;
 `;
 //반품 등록
 const productReturnInsert = (obj) => {
@@ -339,6 +393,8 @@ module.exports = {
     productOutQty,
 
     //제품반품
+    returnList,
+    returnSearch,
     returnPOutList,
     returnLot,
     productReturnSeq,
