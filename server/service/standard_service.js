@@ -73,12 +73,14 @@ const searchProcCd = async () => {
 };
 
 // 공정흐름도 삭제
-const deleteProcessFlow = async (proc_flow_cd) => {
+const deleteProcessFlow = async (proc_flow_cd, prd_cd) => {
   let result = await mariadb.query("deleteProcessFlow", proc_flow_cd); //info 객체형태 전달
   if (result.affectedRows > 0) {
-    return { result: "success" };
+    //순서 업데이트
+    await updateProSeq(prd_cd);
+    return { result: true };
   } else {
-    return { result: "fail" };
+    return { result: false };
   }
 };
 
@@ -179,13 +181,28 @@ const deleteProcessMtlFlow = async (proc_mtl_flow_cd) => {
     return { result: "fail" };
   }
 };
-//순서
+//순서 불러오기
 const getMaxProcSeq = async (prdCd) => {
   const result = await mariadb.query("ProcessSeq", prdCd);
   return result;
 };
+//순서업데이트(삭제하면 실시간으로 순서업데이트)
+const updateProSeq = async(prdCd)=>{
+  let result = await mariadb.query('procFlowByProd',prdCd);
+  let seq=1;
+
+  for(obj of result){
+    await mariadb.query('updateProSeq', [seq, obj.proc_flow_cd]);
+    seq++;
+  }
+};
 
 
+//순서그리드 실험용
+
+const updateProcSeq = async (procFlowCd, procSeq) => {
+  await mariadb.query("updateProSeq", [procSeq, procFlowCd]);
+};
 //-----------------------------자재관리----------------------------------
 const bringMaterial = async()=>{
   let result = await mariadb.query("bringMat");
@@ -253,5 +270,7 @@ module.exports = {
   bringMaterial,
   insertMaterial,
   updateMaterial,
-  deleteMaterial
+  deleteMaterial,
+  updateProSeq,
+  updateProcSeq
 };

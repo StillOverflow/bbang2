@@ -42,7 +42,7 @@
                     </div>
                 </div>
             <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재명</div>
+                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재명 *</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="matInfo.mat_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
@@ -56,7 +56,7 @@
                 </div>
             </div>    
             <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위</div>
+                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="matInfo.unit">
                         <option v-for="(opt, idx) in selectedData.selectOptions.unit"
@@ -68,7 +68,7 @@
                 </div>
             </div>
             <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재유형</div>
+                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재유형 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="matInfo.type">
                         <option v-for="(opt, idx) in selectedData.selectOptions.type"
@@ -94,7 +94,7 @@
             <div class="d-flex justify-content-left align-items-center mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
                 <div class="input-group mb-3 w-50">
-                        <input type="text" class="form-control" v-model="matInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                        <input type="number" class="form-control" v-model="matInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />
                 </div>
             </div>
@@ -215,9 +215,11 @@ export default {
                 const category = await axios.get('/api/comm/codeList/MC');
                 const unit = await axios.get('/api/comm/codeList/UN');
 
-                this.selectedData.selectOptions.type = type.data || [];
-                this.selectedData.selectOptions.category = category.data || [];
-                this.selectedData.selectOptions.unit = unit.data || [];
+                this.selectedData.selectOptions={
+                    type: type.data, 
+                    category: category.data, 
+                    unit: unit.data 
+                }
             } catch (error) {
                 console.error('공통코드 가져오기 실패:', error);
             }
@@ -248,6 +250,15 @@ export default {
         },
         
         async matInsert(){
+            if(!this.matInfo.mat_nm || !this.matInfo.unit || !this.matInfo.type){
+                this.$swal({
+                icon: "error",
+                title: "필수 입력값을 확인해주세요!",
+                text: "자재명, 단위, 자재유형은 필수 입력값입니다.",
+            });
+            return;        
+            }
+
             try {
                 let result = await axios.post('/api/standard/material', this.matInfo);
                 if (result.data.result) {
@@ -301,25 +312,10 @@ export default {
                         this.bringMat(); // 목록 갱신
                     }
                 });
-                
-            
-            
         }
-
     },
     
     watch : {
-        // mat_nm(newVal, oldVal) {
-        //     console.log('newVal => ', newVal.mat_nm);
-        //     console.log('newVal => ', oldVal.mat_nm);
-            
-        //     // if(this.matInfo){
-        //     //     this.isEditMode=false;
-        //     //     return;
-        //     // }
-        //     // this.matClicked(this.matInfo);
-        //     // this.isEditMode = true; // 조회 시 수정 모드 활성화
-        // }
         matInfo : {
             deep: true,
             handler(newVal, oldVal) {

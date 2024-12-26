@@ -99,18 +99,30 @@ router.delete("/standard/flowMtl/:proc_mat_flow_cd", async (req, res) => {
   res.send(result);
 });
 // 공정 흐름도 삭제
-router.delete("/standard/flow/:proc_flow_cd", async (req, res) => {
+router.delete("/standard/flow/:proc_flow_cd/:prd_cd", async (req, res) => {
   let procFlowCd = req.params.proc_flow_cd;
-  let result = await standardService.deleteProcessFlow(procFlowCd);
+  let procPrdCd = req.params.prd_cd;
+  let result = await standardService.deleteProcessFlow(procFlowCd, procPrdCd);
   res.send(result);
 });
-//순서
+//순서불러오기
 router.get("/standard/flowSeq/:prd_cd", async (req, res) => {
   let prdCd = req.params.prd_cd;
 
   let maxSeq = await standardService.getMaxProcSeq(prdCd);
   res.send(maxSeq);
 });
+
+//순서그리드
+router.put("/standard/updateFlowSeq", async (req, res) => {
+  const updatedSeq = req.body; 
+    for (const obj of updatedSeq) {
+      await standardService.updateProcSeq(obj.proc_flow_cd, obj.proc_seq);
+    }
+    res.send({ result: true }); 
+});
+
+
 //------------------자재관리-----------------------
 //자재조회
 router.get("/standard/allMaterials", async(req, res)=>{

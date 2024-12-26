@@ -180,6 +180,14 @@ const ProcessSeq = `
     FROM process_flow 
     WHERE prd_cd = ?
 `;
+
+//공정순서 업데이트
+const updateProSeq = 
+`
+update process_flow
+set proc_seq =?
+where proc_flow_cd =?
+`;
 //---------------------자재관리--------------------------
 //자재목록전체 조회
 const bringMat = 
@@ -243,4 +251,5 @@ module.exports = {
   matInsert,
   matUpdate,
   matDelete,
+  updateProSeq,
 };
