@@ -163,6 +163,7 @@ export default {
   data() {
     return {
       isdisabled: true,
+
       bomOptions: {
         rowSelection: { mode: "singleRow", enableClickSelection: true },
         suppressMovableColumns: true,
@@ -426,6 +427,8 @@ export default {
         this.procFlowMtlApi.applyTransaction({
           add: [saveMaterial],
         }); // 그리드
+        console.log('this.saveModal=>' ,this.saveModal);
+        console.log('this.saveProwMtlData=>' ,this.saveProwMtlData);
       }
       this.bomModal = !this.bomModal;
     },

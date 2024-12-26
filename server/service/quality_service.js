@@ -68,7 +68,7 @@ const searchAll = async (valueObj) => {
 // 품질검사결과
 // 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
 const getWaitList = async () => { 
-    let result = mariadb.query('waitList');
+    let result = mariadb.query('testWaitList');
     return result;
 };
 
@@ -86,17 +86,27 @@ const testRecInsert = async (valueObj) => {
         let seq_res = await mariadb.transQuery('testRecSeq');
         let headerSeq = seq_res[0].seq;
         
+        let header = valueObj.header;
+        let dtl = valueObj.dtl;
         // 헤더 삽입
-        valueObj.header.test_rec_cd = headerSeq;
-        let header_res = await mariadb.transQuery('testRecInsert', valueObj.header);
+        header.test_rec_cd = headerSeq;
+        let header_res = await mariadb.transQuery('testRecInsert', header);
 
-        // 디테일 삽입
-        valueObj.dtl.forEach((val) => { // 헤더 시퀀스값 추가
-            val.test_rec_cd = headerSeq;
-        });
-        let dtl_res = await mariadb.transQuery('testRecDtlInsert', valueObj.dtl);
+        // 디테일 삽입 (디테일 있을 수도 있고, 없을 수도 있음: 샘플링검사 유무에 따라 다름.)
+        let dtl_res = null;
+
+        if(dtl.length > 0){ // 디테일이 있는 경우
+            dtl.forEach((val) => { // 헤더 시퀀스값 추가
+                val.test_rec_cd = headerSeq;
+            });
+            dtl_res = await mariadb.transQuery('testRecDtlInsert', dtl);
+        }
         
-        if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
+        // 생산실적의 검사상태 업데이트
+        let update_res = await mariadb.transQuery('prodResultUpdate', [header.def_qty, header.pass_qty, header.refer_cd]);
+
+        if((dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && update_res.affectedRows > 0) ||
+            (header_res.affectedRows > 0 && update_res.affectedRows > 0)) { // 디테일 있으면 다 성공했는지, 없으면 헤더 성공했는지 판단
             await mariadb.commit();
             return 'success';
         } else {

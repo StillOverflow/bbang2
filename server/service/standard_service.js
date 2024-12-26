@@ -203,6 +203,8 @@ const updateProSeq = async(prdCd)=>{
 const updateProcSeq = async (procFlowCd, procSeq) => {
   await mariadb.query("updateProSeq", [procSeq, procFlowCd]);
 };
+
+
 //-----------------------------자재관리----------------------------------
 const bringMaterial = async()=>{
   let result = await mariadb.query("bringMat");
@@ -227,13 +229,11 @@ const insertMaterial = async(matInfo)=>{
 const updateMaterial = async(matCd,updateInfo)=>{
   let datas = [updateInfo, matCd];
   let result = await mariadb.query('matUpdate', datas);
-  let sendData = {};
-  if(result.affectedRows > 0){
-    sendData = { 'result' : true };
-  }else{
-    sendData = { 'result' : false };
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
   }
-  return sendData;
 }
 
 //자재삭제
@@ -246,31 +246,72 @@ const deleteMaterial = async(matCd)=>{
   }
 }
 
+//------------------------------제품관리--------------------------------
+//제품등록
+const insertProduct = async(prdInfo)=>{
+  let new_prd_cd = (await mariadb.query('getPrdCd'))[0].prd_cd
+  prdInfo.prd_cd = new_prd_cd;
 
+  let result = await mariadb.query('prdInsert', prdInfo);
+  if(result.affectedRows >0){
+    return {result: true, mat_cd:new_mat_cd};
+  }else{
+    return {};
+  }
+};
 
+//제품수정
+const updateProduct = async(prdCd, updateInfo)=>{
+  let datas = [updateInfo, prdCd];
+  let result = await mariadb.query('prdUpdate', datas);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+};
+
+//제품삭제
+const deleteProduct = async(prdCd)=>{
+  let result = await mariadb.query('prdDelete', prdCd);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+}
 module.exports = {
-  //메소드명
+  //BOM
+  findAllPrd,
+  searchPrd,
+  findAllMat,
+  searchMtl,
   findBomByPc,
   createBom,
-  findAllPrd,
-  findAllMat,
   deleteBom,
-  searchPrd,
-  searchMtl,
-  searchFlow,
+  
+  //공정흐름도
   searchPrdUsage,
+  searchFlow,
   searchProMtl,
   searchProcCd,
-  insertProcMat,
   deleteProcessFlow,
+  insertProcMat,
   insertProcFlow,
   insertProcessMaterial,
-  getMaxProcSeq,
   deleteProcessMtlFlow,
+  getMaxProcSeq,
+  updateProSeq,
+  updateProcSeq,
+  
+  //자재관리
   bringMaterial,
   insertMaterial,
   updateMaterial,
   deleteMaterial,
-  updateProSeq,
-  updateProcSeq
+  
+  //제품관리
+  insertProduct,
+  updateProduct,
+  deleteProduct
 };

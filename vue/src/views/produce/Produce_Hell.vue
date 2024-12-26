@@ -84,7 +84,7 @@
         <div class="row">
           <!--공정목록-->
           <h5 class="modal-title mb-3">2. 제품 공정목록</h5>
-          <div class="col-5">
+          <div class="col-6">
             <div class="table-responsive">
               <table class="table">
                 <thead class="table-secondary">
@@ -99,7 +99,7 @@
                 <tbody>
                   <template v-if="flowCount >0">
                     <template v-for="flow in flowData" :key="flow.INST_CD">
-                      <tr class="text-center align-middle" @click="getFlowEquList(flow.EQP_TYPE)">
+                      <tr class="text-center align-middle flowList" :class="'flow_'+flow.INST_CD" @click="getFlowEquList(flow.EQP_TYPE);showProcess(flow.INST_CD);">
                         <td>{{ flow.STEP }}</td>
                         <td>{{ flow.PROC_CD }}</td>
                         <td>{{ flow.PROC_NM }}</td>
@@ -111,7 +111,7 @@
 
                       <template v-for="equ in equData" :key="equ.EQP_CD">
                         <template v-if="equ.EQP_TYPE == flow.EQP_TYPE">
-                          <tr class="text-center align-middle">
+                          <tr class="text-center align-middle sub-tr" :class="equ.ACT_TYPE == '비가동' ? 'none-select' : ''">
                             <td>
                               <div class="form-check col-10 d-flex">
                                 <input class="form-check-input ms-1" type="radio" v-model="equ_radio" :value="equ.EQP_CD" :id="'radio' + equ.EQP_CD">
@@ -120,7 +120,7 @@
                             <td>{{ equ.EQP_CD }}</td>
                             <td>{{ equ.EQP_NM }}</td>
                             <td>{{ equ.ACT_TYPE }}</td>
-                            <td class="form-inline"><input type="text" class="form-control w-30"> ℃</td>
+                            <td class="form-inline"><input type="number" class="form-control form-control-xsm w-30"> ℃</td>
                           </tr>
                         </template>
                       </template>
@@ -136,9 +136,68 @@
             </div>
           </div>
 
-          <div class="col-5">
-            <!--공정설정-->
+          <div class="col-6 bg-light ">
+
+            <template v-if="equ_radio">
+              <!--공정설정-->        
+              <div class="row">
+                <div class="col-8">
+                  <div class="row mtp10">
+                    <div class="col-3 text-center font-weight-bolder mtp10">담당자명</div>
+                    <div class="input-group w-50">
+                    <input class="form-control form-control-sm" type="text" v-model="inst_cd" placeholder="담당자를 검색해주세요" style="height: 41px;">
+                    <button class="btn btn-warning" type="button" @click="searchOrder"><i class="fa-solid fa-magnifying-glass"></i></button>
+                  </div>
+                  </div>
+              </div>
+                <div class="col-2">
+
+                </div>
+              </div>    
+              <div class="row">
+                <div class="col-8">
+                  <!--
+                  <div class="row mtp10">
+                    <div class="col-3 text-center fw-bolder">담당자명</div>
+                    <div class="input-group w-30">
+                      <input class="form-control form-control-sm" type="text" v-model="inst_cd" placeholder="담당자를 검색해주세요" style="height: 41px;">
+                      <button class="btn btn-warning mb-3" type="button" @click="searchOrder"><i class="fa-solid fa-magnifying-glass"></i></button>
+                    </div>
+                  </div>
+                  -->
+
+                  <div class="row mtp10">
+                    <div class="col-3">
+                      <button class="btn btn-success">작업시작</button>
+                    </div>
+                    <input class="form-control form-control-sm w-50" type="text" v-model="inst_cd" placeholder="담당자를 검색해주세요" style="height: 41px;">
+                  </div>
+
+                  <div class="row mtp10">
+                    <div class="col-3">
+                      <button class="btn btn-danger">작업종료</button>
+                    </div>
+                    <input class="form-control form-control-sm w-50" type="text" v-model="inst_cd" placeholder="담당자를 검색해주세요" style="height: 41px;">
+                  </div>
+                </div>
+
+                <div class="col-2">
+                  <div class="row mtp10">
+                    <button class="btn btn-warning">품질검사 수행</button>
+                  </div>
+                </div>
+              </div>
+              <div class="center">
+                <button class="btn btn-primary mtp30" @click="instInsert">SUBMIT</button>
+                <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
+              </div>
+            </template>
+
+            <div v-else>
+              <p class="list-nodata">제품 공정을 선택해주세요.</p>
+            </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -228,6 +287,17 @@ export default {
                               .catch(err => console.log(err));
       this.equData = result.data;
     },
+
+    showProcess(flow_cd){
+      const elements = document.querySelectorAll('.flowList');
+      for (var i = 0; i < elements.length; i++) {
+        elements[i].classList.remove('table-primary');
+      }
+      const flow = document.querySelector('.flow_'+flow_cd);
+      flow.classList.add("table-primary");
+
+
+    }
   }
     
 };

@@ -32,7 +32,6 @@ router.get('/sales/search/', async (req, res) => {
 //주문서 등록
 router.post('/sales/ord', async (req, resp) => {
   let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
-  console.log("router",values);
   let result = await salesService.insertOrder(values);
   resp.send(result);
 });
@@ -78,7 +77,6 @@ router.get('/sales/lot/:no', async (req, res) => {
 //출고 등록
 router.post('/sales/prdOut', async (req, resp) => {
     let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
-    console.log("출고router",values);
     let result = await salesService.insertPrdOut(values);
     resp.send(result);
 });
@@ -131,12 +129,31 @@ router.get('/sales/returnLot/', async (req, res) => {
 //반품 등록
 router.post('/sales/prdReturn', async (req, resp) => {
     let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
-    console.log("반품router",values);
     let result = await salesService.InsertPrdReturn(values);
     resp.send(result);
 });
 
+/* -----------------------------------제품 재고 조회----------------------------------------- */
 
+// 제품 재고 조회
+router.get('/sales/prdAllList', async (req, res) => {
+    let prdAllList = await salesService.listAllProduct();
+    res.send(prdAllList);
+});
+
+// 제품명 검색
+router.get('/sales/prdAllList/:no', async (req, res) => {
+    let searchprd = req.params.no;
+    let info = await salesService.searchListAllPrd(searchprd);
+    res.send(info);
+});
+
+// 제품당 LOT조회
+router.get('/sales/prdLotList/:no', async (req, res) => {
+    let prd = req.params.no;
+    let info = await salesService.listLotPrd(prd);
+    res.send(info);
+});
 
 /* -----------------------------------모달창----------------------------------------- */
 //거래처 조회(모달)

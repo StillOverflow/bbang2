@@ -63,9 +63,11 @@ import QualityTest from '../views/quality/QualityTest.vue';
 
 
 //////////////////////////// 기준정보 ////////////////////////////
-import ProcessFlow from '../views/standard/ProcessFlow.vue';
-import Bom from '../views/standard/Bom.vue';
-import MaterialAdd from '../views/standard/MaterialAdd.vue';
+import Standard_ProcessFlow from '../views/standard/Standard_ProcessFlow.vue';
+import Standard_Bom from '../views/standard/Standard_Bom.vue';
+import Standard_MtlAdd from'../views/standard/Standard_MtlAdd.vue';
+import Standard_ProductAdd from '../views/standard/Standard_ProductAdd.vue';
+import Standard_ProcessAdd from '../views/standard/Standard_ProcessAdd.vue';
 
 
 
@@ -75,6 +77,8 @@ import MaterialAdd from '../views/standard/MaterialAdd.vue';
 //////////////////////////// 통계(미정) ////////////////////////////
 import Statistics from '../views/Statistics.vue'; //통계
 
+
+import login from '../views/Signin.vue';
 import Tables from '../views/Tables.vue';
 import Billing from '../views/Billing.vue';
 import VirtualReality from '../views/VirtualReality.vue';
@@ -86,6 +90,13 @@ import Grid from '../views/Grid.vue';
 
 /////////////////////// 여기부터 라우트 등록 //////////////////////
 const routes = [
+  {
+    //로그인
+    path: '/signin',
+    name: 'signin',
+    component: login,
+  },
+  
   {
     path: '/',
     name: '/',
@@ -400,23 +411,34 @@ const routes = [
   //////////////////////////// 기준정보 ////////////////////////////
   {
     //기준정보
-    path: '/ProcessFlow',
-    name: 'ProcessFlow',
-    component: ProcessFlow,
+    path: '/Standard_ProcessFlow',
+    name: 'Standard_ProcessFlow',
+    component: Standard_ProcessFlow,
   },
   {
     //BOM
-    path: '/Bom',
-    name: 'Bom',
-    component: Bom,
+    path: '/Standard_Bom',
+    name: 'Standard_Bom',
+    component: Standard_Bom,
   },
   {
     //자재추가
-    path: '/MaterialAdd',
-    name: 'MaterialAdd',
-    component: MaterialAdd,
+    path: '/Standard_MtlAdd',
+    name: 'Standard_MtlAdd',
+    component: Standard_MtlAdd,
   },
-
+  {
+    //제품추가
+    path: '/Standard_ProductAdd',
+    name: '/Standard_ProductAdd',
+    component: Standard_ProductAdd,
+  },
+  {
+    //공정추가
+    path: '/Standard_ProcessAdd',
+    name: '/Standard_ProcessAdd',
+    component: Standard_ProcessAdd,
+  },
 
 
 
