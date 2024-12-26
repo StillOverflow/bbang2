@@ -72,16 +72,10 @@
               <div class="card-body">
 
                 <div class="row" v-for="(test, idx) in fullTests" :key="test.test_cd">
-                  <div class="col-6 text-end">
+                  <div class="col-12 text-center mb-2">
                     <span style="cursor: pointer" :style="t_break" @click="openDtl('전수', idx)">
                       {{ test.test_nm }} <i class="fa-solid fa-magnifying-glass" style="color: #969696;"/>
                     </span>
-                  </div>
-                  <div class="col-6 form-check p-0 d-flex">
-                      <input class="form-check-input ms-4" type="radio" v-model="test.isPass" :value="true" :id="'pass' + test.test_cd" disabled>
-                      <label class="form-check-label ms-2 me-1 text-start" :for="'pass' + test.test_cd" :style="t_overflow">적합</label>
-                      <input class="form-check-input ms-2" type="radio" v-model="test.isPass" :value="false" :id="'fail' + test.test_cd" disabled>
-                      <label class="form-check-label ms-2 me-4 text-start" :for="'fail' + test.test_cd" :style="t_overflow">부적합</label>
                   </div>
                 </div>
 
@@ -115,7 +109,7 @@
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2 pe-3" :style="t_overflow">불량명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="def_nm" placeholder="선택" @click="modalToggle" :disabled="!isWaitList">
+              <input type="text" class="form-control" :value="def_nm" placeholder="선택" @click="modalToggle" :disabled="!isWaitList || def_qty == 0">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow">담당자</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -135,7 +129,7 @@
           <div class="col-9 col-md-10 col-xl-11 row">
             <h6 class="col-3 col-md-2 col-xl-1 text-end pe-4 pe-xl-3" :style="t_overflow">비고</h6>
             <div class="col-9 col-md-10 col-xl-11">
-              <input type="text" class="form-control" :value="note" :disabled="!isWaitList">
+              <input type="text" class="form-control" v-model="note" :disabled="!isWaitList">
             </div>
           </div>
           <div class="col-3 col-md-2 col-xl-1 text-end">
@@ -215,7 +209,7 @@
         },
 
         // 검사결과 입력에 필요한 데이터
-        isRowClicked: true, // 기본값 false (표시 안 함)
+        isRowClicked: false, // 기본값 false (표시 안 함)
         selectedTarget: {}, // 목록에서 선택한 대상
         
         samplingTests: [], // 선택한 대상의 검사항목 중 샘플링검사 유형
@@ -223,7 +217,7 @@
         members: [], // 품질부서의 사원들
         
         test_qty: null,
-        def_qty: null,
+        def_qty: 0,
         test_dt: null,
         id: null, // 선택된 담당자 사원번호
         note: null,
@@ -273,8 +267,7 @@
 
       // 합격량 자동계산
       pass_qty(){
-        let def = this.def_qty == null || isNaN(this.def_qty) ? 0 : this.def_qty;
-        return this.selectedTarget.prod_qty - def;
+        return this.selectedTarget.prod_qty - this.def_qty;
       }
     },
 
@@ -326,7 +319,7 @@
         this.isDefect = null;
         this.test_qty = null;
         this.pass_qty = null;
-        this.def_qty = null;
+        this.def_qty = 0;
         this.samplingTests = []; ///////////////////////// 빠르게 타겟 변경 시 배열이 비워지지 않는 오류가 있음.
         this.fullTests = [];
 
@@ -378,16 +371,6 @@
       // 각 검사항목 클릭 시 측정값 입력 혹은 상세정보 표시
       async openDtl(testMetd, idx){
         if(testMetd == '샘플링'){ // 샘플량 5개 미만이거나, 비어있거나, 숫자가 아닐 시 입력불가
-          if(this.test_qty < 5 || !this.test_qty || isNaN(this.test_qty)){
-            this.$swal(
-              '샘플량 부족',
-              `샘플량을 정확히 입력해주세요.
-                <br>샘플량은 최소 5개 이상이어야 합니다.`,
-              'warning'
-            );
-            return;
-          }
-
           let test = this.samplingTests[idx];
           let passMin = !test.pass_min ? 0 : test.pass_min;
           let passMax = !test.pass_max ? 0 : test.pass_max;
@@ -424,6 +407,7 @@
             // 적합/부적합 평가하여 반영
             if(val >= passMin && val <= passMax){
               test.isPass = true;
+              if(this.isAllPass) this.def_qty = 0; // 전부 적합일 시 불량양 0
             } else {
               test.isPass = false;
               // 샘플링검사 한 개라도 부적합 시 전량 불량
@@ -442,7 +426,7 @@
       // input text에서 숫자 유효성 확인용
       checkNumberAlert(target){
         let val = null;
-        if(target == 'def') val = this.def_qty;
+        if(target == 'def') val = !this.def_qty ? 0 : this.def_qty; // 입력값 null이면 0으로 취급
         else if(target == 'test') val = this.test_qty;
 
         if(isNaN(val)){ // 숫자가 아닌 경우
@@ -451,7 +435,7 @@
             `숫자를 정확히 입력해주세요.`,
             'warning'
           );
-          val = null; // 숫자 아니면 null로 돌려줌.
+          val = 0; // 숫자 아니면 0으로 돌려줌.
         } else if(val < 0){
           val = val * -1; // 입력값이 음수면 양수로 변환
         }
@@ -459,8 +443,8 @@
           val = this.selectedTarget.prod_qty;
         }
 
-        if(target == 'def') this.def_qty = val;
-        else if(target == 'test') this.test_qty = val;
+        if(target == 'def') this.def_qty = Number(val);
+        else if(target == 'test') this.test_qty = val < 5 ? 5 : Number(val); // 샘플량은 최소 5개 이상이어야 함.
       },
 
       // ------------ 모달 메소드 ------------
@@ -489,11 +473,60 @@
       // ---------- 모달 메소드 끝 -----------
 
       async recInsert(){
-        ////////////////////// 유효성검사 해야함................
+        // 등록할 값들을 모은 객체 선언
+        let dtlArr = []; // 샘플링검사가 있을 경우 디테일 등록용
+        if(this.samplingTests.length > 0){
+          let isAllTested = true; // 모든 검사값이 입력되었는지 확인용
+
+          this.samplingTests.forEach((test) => {
+            if(test.test_value == null){
+              isAllTested = false;
+              return; // 하나라도 미입력되었으면 반복문 탈출
+            }
+            
+            dtlArr.push({
+              test_cd: test.test_cd,
+              test_value: test.test_value
+            });
+          });
+
+          if(!isAllTested){
+            this.$swal(
+              '검사결과 미입력',
+              `샘플링검사 결과값을 모두 입력해주세요.`,
+              'warning'
+            );
+            return;
+          }
+        }
+
         let target = this.selectedTarget;
         let isLast = target.is_last == 1; // 값이 1인 경우 boolean 타입 true로 담음.
 
-        // 등록할 값들을 모은 객체 선언
+        // 유효성 검사
+        if(this.def_qty > 0 && !this.def_cd){ // 불량양이 있는데 불량코드를 선택하지 않은 경우
+          this.$swal(
+            '불량명 미선택',
+            `불량명을 선택하지 않았습니다.`,
+            'warning'
+          );
+          return;
+        } else if(!this.id){ // 담당자를 선택하지 않은 경우
+          this.$swal(
+            '담당자 미선택',
+            `검사 담당자가 선택되지 않았습니다.`,
+            'warning'
+          );
+          return;
+        } else if(!this.test_dt){ // 검사일시를 선택하지 않은 경우
+          this.$swal(
+            '검사일시 미입력',
+            `검사일시가 입력되지 않았습니다.`,
+            'warning'
+          );
+          return;
+        }
+        
         let headerObj = { // 헤더 등록용
           test_dt: this.test_dt.replace('T', ' '), // 날짜 DB형식으로 바꿈 
           refer_cd: target.prod_result_cd, 
@@ -502,43 +535,34 @@
           total_qty: target.prod_qty, 
           test_qty: this.test_qty, 
           pass_qty: this.pass_qty, 
-          def_qty: this.def_qty, // null 들어갈 수 있음. 
+          def_qty: this.def_qty,
           id: this.id, 
-          def_cd: this.def_cd, 
+          def_cd: this.def_qty > 0 ? this.def_cd : null, // def_cd가 있더라도 불량양이 없으면 null 입력
           note: this.note
         };
 
-        let dtlArr = []; // 디테일 등록용
-        this.samplingTests.forEach((test) => {
-          dtlArr.push({
-            test_cd: test.test_cd,
-            test_value: test.test_value
-          });
-        });
-        console.log(headerObj);
-        console.log(dtlArr);
-        
-        // let result = await axios.post('/api/quality/rec', {header: headerObj, dtl: dtlArr})
-        //                         .catch(err => console.log(err));
+        let result = await axios.post('/api/quality/rec', {header: headerObj, dtl: dtlArr})
+                                .catch(err => console.log(err));
 
-        // if(result.data == 'success'){
-        //   this.$swal(
-        //     '등록완료',
-        //     '검사결과가 등록되었습니다.',
-        //     'success'
-        //   );
-        //   // 후처리: 입력완료한 내역은 목록에서 사라져야 함.
-        //   // filter 메소드로 현재 입력한 것을 제외한 내역만 남김
-        //   let newArr = [];
-        //   newArr = this.waitData.filter(obj => obj.prod_result_cd != target.prod_result_cd);
-        //   this.waitData = newArr; // 변경한 배열로 반영
-        // } else {
-        //   this.$swal(
-        //     '오류발생',
-        //     '검사결과를 등록하지 못했습니다.',
-        //     'error'
-        //   );
-        // }
+        if(result.data == 'success'){
+          this.$swal(
+            '등록완료',
+            '검사결과가 등록되었습니다.',
+            'success'
+          );
+          // 후처리: 입력완료한 내역은 목록에서 사라져야 함.
+          // filter 메소드로 현재 입력한 것을 제외한 내역만 남김
+          let newArr = [];
+          newArr = this.waitData.filter(obj => obj.prod_result_cd != target.prod_result_cd);
+          this.waitData = newArr; // 변경한 배열로 반영
+          this.isRowClicked = false; // 결과 창 닫기
+        } else {
+          this.$swal(
+            '오류발생',
+            '검사결과를 등록하지 못했습니다.',
+            'error'
+          );
+        }
       }
     }
   };
