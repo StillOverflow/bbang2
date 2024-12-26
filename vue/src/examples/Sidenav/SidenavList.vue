@@ -424,10 +424,6 @@ export default {
               :navText="'자재 입고검사'">
             </sidenav-item>
           </li>
-          <li class="nav-item">
-            <sidenav-item to="/Quality_list6" :class="getRoute() === 'Quality_list6' ? 'active' : ''" :navText="'불량관리'">
-            </sidenav-item>
-          </li>
         </ul>
 
 
