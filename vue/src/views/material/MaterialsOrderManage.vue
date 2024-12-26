@@ -112,7 +112,7 @@
    import { useStore } from 'vuex';
    
    import Layout from '../components/modalLayout.vue';
-   import CustomDropdownEditor from '../../components/material/CustomDropdownEditor.vue'; // modal Layout 불러오기
+   // import CustomDropdownEditor from '../../components/material/CustomDropdownEditor.vue'; // modal Layout 불러오기
 
    const store = useStore();  // vuex
 
@@ -145,8 +145,7 @@
 //^ ----------------------------------------- Vue Hook -----------------------------------------
    onBeforeMount(() => {
       store.dispatch('breadCrumb', { title: '자재 발주서 관리' }); // 페이지 제목 설정
-      getAccountList(); 
-      console.log(getMaterial().value);
+      getAccountList();
    });
 
 //^ ----------------------------------------- Vue Method -----------------------------------------
@@ -198,12 +197,12 @@
 
    const addRow = () => {
       let newObj = {};
-      orderFormOptions.columnDefs.forEach((currentValue) => {
-         console.log("currentValue => ", currentValue);
-         newObj[currentValue.field] = ''; // 각 필드 값을 빈 문자열로 초기화
+
+      orderFormOptions.columnDefs.forEach((data) => {
+         newObj[data.field] = ''; 
       });
-      console.log("newObj => ", newObj);
-      orderFormData.value.push(newObj); // 새로 생성한 객체를 배열에 추가
+
+      orderFormData.value = [...orderFormData.value, newObj];
    };
 
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
@@ -221,12 +220,6 @@
          params.api.sizeColumnsToFit();
       }
    };
-
-   // 주문서 정보 클릭시 상세보기 ~~
-   // const accountRowClicked = (params) => {
-   //    console.log("params => ", params);
-      
-   // };
 
 // ^ ---------------------------------------- axios 서버통신 ----------------------------------------
    // 거래처 조회
@@ -249,20 +242,6 @@
       try {
          const result = await axios.get('/api/material/orderList');
          orderModalData.value = result.data || [];
-      } catch (err) {
-         orderModalData.value = [];
-         Swal.fire({
-            icon: "error",
-            title: "API 요청 오류:",
-            text: err.message || err
-         });
-      }
-   };
-
-   const getMaterial = async () => {
-      try {
-         const result = await axios.get('/api/comm/material');
-         orderFormData.value = result.data || [];
       } catch (err) {
          orderModalData.value = [];
          Swal.fire({
@@ -336,7 +315,7 @@
             headerName: '자재명',
             field: 'mat_nm',
             editable: true, // 편집 가능
-            cellEditorFramework: CustomDropdownEditor, // 사용자 정의 편집기
+            //cellEditorFramework: CustomDropdownEditor, // 사용자 정의 편집기
          },
          // { 
          //    headerName: '자재명', 
