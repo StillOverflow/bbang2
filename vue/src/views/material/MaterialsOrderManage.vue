@@ -115,6 +115,7 @@
    //import CustomDropdownEditor from '../components/CustomDropdownEditor.vue'; // modal Layout 불러오기
 
    const store = useStore();  // vuex
+   //alert(this.$session.get('user_nm'));
 
 //^ ----------------------------------------- 데이터 정의 -----------------------------------------   
    /*모달 [S]*/

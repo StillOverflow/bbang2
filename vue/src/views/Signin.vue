@@ -138,21 +138,29 @@ export default {
       }
       let result = await axios.get('/api/comm/login', { params:obj })
                               .catch(err => console.log(err));
-
-      if(result.data == 'success'){
-          this.$session.set('user_id', this.id);
-          this.$router.push({ name : 'Dashboard', params : { id : this.id }});   
-      }else if(result.data == 'quit'){
+      console.log( result.data);
+      
+      if(result.data.ID){
+        if(result.data.STATUS == 'G03'){
           this.$swal({
-              icon: "error",
-              title: "로그인 불가",
-              text: "퇴사처리된 계정정보입니다",
-          })     
+            icon: "error",
+            title: "로그인 불가",
+            text: "퇴사처리된 계정정보입니다",
+          })
+        }else{
+          this.$session.set('user_id', result.data.ID);
+          this.$session.set('user_cd', result.data.MEM_CD);
+          this.$session.set('user_nm', result.data.NAME);
+          this.$session.set('user_dtp', result.data.DTP_CD);
+          this.$session.set('user_ps', result.data.PERMISSION);
+          this.$session.set('user_st', result.data.STATUS);
+          this.$router.push({ name : 'Dashboard'});   
+        }
       }else{
         this.$swal({
-            icon: "error",
-            title: "로그인 정보가 맞지 않습니다",
-            text: "아이디 또는 비밀번호를 확인해주세요",
+          icon: "error",
+          title: "로그인 정보가 맞지 않습니다",
+          text: "아이디 또는 비밀번호를 확인해주세요",
         })
       }
       return result;

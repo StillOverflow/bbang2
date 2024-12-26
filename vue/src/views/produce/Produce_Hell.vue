@@ -45,10 +45,10 @@
           <table class="table">
             <thead class="table-secondary">
               <tr>
-                <th class="text-center text-uppercase text-ser opacity-7" width="1%"></th>
                 <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 제품코드 </th>
                 <th class="text-center text-uppercase text-ser opacity-7">제품명</th>
                 <th class="text-center text-uppercase text-ser opacity-7">지시량</th>
+                <th class="text-center text-uppercase text-ser opacity-7"></th>
               </tr>
             </thead>   
             <tbody>
@@ -56,18 +56,10 @@
                 <tr class="text-center align-middle"
                 v-for="val in instDtlData"
                 :key="val.INST_DTL_CD">
-                  <td>
-                    <div class="form-check col-10 d-flex">
-                      <input class="form-check-input ms-1" type="radio" v-model="inst_radio" :value="val.PRD_CD" :id="'radio' + val.PRD_CD" @change="getFlowList">
-                    </div>
-                  </td>
-                  <td>
-                    <label class="form-check-label ms-2 me-4 text-start" :for="'radio' + val.PRD_CD">
-                      {{val.PRD_CD}}
-                    </label>
-                  </td>
+                  <td>{{val.PRD_CD}}</td>
                   <td>{{ val.PRD_NM }}</td>
                   <td>{{ val.TOTAL_QTY }}</td>
+                  <td><button class="btn btn-dark btn-sm" @click="prdSelect(val.PRD_CD)">선택하기</button></td>
                 </tr>
               </template>
               <tr v-else>
@@ -77,7 +69,7 @@
               </tr>
             </tbody>
           </table>
-        </div>{{  this.$session.get('user_id')}}
+        </div>
 
         <hr class="horizontal dark">
         
@@ -93,7 +85,6 @@
                     <th class="text-center text-uppercase text-ser opacity-7">공정코드</th>
                     <th class="text-center text-uppercase text-ser opacity-7">공정명</th>
                     <th class="text-center text-uppercase text-ser opacity-7">상태</th>
-                    <th class="text-center text-uppercase text-ser opacity-7" colspan="2"></th>
                   </tr>
                 </thead>   
                 <tbody>
@@ -103,12 +94,8 @@
                         <td>{{ flow.STEP }}</td>
                         <td>{{ flow.PROC_CD }}</td>
                         <td>{{ flow.PROC_NM }}</td>
-                        <td>{{ flow.ACT_TYPE }}</td>                      
-                        <td>
-                          <button class="btn btn-dark btn-sm">선택하기</button>
-                        </td>
+                        <td>{{ flow.ACT_TYPE }}</td>     
                       </tr>
-
                       <template v-for="equ in equData" :key="equ.EQP_CD">
                         <template v-if="equ.EQP_TYPE == flow.EQP_TYPE">
                           <tr class="text-center align-middle sub-tr" :class="equ.ACT_TYPE == '비가동' ? 'none-select' : ''">
@@ -120,7 +107,7 @@
                             <td>{{ equ.EQP_CD }}</td>
                             <td>{{ equ.EQP_NM }}</td>
                             <td>{{ equ.ACT_TYPE }}</td>
-                            <td class="form-inline"><input type="number" class="form-control form-control-xsm w-30"> ℃</td>
+                            <td></td>
                           </tr>
                         </template>
                       </template>
@@ -145,39 +132,28 @@
                   <div class="row mtp10">
                     <div class="col-3 text-center font-weight-bolder mtp10">담당자명</div>
                     <div class="input-group w-50">
-                    <input class="form-control form-control-sm" type="text" v-model="inst_cd" placeholder="담당자를 검색해주세요" style="height: 41px;">
+                    <input class="form-control form-control-sm" type="text" v-model="id" :v-bind="this.$session.get('user_nm')" placeholder="담당자를 검색해주세요" style="height: 41px;">
                     <button class="btn btn-warning" type="button" @click="searchOrder"><i class="fa-solid fa-magnifying-glass"></i></button>
                   </div>
                   </div>
               </div>
                 <div class="col-2">
-
                 </div>
               </div>    
               <div class="row">
                 <div class="col-8">
-                  <!--
-                  <div class="row mtp10">
-                    <div class="col-3 text-center fw-bolder">담당자명</div>
-                    <div class="input-group w-30">
-                      <input class="form-control form-control-sm" type="text" v-model="inst_cd" placeholder="담당자를 검색해주세요" style="height: 41px;">
-                      <button class="btn btn-warning mb-3" type="button" @click="searchOrder"><i class="fa-solid fa-magnifying-glass"></i></button>
-                    </div>
-                  </div>
-                  -->
-
                   <div class="row mtp10">
                     <div class="col-3">
                       <button class="btn btn-success">작업시작</button>
                     </div>
-                    <input class="form-control form-control-sm w-50" type="text" v-model="inst_cd" placeholder="담당자를 검색해주세요" style="height: 41px;">
+                    <input class="form-control form-control-sm w-50" type="text" v-model="start_time" placeholder="0000-00-00 00:00:00" style="height: 41px;">
                   </div>
 
                   <div class="row mtp10">
                     <div class="col-3">
                       <button class="btn btn-danger">작업종료</button>
                     </div>
-                    <input class="form-control form-control-sm w-50" type="text" v-model="inst_cd" placeholder="담당자를 검색해주세요" style="height: 41px;">
+                    <input class="form-control form-control-sm w-50" type="text" v-model="end_time" placeholder="0000-00-00 00:00:00" style="height: 41px;">
                   </div>
                 </div>
 
@@ -229,10 +205,10 @@ export default {
       inst_cd:'',
       instDefs: [
         { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
-        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true },
-        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true },
-        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter },
-        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter },
+        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true, width: 120 },
+        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, width: 120 },
+        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
       ],
       instData: [],
       instDtlData: [],
@@ -271,10 +247,26 @@ export default {
     },
     
     //제품별 공정 리스트
-    async getFlowList() {
+    prdSelect(prd_cd) {
+      this.$swal({
+        title: "해당 제품에 대한 공정을 수행하시겠습니까?",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      }).then((result) => {
+        if (result.isConfirmed) {
+          this.getFlowList(prd_cd);
+        }
+      })
+    },
+
+    //제품별 공정 리스트
+    async getFlowList(prd_cd) {
       let obj = {
           INST_CD : this.inst_cd,
-          PRD_CD : this.inst_radio,
+          PRD_CD : prd_cd,
       }
       let result = await axios.get('/api/progress/flow', {params:obj})
                               .catch(err => console.log(err));
@@ -295,11 +287,8 @@ export default {
       }
       const flow = document.querySelector('.flow_'+flow_cd);
       flow.classList.add("table-primary");
-
-
     }
-  }
-    
+  }    
 };
 
 </script>
