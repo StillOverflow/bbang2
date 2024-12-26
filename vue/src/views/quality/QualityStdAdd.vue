@@ -4,7 +4,7 @@
     <div class="card">
   
       <div class="card-header bg-light ps-5 ps-md-4">
-          <select-target :modalDefs="modalDefs" :modalTitle="'품질기준 대상선택'"/>
+          <select-target :modalDefs="modalDefs" :modalTitle="'품질기준 대상선택'" ref="selectChild"/>
       </div>
   
       <!-- 검사항목 추가/삭제 -->
@@ -147,7 +147,12 @@
         this.myColApi = params.columnApi;
       },
 
-      // ---------- 모달 메소드 끝 -----------
+      // 대상구분 변경될 때 동작
+      changeDivs(){
+        this.$refs.selectChild.changeDivs();
+        this.myData = [];
+        this.yetData = [];
+      },
 
       // 임시저장 (기존 값과 변경되었는지 확인하기 위한 비교용)
       saveData(data){

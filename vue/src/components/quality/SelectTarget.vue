@@ -137,6 +137,7 @@
 
       // 대상구분 변경될 때 동작
       async changeDivs(modal){ // 모달에서 실행한 경우 매개변수를 넘겨받음 (선택된 값 초기화 방지)      
+        // this.$emit.
         this.modal_val.cd = null;
         // this.myData = [];
         // this.yetData = [];
