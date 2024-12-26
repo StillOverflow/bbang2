@@ -41,7 +41,6 @@
                       <input type="text" class="form-control" v-model="mem_name" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
                       <button class="btn btn-warning" type="button" @click="modalOpen2"><i class="fa-solid fa-magnifying-glass"></i></button>
-                      <!-- <button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen2">SEARCH</button> -->
                   </div>
                   <div class="col-6 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">담당자 ID</div> 
                   <div class="col-6 col-lg-2">
@@ -74,9 +73,9 @@
                         </ag-grid-vue>
                     </div>
                 </div>
-                <div class="center mtp30">
-                    <button class="btn btn-primary" @click="prdOutInsert">SUBMIT</button>
-                    <button class="btn btn-secondary mlp10" @click="resetForm">RESET</button>
+                <div class="center ">
+                    <button class="btn btn-primary mtp30" @click="prdReturnInsert">SUBMIT</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
           </div>
       </div>
@@ -102,7 +101,7 @@
 
   <!-- 담당자 조회 모달 -->
   <Layout :modalCheck="msModal">
-      <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+      <template v-slot:header> 
           <h5 class="modal-title">담당자 조회</h5>
           <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
       </template>
@@ -120,7 +119,7 @@
 
   <!-- LOT 조회 모달 -->
   <Layout :modalCheck="psModal">
-      <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+      <template v-slot:header> 
           <h5 class="modal-title">LOT를 선택 해주세요.</h5>
           <button type="button" aria-label="Close" class="close" @click="modalOpen3">×</button>
       </template>
@@ -154,10 +153,10 @@ export default {
     name: 'App',
     data() {
         return {
-            podtCd: '',
-            
+            prd_cd: '',
+
             POLDefs: [
-                {headerName: '출고디테일코드', field: 'prd_out_dtl_cd'},
+
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
                 {
@@ -180,7 +179,6 @@ export default {
                             this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
                             this.getOutLotList(); 
 
-                            this.podtCd = params.data.prd_out_dtl_cd //등록할 때 필요한 코드 변수에 담기
                         });
                         return button;
                     }
@@ -189,7 +187,7 @@ export default {
             POLData: [ ],
 
             returnLotDefs: [
-
+                {headerName: '출고상세코드', field: 'prd_out_dtl_cd'},
                 {headerName: 'LOT', field: 'prd_lot_cd'},
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
@@ -265,8 +263,6 @@ export default {
             memData: [],
             
 
-            columnDefs: [],
-            rowData: [ ],
 
             asModal: false,
             msModal: false,
@@ -280,7 +276,7 @@ export default {
     },
     
     created() {
-        this.$store.dispatch('breadCrumb', { title: '출고 제품 등록' });
+        this.$store.dispatch('breadCrumb', { title: '반품 제품 등록' });
 
         this.getOrdList();
         this.getMemList();
@@ -319,15 +315,15 @@ export default {
 
             const newRowData = selectedRows.map(row => ({
                 
-                prd_out_dtl_cd: this.podtCd, //행 선택할 때 담은 변수 코드 여기서 넣어주기
+                prd_out_dtl_cd: row.prd_out_dtl_cd, 
                 prd_lot_cd: row.prd_lot_cd,
                 prd_out_qty: row.prd_out_qty, 
                 prd_return_qty: '',
                 note: '',  
                 delete: 'delete', 
+
             }));
             
-
             this.prdRTData = [...this.prdRTData, ...newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
             
             this.psModal = !this.psModal;
@@ -358,11 +354,9 @@ export default {
         async getOutLotList() {
 
           let searchLot = { poc : this.prdOut_code , pdc : this.prd_cd };
-          console.log(searchLot);
           
           let result = await axios.get(`/api/sales/returnLot/`, {params : searchLot}) 
                                   .catch(err => console.log("axiosERROR",err));
-          console.log(result.data);
           this.returnLotData = result.data;
         },
 
@@ -375,17 +369,17 @@ export default {
         },
 
 
-        async prdOutInsert() {
+        async prdReturnInsert() {
 
             // 필수값 입력 알람
-            let accCode = document.getElementById('acc_code').value;
-            let memId = document.getElementById('mem_id').value;
-            let rowQty = this.proOutData.filter(row => !row.prd_out_qty || row.prd_out_qty <= 0);
+            let accCode = this.acc_code;
+            let memId = this.mem_id;
+            let rowQty = this.prdRTData.filter(row => !row.prd_return_qty || row.prd_return_qty <= 0);
 
             if (!accCode) {
                 this.$swal({
                     icon: "error",
-                    title: "주문서 코드를 선택 해주세요.",
+                    title: "출고 코드를 선택 해주세요.",
                     text: "검색 후 선택 해주세요.",
                 });
                 return;
@@ -398,7 +392,7 @@ export default {
                 });
                 return;
             }
-            if (!this.proOutData || this.proOutData.length === 0) {
+            if (!this.prdRTData || this.prdRTData.length === 0) {
                 this.$swal({
                     icon: "error",
                     title: "제품의 LOT를 선택하세요",
@@ -409,49 +403,43 @@ export default {
             if (rowQty.length > 0) {
                 this.$swal({
                     icon: "error",
-                    title: "출고 수량을 입력하세요",
+                    title: "반품 수량을 입력하세요",
                     text: "입력 후 엔터를 쳐주세요",
                 });
                 return;
             }
             
 
-            //출고 등록
-            let insertPrdOut = [];
-            let insertPrdOutDtl = [];
-            let updatePrdOutQty = [];
+            //반품 등록
+            let insertReturn = [];
+            let insertReturnDtl = [];
 
-            this.proOutData.forEach((obj) => {
-                updatePrdOutQty.push({
-                        prd_lot_cd: obj.prd_lot_cd
-                    });
-            });
-            console.log("업데이트조건",updatePrdOutQty)
 
-            this.proOutData.forEach((obj) => {
-                insertPrdOutDtl.push({
-                        order_dtl_cd: obj.order_dtl_cd,
-                        prd_cd: obj.prd_cd, 
-                        prd_out_qty: obj.prd_out_qty, 
-                        prd_lot_cd: obj.prd_lot_cd,
-                        note: obj.note,
-                    });
+            this.prdRTData.forEach((obj) => {
+                insertReturnDtl.push({
+
+                    prd_out_dtl_cd: obj.prd_out_dtl_cd,
+                    prd_lot_cd: obj.prd_lot_cd, 
+                    prd_cd: this.prd_cd, 
+                    prd_return_qty: obj.prd_return_qty,
+                    note: obj.note,
+                });
             });
             
-            console.log("출고디테일",insertPrdOutDtl);
+            console.log("반품디테일",insertReturnDtl);
 
-            insertPrdOut.push({
-                order_cd: this.order_code,
-                act_cd: document.getElementById('acc_code').value,
-                ID: document.getElementById('mem_id').value,
+            insertReturn.push({
+                prd_out_cd: this.prdOut_code,
+                act_cd: this.acc_code,
+                ID: this.mem_id,
 
             });
-            console.log("출고테이블",insertPrdOut);
+            console.log("반품테이블",insertReturn);
 
-            let insertPrdOutArr = [...insertPrdOut, insertPrdOutDtl, updatePrdOutQty ];   //첫번째가 헤드, 두번째가 디테일, 세번째 업데이트
-            console.log("합친거",insertPrdOutArr);
+            let insertReturnArr = [...insertReturn, insertReturnDtl ];   //첫번째가 헤드, 두번째가 디테일, 세번째 업데이트
+            console.log("합친거",insertReturnArr);
 
-            let result = await axios.post('/api/sales/prdOut', insertPrdOutArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
+            let result = await axios.post('/api/sales/prdReturn', insertReturnArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
                                 .catch(err => console.log("axios에러",err));
             console.log(result.data.result);
             console.log(result.data);
@@ -471,15 +459,16 @@ export default {
         },
         // 등록 후 초기화 기능
         resetForm() {
-            document.getElementById('acc_name').value = "";
-            document.getElementById('acc_code').value = "";
-            document.getElementById('mem_name').value = "";
-            document.getElementById('mem_id').value = "";
-            this.due_date = "";
-            this.order_date = "";
-            this.order_code = "";
-            this.OLData = [];
-            this.proOutData = [];         
+            
+            this.prdOut_code = "";
+            this.prdOut_date = "";
+            this.acc_name = "";
+            this.acc_code = "";
+            this.mem_name = "";
+            this.mem_id = "";
+
+            this.POLData = [];
+            this.prdRTData = [];         
         },
 
 

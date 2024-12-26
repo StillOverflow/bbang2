@@ -20,7 +20,6 @@
     <button class="btn btn-warning" type="button" id="button-addon2">SEARCH</button>
   </div>
 
-
 </template>
 
 <script>
