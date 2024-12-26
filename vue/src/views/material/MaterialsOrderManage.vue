@@ -103,14 +103,19 @@
 </template>
 
 <script setup>
-   import { AgGridVue } from 'ag-grid-vue3';
    import axios from 'axios';
+   import Swal from 'sweetalert2';
+   
+   import { AgGridVue } from 'ag-grid-vue3';
+
    import { ref, onBeforeMount, shallowRef, watch } from 'vue'; //
    import { useStore } from 'vuex';
-   import Swal from 'sweetalert2';
-   import Layout from '../components/modalLayout.vue'; // modal Layout 불러오기
+   
+   import Layout from '../components/modalLayout.vue';
+   import CustomDropdownEditor from '../../components/material/CustomDropdownEditor.vue'; // modal Layout 불러오기
 
    const store = useStore();  // vuex
+
 //^ ----------------------------------------- 데이터 정의 -----------------------------------------   
    /*모달 [S]*/
    let isAccountModal = ref(false);  // 거래처 모달
@@ -124,10 +129,24 @@
    
    const orderFormGrid = shallowRef(null);
    const orderFormData = ref([]);
+
+//^ ----------------------------------------- 공통 함수 -----------------------------------------   
+   const getToday = () => {
+      let date = new Date();
+
+      let year = date.getFullYear();
+      let month = ('0' + (date.getMonth() + 1)).slice(-2);
+      let day = ('0' + date.getDate()).slice(-2);
+
+      let result = year + '-' + month + '-' + day;
+      return result;
+   }
+
 //^ ----------------------------------------- Vue Hook -----------------------------------------
    onBeforeMount(() => {
       store.dispatch('breadCrumb', { title: '자재 발주서 관리' }); // 페이지 제목 설정
       getAccountList(); 
+      console.log(getMaterial().value);
    });
 
 //^ ----------------------------------------- Vue Method -----------------------------------------
@@ -151,7 +170,6 @@
 
 //^ ------------------------------------------- Modal -------------------------------------------   
    // 거래처 검색 모달'
-   
    const accountModalOpen = () => {
       isAccountModal.value = !isAccountModal.value;
       getAccountList();
@@ -179,36 +197,22 @@
    }
 
    const addRow = () => {
-      const newRow = {
-         act_nm: "",
-         act_type: "",
-         mgr_nm: "",
-         mgr_tel: "",
-      };
-
-      orderFormData.value = [...orderFormData.value, newRow];
-      // if (orderFormGrid.value && orderFormGrid.value.api) {
-      //    orderFormGrid.value.api.setRowData(orderFormData.value);
-      // }
-      console.log("Updated orderFormData:", orderFormData.value);
+      let newObj = {};
+      orderFormOptions.columnDefs.forEach((currentValue) => {
+         console.log("currentValue => ", currentValue);
+         newObj[currentValue.field] = ''; // 각 필드 값을 빈 문자열로 초기화
+      });
+      console.log("newObj => ", newObj);
+      orderFormData.value.push(newObj); // 새로 생성한 객체를 배열에 추가
    };
-// ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
-   // const gridReady = (params) => {
-   //    console.log("params.api => ", params.api)
-   //    if (params.api) {
-   //       params.api.sizeColumnsToFit(); // 그리드 크기에 자동 맞춤
-   //    }
-   // };
 
+// ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
    const gridReady = (params, gridType) => {
-      console.log(`${gridType} params.api =>`, params.api);
-      console.log("gridType => ", gridType)
       if (params.api) {
          if (gridType === 'account') {
             accountModalGrid.value = params.api; // 거래처 모달 그리드 API 저장
          }
          if (gridType === 'orderList') {
-            console.log("orderList")
             orderModalGrid.value = params.api; // 주문서 모달 그리드 API 저장
          }
          if (gridType === 'orderForm') {
@@ -255,6 +259,20 @@
       }
    };
 
+   const getMaterial = async () => {
+      try {
+         const result = await axios.get('/api/comm/material');
+         orderFormData.value = result.data || [];
+      } catch (err) {
+         orderModalData.value = [];
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
+   };
+
 // ^ ----------------------------------- 그리드 데이터 정의 및 바인딩 -----------------------------------
    // 주문서 그리드 option
    const orderModalGridOptions = {
@@ -284,24 +302,126 @@
       },
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
+
    // no, 발주코드, 자재명, 수량, 거래처코드, 거래처명, 납기일
+   // 발주서 입력 그리드 
    const orderFormOptions = {
       rowSelection: {
          mode: "multiRow", // 체크박스 다중선택
       },
       columnDefs : [
-         { headerName: '발주코드', field: 'act_nm', sortable: true  },
-         { headerName: '자재코드', field: 'act_type', sortable: true  },
-         { headerName: '자재명', field: 'act_type', sortable: true  },
-         { headerName: '수량', field: 'mgr_nm', sortable: true, },
-         { headerName: '거래처코드', field: 'mgr_tel', sortable: true, },
-         { headerName: '거래처명', field: 'mgr_tel', sortable: true, },
-         { headerName: '납기일', field: 'mgr_tel', sortable: true, },
+         { 
+            headerName: '발주서 코드', 
+            field: 'mat_order_cd', 
+            sortable: true,
+            cellRenderer: (params) => {
+               return params.value
+                  ? params.value
+                  : `<span style="color: #cacaca; font-size; 9px">자동 입력</span>`;
+            },
+            editable: false, // 편집 비활성화
+         },
+         { 
+            headerName: '자재코드', 
+            field: 'mat_cd', 
+            sortable: true, 
+            editable: false,
+            cellRenderer: (params) => {
+               return params.value
+                  ? params.value
+                  : `<span style="color: #cacaca; font-size; 9px">자재 선택 시 자동입력</span>`;
+            },
+         },
+         {
+            headerName: '자재명',
+            field: 'mat_nm',
+            editable: true, // 편집 가능
+            cellEditorFramework: CustomDropdownEditor, // 사용자 정의 편집기
+         },
+         // { 
+         //    headerName: '자재명', 
+         //    field: 'act_type', 
+         //    sortable: true,
+         //    // cellRenderer: (params) => {
+         //    //    return params.value
+         //    //       ? params.value
+         //    //       : `<span style="color: #cacaca; font-size; 9px">자재를 검색하세요</span>`;
+         //    // },
+         //    cellRenderer: (params) => {
+         //       // DOM 요소 생성
+         //       const container = document.createElement('div');
+
+         //       // 기존 값 또는 플레이스홀더 표시
+         //       container.innerHTML = `
+         //          <input 
+         //             type="text" 
+         //             placeholder="자재를 검색하세요" 
+         //             value="${params.value || ''}" 
+         //             style="width: 100%; padding: 5px; box-sizing: border-box; border: none;" 
+         //          />
+         //       `;
+               
+         //       return container;
+         //    }
+         // },
+         { 
+            headerName: '발주 수량', 
+            field: 'mat_qty', 
+            sortable: true, 
+            cellDataType: "number",
+            cellRenderer: (params) => {
+               return params.value
+                  ? params.value
+                  : `<span style="color: #cacaca; font-size; 9px">숫자를 입력하세요</span>`;
+            },
+         },
+         { 
+            headerName: '거래처코드', 
+            field: 'act_cd', 
+            sortable: true, 
+            editable: false, 
+            cellRenderer: (params) => {
+               return params.value
+                  ? params.value
+                  : `<span style="color: #cacaca; font-size; 9px">거래처 선택 시 자동입력</span>`;
+            },
+         },
+         { 
+            headerName: '거래처명', 
+            field: 'act_nm', 
+            sortable: true,
+            cellRenderer: (params) => {
+               return params.value
+                  ? params.value
+                  : `<span style="color: #cacaca; font-size; 9px">거래처를 검색하세요</span>`;
+            },
+         },
+         { 
+            headerName: '납기 요청일', 
+            field: 'delivery_dt', 
+            sortable: true, 
+            cellDataType: "date",
+            cellEditor: "agDateCellEditor",
+            cellEditorParams: {
+               min: getToday(),
+            }
+         },
       ],
+
+      defaultColDef: {
+         editable: true,
+         filter: true,
+      },
+      
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
+   
+   
 </script>
 
 <style lang="scss" scoped>
+.test {
+   color: #cacaca;
+}
 
 </style>
