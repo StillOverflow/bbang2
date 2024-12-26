@@ -38,6 +38,7 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
+                  :min="field.value === 'start_time' ? currentDateTime : field.value === 'end_time' ? equipmentData.start_time : null"
                   :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
@@ -65,6 +66,7 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
+                  :min="field.value === 'end_time' ? minEndTime : field.value === 'start_time' ? currentDateTime : null"
                   :readonly="!selectedEqp" />
               </template>
             </div>
@@ -133,8 +135,8 @@ export default {
         start_time: '',
         eqp_type: '',
         eqp_nm: '',
-        model: '',
         insp_type: '',
+        last_insp_dt: '',
         insp_reason: '',
         insp_cycle: '',
         end_time: '',
@@ -151,12 +153,12 @@ export default {
       ],
       equipData: [],
       leftFields: [
-        { label: '점검 시작 일시', value: 'start_time', type: 'datetime-local' },
+        { label: '점검 시작 일시', value: 'start_time', type: 'datetime-local', },
         { label: '설비 구분 *', value: 'eqp_type', type: 'text' },
         { label: '설비명 *', value: 'eqp_nm', type: 'text' },
-        { label: '모델명 *', value: 'model', type: 'text' },
         { label: '점검 구분', value: 'insp_type', type: 'text' },
         { label: '점검 사유', value: 'insp_reason', type: 'text' },
+        { label: '마지막 점검일', value: 'last_insp_dt', type: 'date' },
         { label: '점검주기 (일)', value: 'insp_cycle', type: 'number' },
       ],
       rightFields: [
@@ -168,6 +170,22 @@ export default {
       ],
     };
   },
+
+
+  computed: {
+    // 현재 날짜와 시간을 반환
+    currentDateTime() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const date = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      return `${year}-${month}-${date}T${hours}:${minutes}`;
+    },
+  },
+
+
   methods: {
     gridFit(params) {
       // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
@@ -260,7 +278,7 @@ export default {
       });
     },
     isFieldDisabled(fieldName) {
-      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model'];
+      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle'];
       return !this.selectedEqp || alwaysDisabled.includes(fieldName);
     },
   },
@@ -338,6 +356,19 @@ export default {
       }
       this.getEquipInfo(this.selectedEqp);
       this.isEditMode = true; // 조회 시 수정 모드 활성화
+    },
+
+    // start_time 변경 감지
+    'equipmentData.start_time'(newStartTime) {
+      // 종료 시간이 시작 시간보다 빠르면 초기화
+      if (this.equipmentData.end_time && this.equipmentData.end_time < newStartTime) {
+        this.equipmentData.end_time = '';
+        Swal.fire({
+          icon: 'warning',
+          title: '알림',
+          text: '종료 시간이 시작 시간보다 빠를 수 없습니다. 종료 시간을 다시 설정해주세요.',
+        });
+      }
     },
   },
 
