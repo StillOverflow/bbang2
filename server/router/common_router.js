@@ -48,6 +48,13 @@ router.get('/comm/order/dtl/:no', async (req,res)=>{
   let planNo = req.params.no;
   let orderDtlList = await commonService.findOrderNo(planNo);
   res.send(orderDtlList);
-})
+});
+
+//로그인
+router.get('/comm/login', async (req, res) => {
+  let datas = req.query;
+  let result = await commonService.login(datas);  
+  res.send(result);
+});
 
 module.exports = router;

@@ -69,3 +69,25 @@
 }
 
 .half { width: 45.8% !important; }
+
+.sub-tr{ font-size: 14px; 
+  td{
+    padding: 5px;
+  }
+}
+
+.none-select{ 
+  background-color: #eee;
+  pointer-events : none;
+
+  td{ 
+    color: gray; 
+  }
+}
+
+.form-control-xsm {
+  min-height: unset;
+  padding: 0.1rem 0.3rem;
+  font-size: 0.75rem;
+  border-radius: 0.5rem;
+}

@@ -113,11 +113,34 @@ FROM
 		WHERE order_cd=?
 `;
 
+//로그인
+const login = (datas) => {
+  let sql = 
+          `SELECT MEM_CD,
+                  NAME,
+                  ID,
+                  PHONE,
+                  ADDR,
+                  EMAIL,
+                  BIRTH,
+                  HIRE_DT,
+                  STATUS,
+                  PERMISSION,
+                  m.DPT_CD AS DPT_CD,
+                  d.DPT_NM AS DPT_NM
+            FROM 
+                member m JOIN department d ON m.DPT_CD=d.DPT_CD 
+                
+            WHERE id='${datas.id}' and password='${datas.password}'`;
+  return sql;
+};
+
 module.exports = {
   findCommList,
   memList,        // 사원
   accountSelect,  // 거래처
   materialSelect, // 자재
   productSelect,  // 제품
-  orderDtlList
+  orderDtlList,
+  login // 로그인
 };

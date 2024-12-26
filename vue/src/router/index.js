@@ -68,6 +68,8 @@ import MaterialAdd from'../views/standard/MaterialAdd.vue';
 //////////////////////////// 통계(미정) ////////////////////////////
 import Statistics from '../views/Statistics.vue'; //통계
 
+
+import login from '../views/Signin.vue';
 import Tables from '../views/Tables.vue';
 import Billing from '../views/Billing.vue';
 import VirtualReality from '../views/VirtualReality.vue';
@@ -79,6 +81,13 @@ import Grid from '../views/Grid.vue';
 
 /////////////////////// 여기부터 라우트 등록 //////////////////////
 const routes = [
+  {
+    //로그인
+    path: '/signin',
+    name: 'signin',
+    component: login,
+  },
+  
   {
     path: '/',
     name: '/',
