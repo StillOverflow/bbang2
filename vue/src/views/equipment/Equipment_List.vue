@@ -8,7 +8,7 @@
         <div class="row mb-3">
 
           <!-- 설비구분 -->
-          <div class="center me-7">
+          <div class=" me-7">
             <p for="example-text-input" class="text-sm font-weight-bolder me-3 mt-2">설비구분</p>
             <div class="col-6 col-lg-3 mb-2">
               <select class="form-select custon-width" v-model="equipmentData.eqp_type">
@@ -19,7 +19,7 @@
             </div>
           </div>
           <!-- 사용유무-->
-          <div class="center  me-7">
+          <div class="  me-7">
             <p for="example-text-input" class="text-sm font-weight-bolder me-3 mt-2">사용유무</p>
             <div class="col-6 col-lg-3 mb-2">
               <select class="form-select custon-width" v-model="equipmentData.is_use">
@@ -30,7 +30,7 @@
             </div>
           </div>
 
-          <div class="center  me-7">
+          <div class="  me-7">
             <p for="example-text-input" class="text-sm font-weight-bolder me-3 mt-2">설비상태</p>
             <div class="col-6 col-lg-3 mb-2">
               <select class="form-select custon-width" v-model="equipmentData.status">
@@ -57,8 +57,8 @@
 
       <!-- 조회 결과 -->
       <div class="card-body" style="position: relative; height: 600px">
-        <ag-grid-vue style="width: 100%; height: 100%" class="ag-theme-alpine" :columnDefs="columnDefs"
-          :rowData="rowData" :pagination="true"></ag-grid-vue>
+        <ag-grid-vue style="width: 100%; height: 100%" class="ag-theme-alpine" :gridOptions="gridOptions"
+          @grid-ready="myGrid" :columnDefs="columnDefs" :rowData="rowData" :pagination="true"></ag-grid-vue>
       </div>
     </div>
   </div>
@@ -84,17 +84,28 @@ export default {
       },
       rowData: [], // ag-grid의 데이터
       columnDefs: [
-        { field: 'eqp_cd', headerName: '설비코드', sortable: true, width: 100 },
-        { field: 'eqp_type', headerName: '설비구분', sortable: true, width: 100 },
-        { field: 'eqp_nm', headerName: '설비명', sortable: true, width: 100 },
-        { field: 'model', headerName: '모델', sortable: true, width: 100 },
-        { field: 'create_dt', headerName: '등록일', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120 },
-        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120 },
-        { field: 'id', headerName: '담당자 ID', sortable: true, width: 120 },
-        { field: 'status', headerName: '설비상태', sortable: true, width: 100 },
-        { field: 'is_use', headerName: '사용유무', sortable: true, width: 100 },
+        { field: 'eqp_cd', headerName: '설비코드', sortable: true },
+        { field: 'eqp_type', headerName: '설비구분', sortable: true },
+        { field: 'eqp_nm', headerName: '설비명', sortable: true },
+        { field: 'model', headerName: '모델', sortable: true },
+        { field: 'create_dt', headerName: '등록일', sortable: true, valueFormatter: this.$comm.dateFormatter },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter },
+        { field: 'id', headerName: '담당자 ID', sortable: true },
+        { field: 'status', headerName: '설비상태', sortable: true },
+        { field: 'is_use', headerName: '사용유무', sortable: true },
 
       ],
+
+      gridOptions: {
+        pagination: true,
+        paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
+
+        suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+        rowSelection: {
+          mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
+        }
+      }
+
     };
   },
   components: {
@@ -108,6 +119,13 @@ export default {
     this.fetchFilteredEquip();
   },
   methods: {
+
+    myGrid(params) { // 매개변수 속성으로 자동 접근
+      params.api.sizeColumnsToFit(); // 가로스크롤 삭제
+      this.myApi = params.api;
+      this.myColApi = params.columnApi; // api, columnApi 둘 다 꼭 있어야 함
+    },
+
     // 공통코드 가져오기
     async fetchCommonCodes() {
       try {

@@ -48,11 +48,11 @@ const eqAllListSearch = (searchObj) => {
                       i.insp_action as insp_action,
                       i.note as note,
                       i.end_time as end_time,
-                      i.id as id,
+                      e.id as id,
                       e.create_dt as create_dt,
                       e.update_dt as update_dt
 FROM equipment e
-      RIGHT JOIN inspection_log i 
+      LEFT JOIN inspection_log i 
               ON e.eqp_cd = i.eqp_cd
 `;
 
@@ -125,6 +125,7 @@ const eqInspList = ` SELECT   e.eqp_cd as eqp_cd,
   e.model as model,
   e.insp_cycle as insp_cycle,
   e.img_path as img_path,
+  e.last_insp_dt as last_insp_dt,
   i.start_time as start_time,
   fn_get_codename(i.insp_type) as insp_type,
   fn_get_codename(i.insp_reason) as insp_reason,
@@ -147,6 +148,7 @@ const eqInspInfo = `SELECT   e.eqp_cd as eqp_cd,
   e.model as model,
   e.insp_cycle as insp_cycle,
   e.img_path as img_path,
+  e.last_insp_dt as last_insp_dt,
   i.start_time as start_time,
   fn_get_codename(i.insp_type) as insp_type,
   fn_get_codename(i.insp_reason) as insp_reason,
