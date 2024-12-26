@@ -130,7 +130,7 @@ export default {
         AgGridVue
     },
     created() {
-        this.$store.dispatch('breadCrumb', { title: '주문 목록 조회' });
+        this.$store.dispatch('breadCrumb', { title: '제품 재고 목록 조회' });
     },
     mounted() {
         axios.get('/api/sales/prdAllList')

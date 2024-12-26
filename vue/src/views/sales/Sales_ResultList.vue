@@ -98,7 +98,7 @@ export default {
       AgGridVue
   },
   created() {
-      this.$store.dispatch('breadCrumb', { title: '출고 제품 목록 조회' });
+      this.$store.dispatch('breadCrumb', { title: '반품 제품 목록 조회' });
   },
   mounted() {
       axios.get('/api/sales/returnList')
