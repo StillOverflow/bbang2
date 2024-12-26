@@ -3,7 +3,6 @@ import { onBeforeUnmount, onBeforeMount } from "vue";
 import { useStore } from "vuex";
 import Navbar from "@/examples/PageLayout/Navbar.vue";
 import ArgonInput from "@/components/ArgonInput.vue";
-import ArgonSwitch from "@/components/ArgonSwitch.vue";
 import ArgonButton from "@/components/ArgonButton.vue";
 const body = document.getElementsByTagName("body")[0];
 
@@ -46,53 +45,39 @@ onBeforeUnmount(() => {
               <div class="card card-plain">
                 <div class="pb-0 card-header text-start">
                   <h4 class="font-weight-bolder">Sign In</h4>
-                  <p class="mb-0">Enter your email and password to sign in</p>
+                  <p class="mb-0">Enter your id and password to sign in</p>
                 </div>
                 <div class="card-body">
-                  <form role="form">
-                    <div class="mb-3">
-                      <argon-input
-                        id="email"
-                        type="email"
-                        placeholder="Email"
-                        name="email"
-                        size="lg"
-                      />
-                    </div>
-                    <div class="mb-3">
-                      <argon-input
-                        id="password"
-                        type="password"
-                        placeholder="Password"
-                        name="password"
-                        size="lg"
-                      />
-                    </div>
-                    <argon-switch id="rememberMe" name="remember-me"
-                      >Remember me</argon-switch
-                    >
+                  <div class="mb-3">
+                    <argon-input
+                      id="id"
+                      type="text"
+                      placeholder="Id"
+                      v-model="id"
+                      size="lg"
+                    />
+                  </div>
+                  <div class="mb-3">
+                    <argon-input
+                      id="password"
+                      type="password"
+                      placeholder="Password"
+                      v-model="password"
+                      size="lg"
+                    />
+                  </div>
 
-                    <div class="text-center">
-                      <argon-button
-                        class="mt-4"
-                        variant="gradient"
-                        color="success"
-                        fullWidth
-                        size="lg"
-                        >Sign in</argon-button
-                      >
-                    </div>
-                  </form>
-                </div>
-                <div class="px-1 pt-0 text-center card-footer px-lg-2">
-                  <p class="mx-auto mb-4 text-sm">
-                    Don't have an account?
-                    <a
-                      href="javascript:;"
-                      class="text-success text-gradient font-weight-bold"
-                      >Sign up</a
+                  <div class="text-center">
+                    <argon-button
+                      class="mt-4"
+                      variant="gradient"
+                      color="success"
+                      fullWidth
+                      size="lg"
+                      @click="signIn"
+                      >Sign in</argon-button
                     >
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -124,3 +109,56 @@ onBeforeUnmount(() => {
     </section>
   </main>
 </template>
+
+
+<script>
+import axios from 'axios';
+
+export default {
+  methods: {    
+     //로그인
+     async signIn() {
+      if (!this.id) {
+          this.$swal({
+              icon: "error",
+              title: "아이디를 입력하세요",
+          });
+          return;
+      }else if (!this.password) {
+        this.$swal({
+              icon: "error",
+              title: "비밀번호를 입력하세요",
+          });
+          return;
+      }
+
+      let obj = {
+          id : this.id,
+          password : this.password
+      }
+      let result = await axios.get('/api/comm/login', { params:obj })
+                              .catch(err => console.log(err));
+
+      if(result.data == 'success'){
+          this.$router.push({ name : 'Dashboard', params : { id : this.id }});   
+      }else if(result.data == 'quit'){
+          this.$swal({
+              icon: "error",
+              title: "로그인 불가",
+              text: "퇴사처리된 계정정보입니다",
+          })     
+      }else{
+        this.$swal({
+            icon: "error",
+            title: "로그인 정보가 맞지 않습니다",
+            text: "아이디 또는 비밀번호를 확인해주세요",
+        })
+      }
+      return result;
+    },
+
+  }
+    
+};
+
+</script>
