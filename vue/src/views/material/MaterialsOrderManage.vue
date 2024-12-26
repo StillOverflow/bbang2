@@ -85,6 +85,7 @@
                            :rowData="orderFormData"
                            :pagination="true"
                            :gridOptions="orderFormOptions"
+                           :frameworkComponents="frameworkComponents"
                            @rowClicked="rowClicked"
                            @grid-ready="(params) => gridReady(params, 'orderForm')"
                            @first-data-rendered="orderFormGrid">
@@ -194,7 +195,7 @@
          }
       }
    }
-
+   // 행 추가
    const addRow = () => {
       let newObj = {};
 
@@ -267,6 +268,33 @@
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    };
 
+   let searchMaterialArr = ref([]);
+
+   const searchKeywordFunc = (data) => {
+      console.log("data(부모) =>  ", data);
+      getMaterial(data);
+   }
+
+   const getMaterial = async (keyword) => {
+      console.log("keyword(부모) => ",keyword);
+      try {
+         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : keyword } });
+         searchMaterialArr.value = result.data;
+         
+         // if (result.data.length > 0) {
+         //    isHidden.value = false; // 드롭다운 표시
+         // } else {
+         //    searchMaterialArr.value = [{ mat_nm: '검색결과가 없습니다.' }];
+         // }
+      } catch (err) {
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
+   };
+
    // 거래처 검색 모달 옵션
    const accountModalGridOptions = {
       columnDefs : [
@@ -285,6 +313,12 @@
    // no, 발주코드, 자재명, 수량, 거래처코드, 거래처명, 납기일
    // 발주서 입력 그리드 
    const orderFormOptions = {
+      context: {
+         searchComponent : { 
+            searchKeywordFunc,
+            getSearchResults: () => searchMaterialArr.value, 
+         }
+      },
       rowSelection: {
          mode: "multiRow", // 체크박스 다중선택
       },
@@ -314,36 +348,8 @@
          {
             headerName: '자재명',
             field: 'mat_nm',
-            editable: true,
-            cellEditor: 'CustomDropdownEditor', // Vue 컴포넌트를 cellEditor로 사용
-            
+            cellRenderer:CustomDropdownEditor,
          },
-         // { 
-         //    headerName: '자재명', 
-         //    field: 'act_type', 
-         //    sortable: true,
-         //    // cellRenderer: (params) => {
-         //    //    return params.value
-         //    //       ? params.value
-         //    //       : `<span style="color: #cacaca; font-size; 9px">자재를 검색하세요</span>`;
-         //    // },
-         //    cellRenderer: (params) => {
-         //       // DOM 요소 생성
-         //       const container = document.createElement('div');
-
-         //       // 기존 값 또는 플레이스홀더 표시
-         //       container.innerHTML = `
-         //          <input 
-         //             type="text" 
-         //             placeholder="자재를 검색하세요" 
-         //             value="${params.value || ''}" 
-         //             style="width: 100%; padding: 5px; box-sizing: border-box; border: none;" 
-         //          />
-         //       `;
-               
-         //       return container;
-         //    }
-         // },
          { 
             headerName: '발주 수량', 
             field: 'mat_qty', 
@@ -370,11 +376,12 @@
             headerName: '거래처명', 
             field: 'act_nm', 
             sortable: true,
-            cellRenderer: (params) => {
-               return params.value
-                  ? params.value
-                  : `<span style="color: #cacaca; font-size; 9px">거래처를 검색하세요</span>`;
-            },
+            cellRenderer:CustomDropdownEditor,
+            // cellRenderer: (params) => {
+            //    return params.value
+            //       ? params.value
+            //       : `<span style="color: #cacaca; font-size; 9px">거래처를 검색하세요</span>`;
+            // },
          },
          { 
             headerName: '납기 요청일', 
@@ -387,18 +394,9 @@
             }
          },
       ],
-      frameworkComponents: {
-         CustomDropdownEditor, // Vue 컴포넌트를 Ag-Grid의 프레임워크 컴포넌트로 등록
-      },
-      defaultColDef: {
-         editable: true,
-         filter: true,
-      },
       
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
-   
-   
 </script>
 
 <style lang="scss" scoped>

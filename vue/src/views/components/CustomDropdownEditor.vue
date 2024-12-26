@@ -1,7 +1,7 @@
 <template>
    <div class="inputSearch">
       <!-- 입력 필드 -->
-      <div class="input-group mb-3 w-30">
+      <div class="input-group mb-3">
          <input type="text" class="form-control searchKeyword" placeholder="자재명을 입력하세요." v-model="searchKeyword" @change="onChange($event)">
          <button class="btn btn-warning" type="button" id="button-addon3">
             <i class="fa-solid fa-magnifying-glass"></i>
@@ -9,46 +9,42 @@
       </div>
       
       <!-- 드롭다운 리스트 -->
-      <div class="dropdownBox w-30" v-show="!isHidden">
+      <div class="dropdownBox" v-show="!isHidden">
          <button type="button" v-for="(item,index) in searchMaterialArr" :key="index" ref="newArray" class="smallText m-3">{{ item.mat_nm }}</button>
       </div>
    </div>
 </template>
 
 <script setup>
-   import axios from 'axios';
-   import { ref } from 'vue';
-   import Swal from 'sweetalert2';
+   //import axios from 'axios';
+   import { ref, defineProps } from 'vue';
+   //import Swal from 'sweetalert2';
    
    let searchKeyword = ref('');
-   let searchMaterialArr = ref([]);
    let newArray = ref([]);
    let isHidden = ref(true);
 
+   const data = defineProps(['params']);
+
    const onChange = () => {
-      // 검색어가 비어 있는지 확인
-      getMaterial(searchKeyword.value);
+      console.log("keyword.value 자식 => ", searchKeyword.value)
+      data.params.context.searchComponent.searchKeywordFunc(searchKeyword.value);
+      let result = data.params.context.searchComponent.getSearchResults();
+      console.log("result => ", result)
+      //getMaterial(searchKeyword.value);
    }
 
-   const getMaterial = async (keyword) => {
-      try {
-         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : keyword } });
-         searchMaterialArr.value = result.data;
-         console.log(result.data.length)
-         if (result.data.length > 0) {
-            isHidden.value = false; // 드롭다운 표시
-         } else {
-            searchMaterialArr.value = [{ mat_nm: '검색결과가 없습니다.' }];
-            //isHidden.value = true; // 검색어가 없으면 드롭다운 숨김
-         }
-      } catch (err) {
-         Swal.fire({
-            icon: "error",
-            title: "API 요청 오류:",
-            text: err.message || err
-         });
-      }
-   };
+   // 검색 결과를 실시간으로 감지하여 업데이트
+   // watch(
+   // () => data.context.searchComponent.getSearchResults(), // 부모의 검색 결과 반환 메서드 호출
+   // (newResults) => {
+   //    searchResults.value = newResults; // 검색 결과 업데이트
+   // },
+   // { immediate: true }, // 초기값도 반영
+   // );
+
+
+   
 </script>
 
 <style scoped>
