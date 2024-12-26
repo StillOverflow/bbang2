@@ -119,8 +119,8 @@ const testRecInsert = async (valueObj) => {
 };
 
 // 검사결과내역 조회
-const getTestRecList = async () => {
-    let result = await mariadb.query('testRecList');
+const getTestRecList = async (valueObj) => {
+    let result = await mariadb.query('testRecList', valueObj);
     return result;
 };
 

@@ -4,7 +4,49 @@
     <div class="card">
   
       <div class="card-header bg-light ps-5 ps-md-4">
-          <select-target :modalDefs="modalDefs" :modalTitle="'품질기준 대상선택'" ref="selectChild"/>
+        <!-- 조회대상 자재/제품/공정 -->
+        <div class="row mb-3">
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex justify-content-center" :style="t_overflow">조회대상</h6>
+          <div class="form-check col-10 d-flex">
+            <div v-for="(opt, idx) in radios" :key="idx">
+              <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
+               @change="changeDivs()">
+              <label class="form-check-label ms-2 me-4 text-start" :for="'radio' + opt.item">
+                {{opt.name}}
+              </label>
+            </div>
+          </div>
+        </div>
+    
+        <!-- 구분/카테고리/모달 조회조건 선택 -->
+        <div class="row">
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상구분</h6>
+          <div class="col-10 col-lg-4 col-xxl-2 mb-2">
+            <select class="form-select" v-model="selected_div" :disabled="noCate">
+              <option :value="null">전체</option>
+              <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.name}}</option>
+            </select>
+          </div>
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">카테고리</h6>
+          <div class="col-10 col-lg-4 col-xxl-2 mb-2">
+            <select class="form-select" v-model="selected_cate" :disabled="noCate">
+              <option :value="null">전체</option>
+              <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.name}}</option>
+            </select>
+          </div>
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상선택</h6>
+          <div class="col-10 col-lg-4 col-xxl-2 d-flex">
+            <div class="input-group">
+              <input type="search" class="form-control" v-model="modal_val.nm" style="height: 41px;">
+              <button class="btn btn-warning mb-2" type="button" @click="modalToggle">SEARCH</button>
+            </div>
+          </div>
+          <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상코드</h6>
+          <div class="col-10 col-lg-4 col-xxl-2 mb-2">
+            <input type="text" class="form-control" :value="modal_val.cd" readonly>
+          </div>
+        </div>
+  
       </div>
   
       <!-- 검사항목 추가/삭제 -->
@@ -57,13 +99,27 @@
       </div>
     </div>
 
+    <ModalLayout :modalCheck="isModal">
+        <template v-slot:header>
+          <h5>품질기준 대상선택</h5>
+          <button type="button" aria-label="Close" class="close" @click="modalToggle">×</button>
+        </template>
+        <template v-slot:default>
+          <ag-grid-vue class="ag-theme-alpine" :style="g_height" :columnDefs="modalDefs" :rowData="modalData" 
+            :gridOptions="gridOptions" :rowSelection="false" @rowClicked="modalSelect"/>
+        </template>
+        <template v-slot:footer> <!-- 아무것도 안 넣으면 기본 버튼이 표시됨. -->
+          <button type="button" class="btn btn-secondary" @click="modalToggle">CLOSE</button>
+        </template>
+    </ModalLayout>
+
   </div>
 </template>
 
 <script>
   import { AgGridVue } from "ag-grid-vue3";
   import axios from "axios";
-  import SelectTarget from "../../components/quality/SelectTarget.vue";
+  import ModalLayout from "../components/modalLayout.vue";
 
   export default {
     name: 'QualityStdAdd',
@@ -73,8 +129,19 @@
         t_overflow: {whiteSpace: 'nowrap'},
         t_break: {wordBreak: 'keep-all'},
         g_height: {height: '520px'},
+        
+        // 검색조건 전용 값
+        selected_radio: null,
+        radios: [],
+        selected_div: null,
+        divs: [],
+        noCate: false, // 공정은 카테고리가 없으므로 비활성화용
+        selected_cate: null,
+        cates: [],
+        date_val: '',
 
-        // 검색결과 모달에서 출력할 열
+        // 모달 내부 grid API 데이터 (Defs: thead 구성, Data: tbody 구성)
+        isModal: false, // 토글기능
         modalDefs: [
           { headerName: '유형', field: 'type', width: 70 },
           { headerName: '구분', field: 'cate_type', width: 80 },
@@ -90,6 +157,11 @@
             width: 100 },
           { headerName: '마지막 등록일', field: 'std_date', width: 120, valueFormatter: this.$comm.dateFormatter_returnNull}
         ],
+        modalData: [],
+        modal_val: { // 선택된 값
+          nm: null,
+          cd: null
+        },
 
         // 일반 grid API 데이터
         defs: [
@@ -128,10 +200,15 @@
 
     components: { 
         AgGridVue, // grid API
-        SelectTarget
+        ModalLayout
     },
 
     created(){ 
+      // 페이지 제목 저장
+      this.$store.dispatch('breadCrumb', {title: '품질기준 관리'});
+
+      // 조회대상 불러오기
+      this.getCondition('QT', 'radio');
     },
 
     methods: {
@@ -146,13 +223,109 @@
         this.myApi = params.api;
         this.myColApi = params.columnApi;
       },
+      
+      // 공통코드 기반으로 검색조건 표시하기
+      async getCondition(cd, type){ 
+        let types = [this.radios, this.divs, this.cates]; // 검색조건으로 들어갈 각각의 input을 배열로 임시저장
+        let typesNo = null;
+        let arr = await this.$comm.getComm(cd); // 공통코드 axios.get
+
+        switch(type){
+          case 'radio' : typesNo = 0; break;
+          case 'divs' : typesNo = 1; break;
+          case 'cate' : typesNo = 2; break;
+        };
+        
+        types[typesNo].length = 0; // 실행할 때마다 값이 중복되지 않게 비우고 push
+        for(let i = 0; i < arr.length; i++){
+          types[typesNo].push({
+            item : arr[i].comm_dtl_cd, // 공통코드
+            name : arr[i].comm_dtl_nm // 표시할 한글명
+          });
+        };
+      },
 
       // 대상구분 변경될 때 동작
-      changeDivs(){
-        this.$refs.selectChild.changeDivs();
+      async changeDivs(modal){ // 모달에서 실행한 경우 매개변수를 넘겨받음 (선택된 값 초기화 방지)
+        // 그리드 테이블 내용과 대상을 null로 초기화
+        this.modal_val.cd = null;
         this.myData = [];
         this.yetData = [];
+      
+        if(!modal){ // 매개변수가 없이 실행되면 선택된 div, cate도 모두 null로 초기화
+          this.selected_div = null;
+          this.selected_cate = null;
+        }
+
+        // 구분 및 카테고리 재호출
+        switch(this.selected_radio){
+          case 'P01' : // 자재 선택한 경우
+            this.getCondition('MA', 'divs');
+            this.getCondition('MC', 'cate'); 
+            this.noCate = false; 
+            break;
+          case 'P02' :  // 공정중 선택한 경우
+            this.noCate = true; // 구분 선택이 아예 없음.
+            break;
+          case 'P03' : // 제품 선택한 경우
+            // this.getCondition('PD', 'divs');
+            this.divs.length = 0;
+            this.divs[0] = {item : 'I01', name : '완제품'};
+            this.getCondition('PC', 'cate'); 
+            this.noCate = false; 
+            break;
+        }
       },
+
+      // ------------ 모달 메소드 ------------
+      modalToggle(){
+        this.isModal = !this.isModal;
+        this.getModalList();
+      },
+
+      async getModalList(){
+        // 조회대상(radio) 미선택 시 => 전체 조회
+        // 조회대상(radio) 선택 시 => 선택한 대상 내에서 카테고리 조건 넣어 조회
+        // ** 이름을 입력하면 유사한(LIKE) 이름으로 조회
+        let params = { 
+          type: this.selected_radio,
+          cate_type: this.selected_div,
+          cate: this.selected_cate,
+          nm: this.modal_val.nm 
+        };
+
+        let result = await axios.get('/api/quality/targetAll', {params: params})
+                                .catch(err => console.log(err));
+        let data = result.data;
+        data.forEach((obj) => {
+          obj.has_std = obj.std_date == null ? '미등록' : '등록완료'; // SELECT문 컬럼에 포함되지 않았으므로 추가
+        });
+        this.modalData = data;
+      },
+      
+      modalSelect(params){ // @rowClicked
+        let selected = params.data;
+        if(!this.selected_radio){ // 이름으로 검색만 하고 radio 선택 안 되어있으면 선택해줌
+          let type = null;
+          switch(selected.type){
+            case '자재' : type = 'P01'; break;
+            case '공정' : type = 'P02'; break;
+            case '제품' : type = 'P03'; break;
+          }
+          this.selected_radio = type;
+          this.changeDivs('modal');
+        }
+        this.selected_div = selected.cate_type_cd;
+        this.selected_cate = selected.category_cd;
+        console.log(selected.cate_type_cd + selected.category_cd);
+
+        this.date_val = selected.std_date ? this.$comm.getMyDay(selected.std_date) : this.$comm.getMyDay();
+        this.modal_val.cd = selected.cd;
+        this.modal_val.nm = selected.nm;
+        this.myData_save = new Set();
+        this.modalToggle();
+      },
+      // ---------- 모달 메소드 끝 -----------
 
       // 임시저장 (기존 값과 변경되었는지 확인하기 위한 비교용)
       saveData(data){
