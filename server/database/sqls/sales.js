@@ -159,7 +159,7 @@ from
     \`order\` o join order_detail od ON o.order_cd=od.order_cd 
     WHERE o.order_cd= ? )a
 LEFT JOIN
-    (SELECT sum(prd_out_qty) AS prd_out_qty, ORDER_DTL_CD from product_out_detail) b
+    (SELECT sum(prd_out_qty) AS prd_out_qty, ORDER_DTL_CD from product_out_detail GROUP BY order_dtl_cd) b
     ON a.ORDER_DTL_CD=b.ORDER_DTL_CD;
 `;
 // SELECT o.order_dtl_cd,
