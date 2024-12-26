@@ -12,7 +12,53 @@
             :class="activeTabRev" @click="activeCompTab">검사완료</div>
         </div>
       </div>
-      <!-- 검색조건이 들어갈 위치!!!!!! -->
+      
+      <!--------------------- 검사완료목록에서의 검색조건 ------------------------->
+      <select-target/>
+      <!-- 조회대상 자재/제품/공정 -->
+      <div class="row mb-3">
+        <h6 class="col-2 col-xxl-1 mb-2 d-flex justify-content-center" :style="t_overflow">조회대상</h6>
+        <div class="form-check col-10 d-flex">
+          <div v-for="(opt, idx) in radios" :key="idx">
+            <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.item" :id="'radio' + opt.item"
+              @change="changeDivs()">
+            <label class="form-check-label ms-2 me-4 text-start" :for="'radio' + opt.item">
+              {{opt.name}}
+            </label>
+          </div>
+        </div>
+      </div>
+  
+      <!-- 구분/카테고리/모달 조회조건 선택 -->
+      <div class="row">
+        <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상구분</h6>
+        <div class="col-10 col-lg-4 col-xxl-2 mb-2">
+          <select class="form-select" v-model="selected_div" :disabled="noCate">
+            <option :value="null">전체</option>
+            <option v-for="(opt, idx) in divs" :key="idx" :value="opt.item">{{opt.name}}</option>
+          </select>
+        </div>
+        <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">카테고리</h6>
+        <div class="col-10 col-lg-4 col-xxl-2 mb-2">
+          <select class="form-select" v-model="selected_cate" :disabled="noCate">
+            <option :value="null">전체</option>
+            <option v-for="(opt, idx) in cates" :key="idx" :value="opt.item">{{opt.name}}</option>
+          </select>
+        </div>
+        <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상선택</h6>
+        <div class="col-10 col-lg-4 col-xxl-2 d-flex">
+          <div class="input-group">
+            <input type="search" class="form-control" v-model="search.nm" style="height: 41px;">
+            <button class="btn btn-warning mb-2" type="button" @click="modalToggle">SEARCH</button>
+          </div>
+        </div>
+        <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상코드</h6>
+        <div class="col-10 col-lg-4 col-xxl-2 mb-2">
+          <input type="text" class="form-control" :value="search.cd" readonly>
+        </div>
+      </div>
+
+
       <ag-grid-vue class="ag-theme-alpine" style="height: 242px;" :columnDefs="defs" :rowData="rowData" 
         @stateUpdated="gridFit" :gridOptions="gridOptions" :getRowStyle="getRowStyle" @rowClicked="selectTarget"/>
     </div>
@@ -161,6 +207,7 @@
   import { AgGridVue } from "ag-grid-vue3";
   import axios from "axios";
   import ModalLayout from "../components/modalLayout.vue";
+  import SelectTarget from "../../components/quality/SelectTarget.vue";
 
   export default {
     name: 'QualityTest',
@@ -210,6 +257,20 @@
         test_dt: null,
         id: null, // 선택된 담당자 사원번호
         note: null,
+
+        // 검사완료목록 조회용 '대상코드' 검색조건 값
+        selected_radio: null,
+        radios: [],
+        selected_div: null,
+        divs: [],
+        noCate: false, // 공정은 카테고리가 없으므로 비활성화용
+        selected_cate: null,
+        cates: [],
+
+        search: { // 대상코드 선택 결과
+          cd: null,
+          nm: null
+        }
       }
     },
 
@@ -262,7 +323,8 @@
 
     components: { 
         AgGridVue, // grid API
-        ModalLayout
+        ModalLayout,
+        SelectTarget
     },
 
     created(){ 
@@ -272,7 +334,7 @@
       // 기본 탭: 검사대기탭 그리드 데이터 불러오기
       this.activeWaitTab();
     },
-
+    
     methods: {     
       activeWaitTab(){ // 검사대기목록 활성화
         if(!this.isWaitList){
@@ -281,12 +343,13 @@
         this.isRowClicked = false;
         this.getWaitList();
       },
-
+      
       activeCompTab(){ // 검사완료목록 활성화
         if(this.isWaitList){
           this.isWaitList = false;
         }
         this.isRowClicked = false;
+        this.getCondition('QT', 'radio');
         this.getRecList();
       },
 
@@ -596,7 +659,57 @@
             'error'
           );
         }
-      }
+      },
+
+      // 조회용 메소드
+      // 공통코드 기반으로 검색조건 표시하기
+      async getCondition(cd, type){ 
+        let types = [this.radios, this.divs, this.cates]; // 검색조건으로 들어갈 각각의 input을 배열로 임시저장
+        let typesNo = null;
+        let arr = await this.$comm.getComm(cd); // 공통코드 axios.get
+
+        switch(type){
+          case 'radio' : typesNo = 0; break;
+          case 'divs' : typesNo = 1; break;
+          case 'cate' : typesNo = 2; break;
+        };
+        
+        types[typesNo].length = 0; // 실행할 때마다 값이 중복되지 않게 비우고 push
+        for(let i = 0; i < arr.length; i++){
+          types[typesNo].push({
+            item : arr[i].comm_dtl_cd, // 공통코드
+            name : arr[i].comm_dtl_nm // 표시할 한글명
+          });
+        };
+      },
+
+      // 대상구분 변경될 때 동작
+      async changeDivs(modal){ // 모달에서 실행한 경우 매개변수를 넘겨받음 (선택된 값 초기화 방지)      
+        if(!modal){ // 매개변수가 없이 실행되면 선택된 div, cate도 모두 null로 초기화
+          this.selected_div = null;
+          this.selected_cate = null;
+        }
+
+        // 구분 및 카테고리 재호출
+        switch(this.selected_radio){
+          case 'P01' : // 자재 선택한 경우
+            this.getCondition('MA', 'divs');
+            this.getCondition('MC', 'cate'); 
+            this.noCate = false; 
+            break;
+          case 'P02' :  // 공정중 선택한 경우
+            this.noCate = true; // 구분 선택이 아예 없음.
+            break;
+          case 'P03' : // 제품 선택한 경우
+            // this.getCondition('PD', 'divs');
+            this.divs.length = 0;
+            this.divs[0] = {item : 'I01', name : '완제품'};
+            this.getCondition('PC', 'cate'); 
+            this.noCate = false; 
+            break;
+        }
+      },
+
     }
   };
 </script>

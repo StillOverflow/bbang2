@@ -1,6 +1,8 @@
 import axios from "axios";
 
 export default {
+  //////////////////////////////// 일반 ////////////////////////////////
+
   // 단순 날짜 포맷팅용 전역 함수 (value 있으면 해당 날짜를, 없으면 오늘 날짜를 반환)
   getMyDay(value){
     let date = value == null ? new Date() : new Date(value);
@@ -22,6 +24,31 @@ export default {
     if (!num) return '0';
     return Number(num).toLocaleString();
   },
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+  ////////////////////////////// Ag-Grid //////////////////////////////
 
   // 날짜 포맷 변환 ag-grid용 [S]
   dateFormatter(params) { //여기서 ag grid에 date형식을 보냄
@@ -79,6 +106,24 @@ export default {
     return Number(params.value).toLocaleString();
   },
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  /////////////////////////////// axios ///////////////////////////////
+
   // 공통코드 가져오기 (리턴값 : [{comm_dtl_cd, comm_dtl_nm}, ....])
   async getComm(cd){
     let result = await axios.get('/api/comm/codeList/' + cd)
@@ -92,6 +137,43 @@ export default {
                             .catch(err => console.log(err));
     return result.data;
   }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 };
 
