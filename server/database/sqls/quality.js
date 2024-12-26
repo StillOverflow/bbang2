@@ -6,7 +6,10 @@ const yetList = `
          test_metd,
          test_nm, 
          test_dtl,
-         target_type
+         target_type,
+         pass_min, -- 샘플링검사인 경우 합격기준이 있음.
+         pass_max,
+         pass_ispercent
   FROM   quality_test
   WHERE  target_type = ?
     AND  test_cd NOT IN (
@@ -50,7 +53,7 @@ const testList = (sc) => {
 };
 
 
-// 품질기준 (QUALITY_STANDARD)
+// 품질기준 (QUALITY_STANDARD) 등록
 // 다음 번호 조회 (시퀀스 미사용)
 const stdSeq = `
   SELECT CONCAT('QS', LPAD(  IFNULL(  MAX(SUBSTR(qu_std_cd, -3)), 0) + 1  , 3, '0'  )  ) seq
@@ -129,8 +132,8 @@ const searchAll  = (valueObj) => {
 
 
 // 품질검사결과 (QUALITY_TEST_RECORD)
-// 검사대기 내역 조회 (생산실적 테이블에서 공정완료 상태 내역을 가져옴(검사대기) => 검사완료 후 다음 공정이 있다면 진행전 상태로 넘겨줌)
-///////////////////// 테스트용이라 쿼리가 달라질 수 있음에 유의.
+// 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
+///////////////////// ** 테스트용이라 쿼리가 달라질 수 있음에 유의.
 const waitList = `
   SELECT r.prod_result_cd, i.inst_cd, r.inst_dtl_cd,             -- PK, 지시번호, 지시상세번호
 		     r.inst_proc_cd, fn_get_proc_nm(r.inst_proc_cd) proc_nm, -- 현재 공정코드/이름
@@ -144,6 +147,54 @@ const waitList = `
   AND    que_status = 'A02' -- 공정 완료되었으면서 검사상태 진행전인 내역만 조회
 `;
 
+// 타입별 불량조회 (모달용)
+const defectList = (valueObj) => { 
+  // def_type 조건에 들어갈 값을 객체로 받음. (P01, P02, P03 : 자재, 공정중, 제품)
+  // P02와 P03 검사는 동시에 처리하기에, 조건 두 개가 들어올 수도 있으므로 subType 필요.
+  let type = valueObj.type;
+  let subType = valueObj.subType;
+  console.log('타입타입' + type);
+  console.log('타입타입' + subType);
+  
+  return `
+    SELECT def_cd, def_nm,
+           def_type, fn_get_codename(def_type) def_type_nm,
+           def_detail, create_dt, note
+    FROM   defect
+    WHERE  def_type = '${type}'
+    ${!subType ? "" : "OR def_type = '" + subType + "' "}  -- 두 번째 값이 있을 시 함께 조회
+  `;
+}
+
+// 품질검사결과 등록
+// 다음 번호 조회 (시퀀스 미사용)
+const testRecSeq = `
+  SELECT CONCAT('QR', LPAD(  IFNULL(  MAX(SUBSTR(test_rec_cd, -3)), 0) + 1  , 3, '0'  )  ) seq
+  FROM   quality_test_record `;
+
+// 헤더 입력
+// 입력컬럼: test_rec_cd, test_dt, refer_cd, target_type, target_cd, total_qty, test_qty, pass_qty, def_qty, id, def_cd, note
+const testRecInsert = `
+  INSERT INTO quality_test_record
+  SET ?`;
+
+// 디테일 입력 (샘플링검사인 경우 개별 측정값)
+const testRecDtlInsert = (values) => { // 배열 형식으로 받아야 함.
+  let sql = `
+    INSERT INTO quality_test_record_detail
+      (test_rec_dtl_cd, test_rec_cd, test_cd, test_value)
+    VALUES `;
+
+  values.forEach((obj) => {
+    sql += `(CONCAT('QRD', LPAD(nextval(qual_rec_dtl_seq), 3,'0')), '${obj.test_rec_cd}',
+            '${obj.test_cd}', '${obj.test_value}'), `;
+  });
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+  return sql;
+};
+
+
 
 module.exports = {
   yetList,
@@ -155,5 +206,9 @@ module.exports = {
   stdDtlInsert,
   searchAll,
 
-  waitList
+  waitList,
+  defectList,
+  testRecSeq,
+  testRecInsert,
+  testRecDtlInsert
 }

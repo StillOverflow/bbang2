@@ -21,7 +21,7 @@ const findTestList = async (search) => {
 
 
 // 품질기준
-// 등록 (트랜잭션 적용 버전)
+// 등록 (트랜잭션 적용)
 const stdInsert = async (values) => {
     let result = await mariadb.transOpen( async () => {
 
@@ -66,9 +66,45 @@ const searchAll = async (valueObj) => {
 
 
 // 품질검사결과
-// 검사대기 내역 조회 (생산지시상태 완료 상태 내역을 가져옴(검사대기) => 검사완료 후 다음 공정이 있다면 진행전 상태로 넘겨줌)
+// 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
 const getWaitList = async () => { 
     let result = mariadb.query('waitList');
+    return result;
+};
+
+// 타입별 불량조회 (모달용)
+const getDefList = async (valueObj) => { 
+    let result = mariadb.query('defectList', valueObj);
+    return result;
+};
+
+// 검사결과 등록 (트랜잭션 적용)
+const testRecInsert = async (valueObj) => {
+    let result = await mariadb.transOpen( async () => {
+
+        // 헤더 시퀀스 nextval 얻기
+        let seq_res = await mariadb.transQuery('testRecSeq');
+        let headerSeq = seq_res[0].seq;
+        
+        // 헤더 삽입
+        valueObj.header.test_rec_cd = headerSeq;
+        let header_res = await mariadb.transQuery('testRecInsert', valueObj.header);
+
+        // 디테일 삽입
+        valueObj.dtl.forEach((val) => { // 헤더 시퀀스값 추가
+            val.test_rec_cd = headerSeq;
+        });
+        let dtl_res = await mariadb.transQuery('testRecDtlInsert', valueObj.dtl);
+        
+        if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
+            await mariadb.commit();
+            return 'success';
+        } else {
+            await mariadb.rollback();
+            return 'fail';
+        }
+    });
+    
     return result;
 };
 
@@ -81,5 +117,7 @@ module.exports = {
     stdInsert,
     searchAll,
     
-    getWaitList
+    getWaitList,
+    getDefList,
+    testRecInsert
 }

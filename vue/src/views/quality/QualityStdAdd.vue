@@ -38,7 +38,7 @@
           <div class="col-10 col-lg-4 col-xxl-2 d-flex">
             <div class="input-group">
               <input type="search" class="form-control" v-model="modal_val.nm" style="height: 41px;">
-              <button class="btn btn-warning" type="button" @click="modalToggle">SEARCH</button>
+              <button class="btn btn-warning mb-2" type="button" @click="modalToggle">SEARCH</button>
             </div>
           </div>
           <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">대상코드</h6>
@@ -61,7 +61,7 @@
                 <h4 class="ms-3" :style="t_overflow">선택된 항목</h4>
               </div>
               <div class="col-12 col-md-5 col-xl-3 text-center">
-                <button class="btn btn-warning" :style="t_break" @click="getTList">불러오기</button>
+                <button class="btn btn-warning mb-2" :style="t_break" @click="getTList">불러오기</button>
               </div>
             </div>
           </div>
@@ -73,7 +73,7 @@
              @grid-ready="yetGrid" :gridOptions="gridOptions"/>
           </div>
           <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center">
-            <button class="btn btn-outline-primary" :style="t_overflow" @click="getSelected('plus')"> <!-- (+)버튼 -->
+            <button class="btn btn-outline-primary mbp30" :style="t_overflow" @click="getSelected('plus')"> <!-- (+)버튼 -->
               <i class="fa-solid fa-plus" style="color: #0951ce;"></i>
             </button>
             <button class="btn btn-outline-danger" :style="t_overflow" @click="getSelected()"> <!-- (-)버튼 -->
