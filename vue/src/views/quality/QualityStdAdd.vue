@@ -132,11 +132,6 @@
     },
 
     created(){ 
-      // 페이지 제목 저장
-      this.$store.dispatch('breadCrumb', {title: '품질기준 관리'});
-
-      // 조회대상 불러오기
-      this.getCondition('QT', 'radio');
     },
 
     methods: {
@@ -152,86 +147,6 @@
         this.myColApi = params.columnApi;
       },
 
-      // 대상구분 변경될 때 동작
-      async changeDivs(modal){ // 모달에서 실행한 경우 매개변수를 넘겨받음 (선택된 값 초기화 방지)
-        // 그리드 테이블 내용과 대상을 null로 초기화
-        this.modal_val.cd = null;
-        this.myData = [];
-        this.yetData = [];
-      
-        if(!modal){ // 매개변수가 없이 실행되면 선택된 div, cate도 모두 null로 초기화
-          this.selected_div = null;
-          this.selected_cate = null;
-        }
-
-        // 구분 및 카테고리 재호출
-        switch(this.selected_radio){
-          case 'P01' : // 자재 선택한 경우
-            this.getCondition('MA', 'divs');
-            this.getCondition('MC', 'cate'); 
-            this.noCate = false; 
-            break;
-          case 'P02' :  // 공정중 선택한 경우
-            this.noCate = true; // 구분 선택이 아예 없음.
-            break;
-          case 'P03' : // 제품 선택한 경우
-            // this.getCondition('PD', 'divs');
-            this.divs.length = 0;
-            this.divs[0] = {item : 'I01', name : '완제품'};
-            this.getCondition('PC', 'cate'); 
-            this.noCate = false; 
-            break;
-        }
-      },
-
-      // ------------ 모달 메소드 ------------
-      modalToggle(){
-        this.isModal = !this.isModal;
-        this.getModalList();
-      },
-
-      async getModalList(){
-        // 조회대상(radio) 미선택 시 => 전체 조회
-        // 조회대상(radio) 선택 시 => 선택한 대상 내에서 카테고리 조건 넣어 조회
-        // ** 이름을 입력하면 유사한(LIKE) 이름으로 조회
-        let params = { 
-          type: this.selected_radio,
-          cate_type: this.selected_div,
-          cate: this.selected_cate,
-          nm: this.modal_val.nm 
-        };
-
-        let result = await axios.get('/api/quality/targetAll', {params: params})
-                                .catch(err => console.log(err));
-        let data = result.data;
-        data.forEach((obj) => {
-          obj.has_std = obj.std_date == null ? '미등록' : '등록완료'; // SELECT문 컬럼에 포함되지 않았으므로 추가
-        });
-        this.modalData = data;
-      },
-      
-      modalSelect(params){ // @rowClicked
-        let selected = params.data;
-        if(!this.selected_radio){ // 이름으로 검색만 하고 radio 선택 안 되어있으면 선택해줌
-          let type = null;
-          switch(selected.type){
-            case '자재' : type = 'P01'; break;
-            case '공정' : type = 'P02'; break;
-            case '제품' : type = 'P03'; break;
-          }
-          this.selected_radio = type;
-          this.changeDivs('modal');
-        }
-        this.selected_div = selected.cate_type_cd;
-        this.selected_cate = selected.category_cd;
-        console.log(selected.cate_type_cd + selected.category_cd);
-
-        this.date_val = selected.std_date ? this.$comm.getMyDay(selected.std_date) : this.$comm.getMyDay();
-        this.modal_val.cd = selected.cd;
-        this.modal_val.nm = selected.nm;
-        this.myData_save = new Set();
-        this.modalToggle();
-      },
       // ---------- 모달 메소드 끝 -----------
 
       // 임시저장 (기존 값과 변경되었는지 확인하기 위한 비교용)
