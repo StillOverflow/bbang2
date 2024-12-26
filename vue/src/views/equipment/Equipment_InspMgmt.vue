@@ -38,7 +38,7 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :min="currentDateTime" @change="validateStartTime" :disabled="isFieldDisabled(field.value)" />
+                :min="currentDateTime ? formattedStartTime : null" @change="validateStartTime" :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
           </div>
@@ -173,14 +173,21 @@ export default {
 
   computed: {
     // 현재 날짜와 시간을 반환
+    // 조건부 현재 시간 반환
     currentDateTime() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const date = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      return `${year}-${month}-${date}T${hours}:${minutes}`;
+      return new Date(); // 항상 Date 객체 반환
+    },
+     formattedStartTime() {
+      if (this.currentDateTime) {
+        const now = this.currentDateTime;
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const date = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${date}T${hours}:${minutes}`;
+      }
+      return ''; 
     },
   },
 
@@ -207,14 +214,22 @@ export default {
     },
     // 시작시간 유효성 검사
     validateStartTime() {
-      if (this.equipmentData.start_time < this.currentDateTime) {
-        Swal.fire({
-          icon: 'error',
-          title: '유효성 검사 실패',
-          text: '시작시간은 현재 시간 이후로 설정해야 합니다.',
-        });
-        this.equipmentData.start_time = '';
-      }
+      if (!this.equipmentData.start_time) {
+                return; // 시작 시간이 비어있으면 검사 건너뜀
+            }
+
+            const startTime = new Date(this.equipmentData.start_time);
+            const minStartTime = new Date(this.currentDateTime.getTime()); // 현재 시간
+
+            if (startTime < minStartTime) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '유효성 검사 실패',
+                    text: '시작시간은 현재시간 이후로 설정해야 합니다.',
+                });
+                this.equipmentData.start_time = ''; // input 필드 초기화
+                return;
+            }
     },
 
     // 종료시간 유효성 검사
@@ -244,10 +259,12 @@ export default {
         .get(`api/equip/${eqp_cd}`)
         .catch((err) => console.log(err));
 
+        console.log("API 응답:", result.data);
+
       if (result.data) {
         // 날짜 필드 스플릿
-        if (result.data.pur_dt) {
-          result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
+        if (result.data.last_insp_dt) {
+          result.data.last_insp_dt = result.data.last_insp_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
         }
         this.equipmentData = result.data;
 
@@ -300,7 +317,7 @@ export default {
       });
     },
     isFieldDisabled(fieldName) {
-      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle'];
+      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle', 'last_insp_dt'];
       return !this.selectedEqp || alwaysDisabled.includes(fieldName);
     },
   },

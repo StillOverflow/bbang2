@@ -134,9 +134,18 @@ export default {
         const isUseResponse = await axios.get('/api/comm/codeList/EU');
         const statusResponse = await axios.get('/api/comm/codeList/ES');
 
-        this.equipmentData.selectOptions.EQP_TYPE = eqpTypeResponse.data || [];
-        this.equipmentData.selectOptions.IS_USE = isUseResponse.data || [];
-        this.equipmentData.selectOptions.STATUS = statusResponse.data || [];
+        this.equipmentData.selectOptions.EQP_TYPE = [
+          { comm_dtl_cd: null, comm_dtl_nm: '전체' }, // "전체" 추가
+          ...(eqpTypeResponse.data || []),
+        ];
+        this.equipmentData.selectOptions.IS_USE = [
+          { comm_dtl_cd: null, comm_dtl_nm: '전체' }, // "전체" 추가
+          ...(isUseResponse.data || []),
+        ];
+        this.equipmentData.selectOptions.STATUS = [
+          { comm_dtl_cd: null, comm_dtl_nm: '전체' }, // "전체" 추가
+          ...(statusResponse.data || []),
+        ];
 
       } catch (error) {
         console.error('공통코드 가져오기 실패:', error);
@@ -171,6 +180,13 @@ export default {
     searchEquipments() {
       this.fetchFilteredEquip();
     },
+
+    resetBtn() {
+      this.equipmentData.eqp_type = null; // "전체" 선택
+      this.equipmentData.is_use = null;  // "전체" 선택
+      this.equipmentData.status = null;  // "전체" 선택
+      this.fetchFilteredEquip();         // 초기화 후 데이터 조회
+    }
   },
 };
 </script>
