@@ -391,6 +391,7 @@ export default {
       Object.keys(this.equipmentData).forEach((key) => {
         this.equipmentData[key] = '';
       });
+
     },
   },
 

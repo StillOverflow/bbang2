@@ -15,7 +15,7 @@ const findAllEq = async () => {
 };
 
 // 필터링된 설비 정보 조회
-const eqAllListSearch = async (values) => {
+const findFilteredEq = async (values) => {
   try {
     const list = await mariadb.query('eqAllListSearch', values);
     return list;
@@ -91,5 +91,5 @@ module.exports = {
   updateEq,
   findInspEq,
   findInspEquipNo,
-  eqAllListSearch
+  findFilteredEq
 };

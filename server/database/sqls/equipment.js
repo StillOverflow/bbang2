@@ -40,6 +40,7 @@ const eqAllListSearch = (searchObj) => {
                       fn_get_codename(e.is_use) as is_use,
                       e.model as model,
                       fn_get_codename(e.status) as status,
+                      e.last_insp_dt as last_insp_dt, 
                       i.start_time as start_time,
                       i.insp_type as insp_type,
                       i.insp_reason as insp_reason,
@@ -48,8 +49,8 @@ const eqAllListSearch = (searchObj) => {
                       i.note as note,
                       i.end_time as end_time,
                       i.id as id,
-                      date(e.create_dt) as create_dt,
-                      date(e.update_dt) as update_dt
+                      e.create_dt as create_dt,
+                      e.update_dt as update_dt
 FROM equipment e
       RIGHT JOIN inspection_log i 
               ON e.eqp_cd = i.eqp_cd
@@ -118,48 +119,47 @@ SET ?
 
 /* -----------설비 점검 관리------------*/
 //설비점검조회
-const eqInspList = ` SELECT   e.eqp_cd,
-  e.eqp_type,
-  e.eqp_nm,
-  e.model,
-  e.insp_cycle,
-  e.img_path,
-  i.start_time,
-  i.insp_type,
-  i.insp_reason,
-  i.insp_result,
-  i.insp_action,
-  i.note,
-  i.end_time,
-  i.id,
-  i.create_dt,
-  i.update_dt
+const eqInspList = ` SELECT   e.eqp_cd as eqp_cd,
+  fn_get_codename(e.eqp_type) as eqp_type,
+  e.eqp_nm as eqp_nm,
+  e.model as model,
+  e.insp_cycle as insp_cycle,
+  e.img_path as img_path,
+  i.start_time as start_time,
+  fn_get_codename(i.insp_type) as insp_type,
+  fn_get_codename(i.insp_reason) as insp_reason,
+  fn_get_codename(i.insp_result) as insp_result,
+  i.insp_action as insp_action,
+  i.note as note,
+  i.end_time as end_time,
+  i.id as id,
+  i.create_dt as create_dt,
+  i.update_dt as update_dt
 FROM equipment e
-RIGHT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
+LEFT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
 ORDER BY i.create_dt DESC
 `;
 
 //설비점검 단건조회
-const equipInspInfo = `SELECT   e.eqp_cd,
-  e.eqp_type,
-  e.eqp_nm,
-  e.model,
-  e.insp_cycle,
-  e.img_path,
-  i.start_time,
-  i.insp_type,
-  i.insp_reason,
-  i.insp_result,
-  i.insp_action,
-  i.note,
-  i.end_time,
-  i.id,
-  i.create_dt,
-  i.update_dt
+const eqInspInfo = `SELECT   e.eqp_cd as eqp_cd,
+  fn_get_codename(e.eqp_type) as eqp_type,
+  e.eqp_nm as eqp_nm,
+  e.model as model,
+  e.insp_cycle as insp_cycle,
+  e.img_path as img_path,
+  i.start_time as start_time,
+  fn_get_codename(i.insp_type) as insp_type,
+  fn_get_codename(i.insp_reason) as insp_reason,
+  fn_get_codename(i.insp_result) as insp_result,
+  i.insp_action as insp_action,
+  i.note as note,
+  i.end_time as end_time,
+  i.id as id,
+  i.create_dt as create_dt,
+  i.update_dt as update_dt
 FROM equipment e
 RIGHT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
-WHERE i.eqp_cd = 'EQP010'
-ORDER BY i.create_dt DESC
+WHERE i.eqp_cd = ?
   `;
 
 module.exports = {
@@ -171,5 +171,5 @@ module.exports = {
   getEqpCd,
   eqAllListSearch,
   eqInspList,
-  equipInspInfo
+  eqInspInfo
 };

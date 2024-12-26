@@ -61,11 +61,11 @@ router.get('/equip', async (req, res) => {
 });
 
 // 필터링된 설비 전체 조회
-router.get('/equipAllList/search', async (req, res) => {
+router.get('/equipList/search', async (req, res) => {
   try {
     let searchList = req.query;
 
-    let result = await equipmentService.eqAllListSearch(searchList);
+    let result = await equipmentService.findFilteredEq(searchList);
     res.send(result);
   } catch (err) {
     console.error('필터링된 설비 조회 실패:', err);

@@ -29,9 +29,16 @@ import Produce_Hell from '../views/produce/Produce_Hell.vue';
 
 ////////////////////////////// 설비 //////////////////////////////
 import Equipment from '../views/equipment/Equipment.vue';
-import EquipmentMgmt from '../views/equipment/EquipmentMgmt.vue';
-import EquipmentAllList from '../views/equipment/EquipmentAllList.vue';
-import EquipmentInspectionMgmt from '../views/equipment/EquipmentInspectionMgmt.vue';
+import Equipment_Mgmt from '../views/equipment/Equipment_Mgmt.vue';
+import Equipment_List from '../views/equipment/Equipment_List.vue';
+import Equipment_Stat from '../views/equipment/Equipment_Stat.vue';
+import Equipment_InspMgmt from '../views/equipment/Equipment_InspMgmt.vue';
+import Equipment_InspList from '../views/equipment/Equipment_InspList.vue';
+import Equipment_RepairMgmt from '../views/equipment/Equipment_RepairMgmt.vue';
+import Equipment_RepairList from '../views/equipment/Equipment_RepairList.vue';
+import Equipment_DTimeMgmt from '../views/equipment/Equipment_DTimeMgmt.vue';
+import Equipment_DTimeList from '../views/equipment/Equipment_DTimeList.vue';
+
 
 
 
@@ -58,7 +65,7 @@ import QualityTest from '../views/quality/QualityTest.vue';
 //////////////////////////// 기준정보 ////////////////////////////
 import ProcessFlow from '../views/standard/ProcessFlow.vue';
 import Bom from '../views/standard/Bom.vue';
-import MaterialAdd from'../views/standard/MaterialAdd.vue';
+import MaterialAdd from '../views/standard/MaterialAdd.vue';
 
 
 
@@ -145,14 +152,14 @@ const routes = [
 
 
 
-  
 
 
 
 
 
 
-  
+
+
   ////////////////////////////// 생산 //////////////////////////////
   {
     //생산
@@ -198,7 +205,6 @@ const routes = [
   },
 
 
-  
 
 
 
@@ -207,7 +213,8 @@ const routes = [
 
 
 
-  
+
+
 
 
 
@@ -222,23 +229,57 @@ const routes = [
     //설비관리
     path: '/Equipment_Mgmt',
     name: 'Equipment_Mgmt',
-    component: EquipmentMgmt,
+    component: Equipment_Mgmt,
+  },
+  {
+    //설비 상태 조회
+    path: '/Equipment_Stat',
+    name: 'Equipment_Stat',
+    component: Equipment_Stat,
   },
   {
     //설비 전체 조회
-    path: '/Equipment_AllList',
-    name: 'Equipment_AllList',
-    component: EquipmentAllList,
+    path: '/Equipment_List',
+    name: 'Equipment_List',
+    component: Equipment_List,
   },
-
   {
-    //설비 점검 관라
-    path: '/Equipment_InspectionMgmt',
-    name: 'Equipment_InspectionMgmt',
-    component: EquipmentInspectionMgmt,
+    //설비 점검 관리
+    path: '/Equipment_InspMgmt',
+    name: 'Equipment_InspMgmt',
+    component: Equipment_InspMgmt,
+  },
+  {
+    //설비 점검 조회
+    path: '/Equipment_InspList',
+    name: 'Equipment_InspList',
+    component: Equipment_InspList,
+  },
+  {
+    //설비 수리 관리
+    path: '/Equipment_RepairMgmt',
+    name: 'Equipment_RepairMgmt',
+    component: Equipment_RepairMgmt,
+  },
+  {
+    //설비 수리 조회
+    path: '/Equipment_RepairList',
+    name: 'Equipment_RepairList',
+    component: Equipment_RepairList,
+  },
+  {
+    //설비 비가동 관리
+    path: '/Equipment_DTimeMgmt',
+    name: 'Equipment_DTimeMgmt',
+    component: Equipment_DTimeMgmt,
+  },
+  {
+    //설비 비가동 조회
+    path: '/Equipment_DTimeList',
+    name: 'Equipment_DTimeList',
+    component: Equipment_DTimeList,
   },
 
-  
 
 
 
@@ -260,11 +301,12 @@ const routes = [
 
 
 
-  
 
 
 
-  
+
+
+
   ////////////////////////////// 자재 //////////////////////////////
   {
     // 자재 발주서 조회
@@ -309,7 +351,7 @@ const routes = [
 
 
 
-  
+
   ////////////////////////////// 품질 //////////////////////////////
   {
     // 품질기준 관리
@@ -419,7 +461,7 @@ const routes = [
 
 
 
-  
+
   /////////////////////////// 통계(미정) ///////////////////////////
   {
     //통계
@@ -443,7 +485,7 @@ const routes = [
 
 
 
-  
+
   ///////////////////////// 쓸모없는 거 //////////////////////////
   {
     path: '/tables',
