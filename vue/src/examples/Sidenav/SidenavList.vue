@@ -511,26 +511,25 @@ export default {
           </li>
           <li class="nav-item">
             <sidenav-item
-              to="/MaterialAdd" :class="getRoute() === 'MaterialAdd' ? 'active' : ''" :navText="'자재관리'"
+              to="/Standard_MtlAdd" :class="getRoute() === 'Standard_MtlAdd' ? 'active' : ''" :navText="'자재관리'"
             >
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Standard_list4" :class="getRoute() === 'Standard_list4' ? 'active' : ''"
-              :navText="'제품관리'">
+            <sidenav-item to="/Standard_ProductAdd" :class="getRoute() === 'Standard_ProductAdd' ? 'active' : ''" :navText="'제품관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Bom" :class="getRoute() === 'Bom' ? 'active' : ''" :navText="'BOM관리'">
+            <sidenav-item to="/Standard_Bom" :class="getRoute() === 'Standard_Bom' ? 'active' : ''" :navText="'BOM관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Standard_list6" :class="getRoute() === 'Standard_list6' ? 'active' : ''"
+            <sidenav-item to="/Standard_ProcessAdd" :class="getRoute() === 'Standard_ProcessAdd' ? 'active' : ''"
               :navText="'공정관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/ProcessFlow" :class="getRoute() === 'Standard_list7' ? 'active' : ''"
+            <sidenav-item to="/Standard_ProcessFlow" :class="getRoute() === 'Standard_list7' ? 'active' : ''"
               :navText="'공정흐름도관리'">
             </sidenav-item>
           </li>

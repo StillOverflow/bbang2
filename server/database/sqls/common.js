@@ -1,28 +1,50 @@
 //! QQA01 중 'QQ'와 관련된 공통코드를 모두 찾을 때
 const findCommList = `
-  SELECT comm_dtl_nm, comm_dtl_cd
-  FROM   common_detail
-  WHERE  UPPER(comm_cd) = UPPER( ? )
-  ORDER  BY comm_dtl_cd
+SELECT comm_dtl_nm,
+       comm_dtl_cd
+FROM common_detail
+WHERE UPPER(comm_cd) = UPPER(?)
+ORDER BY comm_dtl_cd
 `;
 
 // 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회)
 const memList = (dpt_cd) => {
   return `
-    SELECT mem_cd, name, id, password, phone, addr, email, birth, 
-            hire_dt, quit_dt, status, permission, create_dt, update_dt, dpt_cd
-    FROM   member
-    ${!dpt_cd ? "" : "WHERE  UPPER(dpt_cd) = UPPER('" + dpt_cd + "') "} -- 부서번호 있을 시 동적 조건 생성
-    order  BY name `;
+  SELECT mem_cd,
+        name,
+        id,
+        password,
+        phone,
+        addr,
+        email,
+        birth,
+        hire_dt,
+        quit_dt,
+        status,
+        permission,
+        create_dt,
+        update_dt,
+        dpt_cd
+  FROM member ${!dpt_cd ? "" : "WHERE  UPPER(dpt_cd) = UPPER('" + dpt_cd + "') "} -- 부서번호 있을 시 동적 조건 생성
+  ORDER  BY name `;
 };
 
 //! 거래처 조회
 // 거래처 코드가 존재하면 Where 조립 없으면 전체조회
 const accountSelect = (datas) => {
   let query = `
-    SELECT  act_cd, fn_get_codename(act_type) AS act_type, act_nm, mgr_nm, mgr_tel, ceo_nm, 
-            act_addr, act_tel, business_no, location, note
-    FROM    account
+  SELECT act_cd,
+        fn_get_codename(act_type) AS act_type,
+        act_nm,
+        mgr_nm,
+        mgr_tel,
+        ceo_nm,
+        act_addr,
+        act_tel,
+        business_no,
+        LOCATION,
+        note
+  FROM ACCOUNT
   `;
 
   const conditions = [];
@@ -44,17 +66,17 @@ const accountSelect = (datas) => {
 //! 자재 조회
 const materialSelect = (datas) => {
   let query = `
-    SELECT mat_cd, 
-    mat_nm, 
-    fn_get_codename(type) as type, 
-    price, 
-    safe_stk, 
-    create_dt, 
-    update_dt, 
-    fn_get_codename(category) as category, 
-    fn_get_codename(unit) as unit,
-    note
-    FROM material
+  SELECT mat_cd,
+        mat_nm,
+        fn_get_codename(TYPE) AS type,
+        price,
+        safe_stk,
+        create_dt,
+        update_dt,
+        fn_get_codename(category) AS category,
+        fn_get_codename(unit) AS unit,
+        note
+  FROM material
   `;
   
   const conditions = [];
@@ -77,9 +99,20 @@ const materialSelect = (datas) => {
 //! 상품 조회
 const productSelect = (datas) => {
   let query = `
-    SELECT prd_cd, prd_nm, fn_get_codename(category) as category, price, fn_get_codename(unit) as unit, exp_range, safe_stk, create_dt, update_dt, note,
-    (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=p.PRD_CD) AS in_cnt 
-    FROM   product p
+  SELECT prd_cd,
+        prd_nm,
+        fn_get_codename(category) AS category,
+        price,
+        fn_get_codename(unit) AS unit,
+        exp_range,
+        safe_stk,
+        create_dt,
+        update_dt,
+        note,
+        (SELECT SUM(STOCK)
+        FROM product_in
+        WHERE PRD_CD = p.PRD_CD ) AS in_cnt
+  FROM product p
   `;
   
   const conditions = [];
@@ -102,15 +135,17 @@ const productSelect = (datas) => {
 //주문서별 제품목록
 const orderDtlList = 
 `
-SELECT order_dtl_cd,
-		 order_cd,
-		 o.prd_cd as prd_cd, 
-		 prd_nm, 
-		 order_qty, 
-		 (SELECT sum(STOCK) FROM product_in WHERE PRD_CD=o.PRD_CD) AS in_cnt
-FROM 
-		order_detail o JOIN product p ON o.PRD_CD=p.PRD_CD 
-		WHERE order_cd=?
+  SELECT order_dtl_cd,
+        order_cd,
+        o.prd_cd AS prd_cd,
+        prd_nm,
+        order_qty,
+        (SELECT sum(STOCK)
+        FROM product_in
+        WHERE PRD_CD=o.PRD_CD) AS in_cnt
+  FROM order_detail o
+  JOIN product p ON o.PRD_CD=p.PRD_CD
+  WHERE order_cd=?
 `;
 
 module.exports = {
