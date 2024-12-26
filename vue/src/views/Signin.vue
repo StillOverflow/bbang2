@@ -141,7 +141,6 @@ export default {
 
       if(result.data == 'success'){
           this.$session.set('user_id', this.id);
-
           this.$router.push({ name : 'Dashboard', params : { id : this.id }});   
       }else if(result.data == 'quit'){
           this.$swal({
