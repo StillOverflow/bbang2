@@ -3,29 +3,20 @@
 //전체 제품조회
 const prdList = `
 SELECT
-    p.prd_cd, 
-    p.prd_nm,
-    b.create_dt AS create_dt,  
-    cd.comm_dtl_nm AS usage_sta  
-FROM product p
-	LEFT outer JOIN bom b 
-    ON p.prd_cd = b.prd_cd
-	LEFT JOIN common_detail cd
-    ON cd.comm_dtl_cd = b.usage_sta
-	GROUP BY prd_cd
+prd_cd,
+prd_nm,
+create_dt,
+fn_get_codename(category) AS category
+FROM product
 `;
 //제품 키워드 검색
 const prdSearch = `
 SELECT
-    p.prd_cd, 
-    p.prd_nm,
-    b.create_dt AS create_dt,  
-    cd.comm_dtl_nm AS usage_sta  
-FROM product p
-	LEFT outer JOIN bom b 
-    ON p.prd_cd = b.prd_cd
-	LEFT JOIN common_detail cd
-    ON cd.comm_dtl_cd = b.usage_sta
+prd_cd,
+prd_nm,
+create_dt,
+fn_get_codename(category) AS category
+FROM product
 	 
 where p.prd_nm like ?
 GROUP BY prd_cd
@@ -254,11 +245,29 @@ WHERE prd_cd = ?
 `;
 //----------------------------------공정관리--------------------------------------------
 //공점검색
-const produceSelect = (datas)=>{
+const processSelect = (datas)=>{
     let query = 
     `
-    
+    SELECT proc_cd,
+           proc_nm,
+           fn_get_codename(eqp_type) AS eqp_type,
+           duration,
+           note
+    FROM process
     `;
+
+    const conditions = [];
+
+      // 상품조회 조건
+    if(datas.proc_nm) conditions.push(`proc_nm LIKE '%${datas.proc_nm}%'`);
+
+    if (conditions.length > 0) {
+        query += ` WHERE ` + conditions.join(' AND ');
+    }
+
+    query += ` ORDER BY proc_cd`;
+
+    return query;
 }
 module.exports = {
   //bom
@@ -298,5 +307,6 @@ prdInsert,
 prdUpdate,
 prdDelete,
 
-
+//공정관리
+processSelect,
 };
