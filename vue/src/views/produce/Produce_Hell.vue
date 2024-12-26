@@ -85,7 +85,7 @@
           <!--공정목록-->
           <h5 class="modal-title mb-3">2. 제품 공정목록</h5>
           <div class="col-6">
-            <div class="table-responsive">
+            <div class="table-responsive produce">
               <table class="table">
                 <thead class="table-secondary">
                   <tr>
