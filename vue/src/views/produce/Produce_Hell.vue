@@ -77,7 +77,7 @@
               </tr>
             </tbody>
           </table>
-        </div>
+        </div>{{  this.$session.get('user_id')}}
 
         <hr class="horizontal dark">
         
