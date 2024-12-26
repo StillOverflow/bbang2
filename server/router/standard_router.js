@@ -171,4 +171,10 @@ router.delete('/standard/delProduct/:prd_cd', async(req,res)=>{
   res.send(result);
 })
 
+//----------------------------------------공정관리-------------------------------------------------
+router.get('/standard/process', async(req,resp)=>{
+  let datas =req.query;
+  let result = await standardService.processSelect(datas);
+  resp.send(result);
+})
 module.exports = router;

@@ -156,8 +156,8 @@ export default {
         { headerName: "제품코드", field: "prd_cd", sortable: true },
         { headerName: "제품명", field: "prd_nm", sortable: true },
         {
-          headerName: "사용여부",
-          field: "usage_sta",
+          headerName: "카테고리",
+          field: "category",
           cellEditor: "agSelectCellEditor",
         },
         {

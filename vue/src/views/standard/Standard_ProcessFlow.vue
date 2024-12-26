@@ -12,7 +12,7 @@
                 <label class="m-0" style="width: 20%;">제품명</label>
                 <div class="input-group d-flex justify-content-between align-items-center" style="width: 80%;">
                   <input type="text" class="form-control" placeholder="제품명을 입력하세요" v-model="keyword" style="height: 41px;">
-                  <button class="btn btn-warning m-0" type="button" id="button-addon3">
+                  <button class="btn btn-warning m-0" type="button" id="button-addon3" @click="searchPrd">
                     <i class="fa-solid fa-magnifying-glass"></i>
                   </button>
                 </div>
@@ -155,7 +155,7 @@ export default {
   created() {
     this.$store.dispatch("breadCrumb", { title: "공정흐름도 관리" });
     this.bringProFlow();
-    this.bringPrdUsa();
+    this.searchPrd()
     this.bringBomData();
     this.bringMtlData();
     this.bringProcCd();
@@ -185,7 +185,7 @@ export default {
       productDefs: [
         { headerName: "제품코드", field: "prd_cd", sortale: true },
         { headerName: "제품명", field: "prd_nm", sortale: true },
-        { headerName: "사용여부", field: "useSta", sortale: true },
+        { headerName: "카테고리", field: "category", sortale: true },
       ],
       productData: [],
       //공정흐름도
@@ -237,6 +237,8 @@ export default {
       deleteModal: [],
       isModal: false,
       bomModal: false,
+      keyword:'',
+      prdKeyword: {},
     };
   },
 
@@ -261,12 +263,19 @@ export default {
     },
 
     //제품조회
-    async bringPrdUsa() {
-      let result = await axios
-        .get("/api/standard/productFlow")
-        .catch((err) => console.log(err));
-      this.productData = result.data;
-    },
+    async searchPrd() {
+        this.prdKeyword = {prd_nm: this.keyword};
+        let result = await axios.get('/api/comm/product/', { params: this.prdKeyword });
+        this.productData = result.data;
+        },
+
+    // //제품조회
+    // async bringPrdUsa() {
+    //   let result = await axios
+    //     .get("/api/standard/productFlow")
+    //     .catch((err) => console.log(err));
+    //   this.productData = result.data;
+    // },
     //공정흐름도 조회
     async bringProFlow(prdCd) {
       let result = await axios
