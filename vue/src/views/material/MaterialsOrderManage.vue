@@ -1,11 +1,9 @@
 <template>
    <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
       <div class="card">      
-         <div class="card-header bg-light ,">
+         <div class="card-header bg-light">
             
-         </div>
-
-         <!-- 거래처조회 모달[S]-->
+         </div><!-- 거래처조회 모달[S]-->
          <Layout :modalCheck="isAccountModal">
             <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
                <h5 class="modal-title">거래처 조회</h5>
@@ -18,7 +16,7 @@
                   :rowData="accountModalData"
                   :pagination="true"
                   :gridOptions="accountModalGridOptions"
-                  @grid-ready="gridReady"
+                  @grid-ready="(params) => gridReady(params, 'account')"
                   @first-data-rendered="accountModalGrid">
                </ag-grid-vue>
             </template>
@@ -32,7 +30,7 @@
 
          <Layout :modalCheck="isOrderModal">
             <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-               <h5 class="modal-title">주문서 조회</h5>
+               <h5 class="modal-title">발주서 조회</h5>
                <button type="button" aria-label="Close" class="close" @click="orderModalOpen">×</button>
             </template>
             <template v-slot:default>
@@ -42,8 +40,7 @@
                   :rowData="orderModalData"
                   :pagination="true"
                   :gridOptions="orderModalGridOptions"
-                  @rowClicked="accountRowClicked"
-                  @grid-ready="gridReady"
+                  @grid-ready="(params) => gridReady(params, 'orderList')"
                   @first-data-rendered="orderModalGrid">
                </ag-grid-vue>
             </template>
@@ -71,10 +68,10 @@
                            <i class="fa-regular fa-file me-1"></i>
                            발주서조회
                         </button>
-                        <button class="btn btn-outline-primary btn-sm m-0 mx-1" @click="onAddRow">
+                        <button class="btn btn-outline-primary btn-sm m-0 mx-1" @click="addRow">
                            <i class="fa-solid fa-plus"></i>
                         </button>
-                        <button class="btn btn-outline-danger btn-sm m-0 mx-1">
+                        <button class="btn btn-outline-danger btn-sm m-0 mx-1" @click="removeRow">
                            <i class="fa-solid fa-minus"></i>
                         </button>
                      </div>
@@ -89,7 +86,7 @@
                            :pagination="true"
                            :gridOptions="orderFormOptions"
                            @rowClicked="rowClicked"
-                           @grid-ready="gridReady"
+                           @grid-ready="(params) => gridReady(params, 'orderForm')"
                            @first-data-rendered="orderFormGrid">
                         </ag-grid-vue>
                      </div>
@@ -153,10 +150,14 @@
    });
 
 //^ ------------------------------------------- Modal -------------------------------------------   
-   // 거래처 검색 모달
+   // 거래처 검색 모달'
+   
    const accountModalOpen = () => {
       isAccountModal.value = !isAccountModal.value;
       getAccountList();
+      if (accountModalGrid.value) {
+         accountModalGrid.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
+      }
    };
 
    // 주문서 검색 모달
@@ -177,7 +178,7 @@
       }
    }
 
-   const onAddRow = () => {
+   const addRow = () => {
       const newRow = {
          act_nm: "",
          act_type: "",
@@ -192,17 +193,36 @@
       console.log("Updated orderFormData:", orderFormData.value);
    };
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
-   const gridReady = (params) => {
+   // const gridReady = (params) => {
+   //    console.log("params.api => ", params.api)
+   //    if (params.api) {
+   //       params.api.sizeColumnsToFit(); // 그리드 크기에 자동 맞춤
+   //    }
+   // };
+
+   const gridReady = (params, gridType) => {
+      console.log(`${gridType} params.api =>`, params.api);
+      console.log("gridType => ", gridType)
       if (params.api) {
-         params.api.sizeColumnsToFit(); // 그리드 크기에 자동 맞춤
+         if (gridType === 'account') {
+            accountModalGrid.value = params.api; // 거래처 모달 그리드 API 저장
+         }
+         if (gridType === 'orderList') {
+            console.log("orderList")
+            orderModalGrid.value = params.api; // 주문서 모달 그리드 API 저장
+         }
+         if (gridType === 'orderForm') {
+            orderFormGrid.value = params.api; // 발주서 관리 그리드 API 저장
+         }
+         params.api.sizeColumnsToFit();
       }
    };
 
    // 주문서 정보 클릭시 상세보기 ~~
-   const accountRowClicked = (params) => {
-      console.log("params => ", params);
+   // const accountRowClicked = (params) => {
+   //    console.log("params => ", params);
       
-   };
+   // };
 
 // ^ ---------------------------------------- axios 서버통신 ----------------------------------------
    // 거래처 조회
