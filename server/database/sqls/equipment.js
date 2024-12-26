@@ -95,6 +95,7 @@ const equipInfo = `SELECT eqp_cd,
   opt_rpm,
   opt_speed,
   opt_power,
+  last_insp_dt,
   uph,
   is_use,
   img_path
@@ -118,6 +119,15 @@ SET ?
 
 
 /* -----------설비 점검 관리------------*/
+
+// 점검 등록 전 마지막 점검 코드 찾기 +1
+const getInspCd = `
+SELECT CONCAT('INS', LPAD(IFNULL(MAX(SUBSTR(i.INSP_LOG_CD, -3)) + 1, 1), 3, '0')) AS INSP_LOG_CD FROM inspection_log i`;
+
+//설비점검등록
+const eqInspInsert = `INSERT INTO inspection_log
+SET ? `;
+
 //설비점검조회
 const eqInspList = ` SELECT   e.eqp_cd as eqp_cd,
   fn_get_codename(e.eqp_type) as eqp_type,
@@ -173,5 +183,7 @@ module.exports = {
   getEqpCd,
   eqAllListSearch,
   eqInspList,
-  eqInspInfo
+  eqInspInfo,
+  getInspCd,
+  eqInspInsert
 };

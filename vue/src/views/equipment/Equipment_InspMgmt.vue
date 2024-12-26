@@ -38,8 +38,7 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :min="field.value === 'start_time' ? currentDateTime : field.value === 'end_time' ? equipmentData.start_time : null"
-                  :disabled="isFieldDisabled(field.value)" />
+                :min="currentDateTime ? formattedStartTime : null" @change="validateStartTime" :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
           </div>
@@ -66,8 +65,8 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :min="field.value === 'end_time' ? minEndTime : field.value === 'start_time' ? currentDateTime : null"
-                  :readonly="!selectedEqp" />
+                  :min="equipmentData.start_time || currentDateTime" :readonly="!selectedEqp"
+                  @change="validateEndTime" />
               </template>
             </div>
           </div>
@@ -174,14 +173,21 @@ export default {
 
   computed: {
     // 현재 날짜와 시간을 반환
+    // 조건부 현재 시간 반환
     currentDateTime() {
-      const now = new Date();
-      const year = now.getFullYear();
-      const month = String(now.getMonth() + 1).padStart(2, '0');
-      const date = String(now.getDate()).padStart(2, '0');
-      const hours = String(now.getHours()).padStart(2, '0');
-      const minutes = String(now.getMinutes()).padStart(2, '0');
-      return `${year}-${month}-${date}T${hours}:${minutes}`;
+      return new Date(); // 항상 Date 객체 반환
+    },
+     formattedStartTime() {
+      if (this.currentDateTime) {
+        const now = this.currentDateTime;
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const date = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        return `${year}-${month}-${date}T${hours}:${minutes}`;
+      }
+      return ''; 
     },
   },
 
@@ -206,6 +212,37 @@ export default {
 
       this.isModal = false;
     },
+    // 시작시간 유효성 검사
+    validateStartTime() {
+      if (!this.equipmentData.start_time) {
+                return; // 시작 시간이 비어있으면 검사 건너뜀
+            }
+
+            const startTime = new Date(this.equipmentData.start_time);
+            const minStartTime = new Date(this.currentDateTime.getTime()); // 현재 시간
+
+            if (startTime < minStartTime) {
+                Swal.fire({
+                    icon: 'error',
+                    title: '유효성 검사 실패',
+                    text: '시작시간은 현재시간 이후로 설정해야 합니다.',
+                });
+                this.equipmentData.start_time = ''; // input 필드 초기화
+                return;
+            }
+    },
+
+    // 종료시간 유효성 검사
+    validateEndTime() {
+      if (this.equipmentData.end_time < this.equipmentData.start_time) {
+        Swal.fire({
+          icon: 'error',
+          title: '유효성 검사 실패',
+          text: '종료시간은 시작시간 이후로 설정해야 합니다.',
+        });
+        this.equipmentData.end_time = '';
+      }
+    },
 
     async getComm(cd) {
       // 공통코드 가져오기
@@ -222,10 +259,12 @@ export default {
         .get(`api/equip/${eqp_cd}`)
         .catch((err) => console.log(err));
 
+        console.log("API 응답:", result.data);
+
       if (result.data) {
         // 날짜 필드 스플릿
-        if (result.data.pur_dt) {
-          result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
+        if (result.data.last_insp_dt) {
+          result.data.last_insp_dt = result.data.last_insp_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
         }
         this.equipmentData = result.data;
 
@@ -278,7 +317,7 @@ export default {
       });
     },
     isFieldDisabled(fieldName) {
-      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle'];
+      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle', 'last_insp_dt'];
       return !this.selectedEqp || alwaysDisabled.includes(fieldName);
     },
   },
@@ -287,6 +326,7 @@ export default {
     this.getEquipList();
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 점검 관리' });
+    this.equipmentData.start_time = this.currentDateTime;
 
     // 공통코드가 EQ(설비구분)일 때
     this.getComm('EQ')
@@ -347,7 +387,6 @@ export default {
     selectedEqp() {
       // 기존 설비 코드를 선택한 경우 해당 설비를 기준으로 단건조회
 
-
       // 해당 설비 : this.selectedEqp
 
       if (!this.selectedEqp) {
@@ -360,8 +399,11 @@ export default {
 
     // start_time 변경 감지
     'equipmentData.start_time'(newStartTime) {
-      // 종료 시간이 시작 시간보다 빠르면 초기화
-      if (this.equipmentData.end_time && this.equipmentData.end_time < newStartTime) {
+      const start = new Date(newStartTime);
+      const end = new Date(this.equipmentData.end_time);
+
+      // 종료 시간이 시작 시간보다 이전일 경우 초기화
+      if (this.equipmentData.end_time && end < start) {
         this.equipmentData.end_time = '';
         Swal.fire({
           icon: 'warning',

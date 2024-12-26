@@ -164,6 +164,13 @@ router.put(
 
 
 /*--------------설비 점검-------------*/
+
+//점검등록
+router.post('/equip/insp', async (req, res) => {
+  
+});
+
+
 //점검전체조회
 router.get('/equip/insp', async (req, res) => {
   let eqInspList = await equipmentService.findInspEq();

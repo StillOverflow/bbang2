@@ -68,6 +68,14 @@ const updateEq = async (eqInfo) => {
 };
 
 /* ---------------------- 설비 점검 ----------------------- */
+
+// 점검 등록
+const insertInspEq = async (eqInspInfo) => {
+  
+
+};
+
+
 //설비 점검 전체 조회
 const findInspEq = async () => {
   let list = await mariadb.query('eqInspList');
@@ -91,5 +99,6 @@ module.exports = {
   updateEq,
   findInspEq,
   findInspEquipNo,
-  findFilteredEq
+  findFilteredEq,
+  insertInspEq
 };
