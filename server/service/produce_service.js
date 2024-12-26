@@ -149,7 +149,12 @@ const deleteInst = async (values)=>{
 //지시서에 커스텀된 제품별 공정 조회
 const findInstCusFlow = async (values)=>{
   let list = await mariadb.query('instCusFlow', values);
-  console.log(list);
+  return list;
+}
+
+ //지시서 제품별 커스텀된 공정목록 조회 -> 설비목록
+const findInstCusEqu = async (no)=>{
+  let list = await mariadb.query('instCusEqu', no);
   return list;
 }
 
@@ -167,5 +172,6 @@ module.exports = {
   findInstFlow,
   findInstMatFlow,
   findInstCusFlow,
+  findInstCusEqu,
   deleteInst
 };

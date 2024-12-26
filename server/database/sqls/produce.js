@@ -251,10 +251,12 @@ const instCusFlow = (datas) => {
                 INST_PROC_CD,
                 INST_CD,
                 PRD_CD,
-                PROC_CD,
-                (SELECT PROC_NM FROM process WHERE proc_cd=pps.proc_cd) AS PROC_NM,
+                pps.PROC_CD,
+                PROC_NM,
+                EQP_TYPE,
                 STEP
-            FROM prod_proc_step pps `;
+              FROM prod_proc_step pps JOIN (SELECT PROC_NM, EQP_TYPE, PROC_CD FROM process ) p
+              ON pps.proc_cd=p.proc_cd`;
   
   const queryArr = [];
 
@@ -262,7 +264,6 @@ const instCusFlow = (datas) => {
   if (datas.INST_CD) queryArr.push(`INST_CD = UPPER('${datas.INST_CD}')`);
   if (datas.PRD_CD) queryArr.push(`PRD_CD = UPPER('${datas.PRD_CD}')`);
   
-
   if (queryArr.length > 0) {
     sql += ` WHERE ` + queryArr.join(' AND ');
   }
@@ -271,6 +272,17 @@ const instCusFlow = (datas) => {
 
   return sql;
 }
+
+const instCusEqu = 
+`
+SELECT 
+	EQP_CD,
+  EQP_TYPE,
+	EQP_NM,
+	MODEL,
+  fn_get_codename(STATUS) as ACT_TYPE
+FROM equipment WHERE eqp_type = ?
+`;
 
 //계획서 다중 삭제
 const instDelete = (datas) => {
@@ -306,6 +318,7 @@ module.exports = {
     instDtlInsert,
     instFlowInsert,
     instCusFlow,
+    instCusEqu,
 
     instProcList,
     instProcMtList

@@ -23,7 +23,7 @@
             </template>
             <template v-slot:default>
               <ag-grid-vue class="ag-theme-alpine" 
-              style="width: 100%; height: 250px;" 
+              style="width:100%; height:250px;" 
               :columnDefs="instDefs"
               :rowData="instData" 
               @grid-ready="gridFit"
@@ -58,7 +58,7 @@
                 :key="val.INST_DTL_CD">
                   <td>
                     <div class="form-check col-10 d-flex">
-                      <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="val.PRD_CD" :id="'radio' + val.PRD_CD" @change="getFlowList">
+                      <input class="form-check-input ms-1" type="radio" v-model="inst_radio" :value="val.PRD_CD" :id="'radio' + val.PRD_CD" @change="getFlowList">
                     </div>
                   </td>
                   <td>
@@ -90,16 +90,18 @@
                 <thead class="table-secondary">
                   <tr>
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 순번 </th>
+                    <th class="text-center text-uppercase text-ser opacity-7">공정코드</th>
                     <th class="text-center text-uppercase text-ser opacity-7">공정명</th>
                     <th class="text-center text-uppercase text-ser opacity-7">상태</th>
-                    <th class="text-center text-uppercase text-ser opacity-7"></th>
+                    <th class="text-center text-uppercase text-ser opacity-7" colspan="2"></th>
                   </tr>
                 </thead>   
                 <tbody>
                   <template v-if="flowCount >0">
                     <template v-for="flow in flowData" :key="flow.INST_CD">
-                      <tr class="text-center align-middle">
+                      <tr class="text-center align-middle" @click="getFlowEquList(flow.EQP_TYPE)">
                         <td>{{ flow.STEP }}</td>
+                        <td>{{ flow.PROC_CD }}</td>
                         <td>{{ flow.PROC_NM }}</td>
                         <td>{{ flow.ACT_TYPE }}</td>                      
                         <td>
@@ -108,10 +110,19 @@
                       </tr>
 
                       <template v-for="equ in equData" :key="equ.EQP_CD">
-                        <tr class="text-center align-middle">
-                          <td>{{ equ.EQP_NM }}</td>                  
-                          <td></td>
-                        </tr>
+                        <template v-if="equ.EQP_TYPE == flow.EQP_TYPE">
+                          <tr class="text-center align-middle">
+                            <td>
+                              <div class="form-check col-10 d-flex">
+                                <input class="form-check-input ms-1" type="radio" v-model="equ_radio" :value="equ.EQP_CD" :id="'radio' + equ.EQP_CD">
+                              </div>
+                            </td>
+                            <td>{{ equ.EQP_CD }}</td>
+                            <td>{{ equ.EQP_NM }}</td>
+                            <td>{{ equ.ACT_TYPE }}</td>
+                            <td class="form-inline"><input type="text" class="form-control w-30"> ℃</td>
+                          </tr>
+                        </template>
                       </template>
                     </template>
                   </template>
@@ -167,7 +178,9 @@ export default {
       instData: [],
       instDtlData: [],
       flowData: [],
-      selected_radio:'',
+      equData: [],
+      inst_radio:'',
+      equ_radio:'',
     };
   },
   methods: {    
@@ -202,23 +215,18 @@ export default {
     async getFlowList() {
       let obj = {
           INST_CD : this.inst_cd,
-          PRD_CD : this.selected_radio,
+          PRD_CD : this.inst_radio,
       }
       let result = await axios.get('/api/progress/flow', {params:obj})
                               .catch(err => console.log(err));
       this.flowData = result.data;
-      console.log(this.flowData);
     },
 
     //공정별 설비 리스트
-    async getFlowEquList() {
-      let obj = {
-          INST_CD : this.inst_cd,
-          PRD_CD : this.selected_radio,
-      }
-      let result = await axios.get('/api/progress/equ', {params:obj})
+    async getFlowEquList(equ_type) {
+      let result = await axios.get(`/api/progress/equ/${equ_type}`)
                               .catch(err => console.log(err));
-      this.instDtlData = result.data;
+      this.equData = result.data;
     },
   }
     
