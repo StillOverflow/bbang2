@@ -112,7 +112,7 @@
    import { useStore } from 'vuex';
    
    import Layout from '../components/modalLayout.vue';
-   //import CustomDropdownEditor from '../components/CustomDropdownEditor.vue'; // modal Layout 불러오기
+   import CustomDropdownEditor from '../components/CustomDropdownEditor.vue'; // modal Layout 불러오기
 
    const store = useStore();  // vuex
 
@@ -314,8 +314,9 @@
          {
             headerName: '자재명',
             field: 'mat_nm',
-            editable: true, // 편집 가능
-            //cellEditorFramework: CustomDropdownEditor, // 사용자 정의 편집기
+            editable: true,
+            cellEditor: 'CustomDropdownEditor', // Vue 컴포넌트를 cellEditor로 사용
+            
          },
          // { 
          //    headerName: '자재명', 
@@ -386,7 +387,9 @@
             }
          },
       ],
-
+      frameworkComponents: {
+         CustomDropdownEditor, // Vue 컴포넌트를 Ag-Grid의 프레임워크 컴포넌트로 등록
+      },
       defaultColDef: {
          editable: true,
          filter: true,

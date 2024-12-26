@@ -1,65 +1,64 @@
 <template>
-   <div class="dropdown-editor">
+   <div class="inputSearch">
       <!-- 입력 필드 -->
-      <input
-         v-model="searchText"
-         type="text"
-         placeholder="자재명을 입력하세요"
-         class="dropdown-input"
-         @change="onInput"
-      />
-   
+      <div class="input-group mb-3 w-30">
+         <input type="text" class="form-control searchKeyword" placeholder="자재명을 입력하세요." v-model="searchKeyword" @change="onChange($event)">
+         <button class="btn btn-warning" type="button" id="button-addon3">
+            <i class="fa-solid fa-magnifying-glass"></i>
+         </button>
+      </div>
+      
       <!-- 드롭다운 리스트 -->
-      <div v-if="dropdownVisible" class="dropdownBox">
-         <div v-for="(item, index) in filteredItems" :key="index" class="dropdownItem" @click="selectItem(item)">{{ item.name }}</div>
+      <div class="dropdownBox w-30" v-show="!isHidden">
+         <button type="button" v-for="(item,index) in searchMaterialArr" :key="index" ref="newArray" class="smallText m-3">{{ item.mat_nm }}</button>
       </div>
    </div>
 </template>
 
 <script setup>
-   import { ref, props, emit } from 'vue';
    import axios from 'axios';
+   import { ref } from 'vue';
+   import Swal from 'sweetalert2';
    
-   defineProps(['value']); // Ag-Grid에서 전달된 값
-   defineEmits(['input']); // 부모에게 값 전달
-   
-   // 상태 관리
-   const searchText = ref(''); // 입력 텍스트
-   const dropdownVisible = ref(false); // 드롭다운 표시 여부
-   const filteredItems = ref([]); // 검색 결과
-   
-   // 초기 값 설정
-   searchText.value = props.value || '';
+   let searchKeyword = ref('');
+   let searchMaterialArr = ref([]);
+   let newArray = ref([]);
+   let isHidden = ref(true);
 
-   // 입력 이벤트 핸들러
-   const onInput = async () => {
-      console.log(searchText.value);
-      if (searchText.value.length > 0) {
+   const onChange = () => {
+      // 검색어가 비어 있는지 확인
+      getMaterial(searchKeyword.value);
+   }
+
+   const getMaterial = async (keyword) => {
       try {
-         // 서버 호출
-         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : searchText.value } });
-         filteredItems.value = result.data || [];
-         dropdownVisible.value = filteredItems.value.length > 0;
-      } catch (error) {
-         console.error('검색 오류:', error);
+         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : keyword } });
+         searchMaterialArr.value = result.data;
+         console.log(result.data.length)
+         if (result.data.length > 0) {
+            isHidden.value = false; // 드롭다운 표시
+         } else {
+            searchMaterialArr.value = [{ mat_nm: '검색결과가 없습니다.' }];
+            //isHidden.value = true; // 검색어가 없으면 드롭다운 숨김
+         }
+      } catch (err) {
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
       }
-      } else {
-         dropdownVisible.value = false;
-      }
-   };
-
-   // 항목 선택
-   const selectItem = (item) => {
-      searchText.value = item.name;
-      dropdownVisible.value = false;
-      emit('input', item.name); // 선택된 값 부모에 전달
    };
 </script>
 
 <style scoped>
-   .dropdown-editor {
+   .inputSearch {
       position: relative;
       width: 100%;
+   }
+   
+   .searchKeyword {
+      height: 41px;
    }
    
    .dropdown-input {
@@ -72,20 +71,27 @@
       position: absolute;
       top: 100%;
       left: 0;
-      width: 100%;
       background: #fff;
       border: 1px solid #ccc;
-      max-height: 150px;
+      max-height: 300px;
       overflow-y: auto;
       z-index: 10;
-   }
-   
-   .dropdownItem {
       padding: 5px;
-      cursor: pointer;
+      border-radius: 5px;
    }
    
-   .dropdownItem:hover {
-      background: #f0f0f0;
+   .smallText {
+      all: unset; 
+      display: block;
+      font-size: 12px;
+      color: #999999;
+      cursor: pointer;
+      border: none;
+      background-color: none;
+   }
+
+   .smallText:hover {
+      color: #7c4758;
+      font-weight: 600;
    }
 </style>
