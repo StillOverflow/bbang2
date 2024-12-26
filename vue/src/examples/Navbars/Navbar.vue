@@ -63,10 +63,9 @@ const closeMenu = () => {
         </div>
         <ul class="navbar-nav justify-content-end">
           <li class="nav-item d-flex align-items-center">
-            <template v-if="this.$session.exists()">
+            <template v-if="this.$session.exists() == true">
               <button @click="logout"
               class="px-0 nav-link font-weight-bold text-white"
-              target="_blank"
               >
                 <i class="fa fa-user" :class="isRTL ? 'ms-sm-2' : 'me-sm-2'"></i>
                 <span class="d-sm-inline d-none">LogOut</span>
@@ -76,7 +75,6 @@ const closeMenu = () => {
               <router-link
               :to="{ name: 'Signin' }"
               class="px-0 nav-link font-weight-bold text-white"
-              target="_blank"
               >
                 <i class="fa fa-user" :class="isRTL ? 'ms-sm-2' : 'me-sm-2'"></i>
                 <span class="d-sm-inline d-none">LogIn</span>
@@ -235,9 +233,9 @@ const closeMenu = () => {
 <script>
 export default {
   methods: {
-    logout() {
-      this.$session.destroy();
-      this.$router.push('/');
+    logout() {      
+      this.$session.destroy();    
+      this.$router.push('/signin');
     }
   }
 }

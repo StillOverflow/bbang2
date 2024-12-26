@@ -39,16 +39,8 @@ const findOrderNo = async (no)=>{
 //로그인
 const login = async (datas)=>{
   let list = await mariadb.query('login', datas);
-  
-  if(list.length > 0){ //일치하는 정보가 있을 때
-    if(list.STATUS == 'G03'){ //퇴사한 경우
-      return 'quit';
-    } else {
-      return 'success';      
-    }
-  }else{ //일치하는 정보가 없을 때
-    return 'fail';
-  }
+  let info = list[0];
+  return info;
 }
 
 module.exports = {
