@@ -195,6 +195,8 @@ export default {
           field: "usage",
           editable: true,
           enableCellChangeFlash: true,
+          cellDataType: 'number',
+          cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
         },
       ],
       // 자재 테이블 데이터
@@ -221,6 +223,14 @@ export default {
   },
 
   methods: {
+    //플레이스홀더
+    placeholderRenderer(params) {
+            // 주문 수량 값이 없으면 placeholder 텍스트 표시
+            if (!params.value) {
+                return `<span style="color: gray; font-style: italic;">bom양을 입력하세요</span>`;
+            }
+            return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
+        },
     //제품검색기능
     searchPrd() {
       axios

@@ -149,7 +149,26 @@ router.delete('/standard/delMaterial/:mat_cd', async(req,res)=>{
   res.send(result);
 })
 
-//------------------공통코드-----------------------
+//----------------------------------------제품관리------------------------------------------------
+//제품등록
+router.post('/standard/product', async(req,res)=>{
+  let products = req.body;
+  let result = await standardService.insertProduct(products);
+  res.send(result);
+});
 
+//제품수정
+router.put('/standard/updateProduct/:prd_cd', async(req, res)=>{
+  let prdCd = req.params.prd_cd;
+  let updateInfo =req.body;
+  let result = await standardService.updateProduct(prdCd, updateInfo);
+  res.send(result);
+});
+//제품삭제
+router.delete('/standard/delProduct/:prd_cd', async(req,res)=>{
+  let prdCd = req.params.prd_cd;
+  let result = await standardService.deleteProduct(prdCd);
+  res.send(result);
+})
 
 module.exports = router;
