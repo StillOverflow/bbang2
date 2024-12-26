@@ -38,8 +38,7 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :min="field.value === 'start_time' ? currentDateTime : field.value === 'end_time' ? equipmentData.start_time : null"
-                  :disabled="isFieldDisabled(field.value)" />
+                  :min="currentDateTime" @change="validateStartTime" :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
           </div>
@@ -66,8 +65,8 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :min="field.value === 'end_time' ? minEndTime : field.value === 'start_time' ? currentDateTime : null"
-                  :readonly="!selectedEqp" />
+                  :min="equipmentData.start_time || currentDateTime" :readonly="!selectedEqp"
+                  @change="validateEndTime" />
               </template>
             </div>
           </div>
@@ -206,6 +205,29 @@ export default {
 
       this.isModal = false;
     },
+    // 시작시간 유효성 검사
+    validateStartTime() {
+      if (this.equipmentData.start_time < this.currentDateTime) {
+        Swal.fire({
+          icon: 'error',
+          title: '유효성 검사 실패',
+          text: '시작시간은 현재 시간 이후로 설정해야 합니다.',
+        });
+        this.equipmentData.start_time = '';
+      }
+    },
+
+    // 종료시간 유효성 검사
+    validateEndTime() {
+      if (this.equipmentData.end_time < this.equipmentData.start_time) {
+        Swal.fire({
+          icon: 'error',
+          title: '유효성 검사 실패',
+          text: '종료시간은 시작시간 이후로 설정해야 합니다.',
+        });
+        this.equipmentData.end_time = '';
+      }
+    },
 
     async getComm(cd) {
       // 공통코드 가져오기
@@ -287,6 +309,7 @@ export default {
     this.getEquipList();
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 점검 관리' });
+    this.equipmentData.start_time = this.currentDateTime;
 
     // 공통코드가 EQ(설비구분)일 때
     this.getComm('EQ')
@@ -360,8 +383,11 @@ export default {
 
     // start_time 변경 감지
     'equipmentData.start_time'(newStartTime) {
-      // 종료 시간이 시작 시간보다 빠르면 초기화
-      if (this.equipmentData.end_time && this.equipmentData.end_time < newStartTime) {
+      const start = new Date(newStartTime);
+      const end = new Date(this.equipmentData.end_time);
+
+      // 종료 시간이 시작 시간보다 이전일 경우 초기화
+      if (this.equipmentData.end_time && end < start) {
         this.equipmentData.end_time = '';
         Swal.fire({
           icon: 'warning',
