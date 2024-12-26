@@ -12,6 +12,7 @@
             :class="activeTabRev" @click="activeCompTab">검사완료</div>
         </div>
       </div>
+      <!-- 검색조건이 들어갈 위치!!!!!! -->
       <ag-grid-vue class="ag-theme-alpine" style="height: 242px;" :columnDefs="defs" :rowData="rowData" 
         @stateUpdated="gridFit" :gridOptions="gridOptions" :getRowStyle="getRowStyle" @rowClicked="selectTarget"/>
     </div>
@@ -277,6 +278,7 @@
         if(!this.isWaitList){
           this.isWaitList = true;
         }
+        this.isRowClicked = false;
         this.getWaitList();
       },
 
@@ -284,6 +286,7 @@
         if(this.isWaitList){
           this.isWaitList = false;
         }
+        this.isRowClicked = false;
         this.getRecList();
       },
 

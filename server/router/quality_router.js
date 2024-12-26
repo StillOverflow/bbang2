@@ -72,7 +72,8 @@ router.post('/quality/rec', async (req, resp) => {
 
 // 검사결과내역 조회
 router.get('/quality/rec', async (req, resp) => {
-  let result = await qualityService.getTestRecList();
+  let valueObj = req.query; // query: 객체로 값을 받음.
+  let result = await qualityService.getTestRecList(valueObj);
   resp.send(result);
 });
 
