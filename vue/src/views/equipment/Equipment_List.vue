@@ -84,14 +84,16 @@ export default {
       },
       rowData: [], // ag-grid의 데이터
       columnDefs: [
-        { field: 'eqp_type', headerName: '설비구분' },
-        { field: 'eqp_cd', headerName: '설비코드' },
-        { field: 'eqp_nm', headerName: '설비명' },
-        { field: 'model', headerName: '모델' },
-        { field: 'status', headerName: '설비상태' },
-        { field: 'create_dt', headerName: '등록일자' },
-        { field: 'last_insp_dt', headerName: '최종점검일자' },
-        { field: 'id', headerName: '담당자 ID' },
+        { field: 'eqp_cd', headerName: '설비코드', sortable: true, width: 100 },
+        { field: 'eqp_type', headerName: '설비구분', sortable: true, width: 100 },
+        { field: 'eqp_nm', headerName: '설비명', sortable: true, width: 100 },
+        { field: 'model', headerName: '모델', sortable: true, width: 100 },
+        { field: 'create_dt', headerName: '등록일', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120 },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120 },
+        { field: 'id', headerName: '담당자 ID', sortable: true, width: 120 },
+        { field: 'status', headerName: '설비상태', sortable: true, width: 100 },
+        { field: 'is_use', headerName: '사용유무', sortable: true, width: 100 },
+
       ],
     };
   },
@@ -130,7 +132,7 @@ export default {
           is_use: this.equipmentData.is_use || null,
           status: this.equipmentData.status || null,
         };
-        const result = await axios.get('/api/equipAllList/search', { params: obj });
+        const result = await axios.get('/api/equipList/search', { params: obj });
 
         if (result.data) {
           //배열데이터 처리

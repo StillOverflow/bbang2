@@ -6,9 +6,9 @@
         <div class="d-flex align-items-center gap-2 flex-wrap">
           <div class="input-group">
             <input id="eqp_cd" type="text" placeholder="설비코드" class="form-control" aria-label="설비코드"
-              aria-describedby="button-addon2" style="height: 41px" v-model="selectedEqp" @click="modalOpen" />
+              @click="modalOpen" />
             <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen">
-              SEARCH
+              <i class="fa-solid fa-magnifying-glass"></i>
             </button>
           </div>
         </div>
@@ -43,16 +43,28 @@
             </div>
           </div>
 
+
+
           <!-- 오른쪽 입력란 -->
           <div class="col-lg-5 col-md-5 col-sm-12">
             <div v-for="(field, index) in rightFields" :key="index" class="mb-2">
-              <label class="form-control-label">{{ field.label }}</label>
-              <template v-if="field.value === 'notes'">
-                <textarea v-model="formData[field.value]" rows="5" class="form-control custom-width fixed-notes"
+              <template v-if="field.value === 'note'">
+                <label class="form-control-label">{{ field.label }}</label>
+                <textarea v-model="equipmentData[field.value]" rows="5" class="form-control custom-width fixed-notes"
                   :readonly="!selectedEqp"></textarea>
               </template>
+              <template v-else-if="field.value == 'insp_result'">
+                <label class="form-control-label">{{ field.label }}</label>
+                <select class="form-select custom-width" v-model="equipmentData[field.value]"
+                  :disabled="isFieldDisabled(field.value)">
+                  <option v-for="(opt, idx) in field.selectOptions" :key="idx" :value="opt.item">
+                    {{ opt.name }}
+                  </option>
+                </select>
+              </template>
               <template v-else>
-                <input v-model="formData[field.value]" :type="field.type" class="form-control custom-width"
+                <label class="form-control-label">{{ field.label }}</label>
+                <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
                   :readonly="!selectedEqp" />
               </template>
             </div>
@@ -113,40 +125,23 @@ export default {
       previewImage: require('@/assets/img/blank_img.png'),
       selectedFile: null,
       isModal: false,
-      formData: {
-        start_date: '',
+      equipInfo: {},
+      equipmentData: {
+        //이미지 경로
+        img_path: '',
+        // 입력 데이터 값
+        start_time: '',
         eqp_type: '',
         eqp_nm: '',
         model: '',
         insp_type: '',
         insp_reason: '',
-        cycle: '',
-        end_date: '',
-        isnp_result: '',
-        actions: '',
-        notes: '',
-        inspector: '',
-      },
-      equipmentData: {
-        //이미지 경로
-        img_path: '',
-        // 입력 데이터 값
-        eqp_type: '',
-        eqp_nm: '',
-        model: '',
-        pur_dt: '',
-        pur_act: '',
-        mfg_act: '',
-        repl_cycle: '',
         insp_cycle: '',
+        end_time: '',
+        insp_result: '',
+        insp_action: '',
+        note: '',
         id: '',
-        opt_temp: '',
-        opt_humid: '',
-        opt_rpm: '',
-        opt_speed: '',
-        opt_power: '',
-        uph: '',
-        is_use: '',
       },
       equipDefs: [
         { headerName: '설비 코드', field: 'eqp_cd', sortable: true },
@@ -156,7 +151,7 @@ export default {
       ],
       equipData: [],
       leftFields: [
-        { label: '점검 시작일', value: 'start_time', type: 'date' },
+        { label: '점검 시작 일시', value: 'start_time', type: 'datetime-local' },
         { label: '설비 구분 *', value: 'eqp_type', type: 'text' },
         { label: '설비명 *', value: 'eqp_nm', type: 'text' },
         { label: '모델명 *', value: 'model', type: 'text' },
@@ -165,7 +160,7 @@ export default {
         { label: '점검주기 (일)', value: 'insp_cycle', type: 'number' },
       ],
       rightFields: [
-        { label: '점검 종료일', value: 'end_time', type: 'date' },
+        { label: '점검 종료 일시', value: 'end_time', type: 'datetime-local' },
         { label: '점검 판정', value: 'insp_result', type: 'text' },
         { label: '조치 사항', value: 'insp_action', type: 'text' },
         { label: '비고', value: 'note', type: 'textarea' },
@@ -202,6 +197,7 @@ export default {
       return result.data;
     },
 
+
     // 설비 단건 조회
     async getEquipInfo(eqp_cd) {
       let result = await axios
@@ -213,7 +209,7 @@ export default {
         if (result.data.pur_dt) {
           result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
         }
-        this.formData = result.data;
+        this.equipmentData = result.data;
 
         // 이미지 경로 처리
         this.previewImage = result.data.img_path
@@ -247,23 +243,15 @@ export default {
       });
     },
     resetForm() {
-      this.formData = {
-        start_date: '',
-        eqp_type: '',
-        eqp_nm: '',
-        model: '',
-        insp_type: '',
-        insp_reason: '',
-        cycle: '',
-        end_date: '',
-        result: '',
-        actions: '',
-        notes: '',
-        inspector: '',
-      };
-      this.selectedFile = null;
-      this.previewImage = require('@/assets/img/blank_img.png');
-      this.selectedEqp = '';
+      this.isEditMode = false; // 수정 모드 종료
+      this.selectedEqp = ''; // 설비 코드 입력란 초기화
+      this.selectedFile = null; // 선택된 파일 초기화
+      this.previewImage = require('@/assets/img/blank_img.png'); // 기본 이미지로 초기화
+
+      // 입력 필드 초기화
+      Object.keys(this.equipmentData).forEach((key) => {
+        this.equipmentData[key] = '';
+      });
 
       Swal.fire({
         icon: 'info',
@@ -273,21 +261,75 @@ export default {
     },
     isFieldDisabled(fieldName) {
       const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model'];
-      return alwaysDisabled.includes(fieldName);
+      return !this.selectedEqp || alwaysDisabled.includes(fieldName);
     },
   },
 
   created() {
     this.getEquipList();
-
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 점검 관리' });
+
+    // 공통코드가 EQ(설비구분)일 때
+    this.getComm('EQ')
+      .then((result) => {
+        //selectOptions에 담아 select 박스에 활용
+        this.leftFields.find(
+          (field) => field.value === 'eqp_type'
+        ).selectOptions = result.map((item) => ({
+          item: item.comm_dtl_cd,
+          name: item.comm_dtl_nm,
+        }));
+      })
+      .catch((err) => console.log(err));
+
+    // 공통코드가 EI(점검구분)일 때
+    this.getComm('EI')
+      .then((result) => {
+        //selectOptions에 담아 select 박스에 활용
+        this.leftFields.find(
+          (field) => field.value === 'insp_type'
+        ).selectOptions = result.map((item) => ({
+          item: item.comm_dtl_cd,
+          name: item.comm_dtl_nm,
+        }));
+      })
+      .catch((err) => console.log(err));
+
+    // 공통코드가 EX(점검사유)일 때
+    this.getComm('EX')
+      .then((result) => {
+        //selectOptions에 담아 select 박스에 활용
+        this.leftFields.find(
+          (field) => field.value === 'insp_reason'
+        ).selectOptions = result.map((item) => ({
+          item: item.comm_dtl_cd,
+          name: item.comm_dtl_nm,
+        }));
+      })
+      .catch((err) => console.log(err));
+
+    // 공통코드가 EJ(점검판정)일 때
+    this.getComm('EJ')
+      .then((result) => {
+        //selectOptions에 담아 select 박스에 활용
+        this.rightFields.find(
+          (field) => field.value === 'insp_result'
+        ).selectOptions = result.map((item) => ({
+          item: item.comm_dtl_cd,
+          name: item.comm_dtl_nm,
+        }));
+      })
+      .catch((err) => console.log(err));
+
   },
 
   watch: {
     // 감시자
     selectedEqp() {
       // 기존 설비 코드를 선택한 경우 해당 설비를 기준으로 단건조회
+
+
       // 해당 설비 : this.selectedEqp
 
       if (!this.selectedEqp) {

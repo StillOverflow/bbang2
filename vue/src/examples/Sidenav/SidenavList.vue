@@ -145,19 +145,13 @@ export default {
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item
-              to="/Produce_PlanAdd"
-              :class="getRoute() === 'Produce_PlanAdd' ? 'active' : ''"
-              :navText="'생산계획서 관리'"
-            >
+            <sidenav-item to="/Produce_PlanAdd" :class="getRoute() === 'Produce_PlanAdd' ? 'active' : ''"
+              :navText="'생산계획서 관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item
-              to="/Produce_InstList"
-              :class="getRoute() === 'Produce_InstList' ? 'active' : ''"
-              :navText="'생산지시서 조회'"
-            >
+            <sidenav-item to="/Produce_InstList" :class="getRoute() === 'Produce_InstList' ? 'active' : ''"
+              :navText="'생산지시서 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
@@ -316,12 +310,12 @@ export default {
         </li>
         <ul class="navbar-nav detail Equipment_list" :class="urlCompare('Equipment') == true ? '' : 'dnone'">
           <li class="nav-item">
-            <sidenav-item to="/Equipment_list1" :class="getRoute() === 'Equipment_list1' ? 'active' : ''"
+            <sidenav-item to="/Equipment_Stat" :class="getRoute() === 'Equipment_Stat' ? 'active' : ''"
               :navText="'설비 상태 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Equipment_AllList" :class="getRoute() === 'Equipment_AllList' ? 'active' : ''"
+            <sidenav-item to="/Equipment_List" :class="getRoute() === 'Equipment_List' ? 'active' : ''"
               :navText="'설비 정보 조회'">
             </sidenav-item>
           </li>
@@ -331,32 +325,32 @@ export default {
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Equipment_list4" :class="getRoute() === 'Equipment_list4' ? 'active' : ''"
+            <sidenav-item to="/Equipment_InspList" :class="getRoute() === 'Equipment_InspList' ? 'active' : ''"
               :navText="'설비 점검 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Equipment_InspectionMgmt"
-              :class="getRoute() === 'Equipment_InspectionMgmt' ? 'active' : ''" :navText="'설비 점검 관리'">
+            <sidenav-item to="/Equipment_InspMgmt" :class="getRoute() === 'Equipment_InspMgmt' ? 'active' : ''"
+              :navText="'설비 점검 관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Equipment_list6" :class="getRoute() === 'Equipment_list6' ? 'active' : ''"
+            <sidenav-item to="/Equipment_RepairList" :class="getRoute() === 'Equipment_RepairList' ? 'active' : ''"
               :navText="'설비 수리 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Equipment_list7" :class="getRoute() === 'Equipment_list7' ? 'active' : ''"
+            <sidenav-item to="/Equipment_RepairMgmt" :class="getRoute() === 'Equipment_RepairMgmt' ? 'active' : ''"
               :navText="'설비 수리 관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Equipment_list8" :class="getRoute() === 'Equipment_list8' ? 'active' : ''"
+            <sidenav-item to="/Equipment_DTimeList" :class="getRoute() === 'Equipment_DTimeList' ? 'active' : ''"
               :navText="'설비 비가동 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Equipment_list9" :class="getRoute() === 'Equipment_list9' ? 'active' : ''"
+            <sidenav-item to="/Equipment_DTimeMgmt" :class="getRoute() === 'Equipment_DTimeMgmt' ? 'active' : ''"
               :navText="'설비 비가동 관리'">
             </sidenav-item>
           </li>
