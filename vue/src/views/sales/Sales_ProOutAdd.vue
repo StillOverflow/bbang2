@@ -187,7 +187,7 @@ export default {
                 },
                 {
                     headerName: '기출고수량', 
-                    field: 'prd_ed',
+                    field: 'prd_out_qty',
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가

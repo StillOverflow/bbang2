@@ -144,17 +144,35 @@ const prdOutSearch = (searchObj) => {
 // 출고 등록 주문서 조회
 const outOrderLit =
 `
-SELECT o.order_dtl_cd,
-       p.prd_cd, 
-       p.prd_nm, 
-       o.order_qty, 
-       (d.prd_out_qty) AS prd_ed, 
-       (o.order_qty - d.prd_out_qty) AS no_qty
-FROM order_detail o JOIN (SELECT sum(prd_out_qty) AS prd_out_qty, order_dtl_cd from product_out_detail GROUP BY order_dtl_cd) d 
-                    ON o.ORDER_DTL_CD = d.ORDER_DTL_CD
-					JOIN product p ON o.PRD_CD = p.PRD_CD
-WHERE order_cd = ?
+SELECT a.order_dtl_cd	  
+	  ,a.prd_cd
+      ,(SELECT prd_nm FROM product WHERE prd_cd = a.prd_cd) AS prd_nm
+	  ,order_qty
+	  ,IFNULL(prd_out_qty,0) AS prd_out_qty
+      ,(order_qty - ifnull(prd_out_qty,0)) AS no_qty	 
+from
+    (SELECT 
+        od.ORDER_DTL_CD as order_dtl_cd,
+        od.PRD_CD AS prd_cd,
+        od.ORDER_QTY AS order_qty
+    FROM 
+    \`order\` o join order_detail od ON o.order_cd=od.order_cd 
+    WHERE o.order_cd= ? )a
+LEFT JOIN
+    (SELECT sum(prd_out_qty) AS prd_out_qty, ORDER_DTL_CD from product_out_detail) b
+    ON a.ORDER_DTL_CD=b.ORDER_DTL_CD;
 `;
+// SELECT o.order_dtl_cd,
+//        p.prd_cd, 
+//        p.prd_nm, 
+//        o.order_qty, 
+//        (d.prd_out_qty) AS prd_ed, 
+//        (o.order_qty - d.prd_out_qty) AS no_qty
+// FROM order_detail o JOIN (SELECT sum(prd_out_qty) AS prd_out_qty, order_dtl_cd from product_out_detail GROUP BY order_dtl_cd) d 
+//                     ON o.ORDER_DTL_CD = d.ORDER_DTL_CD
+// 					JOIN product p ON o.PRD_CD = p.PRD_CD
+// WHERE order_cd = ?
+
 
 //출고 등록 LOT 선택
 const outLotList =
@@ -333,12 +351,12 @@ const productAllList =
 `
 SELECT p.prd_cd, 
        p.prd_nm, 
-       sum(i.stock) AS stock, 
-       sum(i.prd_qty) AS prd_qty, 
-       ifnull(sum(o.prd_out_qty),0) AS prd_out_qty
-FROM product p JOIN product_in i ON p.prd_cd = i.prd_cd
-			    LEFT JOIN product_out_detail o ON p.prd_cd = o.prd_cd
-GROUP BY p.prd_cd;
+		 stock, 
+		 prd_qty, 
+		 ifnull(sum(prd_out_qty),0) AS prd_out_qty
+FROM product p JOIN (SELECT prd_cd, sum(stock) AS stock, sum(prd_qty) AS prd_qty from product_in GROUP BY prd_cd) i ON p.prd_cd = i.prd_cd
+				LEFT JOIN product_out_detail o ON p.prd_cd = o.prd_cd
+GROUP BY p.prd_cd
 `;
 
 // 제품명 검색
@@ -358,7 +376,7 @@ GROUP BY p.prd_cd;
 // 제품당 LOT조회
 const prdLotList =
 `
-SELECT p.prd_nm, i.prd_lot_cd, i.prd_qty, i.exp_dt, i.prd_in_dt
+SELECT p.prd_nm, i.prd_lot_cd, i.stock, i.exp_dt, i.prd_in_dt
 FROM product p JOIN product_in i ON p.prd_cd = i.prd_cd
 WHERE p.prd_cd = ?
 `;
