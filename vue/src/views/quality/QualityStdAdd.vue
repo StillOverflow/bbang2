@@ -268,7 +268,9 @@
             this.noCate = true; // 구분 선택이 아예 없음.
             break;
           case 'P03' : // 제품 선택한 경우
-            this.getCondition('PD', 'divs');
+            // this.getCondition('PD', 'divs');
+            this.divs.length = 0;
+            this.divs[0] = {item : 'I01', name : '완제품'};
             this.getCondition('PC', 'cate'); 
             this.noCate = false; 
             break;

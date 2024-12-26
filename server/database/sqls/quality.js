@@ -62,14 +62,18 @@ const stdSeq = `
 // 헤더 입력
 const stdInsert = `
   INSERT INTO quality_standard
-    (qu_std_cd, target_type, target_cd)
+    (qu_std_cd, 
+     target_type, 
+     target_cd)
   VALUES (?, ?, ?) `;
 
 // 디테일 입력
 const stdDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT INTO quality_standard_detail
-      (qu_std_dtl_cd, qu_std_cd, test_cd)
+      (qu_std_dtl_cd, 
+       qu_std_cd, 
+       test_cd)
     VALUES `;
 
   values.forEach((obj) => {
@@ -89,8 +93,14 @@ const searchAll  = (valueObj) => {
   
   // 이름이나 카테고리(코드) 둘 중 하나 혹은 둘 다 검색조건으로 들어올 수 있음.
   let prodQuery = `
-    (SELECT '제품' type, prd_cd cd, prd_nm nm, '완제품' cate_type, fn_get_codename(category) category, fn_quality_std_dt(prd_cd) std_date
-            , 'I01' cate_type_cd, category category_cd -- 숨겨둘 값
+    (SELECT '제품' type, 
+             prd_cd cd, 
+             prd_nm nm, 
+             '완제품' cate_type, 
+             fn_get_codename(category) category, 
+             fn_quality_std_dt(prd_cd) std_date, 
+            'I01' cate_type_cd, 
+             category category_cd
        FROM  product
       WHERE  create_dt IS NOT NULL -- 당연한 조건 (AND 생성 위함)
         ${!cate ? "" : "AND  category = '" + cate + "' "}
@@ -99,19 +109,31 @@ const searchAll  = (valueObj) => {
   `;
 
   let matQuery = `
-      (SELECT '자재' type, mat_cd cd, mat_nm nm, fn_get_codename(type) cate_type, fn_get_codename(category) category, fn_quality_std_dt(mat_cd) std_date
-              , type cate_type_cd, category category_cd -- 숨겨둘 값
-      FROM  material
-        WHERE  create_dt IS NOT NULL -- 당연한 조건 (AND 생성 위함)
-          ${!cate ? "" : "AND  category = '" + cate + "' "} 
-          ${!cate_type ? "" : "AND  type = '" + cate_type + "' "} 
-          ${!nm ? "" : "AND  mat_nm LIKE '%" + nm + "%' "}
-        ORDER  BY std_date, cd )
+    (SELECT '자재' type, 
+             mat_cd cd, 
+             mat_nm nm, 
+             fn_get_codename(type) cate_type, 
+             fn_get_codename(category) category, 
+             fn_quality_std_dt(mat_cd) std_date, 
+             type cate_type_cd, 
+             category category_cd
+       FROM  material
+      WHERE  create_dt IS NOT NULL -- 당연한 조건 (AND 생성 위함)
+        ${!cate ? "" : "AND  category = '" + cate + "' "} 
+        ${!cate_type ? "" : "AND  type = '" + cate_type + "' "} 
+        ${!nm ? "" : "AND  mat_nm LIKE '%" + nm + "%' "}
+      ORDER  BY std_date, cd )
   `;
 
   let procQuery = `
-      (SELECT '공정' type, proc_cd cd, proc_nm nm, null cate_type, null category, fn_quality_std_dt(proc_cd) std_date
-              , null cate_type_cd, null category_cd -- 숨겨둘 값
+      (SELECT '공정' type, 
+               proc_cd cd, 
+               proc_nm nm, 
+               null cate_type, 
+               null category, 
+               fn_quality_std_dt(proc_cd) std_date, 
+               null cate_type_cd, 
+               null category_cd
         FROM   process
         WHERE  create_dt IS NOT NULL -- 당연한 조건 (AND 생성 위함)
           ${!nm ? "" : "AND  proc_nm LIKE '%" + nm + "%' "}
@@ -134,11 +156,15 @@ const searchAll  = (valueObj) => {
 // 품질검사결과 (QUALITY_TEST_RECORD)
 // 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
 ///////////////////// ** 테스트용이라 쿼리가 달라질 수 있음에 유의.
-const waitList = `
-  SELECT r.prod_result_cd, i.inst_cd, r.inst_dtl_cd,             -- PK, 지시번호, 지시상세번호
-		     r.inst_proc_cd, fn_get_proc_nm(r.inst_proc_cd) proc_nm, -- 현재 공정코드/이름
-	       r.prd_cd, fn_get_prd_nm(r.prd_cd) prd_nm,  -- 제품코드/이름
-		     r.prod_qty,                                -- 생산수량
+const testWaitList = `
+  SELECT r.prod_result_cd, 
+         i.inst_cd, 
+         r.inst_dtl_cd,
+		     r.inst_proc_cd, 
+         fn_get_proc_nm(r.inst_proc_cd) proc_nm,
+	       r.prd_cd, 
+         fn_get_prd_nm(r.prd_cd) prd_nm,
+		     r.prod_qty,
 	       fn_is_last_proc(i.inst_cd, r.prd_cd, r.inst_proc_cd) is_last, -- 마지막 공정인지 여부
          end_time -- 공정 완료시점 시간
   FROM   test_prod_result r JOIN test_prod_inst_dtl i
@@ -153,20 +179,23 @@ const defectList = (valueObj) => {
   // P02와 P03 검사는 동시에 처리하기에, 조건 두 개가 들어올 수도 있으므로 subType 필요.
   let type = valueObj.type;
   let subType = valueObj.subType;
-  console.log('타입타입' + type);
-  console.log('타입타입' + subType);
   
   return `
-    SELECT def_cd, def_nm,
-           def_type, fn_get_codename(def_type) def_type_nm,
-           def_detail, create_dt, note
+    SELECT def_cd, 
+           def_nm,
+           def_type, 
+           fn_get_codename(def_type) def_type_nm,
+           def_detail, 
+           create_dt, 
+           note
     FROM   defect
     WHERE  def_type = '${type}'
-    ${!subType ? "" : "OR def_type = '" + subType + "' "}  -- 두 번째 값이 있을 시 함께 조회
+       ${!subType ? "" : "OR  def_type = '" + subType + "' "}  -- 두 번째 값이 있을 시 함께 조회
+    ORDER  BY def_type DESC, def_nm
   `;
 }
 
-// 품질검사결과 등록
+// 검사결과 등록
 // 다음 번호 조회 (시퀀스 미사용)
 const testRecSeq = `
   SELECT CONCAT('QR', LPAD(  IFNULL(  MAX(SUBSTR(test_rec_cd, -3)), 0) + 1  , 3, '0'  )  ) seq
@@ -182,7 +211,10 @@ const testRecInsert = `
 const testRecDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT INTO quality_test_record_detail
-      (test_rec_dtl_cd, test_rec_cd, test_cd, test_value)
+      (test_rec_dtl_cd, 
+       test_rec_cd, 
+       test_cd, 
+       test_value)
     VALUES `;
 
   values.forEach((obj) => {
@@ -193,6 +225,34 @@ const testRecDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 
   return sql;
 };
+
+// 검사결과 등록 시 해당 생산실적 내역의 검사상태 Y로 변경
+const prodResultUpdate = `
+  UPDATE test_prod_result
+  SET    que_status = 'A01',
+         def_qty = ?,
+         pass_qty = ?
+  WHERE  prod_result_cd = ?
+`;
+
+// 검사결과내역 조회
+const testRecList = `
+  SELECT test_rec_cd, 
+         test_dt, 
+         refer_cd, 
+         target_type, 
+         target_cd, 
+         total_qty, 
+         test_qty, 
+         pass_qty, 
+         def_qty, 
+         id, 
+         def_cd, 
+         def_status, 
+         complete_dt, 
+         note
+  FROM   quality_test_record
+`;
 
 
 
@@ -206,9 +266,12 @@ module.exports = {
   stdDtlInsert,
   searchAll,
 
-  waitList,
+  testWaitList,
   defectList,
   testRecSeq,
   testRecInsert,
-  testRecDtlInsert
+  testRecDtlInsert,
+  prodResultUpdate,
+
+  testRecList
 }
