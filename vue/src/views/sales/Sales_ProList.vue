@@ -72,14 +72,6 @@ export default {
                     },
                 },
                 {
-                  field: 'prd_qty', 
-                  headerName: '입고량',
-                    valueFormatter: (params) => {
-                        if (params.value == null || params.value === '') return '';
-                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
-                    },
-                },
-                {
                     field: 'prd_out_qty',
                     headerName: '출고량',
                     valueFormatter: (params) => {
@@ -110,8 +102,8 @@ export default {
                 {field: 'prd_nm', headerName: '제품명'},
                 {field: 'prd_lot_cd', headerName: 'LOT'},
                 {
-                  field: 'prd_qty', 
-                  headerName: '입고량',
+                  field: 'stock', 
+                  headerName: '재고수량',
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
