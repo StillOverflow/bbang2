@@ -1,91 +1,185 @@
-<!--ag-grid 테스트 뷰-->
+<!-- 제품 재고 조회 -->
 <template>
-  <div>
-    <!--그리드 사용법-->
-    <div>
-      <ag-grid-vue style="width:500px; height: 500px;" class="ag-theme-alpine" :columnDefs="columnDefs"
-        :rowData="rowData" :gridOptions="gridOptions" @grid-ready="myGrid">
-      </ag-grid-vue>
-      <button type="button" class="btn btn-light m-3" @click="getGridVal">선택된 값 콘솔로 확인하기</button>
-    </div>
+  <div class="py-4 container-fluid">
+      <div class="card">
+          <!-- 검색조건 -->
+          <div class="card-header bg-light ps-5 ps-md-4">  
+              <div class="d-flex justify-content-center align-items-center text-center">
+                  <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">제품명</div>
+                  <div class="col-6 col-lg-4 mb-2">
+                      <input class="form-control " type="text" v-model="search" />         
+                  </div>
+                  <div class="col-lg-2">
+                      <button type="button" class="btn btn-warning m-2" @click="searchForm">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                      </button>
+                      <button type="button" class="btn btn-secondary m-2" @click="resetBtn">
+                        <i class="fa-solid fa-rotate"></i>
+                      </button>
+                  </div>
+              </div>
+          </div>
+          <!-- 제품 재고 조회 -->
+          <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p></p>
+                        <ag-grid-vue style="width:100%; height: 550px;"
+                        class="ag-theme-alpine"
+                        :columnDefs="PALDefs"
+                        :rowData="PALData"
+                        :pagination="true"
+                        @grid-ready="gridFit"
+                        overlayNoRowsTemplate="제품 재고가 없습니다.">
+                        </ag-grid-vue>
+                    </div>
+                    <div class="col-md-6">
+                        <p></p>
+                        <ag-grid-vue style="width:100%; height: 550px;"
+                        class="ag-theme-alpine"
+                        :columnDefs="PDLDefs"
+                        :rowData="PDLData"
+                        :pagination="true"
+                        @grid-ready="gridFit"
+                        overlayNoRowsTemplate="제품을 선택해주세요.">
+                        </ag-grid-vue>
+                    </div>
+                </div>
+          </div>
+      </div>
   </div>
-
-  <button class="btn btn-primary">SUBMIT</button>
-  <button class="btn btn-success mlp10">SAVE</button>
-  <button class="btn btn-danger mlp10">DELETE</button>
-  <button class="btn btn-secondary mlp10">RESET</button>
-  <button class="btn btn-outline-success mlp10">EXCEL</button>
-  <div class="input-group mb-3 w-30">
-    <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
-    <button class="btn btn-warning" type="button" id="button-addon2">SEARCH</button>
-  </div>
-
 </template>
 
 <script>
-// 그리드 사용법
-// AG-Grid 공식문서 : https://www.ag-grid.com/javascript-data-grid/row-selection-multi-row/
+
+import axios from 'axios';
 import { AgGridVue } from "ag-grid-vue3";
 
 export default {
-  name: 'App',
-  data() {
-    return {
-      columnDefs: null,
-      rowData: null,
-      myApi: null,
-      myColApi: null,
+    name: 'App',
+    data() {
+        return {
+            //제품 재고 조회
+            PALDefs: [
+                {field: 'prd_cd', headerName: '제품코드'},
+                {field: 'prd_nm', headerName: '제품명'},
+                {
+                  field: 'stock', 
+                  headerName: '총재고수량',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
+                {
+                  field: 'prd_qty', 
+                  headerName: '입고량',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
+                {
+                    field: 'prd_out_qty',
+                    headerName: '출고량',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
+                {
+                    headerName: '상세' ,
+                    field: 'detailed',
+                    cellRenderer: (params) => {
+                        const button = document.createElement('button');
+                        button.innerText = 'DETAILED';
+                        button.className = 'btn btn-warning btn-xsm';
+                        button.addEventListener('click', () => {
+                            
+                            this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
+                            this.getOpenLotList(); 
 
-      gridOptions: {
-        pagination: true,
-        // paginationPageSize: 10, // 몇 행까지 표시할지 지정하고 싶은 경우
-        // paginationPageSizeSelector: false,
-        paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
-        overlayNoRowsTemplate: '표시할 값이 없습니다.', // 표시할 행이 없을 때 적용할 메세지'
-        suppressMovableColumns: true, // 컬럼 드래그 이동 방지
-        rowSelection: {
-          mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
-          // enableClickSelection: true // (행을 클릭하는 것만으로 singleRow 선택 가능.)
+                        });
+                        return button;
+                    }
+                },
+            ],
+            PALData: [],
+            //제품 lot별 조회
+            PDLDefs: [
+                {field: 'prd_nm', headerName: '제품명'},
+                {field: 'prd_lot_cd', headerName: 'LOT'},
+                {
+                  field: 'prd_qty', 
+                  headerName: '입고량',
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
+                {
+                    field: 'exp_dt',
+                    headerName: '유통기한',
+                    valueFormatter: this.$comm.dateFormatter 
+                },
+                {
+                    field: 'prd_in_dt',
+                    headerName: '입고날짜',
+                    valueFormatter: this.$comm.dateFormatter 
+                },
+            ],
+            PDLData: [],
+            //제품 검색어
+            search: '',
+            prd_cd: '',
         }
-      }
-    }
-  },
-  components: {
-    AgGridVue
-  },
-  beforeMount() {
-    this.columnDefs = [
-      { headerName: '제조사', field: 'make', minWidth: 200 }, // minWidth 옵션으로 각 열의 최소 너비 지정 가능
-      { headerName: '모델', field: 'model' },
-      { headerName: '가격', field: 'price' },
-    ];
-
-    this.rowData = [
-      { make: 'Toyota', model: 'Celica', price: 35000 },
-      { make: 'Ford', model: 'Mondeo', price: 32000 },
-      { make: 'JoJang', model: 'Boxter', price: 72000 },
-      { make: 'Ford', model: 'Mondeo', price: 32000 }
-    ];
-  },
-  methods: {
-    myGrid(params) { // 매개변수 속성으로 자동 접근
-      params.api.sizeColumnsToFit(); // 가로스크롤 삭제
-      this.myApi = params.api;
-      this.myColApi = params.columnApi; // api, columnApi 둘 다 꼭 있어야 함
     },
-    getGridVal() {
-      const val = this.myApi.getSelectedNodes();
-      console.log(val);
-      if (val.length != 0) { // data 속성에 접근할 시, 선택된 값이 없으면 오류남
-        console.log(val[0].data);
-      }
+    components: {
+        AgGridVue
+    },
+    created() {
+        this.$store.dispatch('breadCrumb', { title: '주문 목록 조회' });
+    },
+    mounted() {
+        axios.get('/api/sales/prdAllList')
+            .then(response =>{
+                this.PALData = response.data;
+            })
+            .catch(err => console.log("실패",err));           
+    },
+    methods: {
+        gridFit(params){ 
+            params.api.sizeColumnsToFit();
+        },
+
+        getOpenLotList(){
+            axios.get(`/api/sales/prdLotList/${this.prd_cd}`)
+                .then(response =>{
+                this.PDLData = response.data;
+            })
+            .catch(err => console.log("AXIOS실패",err));
+        },
+
+        //제품 검색기능
+        searchForm(){          
+            axios.get(`/api/sales/prdAllList/${this.search}`)
+                .then(response =>{
+                this.PALData = response.data;
+            })
+            .catch(err => console.log("AXIOS실패",err));
+        },
+        resetBtn() { 
+            this.search = '';
+            this.searchForm();
+        }
+
     }
-  }
 }
 </script>
 
 <style lang="scss">
-//그리드 사용시 아래 스타일 임포트 해야하고 경로 확인이 필요함
+ 
 @import"../../../node_modules/ag-grid-community/styles/ag-grid.css";
 @import"../../../node_modules/ag-grid-community/styles/ag-theme-alpine.css"
+
 </style>

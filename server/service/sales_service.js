@@ -173,7 +173,25 @@ const InsertPrdReturn = async (values) => {
     }
 };
 
+/* ----------------------------------------------------제품 재고 조회--------------------------------------------------------- */
 
+// 제품 재고 조회
+const listAllProduct = async () => {
+    let list = await mariadb.query('productAllList')
+    return list;
+};
+
+// 제품명 검색
+const searchListAllPrd = async (search) => {
+    let info = await mariadb.query('prdAllListSearch',search)
+    return info;
+}
+
+// 제품당 LOT조회
+const listLotPrd = async (prd) => {
+    let info = await mariadb.query('prdLotList',prd)
+    return info;
+}
 
 /* ----------------------------------------------------모달창--------------------------------------------------------- */
 
@@ -224,6 +242,10 @@ module.exports = {
     searchRTLot,
     InsertPrdReturn,
 
+    //제품재고조회
+    listAllProduct,
+    searchListAllPrd,
+    listLotPrd,
 
     //모달창
     listAccMo,
