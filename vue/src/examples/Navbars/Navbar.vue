@@ -63,15 +63,26 @@ const closeMenu = () => {
         </div>
         <ul class="navbar-nav justify-content-end">
           <li class="nav-item d-flex align-items-center">
-            <router-link
+            <template v-if="this.$session.exists()">
+              <button @click="logout"
+              class="px-0 nav-link font-weight-bold text-white"
+              target="_blank"
+              >
+                <i class="fa fa-user" :class="isRTL ? 'ms-sm-2' : 'me-sm-2'"></i>
+                <span class="d-sm-inline d-none">LogOut</span>
+              </button>
+            </template>
+            <template v-else>
+              <router-link
               :to="{ name: 'Signin' }"
               class="px-0 nav-link font-weight-bold text-white"
               target="_blank"
-            >
-              <i class="fa fa-user" :class="isRTL ? 'ms-sm-2' : 'me-sm-2'"></i>
-              <span v-if="isRTL" class="d-sm-inline d-none">يسجل دخول</span>
-              <span v-else class="d-sm-inline d-none">Sign In</span>
-            </router-link>
+              >
+                <i class="fa fa-user" :class="isRTL ? 'ms-sm-2' : 'me-sm-2'"></i>
+                <span class="d-sm-inline d-none">LogIn</span>
+              </router-link>
+            </template>
+            
           </li>
           <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
             <a
@@ -221,3 +232,13 @@ const closeMenu = () => {
     </div>
   </nav>
 </template>
+<script>
+export default {
+  methods: {
+    logout() {
+      this.$session.destroy();
+      this.$router.push('/');
+    }
+  }
+}
+</script>

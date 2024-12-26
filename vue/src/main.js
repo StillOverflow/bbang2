@@ -8,11 +8,16 @@ import ArgonDashboard from "./argon-dashboard";
 import myPlugin from "./assets/js/commPlugin";
 // import materialStore from './store/material';
 
+import VueSession from 'vue-session';
+
 // SWEETALERT창
 import VueSweetalert2 from 'vue-sweetalert2';
 import 'sweetalert2/dist/sweetalert2.min.css';
 
 const appInstance = createApp(App);
+
+var options = { persist: true }
+appInstance.use(VueSession, options);
 
 appInstance.use(VueSweetalert2);
 appInstance.use(store);

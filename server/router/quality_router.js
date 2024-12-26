@@ -70,5 +70,11 @@ router.post('/quality/rec', async (req, resp) => {
   resp.send(result);
 });
 
+// 검사결과내역 조회
+router.get('/quality/rec', async (req, resp) => {
+  let result = await qualityService.getTestRecList();
+  resp.send(result);
+});
+
 
 module.exports = router;

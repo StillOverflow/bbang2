@@ -235,24 +235,34 @@ const prodResultUpdate = `
   WHERE  prod_result_cd = ?
 `;
 
-// 검사결과내역 조회
-const testRecList = `
-  SELECT test_rec_cd, 
-         test_dt, 
-         refer_cd, 
-         target_type, 
-         target_cd, 
-         total_qty, 
-         test_qty, 
-         pass_qty, 
-         def_qty, 
-         id, 
-         def_cd, 
-         def_status, 
-         complete_dt, 
-         note
-  FROM   quality_test_record
-`;
+// 검사결과내역 조회+검색
+const testRecList = (valueObj) => {
+  let isDef = valueObj.isDef;
+  let referCd = valueObj.refer_cd;
+  ////조건문 생성중
+  return `
+    SELECT r.test_rec_cd, 
+          r.test_dt, 
+          r.refer_cd, 
+          r.target_type, 
+          r.target_cd, 
+          r.total_qty, 
+          r.test_qty, 
+          r.pass_qty, 
+          r.def_qty, 
+          fn_get_membername(r.id) name, 
+          r.def_cd,
+          d.def_nm,
+          r.def_status, 
+          r.complete_dt, 
+          r.note
+    FROM   quality_test_record r LEFT OUTER JOIN defect d
+                                              ON r.def_cd = d.def_cd
+    WHERE  r.test_dt IS NOT NULL 
+     -- ${!isDef ? "" : "AND  r.def_cd IS NOT NULL AND r.def_status IS NULL "} -- 불량이 있지만 처리되지 않은 내역
+     -- ${!referCd ? "" : "AND  r.refer_cd = '" + referCd + "' "}
+  `;
+}
 
 
 

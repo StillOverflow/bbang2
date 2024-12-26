@@ -280,6 +280,13 @@ const deleteProduct = async(prdCd)=>{
     return { result: false };
   }
 }
+
+//------------------------------------공정관리---------------------------------
+//공정조회
+const processSelect = async(datas)=>{
+  let result = await mariadb.query('processSelect', datas);
+  return result;
+}
 module.exports = {
   //BOM
   findAllPrd,
@@ -313,5 +320,6 @@ module.exports = {
   //제품관리
   insertProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  processSelect
 };

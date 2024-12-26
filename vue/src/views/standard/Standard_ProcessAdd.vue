@@ -3,16 +3,16 @@
       <div class="py-4 container-fluid">
         <div class="card py-5 px-6">
           <div class="row">
-            <!-- 제품목록 -->
+            <!-- 공정목록 -->
             <div class="col-md-6" style="height: auto">
-              <h4 class="mb-3 text-center">제품 목록</h4>
+              <h4 class="mb-3 text-center">공정 목록</h4>
               <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%" >
                 <div style="width: 15%">
                   <label class="me-2 align-self-center">공정명</label>
                 </div>
                 
                 <div  class="d-flex justify-content-left align-items-center" style="width: 85%" >
-                  <input type="search" class="form-control d-inline" v-model="keyword" placeholder="제품명을 입력하세요" style="width: 75%" />
+                  <input type="search" class="form-control d-inline" v-model="keyword" placeholder="공정명을 입력하세요" style="width: 75%" />
                   <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchPrd" > <i class="fa-solid fa-magnifying-glass"></i> </button>
                 </div>
               </div>
@@ -35,35 +35,21 @@
                     <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProduct">신규등록</button>
                 </div>
                 <div class="d-flex justify-content-left align-items-center mb-2">
-                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">제품코드</div>
+                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정코드</div>
                     <div class="input-group mb-3 w-50">
                         <input type="text" class="form-control" v-model="prdInfo.prd_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
                     </div>
                 </div>
             <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">제품명 *</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정명 *</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="prdInfo.prd_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
             <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단가 *</div>
-                <div class="input-group mb-3 w-50">
-                        <input type="number" class="form-control" v-model="prdInfo.price" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;"  />
-                </div>
-            </div>    
-            <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">유통가능기간 *</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="number" class="form-control" v-model="prdInfo.price" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위 *</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">설비구분 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="prdInfo.unit">
                         <option v-for="(opt, idx) in selectedData.selectOptions.unit"
@@ -75,30 +61,16 @@
                 </div>
             </div>
             <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">카테고리 *</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">평균가동시간</div>
                 <div class="input-group mb-3 w-50">
-                    <select class="form-select custon-width" v-model="prdInfo.category">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.category"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
+                    <input type="number" class="form-control" v-model="prdInfo.price" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                    style="height: 41px;"  />
                 </div>
             </div>
             <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
-                <div class="input-group mb-3 w-50">
-                        <input type="number" class="form-control" v-model="prdInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>
-                
-                        <textarea cols="40" rows="8" type="text" class="form-control" v-model="prdInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" />
-                
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>                
+                        <textarea cols="40" rows="8" type="text" class="form-control h-25" v-model="prdInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                        style="height: 41px;" />                
             </div>
             </div> 
                 <div class="text-center">

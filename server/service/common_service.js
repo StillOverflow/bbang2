@@ -44,7 +44,6 @@ const login = async (datas)=>{
     if(list.STATUS == 'G03'){ //퇴사한 경우
       return 'quit';
     } else {
-
       return 'success';      
     }
   }else{ //일치하는 정보가 없을 때

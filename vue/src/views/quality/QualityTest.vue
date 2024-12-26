@@ -12,8 +12,8 @@
             :class="activeTabRev" @click="activeCompTab">검사완료</div>
         </div>
       </div>
-      <ag-grid-vue class="ag-theme-alpine" style="height: 242px;" :columnDefs="waitDefs" :rowData="waitData" 
-        @grid-ready="gridFit" :gridOptions="gridOptions" :getRowStyle="getRowStyle" @rowClicked="selectTarget"/>
+      <ag-grid-vue class="ag-theme-alpine" style="height: 242px;" :columnDefs="defs" :rowData="rowData" 
+        @stateUpdated="gridFit" :gridOptions="gridOptions" :getRowStyle="getRowStyle" @rowClicked="selectTarget"/>
     </div>
     
     <div class="card">
@@ -186,20 +186,8 @@
         def_cd: null,
 
         // 일반 grid API 데이터
-        waitDefs: [
-          { headerName: '생산번호', field: 'prod_result_cd' }, // 생산실적 번호
-          { headerName: '생산일시', field: 'end_time', 
-            valueFormatter: this.$comm.datetimeFormatter,
-            width: 250
-          }, // 공정 완료된 일시
-          { headerName: '제품코드', field: 'prd_cd' },
-          { headerName: '제품명', field: 'prd_nm' },
-          { headerName: '공정코드', field: 'inst_proc_cd' },
-          { headerName: '공정명', field: 'proc_nm' },
-          { headerName: '생산량', field: 'prod_qty' ,valueFormatter: this.$comm.currencyFormatter }
-        ],
-        waitData: [],
-        waitApi: null,
+        defs: [],
+        rowData: [],
 
         gridOptions: {
           pagination: true,
@@ -280,8 +268,8 @@
       // 페이지 제목 저장
       this.$store.dispatch('breadCrumb', {title: '제품 품질검사'});
 
-      // 그리드 데이터 불러오기
-      this.getWaitGrid();
+      // 기본 탭: 검사대기탭 그리드 데이터 불러오기
+      this.activeWaitTab();
     },
 
     methods: {     
@@ -289,24 +277,66 @@
         if(!this.isWaitList){
           this.isWaitList = true;
         }
+        this.getWaitList();
       },
 
       activeCompTab(){ // 검사완료목록 활성화
         if(this.isWaitList){
           this.isWaitList = false;
         }
+        this.getRecList();
       },
 
-      gridFit(params){ // @grid-ready 시 매개변수 속성으로 자동 접근, 가로스크롤 삭제
+      gridFit(params){ // ag-grid @stateUpdated 이벤트 발생 시마다 params로 접근해 가로스크롤 삭제
         params.api.sizeColumnsToFit();
-        this.waitApi = params.api;
       },
 
       // 검사대기목록 불러오기
-      async getWaitGrid(){
+      async getWaitList(){
         let waitResult = await axios.get('/api/quality/rec/wait')
                                     .catch(err => console.log(err));
-        this.waitData = waitResult.data;
+        this.rowData = waitResult.data;
+
+        this.defs = [
+          { headerName: '생산번호', field: 'prod_result_cd' }, // 생산실적 번호
+          { headerName: '생산일시', field: 'end_time', 
+            valueFormatter: this.$comm.datetimeFormatter,
+            minWidth: 145
+          }, // 공정 완료된 일시
+          { headerName: '제품코드', field: 'prd_cd' },
+          { headerName: '제품명', field: 'prd_nm' },
+          { headerName: '공정코드', field: 'inst_proc_cd' },
+          { headerName: '공정명', field: 'proc_nm' },
+          { headerName: '생산량', field: 'prod_qty' ,valueFormatter: this.$comm.currencyFormatter }
+        ];
+      },
+
+      // 검사완료목록(품질검사내역 전체) 불러오기
+      async getRecList(){
+        let result = await axios.get('/api/quality/rec')
+                                .catch(err => console.log(err));
+        this.rowData = result.data;
+
+        this.defs = [
+          { headerName: '검사번호', field: 'test_rec_cd' },
+          { headerName: '검사일시', field: 'test_dt', 
+            valueFormatter: this.$comm.datetimeFormatter,
+            minWidth: 145
+          },
+          { headerName: '참조번호', field: 'refer_cd' },
+          { headerName: '대상구분', field: 'target_type' },
+          { headerName: '대상코드', field: 'target_cd' },
+          { headerName: '생산량', field: 'total_qty' },
+          { headerName: '합격량', field: 'pass_qty' },
+          { headerName: '불량양', field: 'def_qty' },
+          { headerName: '불량명', field: 'def_nm' },
+          { headerName: '검사자', field: 'name' }, // id => 이름으로 바꿔 조회한 결과
+          { headerName: '불량상태', field: 'def_status' },
+          { headerName: '처리일시', field: 'complate_dt',
+            valueFormatter: this.$comm.datetimeFormatter,
+            minWidth: 145
+          },
+        ];
       },
 
       // 목록에서 타겟 선택 시 검사결과란에 정보 불러오기
@@ -553,8 +583,8 @@
           // 후처리: 입력완료한 내역은 목록에서 사라져야 함.
           // filter 메소드로 현재 입력한 것을 제외한 내역만 남김
           let newArr = [];
-          newArr = this.waitData.filter(obj => obj.prod_result_cd != target.prod_result_cd);
-          this.waitData = newArr; // 변경한 배열로 반영
+          newArr = this.rowData.filter(obj => obj.prod_result_cd != target.prod_result_cd);
+          this.rowData = newArr; // 변경한 배열로 반영
           this.isRowClicked = false; // 결과 창 닫기
         } else {
           this.$swal(

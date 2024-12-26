@@ -91,3 +91,14 @@
   font-size: 0.75rem;
   border-radius: 0.5rem;
 }
+
+.produce table thead, .produce table tbody tr {
+  display: table;
+  width: 100%;
+} 
+
+.produce table tbody{
+  display: block;
+  max-height: 300px;
+  overflow-y: scroll;
+} 
