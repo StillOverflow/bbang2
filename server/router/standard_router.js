@@ -172,9 +172,18 @@ router.delete('/standard/delProduct/:prd_cd', async(req,res)=>{
 })
 
 //----------------------------------------공정관리-------------------------------------------------
+//공정조회
 router.get('/standard/process', async(req,resp)=>{
   let datas =req.query;
   let result = await standardService.processSelect(datas);
   resp.send(result);
 })
+
+//공정등록
+router.post('/standard/insertProcess', async (req, res) => {
+  let processs = req.body;
+  let prefix = req.body.prefix; // 클라이언트에서 prefix 전달
+  let result = await standardService.insertProcess(processs, prefix);
+  res.send(result);
+});
 module.exports = router;

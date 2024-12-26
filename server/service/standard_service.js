@@ -287,6 +287,19 @@ const processSelect = async(datas)=>{
   let result = await mariadb.query('processSelect', datas);
   return result;
 }
+
+const insertProcess = async (proInfo, prefix) => {
+  // prefix 전달하여 새로운 코드 생성
+  let new_pro_cd = (await mariadb.query('getProCd', [prefix]))[0].pro_cd;
+  prdInfo.pro_cd = new_pro_cd;
+
+  let result = await mariadb.query('proInsert', proInfo);
+  if (result.affectedRows > 0) {
+    return { result: true};
+  } else {
+    return {};
+  }
+};
 module.exports = {
   //BOM
   findAllPrd,
@@ -321,5 +334,8 @@ module.exports = {
   insertProduct,
   updateProduct,
   deleteProduct,
-  processSelect
+  processSelect,
+
+  //공정관리
+  insertProcess,
 };

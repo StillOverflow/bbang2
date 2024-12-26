@@ -269,6 +269,14 @@ const processSelect = (datas)=>{
 
     return query;
 }
+
+//등록전 마지막 제품코드 찾기+1
+const getProCd = 
+`
+SELECT 
+CONCAT(?, LPAD(IFNULL(MAX(CAST(SUBSTR(prd_cd, 3) AS UNSIGNED)) + 1, 1), 3, '0')) AS prd_cd
+FROM process
+`
 module.exports = {
   //bom
 prdList,
@@ -309,4 +317,5 @@ prdDelete,
 
 //공정관리
 processSelect,
+getProCd
 };

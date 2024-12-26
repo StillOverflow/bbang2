@@ -37,8 +37,8 @@
                 <div class="d-flex justify-content-left align-items-center mb-2">
                     <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정코드</div>
                     <div class="input-group mb-3 w-50">
-                        <input type="text" class="form-control" v-model="prdInfo.prd_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
+                        <input type="text" class="form-control" v-model="prdInfo.prefix" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                        style="height: 41px; background-color: rgb(236, 236, 236);"/>
                     </div>
                 </div>
             <div class="d-flex justify-content-left align-items-center mb-2">
@@ -85,7 +85,7 @@
 <script>
 import { AgGridVue } from "ag-grid-vue3";
 import axios from "axios";
-
+//prefix 코드인풋
 export default {
     components: { AgGridVue },
     created(){
@@ -142,6 +142,7 @@ export default {
                 safe_stk: '',
                 exp_range:'',
                 note: '',
+                prefix:'',
                 };
                 this.isUpdated = false; // 신규등록 모드로 전환
             },
@@ -195,7 +196,8 @@ export default {
             this.prdInfo.safe_stk = params.data.safe_stk;
             this.prdInfo.note = params.data.note;
             this.prdInfo.exp_range = params.data.exp_range;
-            this.isUpdated = true;         
+            this.isUpdated = true;
+            this.prefix='';         
         },
         matchCode(options, value) { //매칭 메소드
             const match = options.find((opt) => opt.comm_dtl_nm == value || opt.comm_dtl_cd == value); //코드나 이름에 벨류가 있는지 확인
