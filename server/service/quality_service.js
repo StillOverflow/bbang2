@@ -118,6 +118,13 @@ const testRecInsert = async (valueObj) => {
     return result;
 };
 
+// 검사결과내역 조회
+const getTestRecList = async () => {
+    let result = await mariadb.query('testRecList');
+    return result;
+};
+
+
 
 module.exports = {
     getYetList,
@@ -129,5 +136,6 @@ module.exports = {
     
     getWaitList,
     getDefList,
-    testRecInsert
+    testRecInsert,
+    getTestRecList
 }
