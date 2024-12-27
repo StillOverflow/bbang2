@@ -181,61 +181,64 @@
             <template v-slot:default>
               <div class="table-responsive p-0">
                 <table class="table align-items-center justify-content-center mb-0">
-                    <thead>
-                        <tr>
-                          <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7"> 제품코드 </th>
-                          <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2"> 제품명 </th>
-                          <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2"> 지시량 </th>
-                          <th class="text-uppercase text-secondary text-xs font-weight-bolder text-center opacity-7 ps-2"> 실사용량 </th>
-                          <th class="text-uppercase text-secondary text-xs font-weight-bolder text-center opacity-7 ps-2"> 잔여 </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="mat in matData" :key="mat.PROC_CD">
-                        <td>
-                          <div class="d-flex px-2">
-                            <div class="my-auto">
-                              <h6 class="mb-0 text-sm">{{ mat.MAT_CD }}</h6>
-                            </div>
+                  <colgroup>
+                    <col width="20%">
+                    <col width="20%">
+                    <col width="20%">
+                    <col width="20%">
+                    <col width="20%">
+                    
+                  </colgroup>
+                  <thead>
+                    <tr>
+                      <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7"> 제품코드 </th>
+                      <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2"> 제품명 </th>
+                      <th class="text-uppercase text-secondary text-xs font-weight-bolder opacity-7 ps-2"> 지시량 </th>
+                      <th class="text-uppercase text-secondary text-xs font-weight-bolder text-center opacity-7 ps-2"> 실사용량 </th>
+                      <th class="text-uppercase text-secondary text-xs font-weight-bolder text-center opacity-7 ps-2"> 잔여 </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="mat in matData" :key="mat.PROC_CD">
+                      <td>
+                        <div class="d-flex px-2">
+                          <div class="my-auto">
+                            <h6 class="mb-0 text-sm">{{ mat.MAT_CD }}</h6>
                           </div>
-                        </td>
-                        <td>
-                          <div class="d-flex px-2">
-                            <div class="my-auto">
-                              <h6 class="mb-0 text-sm">{{ mat.MAT_NM }}</h6>
-                            </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex px-2">
+                          <div class="my-auto">
+                            <h6 class="mb-0 text-sm">{{ mat.MAT_NM }}</h6>
                           </div>
-                        </td>
-                        <td>
-                          <div class="d-flex px-2">
-                            <div class="my-auto">
-                              <h6 class="mb-0 text-sm">{{ mat.MAT_QTY }}</h6>
-                            </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="d-flex px-2">
+                          <div class="my-auto">
+                            <h6 class="mb-0 text-sm">{{ mat.MAT_QTY }}</h6>
                           </div>
-                        </td>
-                        <td>
-                          <div class="d-flex px-2">
-                            <div class="my-auto">
-                              <input type="number" class="form-control w-50" v-model="mat.use_qty" @keyup="matHandle(mat)">
-                            </div>
-                          </div>
-                        </td>                       
+                        </div>
+                      </td>
+                      <td>
+                        <input type="text" class="form-control form-inline w-80" v-model.number="mat.use_qty" @keyup="matHandle(mat)">{{ mat.UNIT }}
+                      </td>                       
 
-                        <td class="align-middle text-center">
-                          <div class="d-flex align-items-center justify-content-center">
-                            <span class="me-2 text-xs font-weight-bold">{{ Number(mat.result_qty) }}%</span>
-                              <div>
-                                <div class="progress">
-                                  <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="60"
-                                      aria-valuemin="0" aria-valuemax="100" style="width: 60%;"></div>
-                                </div>
+                      <td class="align-middle text-center">
+                        <div class="d-flex align-items-center justify-content-center">
+                          <span class="me-2 text-xs font-weight-bold">{{ mat.result_qty }}%</span>
+                            <div>
+                              <div class="progress">
+                                <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="60"
+                                    aria-valuemin="0" aria-valuemax="100" :style="'width:'+mat.result_qty+'%' "></div>
                               </div>
-                          </div>
-                        </td>
-                        
-                      </tr>
-                    </tbody>
-                </table>
+                            </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+              </table>
             </div>
             </template>
             <template v-slot:footer>
@@ -343,8 +346,7 @@ export default {
     },
 
     matHandle(mat){
-      mat.result_qty = ((mat.MAT_QTY - mat.USE_QTY) / mat.MAT_QTY) * 100;
-      console.log(mat);
+      mat.result_qty = ((parseFloat(mat.MAT_QTY) - parseFloat(mat.use_qty)) /parseFloat(mat.MAT_QTY)) * 100;      
     },
     
     //제품별 공정 리스트

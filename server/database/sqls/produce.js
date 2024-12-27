@@ -290,12 +290,14 @@ FROM equipment WHERE eqp_type = ?
 //제품 공정별 자재 조회
 const instProcMtList =
 `SELECT 
-    MAT_CD,
-    MAT_QTY,
-    (SELECT MAT_NM FROM material WHERE MAT_CD=pf.MAT_CD) MAT_NM
+    pf.MAT_CD AS MAT_CD,
+    MAT_QTY,   
+    MAT_NM,
+    UNIT
   FROM
-  proc_flow_mtl pf WHERE PROC_FLOW_CD =?
   
+  proc_flow_mtl pf JOIN (SELECT MAT_CD, MAT_NM, fn_get_codename(UNIT) AS UNIT FROM material) m on pf.MAT_CD=m.MAT_CD
+  where pf.PROC_FLOW_CD = ?  
 `;
 
 module.exports = {
