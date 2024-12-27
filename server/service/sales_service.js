@@ -40,11 +40,40 @@ const insertOrder = async (values) => {
     let order_dtl = await mariadb.query('orderDtlInsert', [seq, values[1]]); // 배열에 디테일 부분이랑 시퀀스를 같이 넘김
 
     if(order.affectedRows > 0 && order_dtl.affectedRows > 0){
+        mariadb.commit();
         return {"result" : "success"};
     } else {
+        mariadb.rollback();
         return {"result" : "fail"};
     }
 };
+
+//주문서 상세(헤드부분)
+const listDtlOrder = async (no) => {
+    let list = await mariadb.query('orderDtlList',no);
+    return list;
+}; 
+
+//주문서 상세(디테일부분)
+const listDtlOrderDtl = async (no) => {
+    let list = await mariadb.query('dtlOrderDtlList',no);
+    return list;
+};
+
+//주문서 삭제
+const deleteOrder = async (no) => {
+    let del = await mariadb.query('orderDelete',no);
+
+    if(del.affectedRows > 0){ // 모두 성공했는지 판단
+        mariadb.commit();
+        return {"result" : "success"};
+    } else {
+        mariadb.rollback();
+        return {"result" : "fail"};
+    }
+}
+
+
 
 /* --------------------------------------------------제품 출고-------------------------------------------------------- */
 
@@ -103,10 +132,13 @@ const insertPrdOut = async (values) => {
     }
     
     if(prdOut.affectedRows > 0 && prdOutDtl.affectedRows > 0 && values[2].length  == i){
+        mariadb.commit();
         return {"result" : "success"};
     } else {
+        mariadb.rollback();
         return {"result" : "fail"};
     }
+
 };
 
 /* ----------------------------------------------------제품 반품--------------------------------------------------------- */
@@ -167,8 +199,10 @@ const InsertPrdReturn = async (values) => {
     let prdReturnDtl = await mariadb.query('productReturnDtlInsert', [seq, values[1]]); // 배열에 디테일 부분이랑 시퀀스를 같이 넘김
 
     if(prdReturn.affectedRows > 0 && prdReturnDtl.affectedRows > 0){
+        mariadb.commit();
         return {"result" : "success"};
     } else {
+        mariadb.rollback();
         return {"result" : "fail"};
     }
 };
@@ -226,6 +260,9 @@ module.exports = {
     listOrder,
     searchOrder,
     insertOrder,
+    listDtlOrder,
+    listDtlOrderDtl,
+    deleteOrder,
 
 
     //제품출고

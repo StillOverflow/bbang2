@@ -87,6 +87,32 @@ values.forEach((obj) => {
   return sql;
 };
 
+//주문서 상세(헤드부분)
+const orderDtlList =
+`
+SELECT a.act_nm, o.act_cd, o.id, m.name, o.order_dt, o.due_dt
+FROM \`order\` o JOIN account a ON o.act_cd = a.act_cd
+					JOIN member m ON o.id = m.id
+WHERE order_cd = ?
+`;
+
+//주문서 상세(디테일부분)
+const dtlOrderDtlList =
+`
+SELECT o.prd_cd, p.prd_nm, o.order_qty, o.note
+FROM order_detail o JOIN product p ON o.prd_cd = p.prd_cd
+WHERE order_cd = ?
+`;
+
+//주문서 삭제
+const orderDelete =
+`
+DELETE \`order\`,order_detail  
+FROM \`order\` \`order\` JOIN order_detail order_detail ON \`order\`.order_cd = order_detail.order_cd 
+WHERE \`order\`.order_cd = ?
+`;
+
+
 /* --------------------------------------------------제품 출고------------------------------------------------------------------ */
 
 //출고 제품 목록 조회
@@ -435,6 +461,9 @@ module.exports = {
     orderSeq,
     orderInsert,
     orderDtlInsert,
+    orderDtlList,
+    dtlOrderDtlList,
+    orderDelete,
 
     //제품출고
     prdOutList,
