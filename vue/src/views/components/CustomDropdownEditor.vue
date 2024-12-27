@@ -1,5 +1,6 @@
 <template>
    <div class="inputSearch">
+   
       <!-- 입력 필드 -->
       <div class="input-group">
          <input

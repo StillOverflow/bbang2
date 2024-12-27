@@ -495,7 +495,7 @@ export default {
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Standard_list2" :class="getRoute() === 'Standard_list2' ? 'active' : ''"
+            <sidenav-item to="/Standard_AccountAdd" :class="getRoute() === 'Standard_AccountAdd' ? 'active' : ''"
               :navText="'거래처관리'">
             </sidenav-item>
           </li>
@@ -519,12 +519,12 @@ export default {
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Standard_ProcessFlow" :class="getRoute() === 'Standard_list7' ? 'active' : ''"
+            <sidenav-item to="/Standard_ProcessFlow" :class="getRoute() === 'Standard_ProcessFlow' ? 'active' : ''"
               :navText="'공정흐름도관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Standard_list8" :class="getRoute() === 'Standard_list8' ? 'active' : ''"
+            <sidenav-item to="/Standard_Defect" :class="getRoute() === 'Standard_Defect' ? 'active' : ''"
               :navText="'불량관리'">
             </sidenav-item>
           </li>

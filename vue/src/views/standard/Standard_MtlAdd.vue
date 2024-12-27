@@ -173,10 +173,10 @@ export default {
                 mat_cd: '', // 자재코드는 신규등록 시 생성됨
                 mat_nm: '',
                 type: '',
-                category: '',
+                category: '' ,
                 price: '',
                 unit: '',
-                safe_stk: '',
+                safe_stk: '' ||0,
                 note: '',
                 };
                 this.isUpdated = false; // 신규등록 모드로 전환
@@ -260,17 +260,25 @@ export default {
             return;        
             }
 
-            try {
-                let result = await axios.post('/api/standard/material', this.matInfo);
-                if (result.data.result) {
-                    alert('자재 등록');
-                    this.bringMat(); // 목록 갱신
-                } else {
-                    alert('등록에 실패');
-                }
-            } catch (err) {
-            console.error('자재 등록 중 오류:', err);
-            }
+            this.$swal({
+                    title: "등록하시겠습니까??",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes!"
+                }).then(async(result) => {
+                    if (result.isConfirmed) {
+                        this.$swal({
+                        title: "register!",
+                        text: "Your file has been register.",
+                        icon: "success"
+                        });
+                        await axios.post('/api/standard/material', this.matInfo);
+                        this.bringMat();
+                    }                   
+                });
         },
         async matUpdate() {
                 this.$swal({

@@ -180,10 +180,76 @@ router.get('/standard/process', async(req,resp)=>{
 })
 
 //공정등록
-router.post('/standard/insertProcess', async (req, res) => {
+router.post('/standard/insertProcess/:prefix', async (req, res) => {
   let processs = req.body;
-  let prefix = req.body.prefix; // 클라이언트에서 prefix 전달
-  let result = await standardService.insertProcess(processs, prefix);
+  let preFix = req.params.prefix // 클라이언트에서 prefix 전달
+  console.log('prefix=>',preFix);
+  let result = await standardService.insertProcess(processs, preFix);
   res.send(result);
 });
+//공정수정
+router.put('/standard/updateProcess/:proc_cd', async(req, res)=>{
+  let procCd = req.params.proc_cd;
+  let updateInfo =req.body;
+  let result = await standardService.updateProcess(procCd, updateInfo);
+  res.send(result);
+});
+
+//공정삭제
+router.delete('/standard/delProcess/:proc_cd', async(req,res)=>{
+  let procCd = req.params.proc_cd;
+  let result = await standardService.deleteProcess(procCd);
+  res.send(result);
+})
+
+//-------------------------------------거래처관리------------------------------------------------
+//거래처등록
+router.post('/standard/account', async(req,res)=>{
+  let accounts = req.body;
+  let result = await standardService.insertAccount(accounts);
+  res.send(result);
+});
+
+//거래처수정
+router.put('/standard/updateAccount/:act_cd', async(req, res)=>{
+  let actCd = req.params.act_cd;
+  let updateInfo =req.body;
+  let result = await standardService.updateAccount(actCd, updateInfo);
+  res.send(result);
+});
+//거래처삭제
+router.delete('/standard/delAccount/:act_cd', async(req,res)=>{
+  let actCd = req.params.act_cd;
+  let result = await standardService.deleteAccount(actCd);
+  res.send(result);
+});
+
+//-------------------------------------불량코드관리------------------------------------------------
+//불량코드조회
+router.get('/standard/defect', async(req,resp)=>{
+  let datas =req.query;
+  let result = await standardService.defectSelect(datas);
+  resp.send(result);
+})
+//불량코드등록
+router.post('/standard/insertDefect', async(req,res)=>{
+  let defects = req.body;
+  let result = await standardService.insertDefect(defects);
+  res.send(result);
+});
+
+//불량코드수정
+router.put('/standard/updateDefect/:def_cd', async(req, res)=>{
+  let defCd = req.params.def_cd;
+  let updateInfo =req.body;
+  let result = await standardService.updateDefect(defCd, updateInfo);
+  res.send(result);
+});
+//불량코드삭제
+router.delete('/standard/delDefect/:def_cd', async(req,res)=>{
+  let defCd = req.params.def_cd;
+  let result = await standardService.deleteDefect(defCd);
+  res.send(result);
+})
+
 module.exports = router;

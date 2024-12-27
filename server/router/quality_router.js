@@ -70,10 +70,24 @@ router.post('/quality/rec', async (req, resp) => {
   resp.send(result);
 });
 
+
+// 불량 미처리 내역 조회
+router.get('/quality/rec/defect', async (req, resp) => {
+  let result = await qualityService.getTestDefList();
+  resp.send(result);
+});
+
 // 검사결과내역 조회
 router.get('/quality/rec', async (req, resp) => {
   let valueObj = req.query; // query: 객체로 값을 받음.
   let result = await qualityService.getTestRecList(valueObj);
+  resp.send(result);
+});
+
+// 검사결과 상세내역 (샘플링검사의 측정값) 조회
+router.get('/quality/rec/dtl', async (req, resp) => {
+  let value = req.query.test_rec_cd; // query: 객체로 값을 받음.
+  let result = await qualityService.getTestDtl(value);
   resp.send(result);
 });
 

@@ -144,6 +144,7 @@ export default {
         rowSelection: { mode: "multiRow" },
         suppressMovableColumns: true,
       },
+      
       prdOptions: {
         rowSelection: {
           mode: "singleRow",

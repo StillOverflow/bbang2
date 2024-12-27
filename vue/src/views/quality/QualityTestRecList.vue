@@ -73,7 +73,7 @@
       </div>
 
       <!-- 목록 -->
-      <ag-grid-vue class="ag-theme-alpine"  :columnDefs="defs" :rowData="rowData" style="height: 320px;"
+      <ag-grid-vue class="ag-theme-alpine"  :columnDefs="defs" :rowData="rowData" 
         @stateUpdated="gridFit" :gridOptions="gridOptions" :getRowStyle="getRowStyle" @rowClicked="selectTarget"/>
     </div>
     
@@ -264,6 +264,7 @@
         gridOptions: {
           pagination: true,
           paginationAutoPageSize: true,
+          domLayout: 'autoHeight',
           overlayNoRowsTemplate: '표시할 항목이 없습니다.', // 표시할 행이 없을 때 적용할 메세지
           suppressMovableColumns: true, // 컬럼 드래그 이동 방지
         },
@@ -400,14 +401,15 @@
             minWidth: 145
           },
           { headerName: '참조번호', field: 'refer_cd' },
-          { headerName: '제품명', field: 'target_nm' },
+          { headerName: '검사대상', field: 'target_type' },
+          { headerName: '제품명', field: 'prd_nm' },
           { headerName: '공정명', field: 'proc_nm' },
           { headerName: '생산량', field: 'total_qty' },
           { headerName: '합격량', field: 'pass_qty' },
           { headerName: '불량양', field: 'def_qty' },
           { headerName: '불량명', field: 'def_nm' },
           { headerName: '담당자', field: 'name' }, // id => 이름으로 바꿔 조회한 결과
-          { headerName: '불량상태', field: 'def_status_nm' },
+          { headerName: '불량상태', field: 'def_status' },
           { headerName: '처리자', field: 'complete_name' }, // id => 이름으로 바꿔 조회한 결과
           { headerName: '처리일시', field: 'complate_dt',
             valueFormatter: this.$comm.datetimeFormatter,
@@ -456,23 +458,10 @@
 
         // 검사항목 불러오기
         if(clicked.is_last == 1){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
-          await this.getTests(clicked, 'P03');
-          await this.getTests(clicked, 'P02');
+          this.getTests(clicked, 'P03');
+          this.getTests(clicked, 'P02');
         } else {
-          await this.getTests(clicked, 'P02');
-        }
-        ////// 검사결과목록일 경우 다르게 가져와야 함.
-
-        // 검사완료목록일 경우 상세 측정결과값 가져오기
-        if(!this.isWaitList){
-          let result = await axios.get('/api/quality/rec/dtl', {params: {test_rec_cd: clicked.test_rec_cd}})
-                                  .catch(err => console.log(err));
-          let data = result.data;
-          if(data){ // 값이 있다면 샘플링테스트 측정값에 넣기
-            this.samplingTests.forEach((test) => {
-              if(test.test_cd == data.test_cd) test.test_value = data.test_value;
-            });
-          }
+          this.getTests(clicked, 'P02');
         }
         
         this.isRowClicked = true; // 검사결과 창 open
@@ -506,15 +495,14 @@
 
       // 그리드 속성으로 선택된 행 색깔 변경
       getRowStyle(params){
-        if((this.isWaitList && params.data.prod_result_cd == this.selectedTarget.prod_result_cd)
-            || (!this.isWaitList && params.data.test_rec_cd == this.selectedTarget.test_rec_cd)){
+        if(params.data.prod_result_cd == this.selectedTarget.prod_result_cd){
           return {backgroundColor: '#d6d6d6'}
         }
       },
 
       // 각 검사항목 클릭 시 측정값 입력 혹은 상세정보 표시
       async openDtl(testMetd, idx){
-        if(testMetd == '샘플링' && this.isWaitList){
+        if(testMetd == '샘플링'){ // 샘플량 5개 미만이거나, 비어있거나, 숫자가 아닐 시 입력불가
           let test = this.samplingTests[idx];
           let passMin = !test.pass_min ? 0 : test.pass_min;
           let passMax = !test.pass_max ? 0 : test.pass_max;
@@ -558,12 +546,6 @@
               this.def_qty = this.selectedTarget.prod_qty;
             }
           }
-        } else if(testMetd == '샘플링'){ // 검사완료목록일 경우
-          this.$swal({
-            title: `<h4>${this.samplingTests[idx].test_nm} 검사</h4>`,
-            text: this.samplingTests[idx].test_dtl,
-            showConfirmButton: false
-          });
         } else {
           this.$swal({
             title: `<h4>${this.fullTests[idx].test_nm} 검사</h4>`,
@@ -681,8 +663,7 @@
           test_dt: this.test_dt.replace('T', ' '), // 날짜 DB형식으로 바꿈 
           refer_cd: target.prod_result_cd, 
           target_type: isLast ? 'P03' : 'P02', // 마지막 공정에서의 검사는 P03(완제품검사)으로 입력 
-          target_cd: target.prd_cd, 
-          proc_cd: target.inst_proc_cd,
+          target_cd: isLast ? target.prd_cd : target.inst_proc_cd, 
           total_qty: target.prod_qty, 
           test_qty: this.test_qty, 
           pass_qty: this.pass_qty, 

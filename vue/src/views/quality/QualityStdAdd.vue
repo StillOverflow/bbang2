@@ -4,7 +4,8 @@
     <div class="card">
   
       <div class="card-header bg-light ps-5 ps-md-4">
-          <select-target :modalDefs="modalDefs" :modalTitle="'품질기준 대상선택'" ref="selectChild"/>
+          <select-target :modalDefs="modalDefs" :modalTitle="'품질기준 대상선택'" ref="selectTarget" 
+            @changeDivsMore="changeDivs" @getModalListMore="getModalList" @modalSelectMore="modalSelect"/>
       </div>
   
       <!-- 검사항목 추가/삭제 -->
@@ -74,10 +75,10 @@
         t_break: {wordBreak: 'keep-all'},
         g_height: {height: '520px'},
 
-        // 검색결과 모달에서 출력할 열
+        // 검색결과 모달에서 출력할 컬럼
         modalDefs: [
           { headerName: '유형', field: 'type', width: 70 },
-          { headerName: '구분', field: 'cate_type', width: 80 },
+          { headerName: '분류', field: 'cate_type', width: 80 },
           { headerName: '카테고리', field: 'category', width: 90 },
           { headerName: '코드', field: 'cd', width: 80 },
           { headerName: '이름', field: 'nm', width: 126 },
@@ -90,6 +91,7 @@
             width: 100 },
           { headerName: '마지막 등록일', field: 'std_date', width: 120, valueFormatter: this.$comm.dateFormatter_returnNull}
         ],
+        date_val: null,
 
         // 일반 grid API 데이터
         defs: [
@@ -131,9 +133,6 @@
         SelectTarget
     },
 
-    created(){ 
-    },
-
     methods: {
       yetGrid(params){ // '적용가능목록' @grid-ready 시 매개변수 속성으로 자동 접근
         params.api.sizeColumnsToFit();
@@ -146,13 +145,25 @@
         this.myApi = params.api;
         this.myColApi = params.columnApi;
       },
-
-      // 대상구분 변경될 때 동작
+      
+      // ------------ 자식 메소드에 전달 ------------
+      // 대상구분 변경될 때 추가 동작
       changeDivs(){
-        this.$refs.selectChild.changeDivs();
         this.myData = [];
         this.yetData = [];
       },
+      
+      getModalList(){
+        this.$refs.selectTarget.modalData.forEach((obj) => {
+          obj.has_std = obj.std_date == null ? '미등록' : '등록완료'; // SELECT문 컬럼에 포함되지 않았으므로 추가
+        });
+      },
+
+      modalSelect(selected){ // @rowClicked 추가 동작
+        this.date_val = selected.std_date ? this.$comm.getMyDay(selected.std_date) : this.$comm.getMyDay();
+        this.myData_save = new Set();
+      },
+      // -------------------------------------------
 
       // 임시저장 (기존 값과 변경되었는지 확인하기 위한 비교용)
       saveData(data){
@@ -167,7 +178,7 @@
       async getTList(){
         // 'yet' or 'my'에 따라 같은 동작 실행하는 함수 선언
         const axiosGet = async (val) => { 
-          let query = {cd: this.modal_val.cd, type: this.selected_radio};
+          let query = {cd: this.$refs.selectTarget.modal_val.cd, type: this.$refs.selectTarget.selected_radio};
 
           let result = await axios.get('/api/quality/test/' + val, {params: query})
                                   .catch(err => console.log(err));
@@ -182,7 +193,7 @@
           }
         };
         
-        if(this.modal_val.cd){ // 코드가 정확히 선택되었을 경우에만 동작
+        if(this.$refs.selectTarget.modal_val.cd){ // 코드가 정확히 선택되었을 경우에만 동작
           await axiosGet('yet');
           await axiosGet('my');
         } else {
@@ -228,7 +239,7 @@
         let isChanged = false; // getTList()에서 임시저장했던 기존 내용이 변경되었는지 확인할 변수
         let originSize = this.myData_save.size; // 원래 데이터 길이
         let insertSize = this.myData.length; // 새로 적용할 길이
-        let targetCd = this.modal_val.cd;
+        let targetCd = this.$refs.selectTarget.modal_val.cd;
         
         if(!targetCd) { // 대상코드 없으면 실행 불가
           this.$swal(

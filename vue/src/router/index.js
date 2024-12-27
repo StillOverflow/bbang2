@@ -68,6 +68,9 @@ import Standard_Bom from '../views/standard/Standard_Bom.vue';
 import Standard_MtlAdd from'../views/standard/Standard_MtlAdd.vue';
 import Standard_ProductAdd from '../views/standard/Standard_ProductAdd.vue';
 import Standard_ProcessAdd from '../views/standard/Standard_ProcessAdd.vue';
+import Standard_AccountAdd from '../views/standard/Standard_AccountAdd.vue';
+import Standard_Defect from '../views/standard/Standard_Defect.vue';
+
 
 
 
@@ -434,16 +437,27 @@ const routes = [
   {
     //제품추가
     path: '/Standard_ProductAdd',
-    name: '/Standard_ProductAdd',
+    name: 'Standard_ProductAdd',
     component: Standard_ProductAdd,
   },
   {
     //공정추가
     path: '/Standard_ProcessAdd',
-    name: '/Standard_ProcessAdd',
+    name: 'Standard_ProcessAdd',
     component: Standard_ProcessAdd,
   },
-
+  {
+    //거래처추가
+    path: '/Standard_AccountAdd',
+    name: 'Standard_AccountAdd',
+    component: Standard_AccountAdd,
+  },
+  {
+    //불량코드추가
+    path: '/Standard_Defect',
+    name: 'Standard_Defect',
+    component: Standard_Defect,
+  },
 
 
 
@@ -493,7 +507,7 @@ const routes = [
     //통계
     path: '/statistics',
     name: 'Statistics',
-    component: Statistics,
+    component: Statistics
   },
 
 

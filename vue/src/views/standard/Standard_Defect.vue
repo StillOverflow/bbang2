@@ -3,57 +3,50 @@
       <div class="py-4 container-fluid">
         <div class="card py-5 px-6">
           <div class="row">
-            <!-- 공정목록 -->
+            <!-- 불량목록 -->
             <div class="col-md-6" style="height: auto">
-              <h4 class="mb-3 text-center">공정 목록</h4>
+              <h4 class="mb-3 text-center">불량 목록</h4>
               <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%" >
                 <div style="width: 15%">
-                  <label class="me-2 align-self-center">공정명</label>
+                  <label class="me-2 align-self-center">불량명</label>
                 </div>
                 
                 <div  class="d-flex justify-content-left align-items-center" style="width: 85%" >
-                  <input type="search" class="form-control d-inline" v-model="keyword" placeholder="공정명을 입력하세요" style="width: 75%" />
-                  <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchProc" > <i class="fa-solid fa-magnifying-glass"></i> </button>
+                  <input type="search" class="form-control d-inline" v-model="keyword" placeholder="불량명을 입력하세요" style="width: 75%" />
+                  <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchDef" > <i class="fa-solid fa-magnifying-glass"></i> </button>
                 </div>
               </div>
               <!-- 자재 테이블 ag-gird -->
               <ag-grid-vue
                 class="ag-theme-alpine"
                 style="width: 100%; height: 600px"
-                :columnDefs="processDefs"
-                :rowData="processData"
+                :columnDefs="defectDefs"
+                :rowData="defectData"
                 :pagination="true"
                 :gridOptinos="gridOptinos"
-                @gridReady="onProcGridReady"
-                @rowClicked="procClicked">
+                @gridReady="onDefGridReady"
+                @rowClicked="defClicked">
               </ag-grid-vue>
             </div>
             
             <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
             <div class="col-md-4 mt-5" style="height: auto">
                 <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProcess">신규등록</button>
+                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newDefect">신규등록</button>
                 </div>
                 <div class="d-flex justify-content-left align-items-center mb-2">
-                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정코드 *</div>
+                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">불량코드 *</div>
                     <div class="input-group mb-3 w-50">
-                        <input type="text" class="form-control" v-model="procInfo.proc_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                        <input type="text" class="form-control" v-model="defInfo.def_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" maxlength="2"/>
                         
                     </div>
                 </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정명 *</div>
+                <div class="d-flex justify-content-left align-items-center mb-2">
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">불량구분 *</div>
                 <div class="input-group mb-3 w-50">
-                    <input type="text" class="form-control" v-model="procInfo.proc_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">설비구분 *</div>
-                <div class="input-group mb-3 w-50">
-                    <select class="form-select custon-width" v-model="procInfo.eqp_type">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.eqp_type"
+                    <select class="form-select custon-width" v-model="defInfo.def_type">
+                        <option v-for="(opt, idx) in selectedData.selectOptions.def_type"
                             :key="idx"
                             :value="opt.comm_dtl_cd">
                             {{ opt.comm_dtl_nm }}
@@ -62,21 +55,29 @@
                 </div>
             </div>
             <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">평균가동시간</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">불량명 *</div>
                 <div class="input-group mb-3 w-50">
-                    <input type="number" class="form-control" v-model="procInfo.duration" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                    <input type="text" class="form-control" v-model="defInfo.def_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                    style="height: 41px;"  />
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-left align-items-center mb-2">
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">불량내용</div>
+                <div class="input-group mb-3 w-50">
+                    <input type="text" class="form-control" v-model="defInfo.def_detail" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
             <div class="d-flex justify-content-left align-items-center mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>                
-                        <textarea cols="40" rows="8" type="text" class="form-control h-25" v-model="procInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                        <textarea cols="40" rows="8" type="text" class="form-control h-25" v-model="defInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />                
             </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? procUpdate() : procInsert()" :disabled="isDisabled"> submit </button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delProcess"> delete </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? defUpdate() : defInsert()" :disabled="isDisabled"> submit </button>
+                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="deldefect"> delete </button>
                 </div>
             </div>
         </div>
@@ -90,13 +91,13 @@ import axios from "axios";
 export default {
     components: { AgGridVue },
     created(){
-        this.$store.dispatch('breadCrumb', { title: '공정 관리' });
-        this.searchProc();
+        this.$store.dispatch('breadCrumb', { title: '불량 관리' });
+        this.searchDef();
         this.fetchCommonCodes();
-        let procCd = this.$route.query.proc_cd;
-        if(procCd > 0){
+        let defCd = this.$route.query.def_cd;
+        if(defCd > 0){
             //수정
-            this.getBoardInfo(procCd);
+            this.getBoardInfo(defCd);
             this.isUpdated = true;
         }       
     },
@@ -111,43 +112,41 @@ export default {
                     enableClickSelection: true,
                 }
             },
-            procInfo: {
-                proc_nm : '',
-                eqp_type : '',
-                duration:'',
+            defInfo: {
+                def_nm : '',
+                def_type : '',
+                def_detail:'',
                 note:''
             },
             isUpdated : false,
             
             clientNamesearch:'',
-            proc_cd:'',
-            unit:'',            
+            def_cd:'',            
             selectedData:{
-                eqp_type: '', // 단위
+                def_type: '', // 단위
                 selectOptions: {
-                    eqp_type: [], // 단위 공통코드
+                    def_type: [], // 단위 공통코드
                 },
             },
-            newProcess() {
-                this.procInfo = {
-                proc_cd: '', // 자재코드는 신규등록 시 생성됨
-                proc_nm: '',
-                duration: '',
-                eqp_type: '',    
+            newDefect() {
+                this.defInfo = {
+                def_cd: '', // 자재코드는 신규등록 시 생성됨
+                def_nm: '',
+                def_detail: '',
+                def_type: '',    
                 note: '',
-                // prefix:'',
                 };
                 this.isUpdated = false; // 신규등록 모드로 전환
             },
-            processDefs:[
-                {headerName: '공정코드' , field: 'proc_cd'},
-                {headerName: '공정명' , field: 'proc_nm'},
-                {headerName: '설비구분' , field: 'eqp_type'},
-                {headerName: '평균가동시간(시간)' , field: 'duration'},     
+            defectDefs:[
+                {headerName: '불량코드' , field: 'def_cd'},
+                {headerName: '불량명' , field: 'def_nm'},
+                {headerName: '불량구분' , field: 'def_type'},
+                {headerName: '불량내용' , field: 'def_detail'},     
             ],
-            processData:[],
+            defectData:[],
             keyword: '',
-            procKeyword: {}
+            defKeyword: {}
         }        
     },
 
@@ -155,44 +154,43 @@ export default {
     methods:{
 
         //----------------------------공통함수()---------------------------
-        //공정검색
-        async searchProc() {
-        this.procKeyword = {proc_nm: this.keyword};
-        let result = await axios.get('/api/standard/process', { params: this.procKeyword });
-        this.processData = result.data;
+        //불량검색
+        async searchDef() {
+        this.defKeyword = {def_nm: this.keyword};
+        let result = await axios.get('/api/standard/defect', { params: this.defKeyword });
+        this.defectData = result.data;
         },
         // 공통코드 가져오기
         async fetchCommonCodes() {
             try {
-                const eqp_type = await axios.get('/api/comm/codeList/EQ');
+                const def_type = await axios.get('/api/comm/codeList/QT');
 
                 this.selectedData.selectOptions={
-                    eqp_type: eqp_type.data
+                    def_type: def_type.data
                 }
             } catch (error) {
                 console.error('공통코드 가져오기 실패:', error);
             }
         },
-        procClicked(params){
-            this.procInfo.proc_cd = params.data.proc_cd;
-            this.procInfo.proc_nm = params.data.proc_nm;
-            this.procInfo.duration = params.data.duration;
-            this.procInfo.eqp_type = this.matchCode(this.selectedData.selectOptions.eqp_type ,params.data.eqp_type)
-            this.procInfo.note = params.data.note;
-            this.isUpdated = true;
-            this.prefix='';         
+        defClicked(params){
+            this.defInfo.def_cd = params.data.def_cd;
+            this.defInfo.def_nm = params.data.def_nm;
+            this.defInfo.def_detail = params.data.def_detail;
+            this.defInfo.def_type = this.matchCode(this.selectedData.selectOptions.def_type ,params.data.def_type)
+            this.defInfo.note = params.data.note;
+            this.isUpdated = true;       
         },
         matchCode(options, value) { //매칭 메소드
             const match = options.find((opt) => opt.comm_dtl_nm == value || opt.comm_dtl_cd == value); //코드나 이름에 벨류가 있는지 확인
             return match ? match.comm_dtl_cd : ''; // 있으면 코드 반환 없으면 공백
         },
-        onProcGridReady(params){
+        onDefGridReady(params){
             params.api.sizeColumnsToFit();
             this.gridApi = params.api;
         },
         
-        async procInsert(){
-            if(!this.procInfo.proc_nm || !this.procInfo.eqp_type){
+        async defInsert(){
+            if(!this.defInfo.def_nm || !this.defInfo.eqp_type){
                 this.$swal({
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
@@ -215,12 +213,12 @@ export default {
                         text: "Your file has been register.",
                         icon: "success"
                         });
-                        axios.post(`/api/standard/insertProcess/${this.procInfo.proc_cd}`, this.procInfo);
-                        this.searchProc(); // 목록 갱신
+                        axios.post(`/api/standard/insertDefct/${this.defInfo.def_cd}`, this.defInfo);
+                        this.searchDef(); // 목록 갱신
                     }                   
                 });
         },
-        async procUpdate() {
+        async defUpdate() {
                 this.$swal({
                     title: "정말 수정하시겠습니까??",
                     text: "",
@@ -237,11 +235,11 @@ export default {
                         icon: "success"
                         });
                     }
-                    await axios.put(`/api/standard/updateProcess/${this.procInfo.proc_cd}`, this.procInfo);
+                    await axios.put(`/api/standard/updateDefInfo/${this.defInfo.def_cd}`, this.defInfo);
                     this.searchProc(); // 목록 갱신
                 });
         },
-        async delProcess(){           
+        async delDefInfo(){           
                 this.$swal({
                     title: "정말 삭제하시겠습니까??",
                     text: "",
@@ -257,15 +255,15 @@ export default {
                         text: "Your file has been deleted.",
                         icon: "success"
                         });
-                        await axios.delete(`/api/standard/delProcess/${this.procInfo.proc_cd}`);
-                        this.searchProc(); // 목록 갱신
+                        await axios.delete(`/api/standard/delDefInfo/${this.defInfo.def_cd}`);
+                        this.searchDef(); // 목록 갱신
                     }
                 });
         }
     },
     
     watch : {
-        procInfo : {
+        defInfo : {
             deep: true,
             handler(newVal, oldVal) {
                 console.log("oldVal => ", oldVal);

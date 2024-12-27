@@ -288,18 +288,116 @@ const processSelect = async(datas)=>{
   return result;
 }
 
-const insertProcess = async (proInfo, prefix) => {
+//공정등록
+const insertProcess = async (procInfo, prefix) => {
   // prefix 전달하여 새로운 코드 생성
-  let new_pro_cd = (await mariadb.query('getProCd', [prefix]))[0].pro_cd;
-  prdInfo.pro_cd = new_pro_cd;
+  let new_proc_cd = (await mariadb.query('getProcCd', prefix))[0].proc_cd;
+  procInfo.proc_cd = new_proc_cd;
 
-  let result = await mariadb.query('proInsert', proInfo);
+  let result = await mariadb.query('procInsert', procInfo);
   if (result.affectedRows > 0) {
     return { result: true};
   } else {
     return {};
   }
 };
+//공정수정
+const updateProcess = async(procCd, updateInfo)=>{
+  let datas = [updateInfo, procCd];
+  let result = await mariadb.query('procUpdate', datas);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+};
+
+//공정삭제
+const deleteProcess = async(procCd)=>{
+  let result = await mariadb.query('procDelete', procCd);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+};
+
+//-------------------------------------거래처관리------------------------------------------------
+//거래처등록
+const insertAccount = async(actInfo)=>{
+  let new_act_cd = (await mariadb.query('getActCd'))[0].act_cd
+  actInfo.act_cd = new_act_cd;
+
+  let result = await mariadb.query('actInsert', actInfo);
+  if(result.affectedRows >0){
+    return {result: true, act_cd:new_act_cd};
+  }else{
+    return {};
+  }
+};
+
+//거래처수정
+const updateAccount = async(actCd, updateInfo)=>{
+  let datas = [updateInfo, actCd];
+  let result = await mariadb.query('actUpdate', datas);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+};
+
+//거래처삭제
+const deleteAccount = async(actCd)=>{
+  let result = await mariadb.query('actDelete', actCd);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+};
+
+//-------------------------------------불량관리------------------------------------------------
+//공정조회
+const defectSelect = async(datas)=>{
+  let result = await mariadb.query('defectSelect', datas);
+  return result;
+}
+
+//불량등록
+const insertDefect = async(defInfo)=>{
+  let new_def_cd = (await mariadb.query('getDefCd'))[0].def_cd
+  defInfo.def_cd = new_def_cd;
+
+  let result = await mariadb.query('defInsert', defInfo);
+  if(result.affectedRows >0){
+    return {result: true, def_cd:new_def_cd};
+  }else{
+    return {};
+  }
+};
+
+//불량수정
+const updateDefect = async(defCd, updateInfo)=>{
+  let datas = [updateInfo, defCd];
+  let result = await mariadb.query('defUpdate', datas);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+};
+
+//불량삭제
+const deleteDefect = async(defCd)=>{
+  let result = await mariadb.query('defDelete', defCd);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+};
+
 module.exports = {
   //BOM
   findAllPrd,
@@ -338,4 +436,17 @@ module.exports = {
 
   //공정관리
   insertProcess,
+  updateProcess,
+  deleteProcess,
+
+  //거래처관리
+  insertAccount,
+  updateAccount,
+  deleteAccount,
+
+  //불량코드관리
+  defectSelect,
+  insertDefect,
+  updateDefect,
+  deleteDefect
 };

@@ -240,7 +240,6 @@
       
       orderFormData.value = [...orderFormData.value, newObj];  // 새 행 추가
    };
-
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
    const gridReady = (params, gridType) => {
       if (params.api) {
@@ -271,7 +270,6 @@
       },
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    };
-
    // 거래처 검색 모달 옵션
    const accountModalGridOptions = {
       columnDefs : [
