@@ -9,7 +9,7 @@
             v-model="searchKeyword"
             @input="onChange($event)"
          />
-         <button class="btn btn-warning" type="button" id="button-addon3">
+         <button class="btn" type="button" id="button-addon3">
             <i class="fa-solid fa-magnifying-glass"></i>
          </button>
       </div>
@@ -24,42 +24,56 @@
 </template>
 
 <script setup>
-   import { ref, defineProps, watch } from "vue";
+   import axios from 'axios';
+   import Swal from 'sweetalert2';
+   import { ref, onBeforeMount } from "vue";
 
 //! ----------------------------------------- 데이터 정의 -----------------------------------------   
    let searchKeyword = ref("");  // 검색 키워드
    let isHidden = ref(false);    // 드롭다운 표시 여부 (true: 숨김, false: 표시)
    let searchResults = ref([]);  // 드롭다운 박스에 나타날 데이터
-
-   const data = defineProps(["params"]);  // 부모에서 전달한 params 정의
+   let matCode = ref('');
+   let matName = ref('');
+   //const props = defineProps(["params"]);  // 부모에서 전달한 params 정의
+   
+   onBeforeMount(() => {
+      getValue();
+   });
 
 //! ----------------------------------------- 이벤트 함수 -----------------------------------------   
    const onChange = () => {
-      console.log("keyword.value 자식 => ", searchKeyword.value);
-      data.params.context.searchComponent.searchKeywordFunc(searchKeyword.value); // 부모 컴포넌트에 검색어 전달 및 검색 실행 요청
-      
+      getMaterial(searchKeyword.value)
+   };
+
+   const getMaterial = async (keyword) => {
+      try {
+         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : keyword } });
+         searchResults.value = result.data;
+         
+      } catch (err) {
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
    };
 
    const onClickMatNm = (code, name) => {
       searchKeyword.value = name;  // 클릭한 항목의 이름을 검색어 필드에 설정
       isHidden.value = true;       // 드롭다운 숨김
-      console.log("자재 이름 => ", name);
-      console.log("자재 코드 =>", code);
+
+      matCode.value = code
+      matName.value = searchKeyword.value;
+   }
+
+   const getValue = () => {
+      return matName.value;
    }
 
 //! ----------------------------------------- Vue Method -----------------------------------------
-   watch(   // 부모의 getSearchResults 지켜보는 중
-      () => data.params.context.searchComponent.getSearchResults(), 
-      (newResults) => {
-         searchResults.value = newResults; // 검색 결과 업데이트
 
-         if (searchResults.value.length > 0) {
-            isHidden.value = false; // 검색 결과가 있으면 드롭다운 표시
-         } else {
-            searchResults.value = [{ mat_nm: "검색결과가 없습니다." }];
-         }
-      }
-   );
+
 </script>
 
 <style scoped>
