@@ -235,18 +235,42 @@ const prodResultUpdate = `
   WHERE  prod_result_cd = ?
 `;
 
+
+// 불량 미처리 내역 조회 (안 쓸 수도 있음!!!!!!)
+const testDefList = `
+  SELECT r.test_rec_cd, 
+         r.test_dt, 
+         r.refer_cd, 
+         r.target_cd, -- 검사한 제품 or 자재코드
+         r.proc_cd, -- 제품인 경우 존재
+         r.total_qty, 
+         r.test_qty, 
+         r.pass_qty, 
+         r.def_qty, 
+         r.id,
+         fn_get_membername(r.id) name, 
+         r.def_cd,
+         d.def_nm,
+         r.note
+  FROM   t_copy_quality_test_record r LEFT OUTER JOIN defect d
+                                                   ON r.def_cd = d.def_cd
+  WHERE  r.def_cd IS NOT NULL AND r.def_status IS NULL
+`;
+
 // 검사결과내역 조회+검색
 const testRecList = (valueObj) => {
-  let recCd = valueObj.test_rec_cd;
+  console.log('받은값: ' + (valueObj.isDef == 'false'));
+  let recCd = valueObj.recCd;
 
   let startDt = valueObj.startDt;
   let endDt = valueObj.endDt;
 
-  let referCd = valueObj.refer_cd;
-  let targetType = valueObj.target_type;
+  let referCd = valueObj.referCd;
+  let targetCd = valueObj.targetCd;
   let note = valueObj.note;
 
-  let isDef = valueObj.isDef; // boolean (true일 때 불량 미처리내역만 조회)
+  let isDef = valueObj.isDef; // boolean
+  let defNm = valueObj.defNm;
   let name = valueObj.name;
 
   // 쿼리에 동적으로 다중조건 생성
@@ -254,34 +278,56 @@ const testRecList = (valueObj) => {
      SELECT r.test_rec_cd, 
             r.test_dt, 
             r.refer_cd, 
-            r.target_type, 
-            r.target_cd, 
+
+            r.target_cd,
+            NULLIF(fn_get_prd_nm(r.target_cd), fn_get_materialname(r.target_cd)) target_nm, -- 검사한 제품 or 자재코드
+            r.proc_cd,
+            fn_get_proc_nm(r.proc_cd) proc_nm, -- 제품인 경우 존재
+
             r.total_qty, 
             r.test_qty, 
             r.pass_qty, 
             r.def_qty, 
+
+            r.id,
             fn_get_membername(r.id) name, 
             r.def_cd,
             d.def_nm,
-            r.def_status, 
+            r.def_status,
+            fn_get_codename(r.def_status) def_status_nm,
+            r.complete_id,
+            fn_get_membername(r.complete_id) complete_name, 
             r.complete_dt, 
             r.note
      FROM   quality_test_record r LEFT OUTER JOIN defect d
                                                ON r.def_cd = d.def_cd
      WHERE  r.test_dt IS NOT NULL -- 당연한 조건 (AND 생성 위함)
        ${!recCd ? "" : "AND  r.test_rec_cd LIKE '%" + recCd + "%' "}
-
        ${!startDt ? "" : "AND  r.test_dt >= '" + startDt + "' "} -- '2024-12-26 17:00' 형식
        ${!endDt ? "" : "AND  r.test_dt <= '" + endDt + "' "}
-
        ${!referCd ? "" : "AND  r.refer_cd LIKE '%" + referCd + "%' "}
-       ${!targetType ? "" : "AND  r.target_type = '" + targetType + "' "} -- P01, P02, P03
+
+       ${!targetCd ? "" : "AND  (r.target_cd = '" + targetCd + "' OR r.proc_cd = '" + targetCd + "') "}
        ${!note ? "" : "AND  r.note LIKE '%" + note + "%' "}
 
-       ${isDef ? "AND  r.def_cd IS NOT NULL AND r.def_status IS NULL " : ""} -- 불량이 있지만 처리되지 않은 내역
-    ${!name ? "" : "HAVING  name LIKE '%" + name + "%' "} -- alias는 WHERE절 이후에 적용되므로, JOIN 시 HAVING에서 써야 함.
+       ${!defNm ? "" : "AND  d.def_nm LIKE '%" + defNm + "%' "}
+       ${isDef == 'true' ? "AND  r.def_cd IS NOT NULL" : ""} -- 불량이 발생한 내역
+       ${isDef == 'false' ? "AND  r.def_cd IS NULL" : ""} -- 불량이 발생하지 않은 내역
+    ${!name ? "" : "HAVING  name LIKE '%" + name + "%' OR complete_name LIKE '%" + name + "%' "} -- alias는 WHERE절 이후에 적용되므로, JOIN 시 HAVING에서 써야 함.
+    ORDER BY r.def_status -- 불량 미처리 내역(null)이 최상단에 옴.
   `;
-}
+};
+
+// 검사결과 상세내역 (샘플링검사의 측정값) 조회
+const testRecDtlSelect = `
+  SELECT d.test_rec_dtl_cd,
+         r.test_rec_cd,
+         d.test_cd,
+         d.test_value
+  FROM   quality_test_record_detail d JOIN quality_test_record r
+                                        ON d.test_rec_cd = r.test_rec_cd
+  WHERE  r.test_rec_cd = ?
+`;
 
 
 
@@ -302,5 +348,7 @@ module.exports = {
   testRecDtlInsert,
   prodResultUpdate,
 
-  testRecList
+  testDefList,
+  testRecList,
+  testRecDtlSelect
 }

@@ -118,9 +118,22 @@ const testRecInsert = async (valueObj) => {
     return result;
 };
 
+
+// 불량 미처리 내역 조회
+const getTestDefList = async () => {
+    let result = await mariadb.query('testDefList');
+    return result;
+};
+
 // 검사결과내역 조회
 const getTestRecList = async (valueObj) => {
     let result = await mariadb.query('testRecList', valueObj);
+    return result;
+};
+
+// 검사결과 상세내역 (샘플링검사의 측정값) 조회
+const getTestDtl = async (value) => {
+    let result = await mariadb.query('testRecDtlSelect', value);
     return result;
 };
 
@@ -137,5 +150,8 @@ module.exports = {
     getWaitList,
     getDefList,
     testRecInsert,
-    getTestRecList
+
+    getTestDefList,
+    getTestRecList,
+    getTestDtl
 }
