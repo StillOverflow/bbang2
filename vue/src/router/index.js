@@ -65,7 +65,7 @@ import QualityTest from '../views/quality/QualityTest.vue';
 //////////////////////////// 기준정보 ////////////////////////////
 import Standard_ProcessFlow from '../views/standard/Standard_ProcessFlow.vue';
 import Standard_Bom from '../views/standard/Standard_Bom.vue';
-import Standard_MtlAdd from'../views/standard/Standard_MtlAdd.vue';
+import Standard_MtlAdd from '../views/standard/Standard_MtlAdd.vue';
 import Standard_ProductAdd from '../views/standard/Standard_ProductAdd.vue';
 import Standard_ProcessAdd from '../views/standard/Standard_ProcessAdd.vue';
 import Standard_AccountAdd from '../views/standard/Standard_AccountAdd.vue';
@@ -99,7 +99,7 @@ const routes = [
     name: 'signin',
     component: login,
   },
-  
+
   {
     path: '/',
     name: '/',

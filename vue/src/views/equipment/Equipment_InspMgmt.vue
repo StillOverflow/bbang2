@@ -20,7 +20,6 @@
           <!-- 이미지 -->
           <div class="col-lg-2 col-md-2 col-sm-12 text-center">
             <img :src="previewImage" alt="설비 이미지" name="selectedFile" class="mb-3 imgBSJ" width="230" height="230" />
-            <input type="file" class="form-control" disabled />
           </div>
 
           <!-- 왼쪽 입력란 -->
@@ -35,10 +34,12 @@
                   </option>
                 </select>
               </template>
+
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                :min="currentDateTime ? formattedStartTime : null" @change="validateStartTime" :disabled="isFieldDisabled(field.value)" />
+                  :min="currentDateTime ? formattedStartTime : null" @change="validateStartTime"
+                  :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
           </div>
@@ -66,7 +67,7 @@
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
                   :min="equipmentData.start_time || currentDateTime" :readonly="!selectedEqp"
-                  @change="validateEndTime" />
+                  :disabled="isFieldDisabled(field.value)" @change="validateEndTime" />
               </template>
             </div>
           </div>
@@ -74,7 +75,7 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success mlp10" @click="submitForm" :disabled="!selectedEqp">
+          <button class="btn btn-success mlp10" @click="inspInsert" :disabled="!selectedEqp">
             SAVE
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm" :disabled="!selectedEqp">
@@ -122,12 +123,15 @@ export default {
   name: 'EquipmentInspection',
   data() {
     return {
+      /* userId: '', */
       selectedEqp: '',
       previewImage: require('@/assets/img/blank_img.png'),
       selectedFile: null,
       isModal: false,
       equipInfo: {},
       equipmentData: {
+        eqp_cd: '',
+        insp_log_cd: '',
         //이미지 경로
         img_path: '',
         // 입력 데이터 값
@@ -177,7 +181,7 @@ export default {
     currentDateTime() {
       return new Date(); // 항상 Date 객체 반환
     },
-     formattedStartTime() {
+    formattedStartTime() {
       if (this.currentDateTime) {
         const now = this.currentDateTime;
         const year = now.getFullYear();
@@ -187,7 +191,7 @@ export default {
         const minutes = String(now.getMinutes()).padStart(2, '0');
         return `${year}-${month}-${date}T${hours}:${minutes}`;
       }
-      return ''; 
+      return '';
     },
   },
 
@@ -215,21 +219,21 @@ export default {
     // 시작시간 유효성 검사
     validateStartTime() {
       if (!this.equipmentData.start_time) {
-                return; // 시작 시간이 비어있으면 검사 건너뜀
-            }
+        return; // 시작 시간이 비어있으면 검사 건너뜀
+      }
 
-            const startTime = new Date(this.equipmentData.start_time);
-            const minStartTime = new Date(this.currentDateTime.getTime()); // 현재 시간
+      const startTime = new Date(this.equipmentData.start_time);
+      const minStartTime = new Date(this.currentDateTime.getTime()); // 현재 시간
 
-            if (startTime < minStartTime) {
-                Swal.fire({
-                    icon: 'error',
-                    title: '유효성 검사 실패',
-                    text: '시작시간은 현재시간 이후로 설정해야 합니다.',
-                });
-                this.equipmentData.start_time = ''; // input 필드 초기화
-                return;
-            }
+      if (startTime < minStartTime) {
+        Swal.fire({
+          icon: 'error',
+          title: '유효성 검사 실패',
+          text: '시작시간은 현재시간 이후로 설정해야 합니다.',
+        });
+        this.equipmentData.start_time = ''; // input 필드 초기화
+        return;
+      }
     },
 
     // 종료시간 유효성 검사
@@ -259,7 +263,7 @@ export default {
         .get(`api/equip/${eqp_cd}`)
         .catch((err) => console.log(err));
 
-        console.log("API 응답:", result.data);
+      console.log("API 응답:", result.data);
 
       if (result.data) {
         // 날짜 필드 스플릿
@@ -267,6 +271,12 @@ export default {
           result.data.last_insp_dt = result.data.last_insp_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
         }
         this.equipmentData = result.data;
+
+        // 세션에서 점검 담당자 ID 가져오기
+        const sessionId = this.$session.get('user_id'); // const 선언은 여기서 가능
+        if (sessionId) {
+          this.equipmentData.id = sessionId; // 점검 담당자에 세션 ID 설정
+        }
 
         // 이미지 경로 처리
         this.previewImage = result.data.img_path
@@ -283,41 +293,99 @@ export default {
       this.equipData = result.data; // 서버가 실제로 보낸 데이터
     },
 
-    submitForm() {
-      if (!this.selectedEqp) {
-        Swal.fire({
-          icon: 'error',
-          title: '오류',
-          text: '설비코드를 선택해주세요.',
-        });
-        return;
+    getInsertData() {
+      let formData = new FormData();
+
+      Object.keys(this.equipmentData).forEach((key) => {
+        // 빈 문자열 또는 null 값은 추가하지 않음
+        if (
+          this.equipmentData[key] !== '' &&
+          this.equipmentData[key] !== null
+        ) {
+          formData.append(key, this.equipmentData[key]);
+        }
+      });
+
+      if (this.selectedFile) {
+        formData.append('selectedFile', this.selectedFile);
       }
 
-      Swal.fire({
-        icon: 'success',
-        title: '등록 완료',
-        text: '점검 정보가 성공적으로 등록되었습니다.',
-      });
+      return formData;
+    },
+
+    //등록
+    async inspInsert() {
+
+      try {
+        let obj = {
+          eqp_cd: this.equipmentData.eqp_cd,
+          start_time: this.equipmentData.start_time,
+          insp_type: this.equipmentData.insp_type,
+          insp_reason: this.equipmentData.insp_reason,
+          end_time: this.equipmentData.end_time,
+          insp_result: this.equipmentData.insp_result,
+          insp_action: this.equipmentData.insp_action,
+          note: this.equipmentData.note,
+          id: this.equipmentData.id,
+        }
+
+        //서버로 데이터 전송
+        let result = await axios.post('/api/equip/insp', obj);
+
+        //서버 응답처리
+
+        let addRes = result.data; // 서버에서 반환된 응답 처리
+        if (addRes.success) {
+          this.$swal({
+            icon: 'success',
+            title: '등록완료',
+            text: '점검 데이터가 등록되었습니다.',
+          });
+
+          this.resetForm(); // 폼 초기화
+        }
+      } catch (err) {
+        console.error('점검 등록 오류:', err);
+        this.$swal({
+          icon: 'error',
+          title: '등록 실패',
+          text: '점검 데이터 등록 중 오류가 발생했습니다.',
+        });
+      }
     },
     resetForm() {
-      this.isEditMode = false; // 수정 모드 종료
-      this.selectedEqp = ''; // 설비 코드 입력란 초기화
-      this.selectedFile = null; // 선택된 파일 초기화
-      this.previewImage = require('@/assets/img/blank_img.png'); // 기본 이미지로 초기화
 
-      // 입력 필드 초기화
-      Object.keys(this.equipmentData).forEach((key) => {
-        this.equipmentData[key] = '';
-      });
+      // alwaysDisabled 필드 정의
+      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle', 'last_insp_dt', 'id'];
 
-      Swal.fire({
-        icon: 'info',
-        title: '초기화 완료',
-        text: '입력 폼이 초기화되었습니다.',
-      });
+      // 설비코드가 선택된 상태를 유지
+      if (this.selectedEqp) {
+        const selectedEqpData = this.equipmentData;
+
+        // equipmentData의 각 필드 초기화 (alwaysDisabled는 제외)
+        Object.keys(this.equipmentData).forEach((key) => {
+          if (!alwaysDisabled.includes(key)) {
+            // alwaysDisabled 필드가 아니면 초기화
+            this.equipmentData[key] = '';
+          }
+        });
+
+        // 선택된 설비 데이터는 유지
+        this.equipmentData = {
+          ...this.equipmentData,
+          ...selectedEqpData,
+        };
+
+        Swal.fire({
+          icon: 'info',
+          title: '초기화 완료',
+          text: '추가 입력된 값이 초기화되었습니다.',
+        });
+      }
+
     },
     isFieldDisabled(fieldName) {
-      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle', 'last_insp_dt'];
+      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle', 'last_insp_dt', 'id'];
       return !this.selectedEqp || alwaysDisabled.includes(fieldName);
     },
   },
@@ -327,6 +395,8 @@ export default {
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 점검 관리' });
     this.equipmentData.start_time = this.currentDateTime;
+
+
 
     // 공통코드가 EQ(설비구분)일 때
     this.getComm('EQ')
@@ -412,6 +482,11 @@ export default {
         });
       }
     },
+
+    // 세션에서 점검 담당자 ID 가져오기
+    if(userId) {
+      this.equipmentData.id = userId; // 점검 담당자에 세션 ID 설정
+    }
   },
 
 

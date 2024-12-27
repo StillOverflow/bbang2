@@ -167,7 +167,43 @@ router.put(
 
 //점검등록
 router.post('/equip/insp', async (req, res) => {
-  
+  try {
+    const inspData = req.body; // 클라이언트로부터 받은 데이터
+
+    /*
+    // 필요 없는 필드 제거 (eqp_type 제거)
+    delete inspData.eqp_type;
+    delete inspData.eqp_nm;
+    delete inspData.model;
+    delete inspData.pur_dt;
+    delete inspData.pur_act;
+    delete inspData.mfg_act;
+    */
+
+    console.log('inspData :', inspData);
+
+    // undefined, "null", 빈 문자열인 필드 제거
+    Object.keys(inspData).forEach((key) => {
+      if (
+        inspData[key] === undefined ||
+        inspData[key] === 'null' ||
+        inspData[key] === ''
+      ) {
+        delete inspData[key]; // 해당 키 삭제
+      }
+    });
+    // DB 저장 (서비스 함수 호출)
+    const result = await equipmentService.insertInspEq(inspData);
+
+    // 결과 반환
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('점검 등록 실패:', err);
+    res.status(500).json({
+      success: false,
+      message: '점검 등록 중 오류 발생'
+    });
+  }
 });
 
 
