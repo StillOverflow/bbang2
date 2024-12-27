@@ -271,12 +271,125 @@ const processSelect = (datas)=>{
 }
 
 //등록전 마지막 제품코드 찾기+1
-const getProCd = 
+const getProcCd = 
 `
 SELECT 
-CONCAT(?, LPAD(IFNULL(MAX(CAST(SUBSTR(prd_cd, 3) AS UNSIGNED)) + 1, 1), 3, '0')) AS prd_cd
+CONCAT(?, LPAD(IFNULL(MAX(CAST(SUBSTR(proc_cd, 3) AS UNSIGNED)) + 1, 1), 3, '0')) AS proc_cd
 FROM process
 `
+//등록
+const procInsert=
+`
+INSERT INTO process
+SET ?
+`;
+//수정
+const procUpdate = `
+UPDATE process 
+SET ? 
+WHERE proc_cd = ?`;
+
+//삭제
+const procDelete =
+`
+DELETE
+FROM process
+WHERE proc_cd = ?
+`;
+
+//-------------------------------------거래처관리------------------------------------------------
+//등록전 마지막 제품코드 찾기+1
+const getActCd = 
+`
+SELECT 
+CONCAT('AC', LPAD(IFNULL(MAX(CAST(SUBSTR(act_cd, 3) AS UNSIGNED)) + 1, 1), 3, '0')) AS act_cd
+FROM account
+`
+
+//제품등록
+const actInsert=
+`
+INSERT INTO account
+SET ?
+`;
+
+//수정
+const actUpdate = `
+UPDATE account 
+SET ? 
+WHERE act_cd = ?`;
+
+//삭제
+const actDelete =
+`
+DELETE
+FROM account
+WHERE act_cd = ?
+`;
+
+//-------------------------------------불량관리------------------------------------------------
+//불량코드검색
+const defectSelect = (datas)=>{
+    let query = 
+    `
+    SELECT def_cd,
+           def_nm,
+           fn_get_codename(def_type) AS def_type,
+           def_detail,
+           note
+    FROM defect
+    `;
+
+    const conditions = [];
+
+      // 상품조회 조건
+    if(datas.def_nm) conditions.push(`def_nm LIKE '%${datas.def_nm}%'`);
+
+    if (conditions.length > 0) {
+        query += ` WHERE ` + conditions.join(' AND ');
+    }
+
+    query += ` ORDER BY def_cd`;
+
+    return query;
+}
+
+
+
+//등록전 마지막 불량코드 찾기+1
+const getDefCd = 
+`
+SELECT 
+CONCAT('DEF', LPAD(IFNULL(MAX(CAST(SUBSTR(def_cd, 4) AS UNSIGNED)) + 1, 1), 3, '0')) AS def_cd
+FROM defect
+`
+
+//불량코드등록
+const defInsert=
+`
+INSERT INTO defect
+SET ?
+`;
+
+//수정
+const defUpdate = `
+UPDATE defect 
+SET ? 
+WHERE def_cd = ?`;
+
+//삭제
+const defDelete =
+`
+DELETE
+FROM defect
+WHERE def_cd = ?
+`;
+
+
+
+
+
+
 module.exports = {
   //bom
 prdList,
@@ -317,5 +430,21 @@ prdDelete,
 
 //공정관리
 processSelect,
-getProCd
+getProcCd,
+procInsert,
+procUpdate,
+procDelete,
+
+//거래처관리
+getActCd,
+actInsert,
+actUpdate,
+actDelete,
+
+//불량코드관리
+defectSelect,
+getDefCd,
+defInsert,
+defUpdate,
+defDelete
 };

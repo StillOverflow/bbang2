@@ -110,7 +110,7 @@
             <Layout :modalCheck="bomModal">
               <template v-slot:header>
                 <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-                <h5 class="modal-title">공정코드 검색</h5>
+                <h5 class="modal-title">BOM코드 검색</h5>
                 <button type="button" aria-label="Close" class="close" @click="bommodalOpen" > × </button>
               </template>
               <template v-slot:default>
@@ -171,7 +171,7 @@ export default {
       proFlowOptions: {
         rowDragManaged: true,
         rowDragEntireRow: true,
-        rowSelection: { mode: "singleRow", enableClickSelection: true },
+        rowSelection: { mode: "multiRow", enableClickSelection: true },
         onRowDragEnd: this.onRowDragEnd,
       },
       gridOptions: {
@@ -445,7 +445,7 @@ export default {
     async deleteProcMtl() {
       const selectedNodes = this.procFlowMtlApi.getSelectedRows();
       for (const bom of selectedNodes) {
-        // this.deleteProwMtlData.push(bom);
+        this.deleteProwMtlData.push(bom);
         this.deleteModal.push({ 
         proc_flow_cd: bom.proc_flow_cd });
 
