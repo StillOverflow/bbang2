@@ -42,7 +42,7 @@ const accountSelect = (datas) => {
         act_addr,
         act_tel,
         business_no,
-        LOCATION,
+        LOCATION as location,
         note
   FROM ACCOUNT
   `;
