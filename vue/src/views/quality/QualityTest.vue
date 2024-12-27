@@ -455,13 +455,12 @@
         this.fullTests = [];
 
         // 검사항목 불러오기
-        if(clicked.is_last == 1){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
+        if(clicked.is_last == 1 || clicked.target_type == 'P03'){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
           await this.getTests(clicked, 'P03');
           await this.getTests(clicked, 'P02');
         } else {
           await this.getTests(clicked, 'P02');
         }
-        ////// 검사결과목록일 경우 다르게 가져와야 함.
 
         // 검사완료목록일 경우 상세 측정결과값 가져오기
         if(!this.isWaitList){
@@ -482,15 +481,17 @@
       async getTests(target, type){
         let query = null;
         
-        if(type == 'P03'){
-          query = {cd: target.prd_cd, type: type}; // P03: 완제품대상 검사항목 
+        if(type == 'P03'){  
+          if(target.test_rec_cd) query = {cd: target.target_cd, type: type}; // 검사완료목록에서 조회할 경우
+          else query = {cd: target.prd_cd, type: type}; // P03: 완제품대상 검사항목
         } else {
-          query = {cd: target.inst_proc_cd, type: type}; // P02: 공정대상 검사항목
+          if(target.test_rec_cd) query = {cd: target.proc_cd, type: type};
+          else query = {cd: target.inst_proc_cd, type: type}; // P02: 공정대상 검사항목
         }
 
         let testLists = await axios.get('/api/quality/test/my', {params: query}) // 해당 품질기준의 검사항목 불러옴
                                     .catch(err => console.log(err));
-
+       
         testLists.data.forEach((test) => {
           test.isPass = null; // 적합/부적합 판단용
         

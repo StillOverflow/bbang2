@@ -277,8 +277,9 @@ const testRecList = (valueObj) => {
   return `
      SELECT r.test_rec_cd, 
             r.test_dt, 
-            r.refer_cd, 
+            r.refer_cd,
 
+            r.target_type,
             r.target_cd,
             NULLIF(fn_get_prd_nm(r.target_cd), fn_get_materialname(r.target_cd)) target_nm, -- 검사한 제품 or 자재코드
             r.proc_cd,
