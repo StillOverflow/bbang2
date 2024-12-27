@@ -342,8 +342,8 @@ export default {
             text: '점검 데이터가 등록되었습니다.',
           });
 
-          this.resetForm(); // 폼 초기화
         }
+        // this.resetForm(); // 폼 초기화
       } catch (err) {
         console.error('점검 등록 오류:', err);
         this.$swal({
