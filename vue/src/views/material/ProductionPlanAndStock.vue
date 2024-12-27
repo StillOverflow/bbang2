@@ -1,7 +1,7 @@
 <template>
    <div class="py-4 container-fluid">
       <div class="row">
-         <div class="col-12">
+          <div class="col-12">
             <div class="card p-3">
                <div class="card-header bg-light mb-4">  
                   <div class="d-flex justify-content-center align-items-center text-center">

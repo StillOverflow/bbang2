@@ -132,6 +132,8 @@
    
    const orderFormGrid = shallowRef(null);   // 발주서 그리드
    const orderFormData = ref([]);            // 발주서 관리 데이터
+   
+   let searchMaterialArr = ref([]);          // 검색어로 자재 검색 값 저장
 
 //^ ----------------------------------------- 공통 함수 -----------------------------------------   
    const getToday = () => {
@@ -240,6 +242,7 @@
       
       orderFormData.value = [...orderFormData.value, newObj];  // 새 행 추가
    };
+
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
    const gridReady = (params, gridType) => {
       if (params.api) {
@@ -256,6 +259,12 @@
       }
    };
 
+   // 검색어로 자재 검색 (data는 Custom 컴포넌트에서 들고옴)
+   const searchKeywordFunc = (data) => {
+      console.log("data(부모) => ", data); // 부모로부터 받은 검색어 로그
+      getMaterial(data); // API 호출하여 검색
+   };
+
 // ^ ----------------------------------- 그리드 데이터 정의 및 바인딩 -----------------------------------
    // 주문서 그리드 option
    const orderModalGridOptions = {
@@ -270,6 +279,23 @@
       },
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    };
+
+   const getMaterial = async (keyword) => {
+      console.log("keyword(부모) => ",keyword);
+      try {
+         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : keyword } });
+         searchMaterialArr.value = result.data;
+         console.log("searchMaterialArr.value => ", searchMaterialArr.value )
+         
+      } catch (err) {
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
+   };
+
    // 거래처 검색 모달 옵션
    const accountModalGridOptions = {
       columnDefs : [
@@ -283,11 +309,30 @@
          mode: "multiRow", // 체크박스 다중선택
       },
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
-   }   
+   }
+
+   const selectedMaterial = ({ code, name }, params) => {
+      console.log("Received code:", code);
+      console.log("Received name:", name);
+
+      // AG Grid의 데이터 업데이트
+      if (params.node) {
+         params.node.setDataValue('mat_cd', code); // 자재 코드 업데이트
+         params.node.setDataValue('act_nm', name); // 자재명 업데이트
+      }
+   };
+
+   
 
    // no, 발주코드, 자재명, 수량, 거래처코드, 거래처명, 납기일
    // 발주서 입력 그리드 
    const orderFormOptions = {
+      context: {  // 부모에서 제공하는 메서드와 데이터를 context로 전달
+         searchComponent : { 
+            searchKeywordFunc,
+            getSearchResults: () => searchMaterialArr.value,  // 검색 결과 반환 함수,
+         }
+      },
       rowSelection: {
          mode: "multiRow", // 체크박스 다중선택
       },
@@ -349,6 +394,9 @@
             sortable: true,
             editable: true,
             cellEditor:CustomDropdownEditor,
+            cellEditorParams: (params) => ({
+               selectedMaterial: (data) => selectedMaterial(data, params),
+            }),
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
                return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">거래처명 입력</span>`;
