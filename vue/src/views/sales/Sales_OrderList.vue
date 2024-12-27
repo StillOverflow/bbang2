@@ -49,6 +49,7 @@ import axios from 'axios';
 //그리드 사용법
 import { AgGridVue } from "ag-grid-vue3";
 
+
 export default {
     name: 'App',
     data() {
@@ -77,8 +78,10 @@ export default {
                         button.innerText = 'DETAILED';
                         button.className = 'btn btn-warning btn-xsm';
                         button.addEventListener('click', () => {
-                            params.data
+                            console.log(params.data.order_cd)
                             // this.rowData = this.rowData.filter(row => row !== params.data);
+                            //this.$router.push({ name : 'boardInfo', params : { bno : boardNo }});
+                            this.$router.push({ name: 'sales_orderadd' , query : { bno : params.data.order_cd}});
                         });
                         return button;
                     }

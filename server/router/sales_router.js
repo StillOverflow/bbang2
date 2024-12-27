@@ -36,6 +36,29 @@ router.post('/sales/ord', async (req, resp) => {
   resp.send(result);
 });
 
+//주문서 상세(헤드부분)
+router.get('/sales/orderList/:no', async (req, res) => {
+    let orderNo = req.params.no;
+    let info = await salesService.listDtlOrder(orderNo);
+    res.send(info);
+});
+
+//주문서 상세(디테일부분)
+router.get('/sales/orderDtlList/:no', async (req, res) => {
+    let orderNo = req.params.no;
+    let info = await salesService.listDtlOrderDtl(orderNo);
+    res.send(info);
+});
+
+//주문서 삭제
+router.delete('/sales/orderDelete/:del', async (req, res) => {
+    let del = req.params.del;
+    console.log("router",del)
+    let ordDel = await salesService.deleteOrder(del);
+    res.send(ordDel);
+});
+
+
 
 /* ---------------------------------출고제품--------------------------------------- */
 
