@@ -122,14 +122,16 @@ SET ?
 
 // 점검 등록 전 마지막 점검 코드 찾기 +1
 const getInspCd = `
-SELECT CONCAT('INS', LPAD(IFNULL(MAX(SUBSTR(i.INSP_LOG_CD, -3)) + 1, 1), 3, '0')) AS INSP_LOG_CD FROM inspection_log i`;
+SELECT CONCAT('INS', LPAD(IFNULL(MAX(SUBSTR(i.INSP_LOG_CD, -3)) + 1, 1), 3, '0')) AS insp_log_cd FROM inspection_log i`;
 
 //설비점검등록
 const eqInspInsert = `INSERT INTO inspection_log
 SET ? `;
 
 //설비점검조회
-const eqInspList = ` SELECT   e.eqp_cd as eqp_cd,
+const eqInspList = ` SELECT   
+  i.insp_log_cd as insp_log_cd,
+  e.eqp_cd as eqp_cd,
   fn_get_codename(e.eqp_type) as eqp_type,
   e.eqp_nm as eqp_nm,
   e.model as model,
@@ -152,7 +154,9 @@ ORDER BY i.create_dt DESC
 `;
 
 //설비점검 단건조회
-const eqInspInfo = `SELECT   e.eqp_cd as eqp_cd,
+const eqInspInfo = `SELECT   
+  i.insp_log_cd as insp_log_cd,
+  e.eqp_cd as eqp_cd,
   fn_get_codename(e.eqp_type) as eqp_type,
   e.eqp_nm as eqp_nm,
   e.model as model,
@@ -170,8 +174,10 @@ const eqInspInfo = `SELECT   e.eqp_cd as eqp_cd,
   i.create_dt as create_dt,
   i.update_dt as update_dt
 FROM equipment e
-RIGHT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
+LEFT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
 WHERE i.eqp_cd = ?
+ORDER BY start_time DESC 
+LIMIT 1
   `;
 
 module.exports = {

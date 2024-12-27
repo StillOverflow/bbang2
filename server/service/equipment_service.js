@@ -68,13 +68,40 @@ const updateEq = async (eqInfo) => {
 };
 
 /* ---------------------- 설비 점검 ----------------------- */
+/*
+const getInspCd = `
+SELECT CONCAT('INS', LPAD(IFNULL(MAX(SUBSTR(i.INSP_LOG_CD, -3)) + 1, 1), 3, '0')) AS INSP_LOG_CD FROM inspection_log i`;
+
+//설비점검등록
+const eqInspInsert = `INSERT INTO inspection_log
+SET ? `;
+
+const insertEq = async (eqInfo) => {
+  let new_eqp_cd = (await mariadb.query('getEqpCd'))[0].eqp_cd;
+  eqInfo['eqp_cd'] = new_eqp_cd;
+
+  let result = await mariadb.query('eqInsert', eqInfo);
+  if (result.affectedRows > 0) {
+    return { eqp_cd: new_eqp_cd };
+  } else {
+    return {};
+  }
+};
+*/
 
 // 점검 등록
-const insertInspEq = async (eqInspInfo) => {
-  
+const insertInspEq = async (inspData) => {
+  let new_insp_log_cd = (await mariadb.query('getInspCd'))[0].insp_log_cd;
+  inspData['insp_log_cd'] = new_insp_log_cd;
 
+  let result = await mariadb.query('eqInspInsert', inspData);
+  console.log(result);
+  if (result.affectedRows > 0) {
+    return { insp_log_cd: new_insp_log_cd };
+  } else {
+    return {};
+  }
 };
-
 
 //설비 점검 전체 조회
 const findInspEq = async () => {

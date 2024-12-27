@@ -55,11 +55,26 @@
         </div>
       </div>
 
+
+
+
       <!-- 조회 결과 -->
       <div class="card-body" style="position: relative; height: 600px">
         <ag-grid-vue style="width: 100%; height: 100%" class="ag-theme-alpine" :gridOptions="gridOptions"
           @grid-ready="myGrid" :columnDefs="columnDefs" :rowData="rowData" :pagination="true"></ag-grid-vue>
+
+
       </div>
+
+      <!--엑셀버튼-->
+      <div class="row">
+        <div class="col-12 text-center">
+          <button class="btn btn-outline-success mb-4" @click="excelDownload()">
+            <i class="fa-regular fa-file-excel"></i> EXCEL
+          </button>
+        </div>
+      </div>
+
     </div>
   </div>
 </template>
@@ -67,6 +82,7 @@
 <script>
 import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
+import * as XLSX from 'xlsx';
 
 export default {
   name: 'EquipmentAllList',
@@ -186,12 +202,75 @@ export default {
       this.equipmentData.is_use = null;  // "전체" 선택
       this.equipmentData.status = null;  // "전체" 선택
       this.fetchFilteredEquip();         // 초기화 후 데이터 조회
-    }
+    },
+    //엑셀 함수
+    excelDownload() {
+      try {
+        // 현재 날짜 생성
+        var today = new Date();
+        today = this.$comm.dateFormatter(today);
+
+        // 선택된 데이터 가져오기
+        let selectedNodes = this.myApi.getSelectedNodes(); // 선택된 행 데이터 가져오기
+        let selectedData;
+
+        if (selectedNodes.length > 0) {
+          // 선택된 데이터가 있을 경우
+          selectedData = selectedNodes.map(item => ({
+            '설비코드': item.data.eqp_cd,
+            '설비구분': item.data.eqp_type,
+            '설비명': item.data.eqp_nm,
+            '모델': item.data.model,
+            '등록일': item.data.create_dt,
+            '최종점검일': item.data.last_insp_dt,
+            '담당자 ID': item.data.id,
+            '설비상태': item.data.status,
+            '사용유무': item.data.is_use,
+          }));
+        } else {
+          // 선택된 데이터가 없으면 전체 데이터를 사용
+          selectedData = this.rowData.map(item => ({
+            '설비코드': item.eqp_cd,
+            '설비구분': item.eqp_type,
+            '설비명': item.eqp_nm,
+            '모델': item.model,
+            '등록일': item.create_dt,
+            '최종점검일': item.last_insp_dt,
+            '담당자 ID': item.id,
+            '설비상태': item.status,
+            '사용유무': item.is_use,
+          }));
+        }
+
+        if (selectedData.length === 0) {
+          this.$swal({
+            icon: 'warning',
+            title: '데이터 없음',
+            text: '엑셀로 내보낼 데이터가 없습니다.',
+          });
+          return;
+        }
+
+        // 엑셀 파일 생성 및 다운로드
+        const workBook = XLSX.utils.book_new();
+        const workSheet = XLSX.utils.json_to_sheet(selectedData);
+        XLSX.utils.book_append_sheet(workBook, workSheet, '설비정보조회');
+        XLSX.writeFile(workBook, `설비정보조회_${today}.xlsx`);
+      } catch (error) {
+        console.error('엑셀 다운로드 실패:', error);
+        this.$swal({
+          icon: 'error',
+          title: '엑셀 다운로드 실패',
+          text: '엑셀 파일 생성 중 오류가 발생했습니다.',
+        });
+      }
+    },
+
   },
 };
 </script>
 
-<style lang="scss">
+<style scoped lang="scss">
 //그리드 사용시 아래 스타일 임포트
 @import '../../../node_modules/ag-grid-community/styles/ag-grid.css';
 @import '../../../node_modules/ag-grid-community/styles/ag-theme-alpine.css';
