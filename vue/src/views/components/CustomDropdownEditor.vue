@@ -69,7 +69,8 @@
    }
 
    const getValue = () => {
-      return matName.value;
+      let newObj = {matName : matName.value, matCode : matCode.value}
+      return newObj;
    }
 
 //! ----------------------------------------- Vue Method -----------------------------------------

@@ -86,7 +86,7 @@
                            :rowData="orderFormData"
                            :pagination="true"
                            :gridOptions="orderFormOptions"
-                           :frameworkComponents="{ CustomDropdownEditor }"
+                           @cellEditingStopped="cellEditingStoppedEvent"
                            @rowClicked="rowClicked"
                            @grid-ready="(params) => gridReady(params, 'orderForm')"
                            @first-data-rendered="orderFormGrid">
@@ -256,6 +256,10 @@
       }
    };
 
+   const cellEditingStoppedEvent = (params) => {
+      console.log("adfsdfaffds", params)
+      
+   }
 // ^ ----------------------------------- 그리드 데이터 정의 및 바인딩 -----------------------------------
    // 주문서 그리드 option
    const orderModalGridOptions = {
@@ -283,7 +287,9 @@
          mode: "multiRow", // 체크박스 다중선택
       },
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
-   }   
+   }
+
+  
 
    // no, 발주코드, 자재명, 수량, 거래처코드, 거래처명, 납기일
    // 발주서 입력 그리드 
@@ -366,6 +372,9 @@
          },
       ],
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
+
+      
+      
    }
 </script>
 
