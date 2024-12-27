@@ -162,6 +162,7 @@ LEFT JOIN
     (SELECT sum(prd_out_qty) AS prd_out_qty, ORDER_DTL_CD from product_out_detail GROUP BY order_dtl_cd) b
     ON a.ORDER_DTL_CD=b.ORDER_DTL_CD;
 `;
+
 // SELECT o.order_dtl_cd,
 //        p.prd_cd, 
 //        p.prd_nm, 

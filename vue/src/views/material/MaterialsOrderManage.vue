@@ -1,3 +1,4 @@
+
 <template>
    <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
       <div class="card">      
@@ -198,15 +199,14 @@
    }
    // 행 추가
    const addRow = () => {
-      let newObj = {};
+      // let newObj = {};
 
-      orderFormOptions.columnDefs.forEach((data) => {
-         newObj[data.field] = ''; 
-      });
-
-      orderFormData.value = [...orderFormData.value, newObj];
+      // orderFormOptions.columnDefs.forEach((data) => {
+      //    newObj[data.field] = ''; 
+      // });
+      orderFormData.value.push({mat_order_cd : '', mat_cd : '', mat_nm : '', mat_qty : '', act_cd : '', act_nm : '', delivery_dt : ''})
+      orderFormData.value = [...orderFormData.value]
    };
-
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
    const gridReady = (params, gridType) => {
       if (params.api) {
@@ -281,12 +281,8 @@
       try {
          const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : keyword } });
          searchMaterialArr.value = result.data;
+         console.log("searchMaterialArr.value => ", searchMaterialArr.value )
          
-         // if (result.data.length > 0) {
-         //    isHidden.value = false; // 드롭다운 표시
-         // } else {
-         //    searchMaterialArr.value = [{ mat_nm: '검색결과가 없습니다.' }];
-         // }
       } catch (err) {
          Swal.fire({
             icon: "error",
@@ -318,6 +314,7 @@
          searchComponent : { 
             searchKeywordFunc,
             getSearchResults: () => searchMaterialArr.value, 
+            msg : '자재명을 입력하세요.',
          }
       },
       rowSelection: {
@@ -355,6 +352,7 @@
             headerName: '발주 수량', 
             field: 'mat_qty', 
             sortable: true, 
+            editable: true,
             cellDataType: "number",
             cellRenderer: (params) => {
                return params.value
@@ -401,8 +399,13 @@
 </script>
 
 <style lang="scss" scoped>
-.test {
-   color: #cacaca;
-}
+   .test {
+      color: #cacaca;
+   }
+   .ag-theme-alpine {
+      position: relative;
+      z-index: 1 !important; /* 필요에 따라 값을 낮게 조정 */
+   }
+
 
 </style>
