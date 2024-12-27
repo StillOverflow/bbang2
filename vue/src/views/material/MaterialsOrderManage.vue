@@ -1,3 +1,4 @@
+
 <template>
    <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
       <div class="card">      
@@ -120,17 +121,19 @@
 
 //^ ----------------------------------------- 데이터 정의 -----------------------------------------   
    /*모달 [S]*/
-   let isAccountModal = ref(false);  // 거래처 모달
-   let isOrderModal = ref(false);  // 주문서 모달
+   let isAccountModal = ref(false);          // 거래처 모달 열림여부
+   let isOrderModal = ref(false);            // 주문서 모달 열림여부
 
-   const accountModalGrid = ref(null);
-   const accountModalData = shallowRef([]); // 모달 거래처 데이터
+   const accountModalGrid = ref(null);      // 거래처 모달 그리드 참조
+   const accountModalData = shallowRef([]); // 거래처 모달 데이터
 
-   const orderModalGrid = ref(null);
-   const orderModalData = shallowRef([]);  // 주문서
+   const orderModalGrid = ref(null);        // 발주서 모달 그리드 참조
+   const orderModalData = shallowRef([]);   // 발주서 모달 데이터
    
-   const orderFormGrid = shallowRef(null);
-   const orderFormData = ref([]);
+   const orderFormGrid = shallowRef(null);   // 발주서 그리드
+   const orderFormData = ref([]);            // 발주서 관리 데이터
+   
+   let searchMaterialArr = ref([]);          // 검색어로 자재 검색 값 저장
 
 //^ ----------------------------------------- 공통 함수 -----------------------------------------   
    const getToday = () => {
@@ -147,7 +150,7 @@
 //^ ----------------------------------------- Vue Hook -----------------------------------------
    onBeforeMount(() => {
       store.dispatch('breadCrumb', { title: '자재 발주서 관리' }); // 페이지 제목 설정
-      getAccountList();
+      getAccountList(); // 거래처 리스트
    });
 
 //^ ----------------------------------------- Vue Method -----------------------------------------
@@ -158,6 +161,7 @@
    });
 
    watch(orderModalGrid, (newValue) => {
+      console.log(newValue)
       if (newValue && newValue.api) {
          newValue.api.sizeColumnsToFit();
       }
@@ -168,6 +172,37 @@
          newValue.api.sizeColumnsToFit();
       }
    });
+
+// ^ ---------------------------------------- axios 서버통신 ----------------------------------------
+   // 거래처 리스트
+   const getAccountList = async () => {
+      try {
+         const result = await axios.get('/api/comm/account', { params : { 'act_type' : 'E01' } });
+         accountModalData.value = result.data || [];
+      } catch (err) {
+         accountModalData.value = [];
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
+   };
+
+   // 발주서 리스트
+   const getOrderList = async () => {
+      try {
+         const result = await axios.get('/api/material/orderList');
+         orderModalData.value = result.data || [];
+      } catch (err) {
+         orderModalData.value = [];
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
+   };
 
 //^ ------------------------------------------- Modal -------------------------------------------   
    // 거래처 검색 모달'
@@ -196,15 +231,16 @@
          }
       }
    }
+
    // 행 추가
    const addRow = () => {
       let newObj = {};
 
       orderFormOptions.columnDefs.forEach((data) => {
-         newObj[data.field] = ''; 
+         newObj[data.field] = '';   // 필드 초기화
       });
-
-      orderFormData.value = [...orderFormData.value, newObj];
+      
+      orderFormData.value = [...orderFormData.value, newObj];  // 새 행 추가
    };
 
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
@@ -223,35 +259,10 @@
       }
    };
 
-// ^ ---------------------------------------- axios 서버통신 ----------------------------------------
-   // 거래처 조회
-   const getAccountList = async () => {
-      try {
-         const result = await axios.get('/api/comm/account', { params : { 'act_type' : 'E01' } });
-         accountModalData.value = result.data || [];
-      } catch (err) {
-         accountModalData.value = [];
-         Swal.fire({
-            icon: "error",
-            title: "API 요청 오류:",
-            text: err.message || err
-         });
-      }
-   };
-
-   // 발주서 조회
-   const getOrderList = async () => {
-      try {
-         const result = await axios.get('/api/material/orderList');
-         orderModalData.value = result.data || [];
-      } catch (err) {
-         orderModalData.value = [];
-         Swal.fire({
-            icon: "error",
-            title: "API 요청 오류:",
-            text: err.message || err
-         });
-      }
+   // 검색어로 자재 검색 (data는 Custom 컴포넌트에서 들고옴)
+   const searchKeywordFunc = (data) => {
+      console.log("data(부모) => ", data); // 부모로부터 받은 검색어 로그
+      getMaterial(data); // API 호출하여 검색
    };
 
 // ^ ----------------------------------- 그리드 데이터 정의 및 바인딩 -----------------------------------
@@ -269,24 +280,13 @@
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    };
 
-   let searchMaterialArr = ref([]);
-
-   const searchKeywordFunc = (data) => {
-      console.log("data(부모) =>  ", data);
-      getMaterial(data);
-   }
-
    const getMaterial = async (keyword) => {
       console.log("keyword(부모) => ",keyword);
       try {
          const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : keyword } });
          searchMaterialArr.value = result.data;
+         console.log("searchMaterialArr.value => ", searchMaterialArr.value )
          
-         // if (result.data.length > 0) {
-         //    isHidden.value = false; // 드롭다운 표시
-         // } else {
-         //    searchMaterialArr.value = [{ mat_nm: '검색결과가 없습니다.' }];
-         // }
       } catch (err) {
          Swal.fire({
             icon: "error",
@@ -314,10 +314,10 @@
    // no, 발주코드, 자재명, 수량, 거래처코드, 거래처명, 납기일
    // 발주서 입력 그리드 
    const orderFormOptions = {
-      context: {
+      context: {  // 부모에서 제공하는 메서드와 데이터를 context로 전달
          searchComponent : { 
             searchKeywordFunc,
-            getSearchResults: () => searchMaterialArr.value, 
+            getSearchResults: () => searchMaterialArr.value,  // 검색 결과 반환 함수
          }
       },
       rowSelection: {
@@ -327,39 +327,42 @@
          { 
             headerName: '발주서 코드', 
             field: 'mat_order_cd', 
-            sortable: true,
-            cellRenderer: (params) => {
-               return params.value
-                  ? params.value
-                  : `<span style="color: #cacaca; font-size; 9px">자동 입력</span>`;
-            },
+            sortable: true,   // 편집 비활성화
             editable: false, // 편집 비활성화
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">자동 입력</span>`;
+            },
          },
          { 
             headerName: '자재코드', 
             field: 'mat_cd', 
             sortable: true, 
-            editable: false,
+            editable: false,  // 편집 비활성화
             cellRenderer: (params) => {
-               return params.value
-                  ? params.value
-                  : `<span style="color: #cacaca; font-size; 9px">자재 선택 시 자동입력</span>`;
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">자동 입력</span>`;
             },
          },
          {
             headerName: '자재명',
             field: 'mat_nm',
-            cellRenderer:CustomDropdownEditor,
+            editable: true,   // 편집 가능
+            cellEditor : CustomDropdownEditor,  // 커스텀 드롭다운 셀 에디터
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">거래처명 입력</span>`;
+            },
          },
          { 
             headerName: '발주 수량', 
             field: 'mat_qty', 
             sortable: true, 
-            cellDataType: "number",
+            editable: true, // 편집 가능
+            cellDataType: "number", // 숫자 데이터 타입
             cellRenderer: (params) => {
-               return params.value
-                  ? params.value
-                  : `<span style="color: #cacaca; font-size; 9px">숫자를 입력하세요</span>`;
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">숫자를 입력하세요</span>`;
             },
          },
          { 
@@ -368,41 +371,44 @@
             sortable: true, 
             editable: false, 
             cellRenderer: (params) => {
-               return params.value
-                  ? params.value
-                  : `<span style="color: #cacaca; font-size; 9px">거래처 선택 시 자동입력</span>`;
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">자동 입력</span>`;
             },
          },
          { 
             headerName: '거래처명', 
             field: 'act_nm', 
             sortable: true,
-            cellRenderer:CustomDropdownEditor,
-            // cellRenderer: (params) => {
-            //    return params.value
-            //       ? params.value
-            //       : `<span style="color: #cacaca; font-size; 9px">거래처를 검색하세요</span>`;
-            // },
+            editable: true,
+            cellEditor:CustomDropdownEditor,
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">거래처명 입력</span>`;
+            },
          },
          { 
             headerName: '납기 요청일', 
             field: 'delivery_dt', 
             sortable: true, 
-            cellDataType: "date",
+            cellDataType: "date",   // Date 타입
             cellEditor: "agDateCellEditor",
             cellEditorParams: {
-               min: getToday(),
+               min: getToday(),     // 오늘부터 선택 가능
             }
          },
       ],
-      
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
 </script>
 
 <style lang="scss" scoped>
-.test {
-   color: #cacaca;
-}
+   .test {
+      color: #cacaca;
+   }
+   .ag-theme-alpine {
+      position: relative;
+      z-index: 1 !important; /* 필요에 따라 값을 낮게 조정 */
+   }
+
 
 </style>

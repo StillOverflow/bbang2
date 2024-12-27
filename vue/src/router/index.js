@@ -48,7 +48,7 @@ import Equipment_DTimeList from '../views/equipment/Equipment_DTimeList.vue';
 import MaterialOrderList from '../views/material/MaterialsOrderList.vue';
 import MaterialsPlanStockList from '../views/material/ProductionPlanAndStock.vue';
 import MaterialsOrderManage from '../views/material/MaterialsOrderManage.vue';
-
+import MaterialsOutList from '../views/material/MaterialsOutList.vue';
 
 
 
@@ -337,7 +337,11 @@ const routes = [
     name: 'MaterialsOrderManage',
     component: MaterialsOrderManage,
   },
-
+  {
+    path : '/materials/out/list',
+    name : 'MaterialsOutList',
+    component : MaterialsOutList,
+  },
 
 
 

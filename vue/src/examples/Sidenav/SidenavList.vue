@@ -248,7 +248,7 @@ export default {
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Material_list10" :class="getRoute() === 'Material_list10' ? 'active' : ''"
+            <sidenav-item to="/materials/out/list" :class="getRoute() === 'MaterialsOutList' ? 'active' : ''"
               :navText="'자재 출고 조회'">
             </sidenav-item>
           </li>
