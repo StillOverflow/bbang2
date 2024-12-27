@@ -50,6 +50,7 @@ const planSearch =
 FROM PROD_PLAN pp
 WHERE PROD_PLAN_CD LIKE "%"?"%"`;
 
+
 //계획서 다중 삭제
 const planDelete = (datas) => {
 
@@ -64,24 +65,6 @@ const planDelete = (datas) => {
   
  return sql;
 }
-
-//계획서 제품조회
-const planDtlList =
-`SELECT 
-        PROD_PLAN_DTL_CD, 
-        PROD_PLAN_CD, 
-        pp.PRD_CD as PRD_CD, 
-        PRD_NM, 
-        PROD_PLAN_QTY,
-        (SELECT 
-            COUNT(*) 
-         FROM 
-            PROD_INST pi JOIN PROD_INST_DTL pid 
-            ON pi.INST_CD=pid.INST_CD 
-         WHERE pi.PROD_PLAN_CD = pp.prod_plan_cd AND pid.PRD_CD = pp.prd_cd) AS reg_cnt
-FROM 
-        PROD_PLAN_DTL pp JOIN PRODUCT p ON pp.PRD_CD = p.PRD_CD
-WHERE PROD_PLAN_CD = ? `;
 
 
 /* 계획서 등록[S] */
@@ -115,6 +98,25 @@ const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 /* 계획서 등록[E] */
 
 
+//계획서 제품조회
+const planDtlList =
+`SELECT 
+        PROD_PLAN_DTL_CD, 
+        PROD_PLAN_CD, 
+        pp.PRD_CD as PRD_CD, 
+        PRD_NM, 
+        PROD_PLAN_QTY,
+        (SELECT 
+            COUNT(*) 
+         FROM 
+            PROD_INST pi JOIN PROD_INST_DTL pid 
+            ON pi.INST_CD=pid.INST_CD 
+         WHERE pi.PROD_PLAN_CD = pp.prod_plan_cd AND pid.PRD_CD = pp.prd_cd) AS reg_cnt
+FROM 
+        PROD_PLAN_DTL pp JOIN PRODUCT p ON pp.PRD_CD = p.PRD_CD
+WHERE PROD_PLAN_CD = ? `;
+
+
 /* -----------생산지시서------------*/
 
 //지시서 전체조회
@@ -132,19 +134,62 @@ const instInfo =
 `SELECT * FROM PROD_INST
 WHERE INST_CD = ?`;
 
+//계획서 다중 삭제
+const instDelete = (datas) => {
+
+  let sql =
+      `DELETE FROM PROD_INST 
+      WHERE INST_CD IN `;
+
+  let delArr = [];
+  delArr.push(Object.values(datas));
+  delArr.join(", ");
+  sql += "("+delArr + ")";
+  
+ return sql;
+}
+
 //지시서별 제품목록
 const instDtlList = 
 `
 SELECT 
-      INST_DTL_CD, 
-      INST_CD, 
-      PRD_CD, 
-      (SELECT PRD_NM 
+    INST_DTL_CD,
+		pi.INST_CD AS INST_CD, 
+		pi.ORDER_CD AS ORDER_CED, 
+		STATUS, 
+		PRD_CD, 
+    (SELECT PRD_NM 
       FROM product 
       WHERE PRD_CD=pid.PRD_CD) AS PRD_NM, 
-      TOTAL_QTY 
-FROM prod_inst_dtl pid WHERE INST_CD=?
+		TOTAL_QTY,
+		(SELECT 
+			ifnull(sum(PRD_OUT_QTY),0)
+		from 
+			product_out p JOIN product_out_detail pod 
+			ON p.PRD_OUT_CD=pod.PRD_OUT_CD 
+			WHERE p.order_cd=pi.order_cd
+			AND PRD_CD=pid.PRD_CD
+		) AS PRD_OUT_QTY
+FROM 
+	prod_inst PI JOIN prod_inst_dtl pid 
+	ON PI.INST_CD=pid.INST_CD 
+	WHERE pi.INST_CD=?;
 `;
+
+
+//제품별 공정 조회
+const instProcList =
+`SELECT 
+      PROC_FLOW_CD, 
+      p.PROC_CD AS PROC_CD, 
+      PROC_NM, 
+      PROC_SEQ, 
+      PRD_CD, 
+      p.NOTE AS NOTE 
+FROM 
+      PROCESS p JOIN PROCESS_FLOW f ON p.PROC_CD=f.PROC_CD
+WHERE PRD_CD = ? 
+ORDER BY PROC_SEQ`;
 
 
 /* 지시서 등록[S] */
@@ -176,16 +221,17 @@ const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   return sql;
 };
 
+
 // 공정흐름 입력
 const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
-    INSERT PROD_PROC_STEP
-      (INST_PROC_CD, INST_CD, PRD_CD, PROC_CD, STEP)
+    INSERT PROD_RESULT
+      (PROD_RESULT_CD, INST_CD, PRD_CD, PROC_FLOW_CD, PROC_CD, STEP)
     VALUES 
   `;
 
   values.forEach((obj) => {
-    sql += `(CONCAT('PIF', LPAD(nextval(inst_flow_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
+    sql += `(CONCAT('PRS', LPAD(nextval(result_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.PROC_FLOW_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
   });
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
   
@@ -194,69 +240,23 @@ const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
 /* 지시서 등록[E] */
 
 
-//제품별 공정 조회
-const instProcList =
-`SELECT 
-      PROC_FLOW_CD, 
-      p.PROC_CD AS PROC_CD, 
-      PROC_NM, 
-      PROC_SEQ, 
-      PRD_CD, 
-      p.NOTE AS NOTE 
-FROM 
-      PROCESS p JOIN PROCESS_FLOW f ON p.PROC_CD=f.PROC_CD
-WHERE PRD_CD = ? 
-ORDER BY PROC_SEQ`;
+/*------------생산공정-------------*/
 
-
-//제품 공정별 자재 조회
-const instProcMtList =
-`SELECT 
-        "group" AS CATE,
-            "" AS PRD_CD,
-        PROC_FLOW_CD, 
-        "" AS MAT_CD, 
-            "" AS MAT_QTY,
-        p.PROC_NM as NAME,
-        0 AS MAT_QTY_T
-  FROM 
-        PROCESS p join PROCESS_FLOW pf 
-        ON p.PROC_CD = pf.PROC_CD 
-  WHERE PRD_CD=?
-UNION
-	SELECT 
-        "data" AS CATE,
-            "" AS PRD_CD,
-        PROC_FLOW_CD,
-        pm.MAT_CD AS MAT_CD, 
-          pm.MAT_QTY,
-        (SELECT MAT_NM FROM MATERIAL WHERE MAT_CD=pm.MAT_CD) AS MAT_NM,
-        m.MAT_QTY_T
-	FROM 
-        PROC_fLOW_MTL pm 
-      JOIN 
-        (SELECT 
-            MAT_CD, 
-            SUM(MAT_QTY) AS MAT_QTY_T 
-         FROM 
-            MATERIAL_IN GROUP BY MAT_CD) m 
-      ON pm.MAT_CD=m.MAT_CD 
-	WHERE PROC_FLOW_CD=PROC_FLOW_CD
-  ORDER BY PROC_FLOW_CD, field (cate, 'group', 'data');
-`;
 
 //지시서에 커스텀된 제품별 공정 조회
 const instCusFlow = (datas) => {
-  let sql = `SELECT 
-                INST_PROC_CD,
-                INST_CD,
-                PRD_CD,
-                pps.PROC_CD,
-                PROC_NM,
-                EQP_TYPE,
-                STEP
-              FROM prod_proc_step pps JOIN (SELECT PROC_NM, EQP_TYPE, PROC_CD FROM process ) p
-              ON pps.proc_cd=p.proc_cd`;
+  let sql = 
+  `SELECT 
+    PROC_FLOW_CD,
+    INST_CD,
+    PRD_CD,
+    prs.PROC_CD,
+    PROC_NM,
+    EQP_TYPE,
+    STEP,
+    fn_get_codename(prs.STATUS) as ACT_TYPE
+  FROM prod_result prs JOIN (SELECT PROC_NM, EQP_TYPE, PROC_CD FROM process ) p
+  ON prs.proc_cd=p.proc_cd`;
   
   const queryArr = [];
 
@@ -273,6 +273,8 @@ const instCusFlow = (datas) => {
   return sql;
 }
 
+
+//공정별 설비 조회
 const instCusEqu = 
 `
 SELECT 
@@ -284,21 +286,17 @@ SELECT
 FROM equipment WHERE eqp_type = ?
 `;
 
-//계획서 다중 삭제
-const instDelete = (datas) => {
 
-  let sql =
-      `DELETE FROM PROD_INST 
-      WHERE INST_CD IN `;
-
-  let delArr = [];
-  delArr.push(Object.values(datas));
-  delArr.join(", ");
-  sql += "("+delArr + ")";
+//제품 공정별 자재 조회
+const instProcMtList =
+`SELECT 
+    MAT_CD,
+    MAT_QTY,
+    (SELECT MAT_NM FROM material WHERE MAT_CD=pf.MAT_CD) MAT_NM
+  FROM
+  proc_flow_mtl pf WHERE PROC_FLOW_CD =?
   
- return sql;
-}
-
+`;
 
 module.exports = {
     planSelect,

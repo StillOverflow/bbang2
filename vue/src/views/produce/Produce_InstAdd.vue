@@ -230,6 +230,7 @@ export default {
     modalClicked(params) {
       this.getPlanDtlList(params.data.PROD_PLAN_CD);
       this.plan_cd= params.data.PROD_PLAN_CD;
+      this.order_cd= params.data.ORDER_CD;
       this.isModal = !this.isModal;
     },
     /*모달 [E]*/
@@ -289,6 +290,7 @@ export default {
       let insertInst = []; //생산지시서
       insertInst.push({
         PROD_PLAN_CD: this.plan_cd, 
+        ORDER_CD: this.order_cd, 
         STATUS: 'Z01',
         WORK_DT: this.work_dt
       });
@@ -305,6 +307,7 @@ export default {
       this.flowArr.forEach((obj) => {
         insertFlow.push({
           PRD_CD: obj.PRD_CD,
+          PROC_FLOW_CD: obj.PROC_FLOW_CD,
           PROC_CD: obj.PROC_CD,
           STEP: obj.PROC_SEQ
         });
