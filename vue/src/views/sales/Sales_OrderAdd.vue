@@ -169,7 +169,6 @@ export default {
         return {
             //상세,수정,삭제
             isdetail: false,
-            selectNo: '',
 
             OLHead: {
                 act_cd: '',
@@ -265,7 +264,7 @@ export default {
         this.$store.dispatch('breadCrumb', { title: '주문서 등록' });
 
         let selectNo = this.$route.query.bno;
-        this.selectNo = this.$route.query.bno;
+        this.selectNo = this.$route.query.bno; //this.으로 저장해야 밖에서도 사용 가능
         console.log("seletNo",selectNo)
         if(selectNo != null){
             //수정    
@@ -491,7 +490,6 @@ export default {
 
                         if(result2.data.result == 'success'){
                             this.resetForm(); // 초기화
-
 
                             this.$swal({
                             title: "delete!",
