@@ -113,8 +113,7 @@ const instInsert = async (values) => {
       values[1].forEach((val) => { // 헤더 시퀀스값 추가
           val["INST_CD"] = mySeq;
       });
-      let dtl_res = await mariadb.transQuery('instDtlInsert', values[1]);
-      
+      let dtl_res = await mariadb.transQuery('instDtlInsert', values[1]);      
 
       // 공정흐름 삽입
       values[2].forEach((val) => { // 헤더 시퀀스값 추가
@@ -122,7 +121,16 @@ const instInsert = async (values) => {
       });
       let flow_res = await mariadb.transQuery('instFlowInsert', values[2]);
 
-      if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && flow_res.affectedRows > 0){ // 모두 성공했는지 판단
+      // 공정별 자재 삽입
+      let i = 0;
+      for (const obj of values[2]){   
+        let mat_res =  await mariadb.transQuery('instMatInsert', obj.PROC_FLOW_CD);
+        if(mat_res.affectedRows > 0){                                       
+          i++;
+        }
+      }
+
+      if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && flow_res.affectedRows > 0 && i > 0){ // 모두 성공했는지 판단
         await mariadb.commit();
         return 'success';
       } else {
@@ -158,6 +166,42 @@ const findInstCusEqu = async (no)=>{
   return list;
 }
 
+//자재사용량 등록
+const instMatUpdate = async (updateInfo) => { 
+
+  let resultArr = [];
+  for (const obj of updateInfo){   
+
+    let datas = [obj["MAT_USE_QTY"], obj["INST_MAT_CD"]];
+    let result = await mariadb.query('instMatUpdate', datas);
+
+    if(result.affectedRows > 0){
+      resultArr.push('success');
+    }else{
+      resultArr.push('fail');
+    }
+  }
+
+  if(resultArr.includes('fail')){    
+    return 'fail';
+  }else{
+    return 'success';
+  }  
+}; 
+
+//공정 작업시작
+const progressStart = async (no, updateInfo)=>{
+  let datas = [updateInfo, no];
+  let result = await mariadb.query('processStart', datas);
+  
+  if(result.affectedRows > 0){
+    return 'success';
+  }else{
+    return 'fail';
+  }
+}; 
+
+
 module.exports = {
   findAllPlan,
   findPlanNo,
@@ -173,5 +217,7 @@ module.exports = {
   findInstMatFlow,
   findInstCusFlow,
   findInstCusEqu,
-  deleteInst
+  deleteInst,
+  instMatUpdate,
+  progressStart
 };

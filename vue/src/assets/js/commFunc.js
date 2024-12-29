@@ -24,6 +24,22 @@ export default {
     if (!num) return '0';
     return Number(num).toLocaleString();
   },
+  getDateTime(){
+    // 현재 날짜와 시간을 가져오기
+    const currentDate = new Date();
+
+    // 각 구성 요소를 가져오기
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    const day = currentDate.getDate();
+    const hours = currentDate.getHours();
+    const minutes = currentDate.getMinutes();
+    const seconds = currentDate.getSeconds();
+
+    // 날짜와 시간을 문자열로 포맷팅
+    const formattedDate = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')} ${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    return formattedDate;
+  },
 
 
 
@@ -105,10 +121,6 @@ export default {
     if (!params.value || isNaN(params.value)) return '0';
     return Number(params.value).toLocaleString();
   },
-
-
-
-
 
 
 
