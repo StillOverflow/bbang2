@@ -128,6 +128,11 @@ SELECT CONCAT('INS', LPAD(IFNULL(MAX(SUBSTR(i.INSP_LOG_CD, -3)) + 1, 1), 3, '0')
 const eqInspInsert = `INSERT INTO inspection_log
 SET ? `;
 
+//설비점검수정
+const eqInspUpdate = `UPDATE inspection_log
+SET ?
+  WHERE insp_log_cd = ? `;
+
 //설비점검조회
 const eqInspList = ` SELECT   
   i.insp_log_cd as insp_log_cd,
@@ -191,5 +196,6 @@ module.exports = {
   eqInspList,
   eqInspInfo,
   getInspCd,
-  eqInspInsert
+  eqInspInsert,
+  eqInspUpdate
 };

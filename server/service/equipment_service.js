@@ -103,6 +103,27 @@ const insertInspEq = async (inspData) => {
   }
 };
 
+//점검 수정
+
+const updateInspEq = async (inspData) => {
+  try {
+    const inspCd = inspData.insp_log_cd; // 설비 코드 추출
+    delete inspData.insp_log_cd; // eqp_cd는 WHERE절에 사용되므로 제거
+
+    // SQL 실행 (UPDATE ... SET ? WHERE eqp_cd = ?)
+    let result = await mariadb.query('eqInspUpdate', [inspData, insp_log_cd]);
+
+    if (result && result.affectedRows > 0) {
+      return { success: true, message: '설비 정보 수정 성공' };
+    } else {
+      return { success: false, message: '수정할 데이터가 없습니다.' };
+    }
+  } catch (err) {
+    console.error('DB 수정 에러:', err);
+    throw new Error('데이터베이스 수정 실패');
+  }
+};
+
 //설비 점검 전체 조회
 const findInspEq = async () => {
   let list = await mariadb.query('eqInspList');
@@ -127,5 +148,6 @@ module.exports = {
   findInspEq,
   findInspEquipNo,
   findFilteredEq,
-  insertInspEq
+  insertInspEq,
+  updateInspEq
 };
