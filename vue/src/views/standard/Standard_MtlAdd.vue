@@ -34,28 +34,28 @@
                 <div class="mb-3 d-flex justify-content-end" >
                     <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newMaterial">신규등록</button>
                 </div>
-                <div class="d-flex justify-content-left align-items-center mb-2">
+                <div class="d-flex justify-content-left mb-2">
                     <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재코드</div>
                     <div class="input-group mb-3 w-50">
                         <input type="text" class="form-control" v-model="matInfo.mat_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
                     </div>
                 </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재명 *</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="matInfo.mat_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단가 *</div>
                 <div class="input-group mb-3 w-50">
                         <input type="number" class="form-control" v-model="matInfo.price" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;"  />
                 </div>
             </div>    
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="matInfo.unit">
@@ -67,7 +67,7 @@
                     </select>
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재유형 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="matInfo.type">
@@ -79,7 +79,7 @@
                     </select>
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">카테고리</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="matInfo.category">
@@ -91,14 +91,14 @@
                     </select>
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
                 <div class="input-group mb-3 w-50">
                         <input type="number" class="form-control" v-model="matInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>
                 
                         <textarea cols="40" rows="8" type="text" class="form-control" v-model="matInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
@@ -234,7 +234,9 @@ export default {
             this.matInfo.unit = this.matchCode(this.selectedData.selectOptions.unit, params.data.unit);
             this.matInfo.safe_stk = params.data.safe_stk;
             this.matInfo.note = params.data.note
-            this.isUpdated = true;         
+            this.isUpdated = true;      
+            
+            this.copyMatInfo = {...this.matInfo}
         },
         matchCode(options, value) { //매칭 메소드
             const match = options.find((opt) => opt.comm_dtl_nm == value || opt.comm_dtl_cd == value); //코드나 이름에 벨류가 있는지 확인
@@ -281,6 +283,14 @@ export default {
                 });
         },
         async matUpdate() {
+            if(!this.objectKey(this.matInfo, this.copyMatInfo)){
+                this.$swal({
+                    icon: "warning",
+                    title: "수정할 변경 사항이 없습니다.",
+                    text: "수정 후 저장 버튼을 눌러주세요.",
+                });
+                return; // 작업 중단
+            }
                 this.$swal({
                     title: "정말 수정하시겠습니까??",
                     text: "",
@@ -296,9 +306,9 @@ export default {
                         text: "Your file has been modified.",
                         icon: "success"
                         });
+                        await axios.put(`/api/standard/updateMaterial/${this.matInfo.mat_cd}`, this.matInfo);
+                        this.bringMat(); // 목록 갱신
                     }
-                    await axios.put(`/api/standard/updateMaterial/${this.matInfo.mat_cd}`, this.matInfo);
-                    this.bringMat(); // 목록 갱신
                 });
         },
         async delMaterial(){           
@@ -321,6 +331,10 @@ export default {
                         this.bringMat(); // 목록 갱신
                     }
                 });
+        },
+        //변경여부 확인
+        objectKey(obj1, obj2){
+            return Object.keys(obj1).some((key)=>obj1[key]!=obj2[key]);
         }
     },
     

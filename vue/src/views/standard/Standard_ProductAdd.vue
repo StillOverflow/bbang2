@@ -34,35 +34,35 @@
                 <div class="mb-3 d-flex justify-content-end" >
                     <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProduct">신규등록</button>
                 </div>
-                <div class="d-flex justify-content-left align-items-center mb-2">
+                <div class="d-flex justify-content-left = mb-2">
                     <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">제품코드</div>
                     <div class="input-group mb-3 w-50">
                         <input type="text" class="form-control" v-model="prdInfo.prd_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
                     </div>
                 </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left = mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">제품명 *</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="prdInfo.prd_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left = mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단가 *</div>
                 <div class="input-group mb-3 w-50">
                         <input type="number" class="form-control" v-model="prdInfo.price" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;"  />
                 </div>
             </div>    
-            <div class="d-flex justify-content-left align-items-center mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">유통가능기간 *</div>
+            <div class="d-flex justify-content-left  mb-2">
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">유통가능기간(일) *</div>
                 <div class="input-group mb-3 w-50">
-                    <input type="number" class="form-control" v-model="prdInfo.price" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                    <input type="number" class="form-control" v-model="prdInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="prdInfo.unit">
@@ -74,7 +74,7 @@
                     </select>
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">카테고리 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="prdInfo.category">
@@ -86,14 +86,14 @@
                     </select>
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
                 <div class="input-group mb-3 w-50">
                         <input type="number" class="form-control" v-model="prdInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>
                 
                         <textarea cols="40" rows="8" type="text" class="form-control" v-model="prdInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
@@ -223,7 +223,9 @@ export default {
             this.prdInfo.safe_stk = params.data.safe_stk;
             this.prdInfo.note = params.data.note;
             this.prdInfo.exp_range = params.data.exp_range;
-            this.isUpdated = true;         
+            this.isUpdated = true;  
+            
+            this.copyPrdInfo = {...this.prdInfo};
         },
         matchCode(options, value) { //매칭 메소드
             const match = options.find((opt) => opt.comm_dtl_nm == value || opt.comm_dtl_cd == value); //코드나 이름에 벨류가 있는지 확인
@@ -257,6 +259,14 @@ export default {
             }
         },
         async prdUpdate() {
+            if(!this.objectKey(this.prdInfo, this.copyPrdInfo)){
+                this.$swal({
+                    icon: "warning",
+                    title: "수정할 변경 사항이 없습니다.",
+                    text: "수정 후 저장 버튼을 눌러주세요.",
+                });
+                return; // 작업 중단
+            }
                 this.$swal({
                     title: "정말 수정하시겠습니까??",
                     text: "",
@@ -272,9 +282,10 @@ export default {
                         text: "Your file has been modified.",
                         icon: "success"
                         });
-                    }
                     await axios.put(`/api/standard/updateProduct/${this.prdInfo.prd_cd}`, this.prdInfo);
                     this.bringPrd(); // 목록 갱신
+                    }
+                    
                 });
         },
         async delProduct(){           
@@ -297,6 +308,10 @@ export default {
                         this.bringPrd(); // 목록 갱신
                     }
                 });
+        },
+        //변경여부 확인
+        objectKey(obj1, obj2){
+            return Object.keys(obj1).some((key)=>obj1[key]!=obj2[key]);
         }
     },
     

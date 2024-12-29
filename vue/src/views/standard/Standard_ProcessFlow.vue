@@ -7,16 +7,39 @@
           <!-- 제품목록 -->
           <div class="col-md-5" style="height: auto">
             <div class="d-flex justify-content-between align-items-center">
-              <h4 class="m-0">제품 목록</h4>
-              <div class="d-flex justify-content-between align-items-center">
-                <label class="m-0" style="width: 20%;">제품명</label>
-                <div class="input-group d-flex justify-content-between align-items-center" style="width: 80%;">
-                  <input type="text" class="form-control" placeholder="제품명을 입력하세요" v-model="keyword" style="height: 41px;">
-                  <button class="btn btn-warning m-0" type="button" id="button-addon3" @click="searchPrd">
-                    <i class="fa-solid fa-magnifying-glass"></i>
-                  </button>
-                </div>
+              <h4 class="m-0 mb-3">제품 목록</h4>
               </div>
+              <div class="d-flex justify-content-between align-items-center">               
+                <div class="d-flex align-items-center">
+                <label class="fw-bold me-2">카테고리</label>
+                <div class="form-check me-2">
+                  <input class="form-check-input" type="radio" name="category"/>
+                  <label class="form-check-label" for="all">전체</label>
+                </div>
+                <div class="form-check me-2">
+                  <input class="form-check-input" type="radio" name="category"/>
+                  <label class="form-check-label" for="dan">단과</label>
+                </div>
+                <div class="form-check me-2">
+                  <input class="form-check-input" type="radio" name="category"/>
+                  <label class="form-check-label" for="sb">식빵</label>
+                </div>
+                <div class="form-check me-2">
+                  <input class="form-check-input" type="radio" name="category"/>
+                  <label class="form-check-label" for="baguette">바게트</label>
+                </div>
+                <div class="form-check me-2">
+                  <input class="form-check-input" type="radio" name="category"/>
+                  <label class="form-check-label" for="pastry">패스츄리</label>
+                </div>
+              </div>             
+            </div>
+            <div class="d-flex align-items-center">
+                <label class="fw-bold me-2">제품명</label>
+                <input type="text" class="form-control me-2" placeholder="제품명을 입력하세요" v-model="keyword" style="width: 500px;" />
+                <button class="btn btn-warning" @click="searchPrd">
+                  <i class="fa-solid fa-magnifying-glass"></i>
+                </button>
             </div>
             <!-- 제품 목록 -->
             <ag-grid-vue
@@ -135,6 +158,9 @@
             </Layout>
               <div class="text-center">
                 <button class="btn btn-success mt-3 saveBtn " @click="save" :disabled="isdisabled"> SUBMIT </button>
+                <button type="button" class="btn btn-secondary m-2" @click="reset">
+                        <i class="fa-solid fa-rotate"></i>
+                </button>
               </div>             
             </div>
           </div> 
@@ -204,14 +230,9 @@ export default {
 
       //bom조회
       bomDefs: [
-        {
-          headerName: "제품코드",
-          field: "prd_cd",
-          sortable: true,
-        },
         { headerName: "자재코드", field: "mat_cd", sortable: true },
         { headerName: "자재명", field: "mat_nm", sortable: true },
-        { headerName: "BOM양", field: "usage", sortable: true, editable: true },
+        { headerName: "BOM양", field: "usage", sortable: true},
         { headerName: "단위", field: "unit", sortable: true },
       ],
       bomData: [],
@@ -219,7 +240,9 @@ export default {
       procFlowMtlDefs: [
         { headerName: "자재코드", field: "mat_cd", sortable: true },
         { headerName: "자재명", field: "mat_nm", sortable: true },
-        { headerName: "투입량", field: "mat_qty", sortable: true },
+        { headerName: "투입량", field: "mat_qty", sortable: true, editable: true,
+        cellValueChanged: this.cellValueChanged,
+        },
         { headerName: "단위", field: "unit", sortable: true },
       ],
       procFlowMtlData: [],
@@ -267,6 +290,7 @@ export default {
         this.prdKeyword = {prd_nm: this.keyword};
         let result = await axios.get('/api/comm/product/', { params: this.prdKeyword });
         this.productData = result.data;
+        
         },
 
     // //제품조회
@@ -543,12 +567,35 @@ export default {
           }
         }
       }
+      this.$swal({
+        icon: "success",
+        title: "저장 성공",
+        text: "데이터가 성공적으로 저장되었습니다!",
+      });
       this.isdisabled = false;
       this.saveModal = [];
       this.deleteModal = [];
       this.saveProwMtlData = [];
       this.deleteProwMtlData = [];
       this.bringProFlow(this.selectProData);
+    },
+      reset(){
+      this.bomData = [];
+      this.procFlowData = [];
+      this.procFlowMtlData = [];
+      this.keyword = ""; 
+      this.saveModal = [];
+      this.deleteModal = [];
+      this.saveProwMtlData = [];
+      this.deleteProwMtlData = [];
+      this.selectProData = null;
+      this.selectProFlowData = null;
+
+      this.$swal({
+        icon: "success",
+        title: "초기화 완료",
+        text: "모든 데이터가 초기화되었습니다.",
+      });
     },
   },
   watch:{//얘가있으면안됨 왜지
@@ -573,6 +620,8 @@ export default {
       this.isdisabled = false;
     },
   },
+  
+  
   }
 };
 </script>

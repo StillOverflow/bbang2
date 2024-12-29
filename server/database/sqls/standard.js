@@ -252,7 +252,8 @@ const processSelect = (datas)=>{
            proc_nm,
            fn_get_codename(eqp_type) AS eqp_type,
            duration,
-           note
+           note,
+           create_dt
     FROM process
     `;
 
@@ -354,8 +355,6 @@ const defectSelect = (datas)=>{
     return query;
 }
 
-
-
 //등록전 마지막 불량코드 찾기+1
 const getDefCd = 
 `
@@ -385,10 +384,40 @@ FROM defect
 WHERE def_cd = ?
 `;
 
+//----------------------------------------사원관리----------------------------------------
+// 사원 테이블에서 마지막 사원아이디 찾기
+const getMemCd = `
+SELECT 
+IFNULL(MAX(CAST(SUBSTR(mem_cd, 3) AS UNSIGNED)) + 1, 1) AS mem_cd
+FROM member;
+`;
 
+// 사원 테이블에서 마지막 사원코드 찾기
+const getMemId = `
+SELECT 
+CONCAT('me', LPAD(IFNULL(MAX(CAST(SUBSTR(id, 3) AS UNSIGNED)) + 1, 1), 3, '0')) AS id
+FROM member;
+`;
+//사원등록
+const memInsert=
+`
+INSERT INTO member
+SET ?
+`;
+//수정
+const memUpdate = `
+UPDATE member 
+SET ? 
+WHERE mem_cd = ?`;
 
-
-
+//부서불러오기
+const depSelect =
+`
+SELECT
+dpt_cd, 
+dpt_nm
+from department
+`;
 
 module.exports = {
   //bom
@@ -446,5 +475,12 @@ defectSelect,
 getDefCd,
 defInsert,
 defUpdate,
-defDelete
+defDelete,
+
+//사원관리
+getMemCd,
+memInsert,
+memUpdate,
+getMemId,
+depSelect
 };

@@ -70,6 +70,8 @@ import Standard_ProductAdd from '../views/standard/Standard_ProductAdd.vue';
 import Standard_ProcessAdd from '../views/standard/Standard_ProcessAdd.vue';
 import Standard_AccountAdd from '../views/standard/Standard_AccountAdd.vue';
 import Standard_Defect from '../views/standard/Standard_Defect.vue';
+import Standard_memberManage from '../views/standard/Standard_memberManage.vue';
+
 
 
 
@@ -457,6 +459,12 @@ const routes = [
     path: '/Standard_Defect',
     name: 'Standard_Defect',
     component: Standard_Defect,
+  },
+  {
+    //사원관리
+    path: '/Standard_memberManage',
+    name: 'Standard_memberManage',
+    component: Standard_memberManage
   },
 
 
