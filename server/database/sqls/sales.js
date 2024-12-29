@@ -99,7 +99,7 @@ WHERE order_cd = ?
 //주문서 상세(디테일부분)
 const dtlOrderDtlList =
 `
-SELECT o.prd_cd, p.prd_nm, o.order_qty, o.note
+SELECT o.prd_cd, p.prd_nm, o.order_qty, o.note, o.order_dtl_cd
 FROM order_detail o JOIN product p ON o.prd_cd = p.prd_cd
 WHERE order_cd = ?
 `;
@@ -110,6 +110,12 @@ const orderDelete =
 DELETE \`order\`,order_detail  
 FROM \`order\` \`order\` JOIN order_detail order_detail ON \`order\`.order_cd = order_detail.order_cd 
 WHERE \`order\`.order_cd = ?
+`;
+
+//주문서 수정
+const orderUpdate = 
+`
+UPDATE order_detail SET ? WHERE order_dtl_cd = ?
 `;
 
 
@@ -370,6 +376,28 @@ const productReturnDtlInsert = ([seq, values]) => {
 
 };
 
+//반품 제품 상세(헤드)
+const returnDtlList = 
+`
+SELECT r.prd_out_cd, p.prd_out_dt, a.act_nm, r.act_cd, m.name, r.id
+FROM product_return r JOIN product_out p ON r.prd_out_cd = p.prd_out_cd
+							 JOIN account a ON r.act_cd = a.act_cd
+							 JOIN member m ON r.id = m.id
+WHERE prd_return_cd = ?
+`;
+
+//반품 제품 상세(디테일)
+const dtlReturnDtlList = (searchObj) => {
+    const {rtcd, pdcd} = searchObj;
+
+    let query = `
+    SELECT r.prd_cd, r.prd_lot_cd, o.prd_out_qty, r.prd_return_qty, r.note
+    FROM product_return_detail r JOIN product_out_detail o ON r.prd_out_dtl_cd = o.prd_out_dtl_cd
+    WHERE prd_return_cd = '${rtcd}' AND r.prd_cd = '${pdcd}'
+    `;
+
+    return query;
+};
 
 /* ----------------------------------------------------제품 재고 조회------------------------------------------------------------- */
 
@@ -464,6 +492,7 @@ module.exports = {
     orderDtlList,
     dtlOrderDtlList,
     orderDelete,
+    orderUpdate,
 
     //제품출고
     prdOutList,
@@ -483,6 +512,8 @@ module.exports = {
     productReturnSeq,
     productReturnInsert,
     productReturnDtlInsert,
+    returnDtlList,
+    dtlReturnDtlList,
 
     //제품재고조회
     productAllList,

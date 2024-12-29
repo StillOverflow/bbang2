@@ -13,10 +13,10 @@
                   <div class="input-group mb-2 w-25">
                       <input type="text" class="form-control" v-model="prdOut_code" aria-label="Recipient's username" aria-describedby="button-addon2" 
                       style="height: 41px; background-color: rgb(236, 236, 236);"  readonly />
-                      <button class="btn btn-warning" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
+                      <button class="btn btn-warning" type="button" v-if="this.isdetail == false" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
                   </div>
                   <div class="col-6 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">출고 일자</div> 
-                  <div class="col-6 col-lg-2">
+                  <div class="col-6 col-lg-3">
                       <input class="form-control" style="background-color: rgb(236, 236, 236);" type="date" v-model="prdOut_date" readonly />
                   </div>
               
@@ -24,12 +24,12 @@
               <div class="row">
                   <div class="col-6 col-lg-2 "></div>
                   <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처 명</div> 
-                  <div class="col-6 col-lg-2 mb-3">
+                  <div class="col-6 col-lg-3 mb-3">
                       <input class="form-control" style="background-color: rgb(236, 236, 236);" type="text" v-model="acc_name" readonly />
                   </div>
-                  <div class="col-6 col-lg-1"></div>
+                  <!-- <div class="col-6 col-lg-1"></div> -->
                   <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처 코드</div> 
-                  <div class="col-6 col-lg-2 mb-3">
+                  <div class="col-6 col-lg-3 mb-3">
                       <input class="form-control" style="background-color: rgb(236, 236, 236);" type="text" v-model="acc_code" readonly />
                   </div>
               </div>
@@ -40,10 +40,10 @@
                   <div class="input-group w-25">
                       <input type="text" class="form-control" v-model="mem_name" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
-                      <button class="btn btn-warning" type="button" @click="modalOpen2"><i class="fa-solid fa-magnifying-glass"></i></button>
+                      <button class="btn btn-warning" type="button" v-if="this.isdetail == false" @click="modalOpen2"><i class="fa-solid fa-magnifying-glass"></i></button>
                   </div>
                   <div class="col-6 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">담당자 ID</div> 
-                  <div class="col-6 col-lg-2">
+                  <div class="col-6 col-lg-3">
                       <input class="form-control" style="background-color: rgb(236, 236, 236);" type="text" v-model="mem_id" readonly />
                   </div>
               </div>
@@ -73,9 +73,14 @@
                         </ag-grid-vue>
                     </div>
                 </div>
-                <div class="center ">
+
+                <div class="center " v-if="this.isdetail == false"> <!--등록페이지-->
                     <button class="btn btn-primary mtp30" @click="prdReturnInsert">SUBMIT</button>
                     <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
+                </div>
+                <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
+                    <button class="btn btn-primary mtp30" @click="prdReturnInsert">UPDATE</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">DELETE</button>
                 </div>
           </div>
       </div>
@@ -153,6 +158,27 @@ export default {
     name: 'App',
     data() {
         return {
+            //상세,수정,삭제
+            isdetail: false,
+
+            //상세 헤드부분에 넣을 데이터 
+            RLHead: {
+                act_cd: '',
+                act_nm: '',
+                id: '',
+                name: '',
+                prd_out_cd: '',
+                prd_out_dt: ''
+            }, 
+
+            //input박스에 값 넣기 위해 선언
+            acc_code: '',
+            acc_name: '', 
+            mem_id: '', 
+            mem_name: '', 
+            prdOut_date: '', 
+            prdOut_code: '', 
+
             prd_cd: '',
 
             POLDefs: [
@@ -175,10 +201,18 @@ export default {
                         button.innerText = 'SEARCH';
                         button.className = 'btn btn-warning btn-xsm';
                         button.addEventListener('click', () => {
+
+                            if(this.isdetail == false){
                             this.modalOpen3(); //LOT모달 오픈
                             this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
                             this.getOutLotList(); 
+                            };
 
+                            if(this.isdetail == true){
+                                console.log("true")
+                                this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
+                                this.getreturnLotList();
+                            }
                         });
                         return button;
                     }
@@ -210,6 +244,7 @@ export default {
 
             prdRTDefs: [
                 {headerName: '출고상세코드', field: 'prd_out_dtl_cd', hide: true},
+                {headerName: '제품코드', field: 'prd_cd'},
                 {headerName: 'LOT', field: 'prd_lot_cd'},
                 {
                     headerName: '출고 수량', 
@@ -278,6 +313,27 @@ export default {
     created() {
         this.$store.dispatch('breadCrumb', { title: '반품 제품 등록' });
 
+        let selectNo = this.$route.query.bno;
+        this.selectNo = this.$route.query.bno; //this.으로 저장해야 created()밖에서도 사용 가능
+        
+        if(selectNo != null){
+            //수정    
+            this.isdetail = true;     
+
+            //페이지 이름
+            this.$store.dispatch('breadCrumb', { title: '반품 제품 상세' });
+            //상세조회(헤드)
+            this.returnDtlList(selectNo)
+            //상세조회(디테일 LOT부분)
+
+            
+            
+
+        }else{
+            //등록
+            // this.boardInfo.created_date = this.getToday();  
+        }
+
         this.getOrdList();
         this.getMemList();
     },
@@ -316,6 +372,7 @@ export default {
             const newRowData = selectedRows.map(row => ({
                 
                 prd_out_dtl_cd: row.prd_out_dtl_cd, 
+                prd_cd: row.prd_cd,
                 prd_lot_cd: row.prd_lot_cd,
                 prd_out_qty: row.prd_out_qty, 
                 prd_return_qty: '',
@@ -336,10 +393,39 @@ export default {
             return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
         },
 
+        //상세조회 주문서 헤드부분
+        async returnDtlList(selectNo) {
+            let result = await axios.get(`/api/sales/retrunDtlList/${selectNo}`)
+                                    .catch(err => console.log("RDListError",err));
+            this.RLHead = result.data;
+
+            this.returnHeadList();
+            this.getOutOrdList(); //출고제품코드 따라 나오는 출고목록은 등록이나 상세나 똑같기 때문에 여기서도 선언
+        },
+        returnHeadList(){
+            this.acc_code = this.RLHead[0].act_cd;
+            this.acc_name = this.RLHead[0].act_nm;
+            this.mem_id = this.RLHead[0].id;
+            this.mem_name = this.RLHead[0].name;
+            this.prdOut_date = this.RLHead[0].prd_out_dt.slice(0, 10); //길이가 안맞아서 안나옴 그래서 뒤에 시간부분 자름
+            this.prdOut_code = this.RLHead[0].prd_out_cd;
+
+            
+        },
+
+        //상세조회 주문서 디테일부분(LOT부분)
+        async getreturnLotList() {
+            let searchLot = { rtc : this.selectNo , pdc : this.prd_cd };
+
+            let result = await axios.get(`/api/sales/dtlReturnDtlList/`, {params : searchLot}) 
+                                    .catch(err => console.log("axiosERROR",err));
+            this.prdRTData = result.data;
+        },
+
         //출고제품 코드를 따라 나오는 출고목록들
         async getOutOrdList() { 
             let result = await axios.get(`/api/sales/POL/${this.prdOut_code}`)
-                                    .catch(err => console.log(err));
+                                    .catch(err => console.log("Axios",err));
             this.POLData = result.data;
         },
 
@@ -419,8 +505,8 @@ export default {
                 insertReturnDtl.push({
 
                     prd_out_dtl_cd: obj.prd_out_dtl_cd,
+                    prd_cd: obj.prd_cd, 
                     prd_lot_cd: obj.prd_lot_cd, 
-                    prd_cd: this.prd_cd, 
                     prd_return_qty: obj.prd_return_qty,
                     note: obj.note,
                 });
@@ -448,7 +534,7 @@ export default {
                 this.$swal({
                     icon: "success",
                     title: "등록에 성공 하였습니다.",
-                    text: "등록한 출고제품은 목록에서 확인 해주세요.",
+                    text: "등록한 반품제품은 목록에서 확인 해주세요.",
                 })
                 .then(() => {
                     this.resetForm();   //등록 후 값 초기화
