@@ -157,14 +157,14 @@ const searchAll  = (valueObj) => {
 // 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
 ///////////////////// ** 테스트용이라 쿼리가 달라질 수 있음에 유의.
 const testWaitList = `
-  SELECT r.prod_result_cd, 
+  SELECT r.prod_result_cd refer_cd, 
          i.inst_cd, 
          r.inst_dtl_cd,
-		     r.inst_proc_cd, 
+		     r.inst_proc_cd proc_cd, 
          fn_get_proc_nm(r.inst_proc_cd) proc_nm,
-	       r.prd_cd, 
-         fn_get_prd_nm(r.prd_cd) prd_nm,
-		     r.prod_qty,
+	       r.prd_cd target_cd, 
+         fn_get_prd_nm(r.prd_cd) target_nm,
+		     r.prod_qty total_qty,
 	       fn_is_last_proc(i.inst_cd, r.prd_cd, r.inst_proc_cd) is_last, -- 마지막 공정인지 여부
          end_time -- 공정 완료시점 시간
   FROM   test_prod_result r JOIN test_prod_inst_dtl i
@@ -295,7 +295,6 @@ const testRecList = (valueObj) => {
             r.def_cd,
             d.def_nm,
             r.def_status,
-            fn_get_codename(r.def_status) def_status_nm,
             r.complete_id,
             fn_get_membername(r.complete_id) complete_name, 
             r.complete_dt, 
@@ -330,6 +329,13 @@ const testRecDtlSelect = `
   WHERE  r.test_rec_cd = ?
 `;
 
+// 불량 처리
+const testRecDefUpdate = `
+  UPDATE quality_test_record
+  SET    ?
+  WHERE  test_rec_cd = ?
+`;
+
 
 
 module.exports = {
@@ -351,5 +357,7 @@ module.exports = {
 
   testDefList,
   testRecList,
-  testRecDtlSelect
+  testRecDtlSelect,
+
+  testRecDefUpdate
 }
