@@ -114,7 +114,7 @@
    import { useStore } from 'vuex';
    
    import Layout from '../components/modalLayout.vue';
-   import CustomDropdownEditor from '../components/CustomDropdownEditor.vue'; // modal Layout 불러오기
+   import CustomDropdownEditor from '../components/AccountDropdownEditor.vue'; // modal Layout 불러오기
 
    const store = useStore();  // vuex
    //alert(this.$session.get('user_nm'));

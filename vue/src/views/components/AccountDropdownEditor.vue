@@ -1,5 +1,5 @@
 <template>
-   <div>
+   <div @keydown.esc="closeFunc">
 
       <div class="inputSearch" @keydown="keyEventHandler($event)">
          <!-- 입력 필드 -->
@@ -7,7 +7,7 @@
             <input
                type="text"
                class="form-control searchKeyword"
-               placeholder="자재명 입력"
+               placeholder="거래처명 입력"
                v-model="searchKeyword"
                @input="onChange($event)"
             />
@@ -21,12 +21,12 @@
             <button 
                v-for="(item, index) in searchResults"
                :key="index"
-               class="dropdown-item matResultList"
-               :data-mat-cd="item.mat_cd"
+               class="dropdown-item actResultList"
+               :data-act-cd="item.act_cd"
                :class="{ active: index === selectedIndex }"
-               @click="onClickMatNm(item.mat_cd, item.mat_nm)"
+               @click="onClickActNm(item.act_cd, item.act_nm)"
             >
-               {{ item.mat_nm }}
+               {{ item.act_nm }}
             </button>
          </div>
       </div>
@@ -43,8 +43,8 @@
    let searchKeyword = ref('');  // 검색 키워드
    let isHidden = ref(false);    // 드롭다운 표시 여부 (true: 숨김, false: 표시)
    let searchResults = ref([]);  // 드롭다운 박스에 나타날 데이터
-   let matCode = ref('');        // 자재 코드
-   let matName = ref('');        // 자재명
+   let actCode = ref('');        // 자재 코드
+   let actName = ref('');        // 자재명
 
    const props = defineProps(["params"]);  // 부모에서 전달한 params 정의
 //! ----------------------------------------- Vue Method -----------------------------------------
@@ -53,15 +53,15 @@
    });
    
 //! ----------------------------------------- 이벤트 함수 -----------------------------------------   
-   // 자재명 input값이 변할 때
+   // 거래처명 input값이 변할 때
    const onChange = () => {
-      getMaterial(searchKeyword.value);
+      getAccountList(searchKeyword.value);
    };
 
-   // 자재정보 가져오는 axios
-   const getMaterial = async (keyword) => {
+   // 거래처 리스트 조회 axios
+   const getAccountList = async (keyword) => {
       try {
-         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : String(keyword).trim() } });
+         const result = await axios.get('/api/comm/account', { params : { 'act_type' : 'E01', 'act_nm' : String(keyword).trim() } });
          searchResults.value = result.data;
       } catch (err) {
          Swal.fire({
@@ -75,7 +75,7 @@
    let selectedIndex = ref(-1);
    // keydown & keyup 이벤트 : 방향키 위, 아래 및 엔터
    const keyEventHandler = (event) => {
-      let elementBtns = document.querySelectorAll(".matResultList");
+      let elementBtns = document.querySelectorAll(".actResultList");
       if(isHidden.value) return;
       switch (event.key) {
          case 'ArrowDown' :
@@ -102,19 +102,19 @@
 
          case "Enter" :
             if (document.activeElement) {
-               matCode.value = document.activeElement.getAttribute("data-mat-cd");
-               matName.value = document.activeElement.innerText
+               actCode.value = document.activeElement.getAttribute("data-act-cd");
+               actName.value = document.activeElement.innerText
             }
          break;
       }
    }
 
-   const onClickMatNm = (code, name) => {
+   const onClickActNm = (code, name) => {
       searchKeyword.value = name;  // 클릭한 항목의 이름을 검색어 필드에 설정
       isHidden.value = true;       // 드롭다운 숨김
 
-      matCode.value = code;
-      matName.value = searchKeyword.value;
+      actCode.value = code;
+      actName.value = searchKeyword.value;
    };
 
    const onClickModalOpen = () => {
@@ -124,7 +124,7 @@
 //! ------------------------------------ grid 내장함수 ------------------------------------
    // 그리드 최종값 가져오기
    const getValue = () => {
-      let newObj = { matName : matName.value, matCode : matCode.value };
+      let newObj = {actName : actName.value, actCode : actCode.value};
       return newObj;
    }
 

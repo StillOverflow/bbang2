@@ -14,7 +14,7 @@ const materialStore = ({
    
    getters: {
       getMaterials(state) {
-         return state.materials;
+         return state.materialData;
       },
    },
 

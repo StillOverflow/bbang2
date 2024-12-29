@@ -71,7 +71,7 @@ const getPlanMaterialStock = `
       CONCAT(
          IFNULL(c.safe_stk, 0),
          fn_get_codename(c.unit)
-      ) AS safe_stk,
+      ) AS mat_qty,
       CONCAT(
          IFNULL(b.require_qty, 0),
          fn_get_codename(c.unit)
