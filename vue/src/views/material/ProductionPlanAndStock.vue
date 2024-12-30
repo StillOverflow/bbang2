@@ -74,13 +74,18 @@
 <script setup>
    import { AgGridVue } from 'ag-grid-vue3';
    import axios from 'axios';
+   import Swal from 'sweetalert2';
+
    import { shallowRef, onBeforeMount, ref, watch } from 'vue';
    import { useStore } from 'vuex';
-   import Swal from 'sweetalert2';
-   
+   import { useRouter } from 'vue-router';
+
 // ^ ---------------------------------------- Vue Hook ----------------------------------------
    // Vuex store 사용
    const store = useStore();
+
+   // Router 사용
+   const router = useRouter()
 
    // 날짜 검색 선언
    let startDt = shallowRef('');
@@ -93,9 +98,6 @@
    // 자재 그리드 선언
    const planListGrid = ref([]);
    const materialGrid = ref([]);
-
-   // 자재 그리드 검색 검색어
-   //const materialSearch = ref('');
    
    // created와 비슷~~
    onBeforeMount(() => {
@@ -131,12 +133,6 @@
       let result = year + '-' + month + '-' + day;
       return result;
    };
-
-   // 숫자 포맷
-   // const numberFormatter = (params) => {
-   //    if (!params.value || isNaN(params.value)) return '0';
-   //    return Number(params.value).toLocaleString()
-   // };
 
    const searchForm = async () => {       
       if(startDt.value == '' && endDt.value == '') {
@@ -226,6 +222,7 @@
       const materials = materialGrid.value.getSelectedRows();
       if (materials.length > 0) {
          store.commit("materialStore/setMaterial", materials);
+         router.replace({ name:'MaterialsOrderManage' })
       } else {
          Swal.fire({
             icon: 'warning',
@@ -245,7 +242,7 @@
                value = 0; // 기본값 설정
             }
          }
-
+         
          // rowData 업데이트
          const rowNode = params.node;
          rowNode.setDataValue(params.colDef.field, value);
@@ -257,6 +254,7 @@
       const input = document.createElement('input');  // input 태그 생성
       input.type = 'number';
       input.value = params.value || ''; // 초기 값 설정
+      input.min = '0';
       input.style.width = '70%';                // 너비
       input.style.height = '30px';              // 높이
       input.style.border = '1px solid #b5b5b5'; // input테두리
@@ -319,13 +317,22 @@
    const materialOptions = {
       columnDefs : [
          { headerName: '자재코드', field: 'mat_cd', sortable: true },
-         { headerName: '자재명', field: 'mat_nm', sortable: true  },
+         { 
+            headerName: '자재명', 
+            field: 'mat_nm', 
+            sortable: true,
+            filter: 'agSetColumnFilter',
+         },
          { headerName: '자재구분', field: 'type', sortable: true  },
          { headerName: '필요수량', field: 'require_qty', sortable: true, },
          { headerName: '재고수량', field: 'stock_qty', sortable: true, },
-         { headerName: '안전재고', field: 'safe_stk', sortable: true, },
+         { headerName: '안전재고', field: 'mat_qty', sortable: true, },
          { headerName: '부족수량', field: 'lack_qty', sortable: true, },
-         { headerName: "발주 수량", field: "orderingQty", cellRenderer: customCellRenderer, },
+         { 
+            headerName: "발주 수량", 
+            field: "orderingQty", 
+            cellRenderer: customCellRenderer, 
+         },
       ],
       rowSelection: {
          mode: "multiRow", // 체크박스 다중선택
@@ -375,5 +382,4 @@
       background-color: rgb(253, 211, 211) !important; /* 셀 배경 빨간색 */
       color: rgb(59, 59, 59) !important; /* 텍스트 흰색으로 변경 */
    }
-
 </style>

@@ -71,7 +71,7 @@ const getPlanMaterialStock = `
       CONCAT(
          IFNULL(c.safe_stk, 0),
          fn_get_codename(c.unit)
-      ) AS safe_stk,
+      ) AS mat_qty,
       CONCAT(
          IFNULL(b.require_qty, 0),
          fn_get_codename(c.unit)
@@ -126,6 +126,7 @@ const getMaterialOrder = `
             fn_get_membername(id) AS id,
             (SELECT act_nm FROM account a WHERE m.act_cd = a.act_cd) AS act_cd
    FROM     material_order m
+   WHERE    UPPER(status) <> UPPER('L01')
    ORDER BY mat_order_cd
 `
 
