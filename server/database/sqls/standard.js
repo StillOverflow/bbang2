@@ -2,54 +2,44 @@
 
 //전체 제품조회
 const prdList = `
-SELECT
-prd_cd,
-prd_nm,
-create_dt,
-fn_get_codename(category) AS category
-FROM product
+SELECT prd_cd,
+       prd_nm,
+       create_dt,
+       fn_get_codename(category) AS category
+  FROM product
 `;
 //제품 키워드 검색
 const prdSearch = `
-SELECT
-prd_cd,
-prd_nm,
-create_dt,
-fn_get_codename(category) AS category
-FROM product
-	 
-where p.prd_nm like ?
-GROUP BY prd_cd
+SELECT prd_cd,
+       prd_nm,
+       create_dt,
+       fn_get_codename(category) AS category
+  FROM product
+WHERE p.prd_nm like ?
 `;
 //자재 목록 조회
 const matList = `
-SELECT 
-    m.mat_cd, 
-    m.mat_nm,   
-    m.price,
-    cd.comm_dtl_nm AS unit_nm,
-    cd.comm_dtl_cd AS unit_cd,
-    cd_t.comm_dtl_nm AS type
+SELECT m.mat_cd,
+       m.mat_nm,
+       m.price,
+       cd.comm_dtl_nm AS unit_nm,
+       cd.comm_dtl_cd AS unit_cd,
+       cd_t.comm_dtl_nm AS type
 FROM material m
-LEFT JOIN common_detail cd
-    ON cd.comm_dtl_cd = m.unit
-LEFT JOIN common_detail cd_t
-    ON cd_t.comm_dtl_cd = m.type 
+LEFT JOIN common_detail cd ON cd.comm_dtl_cd = m.unit
+LEFT JOIN common_detail cd_t ON cd_t.comm_dtl_cd = m.type
 `;
 //자재 키워드 검색
 const matSearch = `
-SELECT 
-    m.mat_cd, 
-    m.mat_nm,   
-    m.price,
-    cd.comm_dtl_nm AS unit_nm,
-    cd.comm_dtl_cd AS unit_cd,
-    cd_t.comm_dtl_nm AS type
-FROM material m
-LEFT JOIN common_detail cd
-    ON cd.comm_dtl_cd = m.unit
-LEFT JOIN common_detail cd_t
-    ON cd_t.comm_dtl_cd = m.type 
+SELECT m.mat_cd,
+       m.mat_nm,
+       m.price,
+       cd.comm_dtl_nm AS unit_nm,
+       cd.comm_dtl_cd AS unit_cd,
+       cd_t.comm_dtl_nm AS TYPE
+  FROM material m
+LEFT JOIN common_detail cd ON cd.comm_dtl_cd = m.unit
+LEFT JOIN common_detail cd_t ON cd_t.comm_dtl_cd = m.type
 WHERE m.mat_nm LIKE ?
 `;
 
@@ -82,11 +72,7 @@ and mat_cd = ?
 //선택할 제품조회
 const selectPrd = `
 SELECT prd_cd,
-       prd_nm,
-       (SELECT EXISTS
-                    (SELECT 1
-                    FROM prod_inst_dtl
-                    WHERE prd_cd = 'pr01')) AS "useSta"
+       prd_nm
 FROM product;
 `;
 // ----------------------공정흐름 관리---------------------
@@ -137,7 +123,7 @@ SELECT m.mat_cd ,
        pfm.proc_mat_flow_cd ,
        cd.comm_dtl_nm AS unit
 FROM proc_flow_mtl pfm
-JOIN process_flow pf ON pfm.PROC_FLOW_CD = pf.PROC_FLOW_CD
+JOIN process_flow pf  ON pfm.PROC_FLOW_CD = pf.PROC_FLOW_CD
 JOIN material m ON m.mat_cd = pfm.mat_cd
 JOIN common_detail cd ON cd.COMM_DTL_CD = m.unit
 WHERE pf.proc_flow_cd = ?
@@ -183,6 +169,7 @@ SELECT mat_cd,
        price,
        safe_stk,
        note,
+       create_dt,
        fn_get_codename(category) AS category,
        fn_get_codename(unit) AS unit
 FROM material
@@ -388,7 +375,7 @@ WHERE def_cd = ?
 // 사원 테이블에서 마지막 사원아이디 찾기
 const getMemCd = `
 SELECT 
-IFNULL(MAX(CAST(SUBSTR(mem_cd, 3) AS UNSIGNED)) + 1, 1) AS mem_cd
+LPAD(IFNULL(MAX(CAST(SUBSTR(mem_cd, 2) AS UNSIGNED)) + 1, 1),3,'0') AS mem_cd
 FROM member;
 `;
 

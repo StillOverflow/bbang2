@@ -11,21 +11,21 @@ ORDER BY comm_dtl_cd
 const memList = (dpt_cd) => {
   return `
   SELECT mem_cd,
-        name,
-        id,
-        password,
-        phone,
-        addr,
-        email,
-        birth,
-        hire_dt,
-        quit_dt,
-        fn_get_codename(status) as status,
-        fn_get_codename(permission) as permission,
-        create_dt,
-        update_dt,
-        dpt_cd,
-        gender
+         name,
+         id,
+         password,
+         phone,
+         addr,
+         email,
+         birth,
+         hire_dt,
+         quit_dt,
+         fn_get_codename(status) as status,
+         fn_get_codename(permission) as permission,
+         create_dt,
+         update_dt,
+         dpt_cd,
+         gender
   FROM member ${!dpt_cd ? "" : "WHERE  UPPER(dpt_cd) = UPPER('" + dpt_cd + "') "} -- 부서번호 있을 시 동적 조건 생성
   ORDER  BY id `;
 };
@@ -68,15 +68,15 @@ const accountSelect = (datas) => {
 const materialSelect = (datas) => {
   let query = `
   SELECT mat_cd,
-        mat_nm,
-        fn_get_codename(TYPE) AS type,
-        price,
-        safe_stk,
-        create_dt,
-        update_dt,
-        fn_get_codename(category) AS category,
-        fn_get_codename(unit) AS unit,
-        note
+         mat_nm,
+         fn_get_codename(TYPE) AS type,
+         price,
+         safe_stk,
+         create_dt,
+         update_dt,
+         fn_get_codename(category) AS category,
+         fn_get_codename(unit) AS unit,
+         note
   FROM material
   `;
   
@@ -101,18 +101,18 @@ const materialSelect = (datas) => {
 const productSelect = (datas) => {
   let query = `
   SELECT prd_cd,
-        prd_nm,
-        fn_get_codename(category) AS category,
-        price,
-        fn_get_codename(unit) AS unit,
-        exp_range,
-        safe_stk,
-        create_dt,
-        update_dt,
-        note,
-        (SELECT SUM(STOCK)
-        FROM product_in
-        WHERE PRD_CD = p.PRD_CD ) AS in_cnt
+         prd_nm,
+         fn_get_codename(category) AS category,
+         price,
+         fn_get_codename(unit) AS unit,
+         exp_range,
+         safe_stk,
+         create_dt,
+         update_dt,
+         note,
+         (SELECT SUM(STOCK)
+         FROM product_in
+         WHERE PRD_CD = p.PRD_CD ) AS in_cnt
   FROM product p
   `;
   
@@ -137,13 +137,13 @@ const productSelect = (datas) => {
 const orderDtlList = 
 `
   SELECT order_dtl_cd,
-        order_cd,
-        o.prd_cd AS prd_cd,
-        prd_nm,
-        order_qty,
-        (SELECT sum(STOCK)
-        FROM product_in
-        WHERE PRD_CD=o.PRD_CD) AS in_cnt
+         order_cd,
+         o.prd_cd AS prd_cd,
+         prd_nm,
+         order_qty,
+         (SELECT sum(STOCK)
+         FROM product_in
+         WHERE PRD_CD=o.PRD_CD) AS in_cnt
   FROM order_detail o
   JOIN product p ON o.PRD_CD=p.PRD_CD
   WHERE order_cd=?

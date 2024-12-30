@@ -87,18 +87,17 @@ const deleteProcessFlow = async (proc_flow_cd, prd_cd) => {
 //공정흐름 등록 + 자재추가
 const insertProcMat = async (values) => {
   let result = await mariadb.transOpen(async () => {
-    // 1. 공정흐름코드가 없으면 시퀀스 새로 생성
 
+    // 1. 공정흐름코드가 없으면 시퀀스 새로 생성
     const seqResult = await mariadb.transQuery("procFlowSeq");
     let procFlowCode = seqResult[0].seq;
     values[0]["PROC_FLOW_CD"] = procFlowCode; // 새 공정흐름코드 추가
+
     // 공정흐름 추가
     let flowRes = await mariadb.transQuery("insertProcFlow", values[0]);
     if (flowRes.affectedRows <= 0) {
       await mariadb.rollback();
       return "fail";
-    } else {
-      await mariadb.commit();
     }
 
     // 2. 공정별 자재 추가

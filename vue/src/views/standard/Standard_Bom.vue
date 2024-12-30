@@ -134,7 +134,8 @@ export default {
   created() {
     this.$store.dispatch("breadCrumb", { title: "BOM 관리" });
     this.bringMtlData();
-    this.bringPrdData();
+    //this.bringPrdData();
+    this.searchPrd();
   },
 
   data() {
@@ -248,12 +249,12 @@ export default {
     },
 
     //제품정보 불러오기
-    async bringPrdData() {
-      let result = await axios
-        .get("/api/standard/products")
-        .catch((err) => console.log(err));
-      this.productData = result.data;
-    },
+    // async bringPrdData() {
+    //   let result = await axios
+    //     .get("/api/standard/products")
+    //     .catch((err) => console.log(err));
+    //   this.productData = result.data;
+    // },
     //자재검색기능
     searchMtl() {
       axios
@@ -305,7 +306,6 @@ export default {
     async InsertBomData() {
       try {
         const selectedNodes = this.materialGridApi.getSelectedNodes(); //자재데이터 불러오기
-        //console.log('selectedNodes => ',selectedNodes);
         const selectedMat = selectedNodes.map((node) => node.data); //배열로 저장
         if (!this.selectBomData) {
           this.$swal({
@@ -340,15 +340,15 @@ export default {
           };
 
           if (
-            this.bomData.some((obj) => obj.mat_cd === dup.mat_cd) || //그리드와 실제정보비교
-            this.saveData.some((obj) => obj.mat_cd === dup.mat_cd)
+            this.bomData.some((obj) => obj.mat_cd == dup.mat_cd) || //그리드와 실제정보비교
+            this.saveData.some((obj) => obj.mat_cd == dup.mat_cd)
           ) {
             this.$swal({
               icon: "error",
               title: "존재하는 자재가 있습니다.",
               text: "다시 선택해주세요",
             });
-            continue;
+            break;
           }
           //실제넘기는값
           const saveRealData = {
@@ -403,6 +403,8 @@ export default {
           denyButtonText: `Don't save`,
         }).then(async (result) => {
           if (result.isConfirmed) {
+
+            //{del : this.deleteData, ins : this.saveData }
             for (const bom of this.deleteData) {
               await axios.delete(
                 `/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`

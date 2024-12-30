@@ -5,38 +5,24 @@
       <div class="card py-5 px-6">
         <div class="row">
           <!-- 제품목록 -->
-          <div class="col-md-5" style="height: auto">
+          <div class="col-md-5"  style="height: auto; width: 738px;">
             <div class="d-flex justify-content-between align-items-center">
               <h4 class="m-0 mb-3">제품 목록</h4>
               </div>
-              <div class="d-flex justify-content-between align-items-center">               
-                <div class="d-flex align-items-center">
-                <label class="fw-bold me-2">카테고리</label>
-                <div class="form-check me-2">
-                  <input class="form-check-input" type="radio" name="category"/>
-                  <label class="form-check-label" for="all">전체</label>
-                </div>
-                <div class="form-check me-2">
-                  <input class="form-check-input" type="radio" name="category"/>
-                  <label class="form-check-label" for="dan">단과</label>
-                </div>
-                <div class="form-check me-2">
-                  <input class="form-check-input" type="radio" name="category"/>
-                  <label class="form-check-label" for="sb">식빵</label>
-                </div>
-                <div class="form-check me-2">
-                  <input class="form-check-input" type="radio" name="category"/>
-                  <label class="form-check-label" for="baguette">바게트</label>
-                </div>
-                <div class="form-check me-2">
-                  <input class="form-check-input" type="radio" name="category"/>
-                  <label class="form-check-label" for="pastry">패스츄리</label>
-                </div>
-              </div>             
+              <div class="d-flex justify-content-between align-items-center">   
+                <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">카테고리</div> 
+                <div class="form-check col-10 d-flex">          
+                <div v-for="(opt, idx) in radios" :key="idx">
+                  <input class="form-check-input ms-1" type="radio" v-model="selected_radio" :value="opt.comm_dtl_cd" :id="'radio' + opt.comm_dtl_cd" @change="conditions">
+                  <label class="form-check-label ms-2 me-4 text-start" :for="'radio' + opt.comm_dtl_cd">
+                    {{opt.comm_dtl_nm}}
+                  </label>
+                </div>  
+              </div>            
             </div>
             <div class="d-flex align-items-center">
                 <label class="fw-bold me-2">제품명</label>
-                <input type="text" class="form-control me-2" placeholder="제품명을 입력하세요" v-model="keyword" style="width: 500px;" />
+                <input type="text" class="form-control ms-7 me-2" placeholder="제품명을 입력하세요" v-model="keyword" style="width: 400px;" />
                 <button class="btn btn-warning" @click="searchPrd">
                   <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
@@ -44,7 +30,7 @@
             <!-- 제품 목록 -->
             <ag-grid-vue
               class="ag-theme-alpine me-5 my-4"
-              style="width: 100%; height: 600px"
+              style="width: 100%; height: 705px"
               :columnDefs="productDefs"
               :rowData="productData"
               :pagination="true"
@@ -55,13 +41,13 @@
               <!--행선택시 bom데이터 조회-->
             </ag-grid-vue>
           </div>
-          <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
-          <div class="col-md-6" style="height: auto">
+          <!-- <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div> -->
+          <div class="col-md-6 mt-5" style="height: auto">
             <!-- 자재 목록 -->
             <h4 class="d-flex justify-content-start">공정흐름도</h4>
             <div class="mb-3 d-flex justify-content-end" >
               <button class="btn btn-outline-primary mb-0 ms-2"  @click="modalOpen"> 공정추가 </button>
-              <button class="btn btn-outline-danger mb-0 ms-2"  @click="deleteProc">  delete </button>
+              <button class="btn btn-outline-danger mb-0 ms-2"  @click="deleteProc">  삭제 </button>
             </div>
             <div class="col-13 text-end"></div>
 
@@ -88,7 +74,7 @@
                 자재추가
               </button>
               <button class="btn btn-outline-danger mt-2 mb-2 ms-2" @click="deleteProcMtl">
-                delete
+                삭제
               </button>
             </div>
             <!-- BOM 테이블 ag-grid -->
@@ -157,9 +143,9 @@
               </template>
             </Layout>
               <div class="text-center">
-                <button class="btn btn-success mt-3 saveBtn " @click="save" :disabled="isdisabled"> SUBMIT </button>
-                <button type="button" class="btn btn-secondary m-2" @click="reset">
-                        <i class="fa-solid fa-rotate"></i>
+                <button type="button" class="btn btn-success mt-3 saveBtn " @click="save" :disabled="isdisabled"> 저장 </button>
+                <button type="button" class="btn btn-secondary ms-2 mt-3 saveBtn" @click="reset">
+                        초기화
                 </button>
               </div>             
             </div>
@@ -185,6 +171,7 @@ export default {
     this.bringBomData();
     this.bringMtlData();
     this.bringProcCd();
+    this.getCategory();
   },
   data() {
     return {
@@ -250,7 +237,7 @@ export default {
       //모달 공정코드
       modalDefs: [
         { headerName: "공정코드", field: "proc_cd", sortable: true },
-        { headerName: "공정명", field: "proc_nm", sortable: true },
+        { headerName: "공정명", field: "proc_nm", sortable: true, filter: "agMultiColumnFilter" },
       ],
       modalData: [],
       //저장 버튼 누르기전 담아둘 장소
@@ -262,10 +249,30 @@ export default {
       bomModal: false,
       keyword:'',
       prdKeyword: {},
+      selected_radio:'',
+      radios:[],
     };
   },
 
   methods: {
+    //카테고리 불러오기
+    async getCategory() {
+      let arr = await this.$comm.getComm("PC");
+      let arrAdd = {comm_dtl_cd: '', comm_dtl_nm: '전체'};
+      arr.unshift(arrAdd);
+      this.radios = arr;
+    },
+    //카테고리 라디오
+    async conditions() {
+      let obj = {
+        category : this.selected_radio,
+      }
+      console.log(obj);
+      let result = await axios.get('/api/comm/product', {params:obj})
+                              .catch(err => console.log(err));
+      this.productData = result.data;
+      console.log(result.data)
+    },
     //모달esc
     modalCloseFunc(e){
       if(e.key === "Escape"){
@@ -293,13 +300,7 @@ export default {
         
         },
 
-    // //제품조회
-    // async bringPrdUsa() {
-    //   let result = await axios
-    //     .get("/api/standard/productFlow")
-    //     .catch((err) => console.log(err));
-    //   this.productData = result.data;
-    // },
+
     //공정흐름도 조회
     async bringProFlow(prdCd) {
       let result = await axios
@@ -312,6 +313,7 @@ export default {
       this.selectProData = params.data.prd_cd;
       this.bringProFlow(this.selectProData);
       this.bringBomData(this.selectProData);
+
     },
     //공정흐름도선택정보
     proFlowClicked(params) {
@@ -366,50 +368,52 @@ export default {
 
     //모달 공정 클릭시 공정흐름도 추가
     async InsertProc() {
-      const selectedNodes = this.modalApi.getSelectedRows(); //정보 배열로 담기
 
+      const selectedNodes = this.modalApi.getSelectedRows(); //정보 배열로 담기
+      // 선택여부확인
       if(!this.selectProData){
         this.$swal({
-            icon: "error",
-            title: "제품 선택이 되지 않았습니다.",
-            text: "제품 선택 후 추가해주세요",
-          });
-          this.isModal = !this.isModal;
-          return;
-          
+          icon: "error",
+          title: "제품 선택이 되지 않았습니다.",
+          text: "제품 선택 후 추가해주세요",
+        });
+        this.isModal = !this.isModal;
+        return; 
       }
-
+      
+      ////순서 최대값조회 -> 순서 표시
       let maxSeq = 0;
-
       const result = await axios.get(
         `/api/standard/flowSeq/${this.selectProData}`//순서 최대값조회
       );
       maxSeq = result.data[0].maxSeq; //순서 최대값조회
 
+      //
       let index = 1;
       for (const dup of selectedNodes) {
         const procSeq = maxSeq + index;
         index++;
+
+        //그리드용
         const saveBom = {
-          //그리드용
           proc_seq: procSeq,
           proc_cd: dup.proc_cd,
           proc_nm: dup.proc_nm,
         };
+         //그리드반영 
+        this.prowFlowApi.applyTransaction({
+          add: [saveBom],
+        });
 
+        //실제넘기는값
         const saveRealModal = {
           prd_cd: this.selectProData,
           proc_cd: saveBom.proc_cd,
           proc_seq: saveBom.proc_seq,
         };
-
         this.saveModal.push(saveRealModal);
-
-        this.prowFlowApi.applyTransaction({
-          add: [saveBom],
-        }); //ui반영
-        this.isModal = !this.isModal;
       }
+      this.isModal = !this.isModal;
     },
 
     //공정흐름도 삭제
@@ -421,16 +425,21 @@ export default {
         this.prowFlowApi.applyTransaction({
           remove: [bom],
         });
-        !this.isModal;
       }
+      !this.isModal;
     },
 
     //공정 자재추가
     async InsertProcMtl() {
       const selectedNodes = this.gridApi.getSelectedRows(); // 선택된 BOM 데이터
-
+      let dupMat = [];
       for (const material of selectedNodes) {
-        //그리드용
+        // 중복여부확인 -> 중복된 자재는 제외 
+        if(this.procFlowMtlData.some((obj)=>obj.mat_cd == material.mat_cd)){
+          dupMat.push[material.mat_cd]
+          continue;
+        }
+        //그리드에 추가
         const saveMaterial = {
           mat_cd: material.mat_cd,
           mat_nm: material.mat_nm,
@@ -438,16 +447,11 @@ export default {
           unit: material.unit,
           proc_flow_cd: this.selectProFlowData,
         };
+        this.procFlowMtlApi.applyTransaction({
+          add: [saveMaterial],
+        });
 
-        if(this.procFlowMtlData.some((obj)=>obj.mat_cd == material.mat_cd)){
-          this.$swal({
-              icon: "error",
-              title: "존재하는 자재가 있습니다.",
-              text: "다시 선택해주세요",
-            });
-            continue;
-        }
-
+        //실제 넘겨주는 값
         const newMaterial = {
           mat_cd: saveMaterial.mat_cd,
           mat_qty: saveMaterial.mat_qty,
@@ -456,15 +460,19 @@ export default {
         };
 
         this.saveProwMtlData.push(newMaterial);
+      }
 
-        this.procFlowMtlApi.applyTransaction({
-          add: [saveMaterial],
-        }); // 그리드
-        console.log('this.saveModal=>' ,this.saveModal);
-        console.log('this.saveProwMtlData=>' ,this.saveProwMtlData);
+      //중복된 자재 확인
+      if(dupMat.lenth >0){
+        this.$swal({
+              icon: "error",
+              title: JSON.stringify(dupMat)+" 존재하는 자재가 있습니다.",
+              text: "다시 선택해주세요",
+            });
       }
       this.bomModal = !this.bomModal;
     },
+
     //공정별 자재 삭제
     async deleteProcMtl() {
       const selectedNodes = this.procFlowMtlApi.getSelectedRows();
@@ -579,7 +587,7 @@ export default {
       this.deleteProwMtlData = [];
       this.bringProFlow(this.selectProData);
     },
-      reset(){
+    reset(){
       this.bomData = [];
       this.procFlowData = [];
       this.procFlowMtlData = [];
