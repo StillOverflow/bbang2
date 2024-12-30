@@ -1,10 +1,14 @@
 //! QQA01 중 'QQ'와 관련된 공통코드를 모두 찾을 때
 const findCommList = `
-SELECT comm_dtl_nm,
-       comm_dtl_cd
-FROM common_detail
-WHERE UPPER(comm_cd) = UPPER(?)
-ORDER BY comm_dtl_cd
+  SELECT
+    comm_dtl_nm,
+    comm_dtl_cd
+  FROM
+    common_detail
+  WHERE
+    UPPER(comm_cd) = UPPER(?)
+  ORDER BY
+    comm_dtl_cd
 `;
 
 // 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회)

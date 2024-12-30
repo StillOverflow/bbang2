@@ -61,29 +61,14 @@ const planListSearch = (searchObj) => {
 // 미지시 생산 계획서에 대한 자재 재고 조회
 const getPlanMaterialStock = `
    SELECT
-      b.mat_cd,
+      b.mat_cd,   
       c.mat_nm,
-      fn_get_codename(c.type) \`type\`,
-      CONCAT(
-         IFNULL(b.require_qty, 0),
-         fn_get_codename(c.unit)
-      ) AS require_qty,
-      CONCAT(
-         IFNULL(c.safe_stk, 0),
-         fn_get_codename(c.unit)
-      ) AS mat_qty,
-      CONCAT(
-         IFNULL(b.require_qty, 0),
-         fn_get_codename(c.unit)
-      ) AS total_qty,
-      CONCAT(
-         IFNULL(e.mat_stock, 0),
-         fn_get_codename(c.unit)
-      ) AS stock_qty,
-      CONCAT(
-         IFNULL(e.mat_stock, 0) - IFNULL(b.require_qty, 0),
-         fn_get_codename(c.unit)
-      ) AS lack_qty
+      fn_get_codename(c.\`type\`) AS type,
+      IFNULL(e.mat_stock, 0)      AS stock_qty,
+      IFNULL(b.require_qty, 0)    AS require_qty,
+      IFNULL(c.safe_stk, 0)       AS safe_stk,
+      fn_get_codename(c.unit)     AS unit,
+      (IFNULL(e.mat_stock, 0) - IFNULL(b.require_qty, 0)) AS lack_qty
    FROM
       (
          SELECT
@@ -117,26 +102,53 @@ const getPlanMaterialStock = `
    ORDER BY
       b.mat_cd
 `
-
 //! ----------------------------------- 자재 발주관리 -----------------------------------
-// 주문서 조회
+// 발주서 조회
 const getMaterialOrder = `
-   SELECT   mat_order_cd,
-            fn_get_codename(status) AS status,
-            fn_get_membername(id) AS id,
-            (SELECT act_nm FROM account a WHERE m.act_cd = a.act_cd) AS act_cd
-   FROM     material_order m
-   WHERE    UPPER(status) <> UPPER('L01')
-   ORDER BY mat_order_cd
+   SELECT   
+      mat_order_cd,
+      fn_get_codename(status) AS status,
+      fn_get_membername(id) AS id,
+      (SELECT act_nm FROM account a WHERE m.act_cd = a.act_cd) AS act_cd
+   FROM     
+      material_order m
+   WHERE    
+      UPPER(status) <> UPPER('L01')
+   ORDER BY 
+      mat_order_cd
+`
+
+// 발주서 디테일 조회
+const getMaterialOrderDetail = `
+   SELECT
+      mat_order_dtl_cd,
+      mat_qty,
+      a.create_dt,
+      a.update_dt,
+      a.mat_cd,
+      fn_get_codename(c.\`unit\`) AS unit,
+      fn_get_materialname(a.mat_cd) AS mat_nm,
+      b.mat_order_cd,
+      delivery_dt,
+      b.act_cd,
+      fn_get_accountname(act_cd) AS act_nm
+   FROM
+      material_order_detail a
+      INNER JOIN material_order b ON b.mat_order_cd = a.mat_order_cd
+      LEFT JOIN material c ON a.mat_cd = c.mat_cd
+   WHERE
+      UPPER(b.mat_order_cd) = UPPER( 'ord001' )
+   ORDER BY
+      mat_nm
 `
 
 
 
 
-
 module.exports = {
-   produceHeadPlanList,
-   planListSearch,
-   getPlanMaterialStock,
-   getMaterialOrder,
+   produceHeadPlanList,    // 미지시 생산계획서 조회
+   planListSearch,         // 미지시 생산계획서 검색
+   getPlanMaterialStock,   // 미지시 생산 계획서에 대한 자재 재고 조회
+   getMaterialOrder,       // 발주서 헤더 조회
+   getMaterialOrderDetail, // 발주서 디테일 조회
 };

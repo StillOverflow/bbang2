@@ -107,7 +107,6 @@
                            :gridOptions="orderFormOptions"
                            @cellEditingStarted="cellEditingStartedEvent"
                            @cellEditingStopped="cellEditingStoppedEvent"
-                           @rowClicked="rowClicked"
                            @grid-ready="(params) => gridReady(params, 'orderForm')"
                            @first-data-rendered="orderFormGrid">
                         </ag-grid-vue>
@@ -115,7 +114,7 @@
                   </div>
                   <div class="text-center mtp30">
                      <button class="btn btn-primary">SAVE</button>
-                     <button class="btn btn-secondary mlp10">RESET</button>
+                     <button class="btn btn-secondary mlp10" @click="resetFunc">RESET</button>
                   </div>
                </div>
             </div>
@@ -159,20 +158,7 @@
    const materialGridReady = ref(null);      // 자재 모달 그리드
    const materialModalData = ref([]);        // 자재 모달 데이터
 
-//^ ----------------------------------------- 공통 함수 -----------------------------------------   
-   // 오늘 날짜
-   const getToday = () => {
-      let date = new Date();
-
-      let year = date.getFullYear();
-      let month = ('0' + (date.getMonth() + 1)).slice(-2);
-      let day = ('0' + date.getDate()).slice(-2);
-
-      let result = year + '-' + month + '-' + day;
-      return result;
-   }
-
-//^ ----------------------------------------- Vue Hook -----------------------------------------
+//! ----------------------------------------- Vue Hook -----------------------------------------
    onBeforeMount(() => {
       store.dispatch('breadCrumb', { title: '자재 발주서 관리' }); // 페이지 제목 설정
       getAccountList(); // 거래처 리스트
@@ -182,7 +168,7 @@
       console.log(userNm);
    });
 
-//^ ----------------------------------------- Vue Method -----------------------------------------
+//! ----------------------------------------- Vue Method -----------------------------------------
    watch(accountModalGrid, (newValue) => {
       if (newValue && newValue.api) {
          newValue.api.sizeColumnsToFit();
@@ -201,7 +187,50 @@
       }
    });
 
-// ^ ---------------------------------------- axios 서버통신 ----------------------------------------
+//! ----------------------------------------- 공통 함수 -----------------------------------------   
+   // 오늘 날짜
+   const getToday = () => {
+      let date = new Date();
+
+      let year = date.getFullYear();
+      let month = ('0' + (date.getMonth() + 1)).slice(-2);
+      let day = ('0' + date.getDate()).slice(-2);
+
+      let result = year + '-' + month + '-' + day;
+      return result;
+   }
+
+//! ----------------------------------------- Click Event -----------------------------------------   
+   // 행 추가
+   const addRow = () => {
+      let newObj = {};
+
+      orderFormOptions.columnDefs.forEach((data) => {
+         newObj[data.field] = '';   // 필드 초기화
+      });
+
+      orderFormGrid.value.applyTransaction( { add : [newObj] } );
+   };
+
+   // 행 삭제
+   const removeRow = () => {
+      const selRows = orderFormGrid.value.getSelectedRows();
+      if(selRows.length > 0 ) {
+         orderFormGrid.value.applyTransaction( { remove : selRows } );
+      } else {
+         Swal.fire({
+            icon: "warning",
+            title: "선택된 행이 없습니다.",
+         });
+      }
+   };
+
+   // 그리드 데이터 초기화
+   const resetFunc = () => {
+      orderFormData.value = [];
+   }
+
+//! ---------------------------------------- axios 서버통신 ----------------------------------------
    // 거래처 리스트
    const getAccountList = async (keyword) => {
       try {
@@ -248,11 +277,27 @@
       }
    };
 
+   // 발주서 리스트
+   const getOrderDetailList = async (code) => {
+      try {
+         const result = await axios.get(`/api/material/orderDetailList/${code}`);
+         orderFormData.value = result.data || [];
+      } catch (err) {
+         orderFormData.value = [];
+
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
+   };
+
 //^ ------------------------------------------- Modal -------------------------------------------   
    // 거래처 검색 모달'
    const accountModalOpen = (keyword) => {
       isAccountModal.value = !isAccountModal.value;
-      getAccountList(keyword);
+      getAccountList(keyword);   // 거래처 리스트 
 
       if (accountModalGrid.value) {
          accountModalGrid.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
@@ -262,7 +307,7 @@
    // 주문서 검색 모달
    const orderModalOpen = () => {
       isOrderModal.value = !isOrderModal.value;
-      getOrderList();
+      getOrderList();   // 주문서 리스트
 
       if (orderModalGrid.value) {
          orderModalGrid.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
@@ -273,7 +318,7 @@
    const materialModalOpen = (keyword) => {
       isMatModal.value = !isMatModal.value;
       
-      getMaterial(keyword);
+      getMaterial(keyword);   // 자재 리스트
 
       if (materialGridReady.value) {
          materialGridReady.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
@@ -295,24 +340,6 @@
       }
    }
 
-   // 행 추가
-   const addRow = () => {
-      let newObj = {};
-
-      orderFormOptions.columnDefs.forEach((data) => {
-         newObj[data.field] = '';   // 필드 초기화
-      });
-
-      orderFormGrid.value.applyTransaction( { add: [newObj] } );
-   };
-
-   // 행 삭제
-   const removeRow = () => {
-      const selRows = orderFormGrid.value.getSelectedRows();
-
-      orderFormGrid.value.applyTransaction( { remove: selRows } );
-   }
-
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
    const gridReady = (params, gridType) => {
       if (params.api) {
@@ -329,9 +356,15 @@
       }
    };
 
+   // 발주서 모달 행 클릭시
+   const orderModalRowClicked = (params) => {
+      getOrderDetailList(params.data.mat_order_cd);   // 발주서 헤더에 대한 디테일 정보 조회
+      orderModalOpen(); // 발주서 모달 닫기
+   }
+
    // 편집이 시작될 때 자동 포커스 잡기(포커스 인 시점)
    const cellEditingStartedEvent = (params) => {
-      params.api.setFocusedCell(params.rowIndex, params.column.colId);
+      params.api.setFocusedCell(params.rowIndex, params.column.colId);  // setFocusedCell -> 자동으로 포커스 잡아줌
    }
 
    // 편집이 끝날 때 (포커스 아웃 시점)
@@ -339,16 +372,28 @@
       if(!params.newValue) return; // 값이 없을 때 편집이 종료되면 return;
       
       if(params.colDef.field == 'mat_nm' && params.newValue.matCode != null) {
-         let newValue = params.newValue;
-
-         params.node.setDataValue("mat_cd", newValue.matCode);
-         params.node.setDataValue("mat_nm", newValue.matName);
+         params.node.setDataValue("mat_cd", params.newValue.matCode);
+         params.node.setDataValue("mat_nm", params.newValue.matName);
       }
+
       if(params.colDef.field == 'act_nm' && params.newValue.actCode != null) {
          let actValue = params.newValue;
-
+         
          params.node.setDataValue("act_cd", actValue.actCode);
          params.node.setDataValue("act_nm", actValue.actName);
+      }
+
+      if(matObj.value && matObj.value.mat_cd && matObj.value.mat_nm) {
+         params.node.setDataValue("mat_cd", matObj.value.mat_cd);
+         params.node.setDataValue("mat_nm", matObj.value.mat_nm);
+         params.node.setDataValue("unit", matObj.value.unit);
+         matObj.value = {};
+      }
+
+      if(actObj.value && actObj.value.act_cd && actObj.value.act_nm) {
+         params.node.setDataValue("act_cd", actObj.value.act_cd);
+         params.node.setDataValue("act_nm", actObj.value.act_nm);
+         actObj.value = {};
       }
    }
 
@@ -361,27 +406,52 @@
          { headerName: '담당자', field: 'id', sortable: true  },
          { headerName: '거래처명', field: 'act_cd', sortable: true, },
       ],
-      rowSelection: {
-         mode: "multiRow", // 체크박스 다중선택
-      },
+
+      onRowClicked : orderModalRowClicked,
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    };
 
+   let actObj = ref({});
    // 거래처 검색 모달 옵션
    const accountModalGridOptions = {
       columnDefs : [
          { headerName: '거래처코드', field: 'act_cd', sortable: true },
-         { headerName: '자재구분', field: 'act_nm', sortable: true  },
-         { headerName: '구분', field: 'act_type', sortable: true  },
+         { headerName: '거래처명', field: 'act_nm', sortable: true  },
+         { headerName: '거래처 구분', field: 'act_type', sortable: true  },
          { headerName: '담당자', field: 'mgr_nm', sortable: true, },
          { headerName: '담당자번호', field: 'mgr_tel', sortable: true, },
       ],
-      rowSelection: {
-         mode: "multiRow", // 체크박스 다중선택
+
+      onRowClicked : (event) => {
+         if (!clickedGrid.value || !clickedGrid.value.data) {
+            Swal.fire({
+               icon: "warning",
+               title: "grid가 정의되지 않았습니다.",
+            });
+
+            return;
+         }
+
+         if (!event.data) {
+            Swal.fire({
+               icon: "warning",
+               title: "data가 정의되지 않았습니다.",
+            });
+            return;
+         }
+
+         actObj.value = { 'act_cd' : event.data.act_cd, 'act_nm' : event.data.act_nm };
+         orderFormGrid.value.stopEditing();  // 편집 종료
+         accountModalOpen();  // 거래처 조회 모달
       },
+
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
+
    }
 
+   let matObj = ref({});
+
+   // 자재 모달 데이터
    const materialModalGridOptions = {
       columnDefs : [
          { 
@@ -392,19 +462,39 @@
             headerName: '자재명',
             field: 'mat_nm',
          },
+         {
+            headerName: '단위',
+            field: 'unit',
+         },
       ],
       onRowClicked : (event) => {
-         console.log("이벤트 => ", event);
-         
-         console.log("orderFormOptions => ", orderFormOptions)
-         orderFormOptions.columnDefs.setDataValue("mat_cd", event.data.mat_cd);
-         //console.log(orderFormOptions.columnDefs.mat_cd)
+         if (!clickedGrid.value || !clickedGrid.value.data) {
+            Swal.fire({
+               icon: "warning",
+               title: "grid가 정의되지 않았습니다.",
+            });
+
+            return;
+         }
+
+         if (!event.data) {
+            Swal.fire({
+               icon: "warning",
+               title: "data가 정의되지 않았습니다.",
+            });
+            return;
+         }
+
+         matObj.value = { 'mat_cd' : event.data.mat_cd, 'mat_nm' : event.data.mat_nm, 'unit' : event.data.unit };
+         orderFormGrid.value.stopEditing();  // 편집 종료
+         materialModalOpen(); // 자재조회 모달
       }
    }
-   let rowIndex = ref(0);
+   
+   let clickedGrid = ref(null);
    const orderFormRowClick = (event) => {
-      rowIndex.value = event.rowIndex;
-   }
+     clickedGrid.value = event; // RowNode만 저장
+   };
 
    // no, 발주코드, 자재명, 수량, 거래처코드, 거래처명, 납기일
    // 발주서 입력 그리드 
@@ -420,7 +510,7 @@
             editable: false,  // 편집 비활성화
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">자동 입력</span>`;
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자동 입력</span>`;
             },
          },
          { 
@@ -430,7 +520,7 @@
             editable: false,  // 편집 비활성화
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">자동 입력</span>`;
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자동 입력</span>`;
             },
          },
          {
@@ -440,7 +530,7 @@
             cellEditor : CustomDropdownEditor,  // 커스텀 드롭다운 셀 에디터
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">자재명 입력</span>`;
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자재명 입력</span>`;
             },
             cellEditorParams: {
                isModal: {
@@ -458,8 +548,23 @@
                min: 0,     // 최소값
             },
             cellRenderer: (params) => {
+               console.log(params.value)
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">숫자를 입력하세요</span>`;
+               if (params.value == '') {
+                  return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">숫자를 입력하세요</span>`;
+               } else {
+                  return params.value.toLocaleString()
+               }
+            },
+         },
+         { 
+            headerName: '단위', 
+            field: 'unit', 
+            sortable: true, 
+            editable: false, // 편집 가능
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">단위</span>`;
             },
          },
          { 
@@ -469,7 +574,7 @@
             editable: false, 
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">자동 입력</span>`;
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자동 입력</span>`;
             },
          },
          { 
@@ -480,7 +585,7 @@
             cellEditor : AccountDropdownEditor,  // 커스텀 드롭다운 셀 에디터
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size; 9px">거래처명 입력</span>`;
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">거래처명 입력</span>`;
             },
             cellEditorParams: {
                isModal: {
@@ -497,17 +602,30 @@
             cellEditor: "agDateCellEditor",
             cellEditorParams: {
                min: getToday(),     // 오늘부터 선택 가능
-            }
+            },
+            cellRenderer: (params) => {
+               if (!params.value) {
+                  const span = document.createElement("span");
+                  span.style.color = "#cacaca";
+                  span.style.fontSize = "11px";
+                  span.textContent = "날짜 선택";
+                  return span; // DOM 노드 반환
+               }
+               
+               const date = new Date(params.value);
+               const formattedDate = date.toLocaleDateString("ko-KR", {
+                  year: "numeric",
+                  month: "2-digit",
+                  day: "2-digit",
+               });
+
+               const span = document.createElement("span");
+               span.textContent = formattedDate;
+               return span; // DOM 노드 반환
+            },
          },
       ],
       onRowClicked: orderFormRowClick,
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
 </script>
-
-<style lang="scss" scoped>
-   .ag-theme-alpine {
-      position: relative;
-      z-index: 1 !important; /* 필요에 따라 값을 낮게 조정 */
-   }
-</style>
