@@ -256,18 +256,8 @@ export default {
                 });
         },
         async delProcess(){  
-            //     const currentTime = new Date();
-            //     const createDate = new Date(this.procInfo.create_dt);
-            //     const timeDifference = (currentTime - formattedDate) / (1000 * 60 * 60);
-                
-            //     if (timeDifference > 1) {
-            //     this.$swal({
-            //         icon: "error",
-            //         title: "삭제 불가",
-            //         text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
-            //     });
-            //     return;
-            // }
+            
+    
                  // 조건 만족하지 않을 경우 작업 중단         
                 this.$swal({
                     title: "정말 삭제하시겠습니까??",

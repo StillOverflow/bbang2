@@ -150,7 +150,8 @@ export default {
                 price : '',
                 unit : '',
                 safe_stk : '',
-                note:''
+                note:'',
+                create_dt:''
             },
             isUpdated : false,
             
@@ -232,7 +233,8 @@ export default {
             this.matInfo.price = params.data.price;
             this.matInfo.unit = this.matchCode(this.selectedData.selectOptions.unit, params.data.unit);
             this.matInfo.safe_stk = params.data.safe_stk;
-            this.matInfo.note = params.data.note
+            this.matInfo.note = params.data.note;
+            this.matInfo.create_dt = this.$comm.getMyDay(params.data.create_dt);
             this.isUpdated = true;      
             
             this.copyMatInfo = {...this.matInfo}
@@ -311,6 +313,23 @@ export default {
                 });
         },
         async delMaterial(){           
+            const currentTime = new Date();
+            const createDate = new Date(this.matInfo.create_dt);
+            const timeDifference = (currentTime - createDate) / (24 *1000 * 60 * 60); 
+            console.log(currentTime);
+            console.log(createDate);
+            console.log(timeDifference);
+            // 1시간 이내인지 확인
+            if (timeDifference > 1) {
+                this.$swal({
+                    icon: "error",
+                    title: "삭제 불가",
+                    text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
+                });
+                return; 
+            }
+
+
                 this.$swal({
                     title: "정말 삭제하시겠습니까??",
                     text: "",

@@ -268,6 +268,10 @@ router.post('/standard/insertMember', async(req,res)=>{
 router.put('/standard/updateMember/:mem_cd', async(req, res)=>{
   let memCd = req.params.mem_cd;
   let updateInfo =req.body;
+
+  updateInfo.birth = updateInfo.birth == '' ? null : updateInfo.birth;
+  updateInfo.quit_dt = updateInfo.quit_dt == '' ? null : updateInfo.quit_dt;
+
   let result = await standardService.updateMember(memCd, updateInfo);
   res.send(result);
 });
