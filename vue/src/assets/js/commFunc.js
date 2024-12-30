@@ -24,6 +24,8 @@ export default {
     if (!num) return '0';
     return Number(num).toLocaleString();
   },
+
+  // 날짜+시간 포맷 변환 일반 (시/분/초까지) (데이터타입 DATETIME)
   getDateTime(){
     // 현재 날짜와 시간을 가져오기
     const currentDate = new Date();
@@ -41,7 +43,25 @@ export default {
     return formattedDate;
   },
 
+  // 날짜+시간 포맷 변환 일반 (시/분까지) (데이터타입 DATETIME)
+  getDatetimeMin(value){
+    if(!value) return null; // null이면 null 그대로 리턴
 
+    let newDate = new Date(value);
+    // 2024-12-12T03:00:00.000Z => 2024-12-12, 12:00로 변환
+    let strDate = newDate.toLocaleDateString('en-CA', { // en-CA => 국가별 날짜형식(0000-00-00)
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      hour12: false, // 24시간
+      minute: 'numeric'
+    });
+    return strDate.replace(',', ''); // 쉼표 제거 (2024-12-12 12:00)
+  },
+
+
+  
 
 
 
@@ -74,22 +94,7 @@ export default {
 
 
 
-  // 날짜+시간 포맷 변환 일반 (데이터타입 DATETIME)
-  getDatetime(value){
-    if(!value) return null; // null이면 null 그대로 리턴
 
-    let newDate = new Date(value);
-    // 2024-12-12T03:00:00.000Z => 2024-12-12, 12:00로 변환
-    let strDate = newDate.toLocaleDateString('en-CA', { // en-CA => 국가별 날짜형식(0000-00-00)
-      year: 'numeric',
-      month: 'numeric',
-      day: 'numeric',
-      hour: 'numeric',
-      hour12: false, // 24시간
-      minute: 'numeric'
-    });
-    return strDate.replace(',', ''); // 쉼표 제거 (2024-12-12 23:00)
-  },
 
 
 

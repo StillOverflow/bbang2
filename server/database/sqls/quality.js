@@ -157,20 +157,20 @@ const searchAll  = (valueObj) => {
 // 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
 ///////////////////// ** 테스트용이라 쿼리가 달라질 수 있음에 유의.
 const testWaitList = `
-  SELECT r.prod_result_cd refer_cd, 
-         i.inst_cd, 
-         r.inst_dtl_cd,
-		     r.inst_proc_cd proc_cd, 
-         fn_get_proc_nm(r.inst_proc_cd) proc_nm,
-	       r.prd_cd target_cd, 
-         fn_get_prd_nm(r.prd_cd) target_nm,
-		     r.prod_qty total_qty,
-	       fn_is_last_proc(i.inst_cd, r.prd_cd, r.inst_proc_cd) is_last, -- 마지막 공정인지 여부
+  SELECT prod_result_cd refer_cd, inst_cd,
+         proc_cd, 
+         fn_get_proc_nm(proc_cd) proc_nm,
+         prd_cd target_cd, 
+         fn_get_prd_nm(prd_cd) target_nm,
+         prod_qty total_qty,
+         CASE WHEN step = (SELECT COUNT(*) 
+                           FROM   process_flow
+                           WHERE  prd_cd = 'PR01') THEN 1
+                                                   ELSE 0 END is_last, -- 마지막 공정인지 여부
          end_time -- 공정 완료시점 시간
-  FROM   test_prod_result r JOIN test_prod_inst_dtl i
-									            ON r.inst_dtl_cd = i.inst_dtl_cd
-  WHERE  STATUS = 'A01'
-  AND    que_status = 'A02' -- 공정 완료되었으면서 검사상태 진행전인 내역만 조회
+  FROM   test_prod_result
+  WHERE  STATUS = 'Z03'
+  AND    que_status = 'A02'
 `;
 
 // 타입별 불량조회 (모달용)
@@ -236,30 +236,9 @@ const prodResultUpdate = `
 `;
 
 
-// 불량 미처리 내역 조회 (안 쓸 수도 있음!!!!!!)
-const testDefList = `
-  SELECT r.test_rec_cd, 
-         r.test_dt, 
-         r.refer_cd, 
-         r.target_cd, -- 검사한 제품 or 자재코드
-         r.proc_cd, -- 제품인 경우 존재
-         r.total_qty, 
-         r.test_qty, 
-         r.pass_qty, 
-         r.def_qty, 
-         r.id,
-         fn_get_membername(r.id) name, 
-         r.def_cd,
-         d.def_nm,
-         r.note
-  FROM   t_copy_quality_test_record r LEFT OUTER JOIN defect d
-                                                   ON r.def_cd = d.def_cd
-  WHERE  r.def_cd IS NOT NULL AND r.def_status IS NULL
-`;
-
 // 검사결과내역 조회+검색
 const testRecList = (valueObj) => {
-  console.log('받은값: ' + (valueObj.isDef == 'false'));
+  console.log('받은값: ' + (valueObj.targetCd));
   let recCd = valueObj.recCd;
 
   let startDt = valueObj.startDt;
@@ -270,6 +249,7 @@ const testRecList = (valueObj) => {
   let note = valueObj.note;
 
   let isDef = valueObj.isDef; // boolean
+  let yetDefect = valueObj.yetDefect;
   let defNm = valueObj.defNm;
   let name = valueObj.name;
 
@@ -313,6 +293,7 @@ const testRecList = (valueObj) => {
        ${!defNm ? "" : "AND  d.def_nm LIKE '%" + defNm + "%' "}
        ${isDef == 'true' ? "AND  r.def_cd IS NOT NULL" : ""} -- 불량이 발생한 내역
        ${isDef == 'false' ? "AND  r.def_cd IS NULL" : ""} -- 불량이 발생하지 않은 내역
+       ${!yetDefect ? "" : "AND r.def_cd IS NOT NULL AND r.def_status IS NULL"} -- 불량이 발생했지만 처리되지 않은 내역
     ${!name ? "" : "HAVING  name LIKE '%" + name + "%' OR complete_name LIKE '%" + name + "%' "} -- alias는 WHERE절 이후에 적용되므로, JOIN 시 HAVING에서 써야 함.
     ORDER BY r.def_status -- 불량 미처리 내역(null)이 최상단에 옴.
   `;
@@ -355,7 +336,6 @@ module.exports = {
   testRecDtlInsert,
   prodResultUpdate,
 
-  testDefList,
   testRecList,
   testRecDtlSelect,
 
