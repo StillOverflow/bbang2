@@ -221,7 +221,6 @@ const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   return sql;
 };
 
-
 // 공정흐름 입력
 const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
@@ -237,16 +236,42 @@ const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
   
   return sql;
 };
+
+// 공정별 자재 입력
+const instMatInsert = 
+`INSERT INTO
+  proc_mat (
+      INST_MAT_CD
+    ,PROC_FLOW_CD
+    ,MAT_CD
+    ,MAT_QTY
+    ,MAT_USE_QTY
+    ,UNIT
+  )
+
+SELECT 
+    CONCAT('IM', LPAD(nextval(inst_mat_seq), 3,'0')) AS 'INST_MAT_CD',
+    pf.PROC_FLOW_CD AS 'PROC_FLOW_CD',
+    pf.MAT_CD AS MAT_CD,
+    pf.MAT_QTY AS MAT_QTY,
+    pf.MAT_QTY AS MAT_USE_QTY,
+    UNIT AS 'UNIT'
+  FROM
+      proc_flow_mtl pf
+    JOIN 
+      (SELECT MAT_CD, MAT_NM, fn_get_codename(UNIT) AS UNIT FROM material) m on pf.MAT_CD=m.MAT_CD
+      where pf.PROC_FLOW_CD = ?
+`;
 /* 지시서 등록[E] */
 
 
 /*------------생산공정-------------*/
 
-
 //지시서에 커스텀된 제품별 공정 조회
 const instCusFlow = (datas) => {
   let sql = 
   `SELECT 
+    PROD_RESULT_CD,
     PROC_FLOW_CD,
     INST_CD,
     PRD_CD,
@@ -254,7 +279,10 @@ const instCusFlow = (datas) => {
     PROC_NM,
     EQP_TYPE,
     STEP,
-    fn_get_codename(prs.STATUS) as ACT_TYPE
+    ID,
+    fn_get_codename(prs.STATUS) as ACT_TYPE,
+    START_TIME,
+    END_TIME
   FROM prod_result prs JOIN (SELECT PROC_NM, EQP_TYPE, PROC_CD FROM process ) p
   ON prs.proc_cd=p.proc_cd`;
   
@@ -286,17 +314,31 @@ SELECT
 FROM equipment WHERE eqp_type = ?
 `;
 
-
 //제품 공정별 자재 조회
 const instProcMtList =
 `SELECT 
+    INST_MAT_CD,
     MAT_CD,
-    MAT_QTY,
-    (SELECT MAT_NM FROM material WHERE MAT_CD=pf.MAT_CD) MAT_NM
-  FROM
-  proc_flow_mtl pf WHERE PROC_FLOW_CD =?
-  
+    MAT_QTY,   
+    MAT_USE_QTY,
+    (SELECT MAT_NM FROM material where MAT_CD=pf.MAT_CD) AS MAT_NM,
+    UNIT
+FROM
+  proc_mat pf
+where pf.PROC_FLOW_CD = ?  
 `;
+
+//제품 공정별 자재 사용량 등록
+const instMatUpdate =
+`UPDATE proc_mat 
+SET MAT_USE_QTY=? 
+WHERE INST_MAT_CD = ? `;
+
+const processStart = 
+`UPDATE prod_result 
+SET ? 
+WHERE PROD_RESULT_CD = ? `;
+
 
 module.exports = {
     planSelect,
@@ -319,5 +361,9 @@ module.exports = {
     instCusEqu,
 
     instProcList,
-    instProcMtList
+    instProcMtList,
+    instMatInsert,
+    instMatUpdate,
+
+    processStart
 }

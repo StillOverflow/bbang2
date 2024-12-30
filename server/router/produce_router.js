@@ -96,11 +96,26 @@ router.get('/progress/flow', async (req,res)=>{
   res.send(info);
 })
 
- //지시서 제품별 커스텀된 공정목록 조회 -> 설비목록
+//자재 실사용량 등록
+router.put('/progress/mat', async(req, res)=>{
+  let info = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
+  let result = await produceService.instMatUpdate(info);
+  res.send(result);
+});
+
+//지시서 제품별 커스텀된 공정목록 조회 -> 설비목록
 router.get('/progress/equ/:no', async (req,res)=>{
   let procNo = req.params.no;
   let info = await produceService.findInstCusEqu(procNo);
   res.send(info);
+})
+
+ //지시서 제품별 커스텀된 공정목록 조회 -> 설비목록
+ router.put('/progress/start/:no', async (req,res)=>{
+  let prodNo = req.params.no;
+  let info = req.body;
+  let result = await produceService.progressStart(prodNo, info);
+  res.send(result);
 })
 
 module.exports = router;
