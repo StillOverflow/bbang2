@@ -86,19 +86,19 @@
           <div class="col-12 col-md-6 col-xl-3 row text-end p-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산번호</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.prod_result_cd" disabled>
+              <input type="text" class="form-control" :value="selectedTarget.refer_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">제품코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.prd_cd" disabled>
+              <input type="text" class="form-control" :value="selectedTarget.target_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">제품명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.prd_nm" disabled>
+              <input type="text" class="form-control" :value="selectedTarget.target_nm" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.inst_proc_cd" disabled>
+              <input type="text" class="form-control" :value="selectedTarget.proc_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -147,7 +147,7 @@
           <div class="col-12 col-md-6 col-xl-2 row text-end g-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow">생산량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.prod_qty)" disabled>
+              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.total_qty)" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow" v-show="samplingTests.length > 0">샘플량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2" v-show="samplingTests.length > 0">
@@ -194,12 +194,47 @@
             </div>
           </div>
           <div class="col-3 col-md-2 col-xl-1 text-end">
-            <button class="btn btn-primary" :style="t_overflow" @click="recInsert">SUBMIT</button>
+            <button class="btn btn-primary" :style="t_overflow" @click="recInsert" v-show="isWaitList">SUBMIT</button>
           </div>
         </div>
       </div>
     </div>
 
+    <div class="card card-body mt-3" v-show="isDefect">
+      <div class="row">
+
+        <h6 class="col-4 col-md-2 mb-2 d-flex align-items-center justify-content-center" :style="t_break">불량 처리방법</h6>
+        <div class="form-check col-8 col-md-3 d-flex align-items-center justify-content-start">
+          <input class="form-check-input ms-1" type="radio" v-model="selectedTarget.def_status" value="'재투입'" id="defRepeat" :disabled="isDefCompleted">
+          <label class="form-check-label ms-1 me-3 mt-2 text-start" for="defRepeat">
+            재투입
+          </label>
+          <input class="form-check-input ms-1" type="radio" v-model="selectedTarget.def_status" value="'폐기'" id="defDispose" :disabled="isDefCompleted">
+          <label class="form-check-label ms-1 mt-2 text-start" for="defDispose">
+            폐기
+          </label>
+        </div>
+
+        <h6 class="col-4 col-md-1 mb-2 d-flex align-items-center justify-content-center" :style="t_break">처리일자</h6>
+        <div class="col-8 col-md-2 mb-2">
+          <input type="datetime-local" class="form-control" v-model="selectedTarget.complete_dt" :max="this.$comm.getMyDay() + 'T23:59'" :disabled="isDefCompleted"> <!-- 최대 오늘 날짜까지 선택 가능 -->
+        </div>
+
+        <h6 class="col-4 col-md-1 mb-2 d-flex align-items-center justify-content-center" :style="t_break">담당자</h6>
+        <div class="col-5 col-md-2 mb-2">
+          <select class="form-select" v-model="selectedTarget.complete_id" :disabled="isDefCompleted">
+            <option :value="null" disabled hidden>선택</option>
+            <option v-for="(mem) in members" :key="mem.id" :value="mem.id">{{ mem.name }}</option>
+          </select>
+        </div>
+
+        <div class="col-3 col-md-1 text-end">
+          <button class="btn btn-success" :style="t_overflow" @click="defUpdate" v-show="!isDefCompleted">SAVE</button>
+        </div>
+
+      </div>
+    </div>
+    
     <!-- 불량코드 선택할 모달 -->
     <ModalLayout :modalCheck="isModal">
         <template v-slot:header>
@@ -282,6 +317,9 @@
         id: null, // 선택된 담당자 사원번호
         note: null,
 
+        isDefect: false, // 불량 처리용
+        isDefCompleted: false, // 불량 기처리여부
+
         // 검사완료목록 조회용 검색조건 값
         search: {
           // targetType: null, // target은 SelectTarget 컴포넌트에서 가져올 수 있음.
@@ -341,7 +379,7 @@
 
       // 합격량 자동계산
       pass_qty(){
-        return this.selectedTarget.prod_qty - this.def_qty;
+        return this.selectedTarget.total_qty - this.def_qty;
       }
     },
 
@@ -371,18 +409,19 @@
           this.isWaitList = true;
         }
         this.isRowClicked = false;
+        this.isDefect = false;
 
         this.defs = [ // 그리드 표시 컬럼 변경
-          { headerName: '생산번호', field: 'prod_result_cd' }, // 생산실적 번호
+          { headerName: '생산번호', field: 'refer_cd' }, // 생산실적 번호
           { headerName: '생산일시', field: 'end_time', 
             valueFormatter: this.$comm.datetimeFormatter,
             minWidth: 145
           }, // 공정 완료된 일시
-          { headerName: '제품코드', field: 'prd_cd' },
-          { headerName: '제품명', field: 'prd_nm' },
-          { headerName: '공정코드', field: 'inst_proc_cd' },
+          { headerName: '제품코드', field: 'target_cd' },
+          { headerName: '제품명', field: 'target_nm' },
+          { headerName: '공정코드', field: 'proc_cd' },
           { headerName: '공정명', field: 'proc_nm' },
-          { headerName: '생산량', field: 'prod_qty' ,valueFormatter: this.$comm.currencyFormatter }
+          { headerName: '생산량', field: 'total_qty' ,valueFormatter: this.$comm.currencyFormatter }
         ];
       },
       
@@ -447,21 +486,40 @@
         params.api.redrawRows(); // 그리드 강제 새로고침 (getRowStyle()에서 적용한 행 스타일 즉시 반영)
 
         // 초기화
-        this.isDefect = null;
-        this.test_qty = null;
-        this.pass_qty = null;
-        this.def_qty = 0;
+        if(clicked.id){ // 검사완료목록에서는 값을 가지고 있음.
+          this.test_qty = clicked.test_qty;
+          this.pass_qty = clicked.pass_qty;
+
+          if(clicked.def_qty) this.isDefect = true; // 처리해야 할 불량이 있다면 true
+          else this.isDefect = false;
+          if(clicked.complete_dt) this.isDefCompleted = true; // 불량이 이미 처리되었다면 true
+          else this.isDefCompleted = false;
+
+          this.def_qty = clicked.def_qty;
+          this.def_cd = clicked.def_cd;
+          this.def_nm = clicked.def_nm;
+          this.id = clicked.id;
+          this.note = clicked.note;
+          this.test_dt = this.$comm.getDatetime(clicked.test_dt);
+        } else { // 검사대기목록은 값이 없음.
+          this.test_qty = null;
+          this.pass_qty = null;
+          this.def_qty = 0;
+          this.def_cd = null;
+          this.def_nm = null;
+          this.note = null;
+          this.test_dt = null;
+        }
         this.samplingTests = []; ///////////////////////// 빠르게 타겟 변경 시 배열이 비워지지 않는 오류가 있음.
         this.fullTests = [];
 
         // 검사항목 불러오기
-        if(clicked.is_last == 1){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
+        if(clicked.is_last == 1 || clicked.target_type == 'P03'){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
           await this.getTests(clicked, 'P03');
           await this.getTests(clicked, 'P02');
         } else {
           await this.getTests(clicked, 'P02');
         }
-        ////// 검사결과목록일 경우 다르게 가져와야 함.
 
         // 검사완료목록일 경우 상세 측정결과값 가져오기
         if(!this.isWaitList){
@@ -470,7 +528,9 @@
           let data = result.data;
           if(data){ // 값이 있다면 샘플링테스트 측정값에 넣기
             this.samplingTests.forEach((test) => {
-              if(test.test_cd == data.test_cd) test.test_value = data.test_value;
+              data.forEach((testData) => {
+                if(test.test_cd == testData.test_cd) test.test_value = testData.test_value;
+              })
             });
           }
         }
@@ -482,21 +542,21 @@
       async getTests(target, type){
         let query = null;
         
-        if(type == 'P03'){
-          query = {cd: target.prd_cd, type: type}; // P03: 완제품대상 검사항목 
+        if(type == 'P03'){  
+          query = {cd: target.target_cd, type: type}; // P03: 완제품대상 검사항목
         } else {
-          query = {cd: target.inst_proc_cd, type: type}; // P02: 공정대상 검사항목
+          query = {cd: target.proc_cd, type: type}; // P02: 공정대상 검사항목
         }
 
         let testLists = await axios.get('/api/quality/test/my', {params: query}) // 해당 품질기준의 검사항목 불러옴
                                     .catch(err => console.log(err));
-
+       
         testLists.data.forEach((test) => {
           test.isPass = null; // 적합/부적합 판단용
         
           if(test.test_metd == 'O01'){ 
             this.samplingTests.push(test); // O01: 샘플링검사일 경우
-            let testQty = target.prod_qty * 0.01;
+            let testQty = target.total_qty * 0.01;
             this.test_qty = testQty < 5 ? 5 : testQty; // 샘플량을 전체에서 1%로 자동 입력하되, 적어도 5개는 되어야 함.
           } else { 
             this.fullTests.push(test); // O02: 전수검사인 경우
@@ -506,7 +566,7 @@
 
       // 그리드 속성으로 선택된 행 색깔 변경
       getRowStyle(params){
-        if((this.isWaitList && params.data.prod_result_cd == this.selectedTarget.prod_result_cd)
+        if((this.isWaitList && params.data.refer_cd == this.selectedTarget.refer_cd)
             || (!this.isWaitList && params.data.test_rec_cd == this.selectedTarget.test_rec_cd)){
           return {backgroundColor: '#d6d6d6'}
         }
@@ -555,7 +615,7 @@
             } else {
               test.isPass = false;
               // 샘플링검사 한 개라도 부적합 시 전량 불량
-              this.def_qty = this.selectedTarget.prod_qty;
+              this.def_qty = this.selectedTarget.total_qty;
             }
           }
         } else if(testMetd == '샘플링'){ // 검사완료목록일 경우
@@ -589,8 +649,8 @@
         } else if(val < 0){
           val = val * -1; // 입력값이 음수면 양수로 변환
         }
-        if(val > this.selectedTarget.prod_qty){ // 입력값이 생산량보다 많다면 최대값 적용
-          val = this.selectedTarget.prod_qty;
+        if(val > this.selectedTarget.total_qty){ // 입력값이 생산량보다 많다면 최대값 적용
+          val = this.selectedTarget.total_qty;
         }
 
         if(target == 'def') this.def_qty = Number(val);
@@ -679,11 +739,11 @@
         
         let headerObj = { // 헤더 등록용
           test_dt: this.test_dt.replace('T', ' '), // 날짜 DB형식으로 바꿈 
-          refer_cd: target.prod_result_cd, 
+          refer_cd: target.refer_cd, 
           target_type: isLast ? 'P03' : 'P02', // 마지막 공정에서의 검사는 P03(완제품검사)으로 입력 
-          target_cd: target.prd_cd, 
-          proc_cd: target.inst_proc_cd,
-          total_qty: target.prod_qty, 
+          target_cd: target.target_cd, 
+          proc_cd: target.proc_cd,
+          total_qty: target.total_qty, 
           test_qty: this.test_qty, 
           pass_qty: this.pass_qty, 
           def_qty: this.def_qty,
@@ -703,7 +763,7 @@
           );
           // 후처리: 입력완료한 내역은 목록에서 사라져야 함.
           // filter 메소드로 현재 입력한 것을 제외한 내역만 남김
-          let newArr = this.rowData.filter(obj => obj.prod_result_cd != target.prod_result_cd);
+          let newArr = this.rowData.filter(obj => obj.refer_cd != target.refer_cd);
           this.rowData = newArr; // 변경한 배열로 반영
           this.isRowClicked = false; // 결과 창 닫기
         } else {
@@ -716,7 +776,7 @@
       },
 
 
-      // 조회용 메소드
+      // 완료목록 메소드
            
       // 검색조건 초기화 버튼 동작
       searchReset(){
@@ -728,6 +788,35 @@
         this.$refs.selectTarget.selected_radio = null;
         this.$refs.selectTarget.modal_val = {};
         this.$refs.selectTarget.changeDivs();
+      },
+
+      // 불량 처리 SAVE 버튼 동작
+      async defUpdate(){
+        ////////////// 입력값 유효성검사 해야함. 재투입 어떻게 처리할지 해야함.
+
+        let valueObj = {
+          def_status: this.selectedTarget.def_status,
+          complete_id: this.selectedTarget.complete_id,
+          complete_dt: this.selectedTarget.complete_dt.replace('T', ' ') // DB 형식으로 맞춤
+        };
+
+        let result = await axios.put('/api/quality/rec/' + this.selectedTarget.test_rec_cd, valueObj)
+                                .catch(err => console.log(err));
+
+        if(result.data == 'success'){
+          this.$swal(
+            '등록완료',
+            '불량내역이 처리되었습니다.',
+            'success'
+          );
+          this.isDefCompleted = true;
+        } else {
+          this.$swal(
+            '오류발생',
+            '불량내역을 처리하지 못했습니다.',
+            'error'
+          );
+        }
       }
 
     }

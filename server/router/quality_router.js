@@ -92,4 +92,12 @@ router.get('/quality/rec/dtl', async (req, resp) => {
 });
 
 
+// 불량 처리
+router.put('/quality/rec/:cd', async (req, resp) => {
+  let valueObj = req.body;
+  let result = await qualityService.updateDefStatus([valueObj, req.params.cd]);
+  resp.send(result);
+});
+
+
 module.exports = router;

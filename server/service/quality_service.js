@@ -138,6 +138,15 @@ const getTestDtl = async (value) => {
 };
 
 
+// 불량 처리
+const updateDefStatus = async (values) => {
+    let result = await mariadb.query('testRecDefUpdate', values);
+
+    if(result.affectedRows > 0) return 'success';
+    else return 'fail';
+};
+
+
 
 module.exports = {
     getYetList,
@@ -153,5 +162,7 @@ module.exports = {
 
     getTestDefList,
     getTestRecList,
-    getTestDtl
+    getTestDtl,
+
+    updateDefStatus
 }

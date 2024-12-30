@@ -73,7 +73,7 @@
       </div>
 
       <!-- 목록 -->
-      <ag-grid-vue class="ag-theme-alpine"  :columnDefs="defs" :rowData="rowData" 
+      <ag-grid-vue class="ag-theme-alpine"  :columnDefs="defs" :rowData="rowData" style="height: 320px;"
         @stateUpdated="gridFit" :gridOptions="gridOptions" :getRowStyle="getRowStyle" @rowClicked="selectTarget"/>
     </div>
     
@@ -86,19 +86,19 @@
           <div class="col-12 col-md-6 col-xl-3 row text-end p-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산번호</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.prod_result_cd" disabled>
+              <input type="text" class="form-control" :value="selectedTarget.refer_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">제품코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.prd_cd" disabled>
+              <input type="text" class="form-control" :value="selectedTarget.target_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">제품명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.prd_nm" disabled>
+              <input type="text" class="form-control" :value="selectedTarget.target_nm" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control" :value="selectedTarget.inst_proc_cd" disabled>
+              <input type="text" class="form-control" :value="selectedTarget.proc_cd" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
@@ -147,7 +147,7 @@
           <div class="col-12 col-md-6 col-xl-2 row text-end g-xl-0">
             <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow">생산량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.prod_qty)" disabled>
+              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.total_qty)" disabled>
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow" v-show="samplingTests.length > 0">샘플량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2" v-show="samplingTests.length > 0">
@@ -264,7 +264,6 @@
         gridOptions: {
           pagination: true,
           paginationAutoPageSize: true,
-          domLayout: 'autoHeight',
           overlayNoRowsTemplate: '표시할 항목이 없습니다.', // 표시할 행이 없을 때 적용할 메세지
           suppressMovableColumns: true, // 컬럼 드래그 이동 방지
         },
@@ -342,7 +341,7 @@
 
       // 합격량 자동계산
       pass_qty(){
-        return this.selectedTarget.prod_qty - this.def_qty;
+        return this.selectedTarget.total_qty - this.def_qty;
       }
     },
 
@@ -374,16 +373,16 @@
         this.isRowClicked = false;
 
         this.defs = [ // 그리드 표시 컬럼 변경
-          { headerName: '생산번호', field: 'prod_result_cd' }, // 생산실적 번호
+          { headerName: '생산번호', field: 'refer_cd' }, // 생산실적 번호
           { headerName: '생산일시', field: 'end_time', 
             valueFormatter: this.$comm.datetimeFormatter,
             minWidth: 145
           }, // 공정 완료된 일시
-          { headerName: '제품코드', field: 'prd_cd' },
-          { headerName: '제품명', field: 'prd_nm' },
-          { headerName: '공정코드', field: 'inst_proc_cd' },
+          { headerName: '제품코드', field: 'target_cd' },
+          { headerName: '제품명', field: 'target_nm' },
+          { headerName: '공정코드', field: 'proc_cd' },
           { headerName: '공정명', field: 'proc_nm' },
-          { headerName: '생산량', field: 'prod_qty' ,valueFormatter: this.$comm.currencyFormatter }
+          { headerName: '생산량', field: 'total_qty' ,valueFormatter: this.$comm.currencyFormatter }
         ];
       },
       
@@ -401,15 +400,14 @@
             minWidth: 145
           },
           { headerName: '참조번호', field: 'refer_cd' },
-          { headerName: '검사대상', field: 'target_type' },
-          { headerName: '제품명', field: 'prd_nm' },
+          { headerName: '제품명', field: 'target_nm' },
           { headerName: '공정명', field: 'proc_nm' },
           { headerName: '생산량', field: 'total_qty' },
           { headerName: '합격량', field: 'pass_qty' },
           { headerName: '불량양', field: 'def_qty' },
           { headerName: '불량명', field: 'def_nm' },
           { headerName: '담당자', field: 'name' }, // id => 이름으로 바꿔 조회한 결과
-          { headerName: '불량상태', field: 'def_status' },
+          { headerName: '불량상태', field: 'def_status_nm' },
           { headerName: '처리자', field: 'complete_name' }, // id => 이름으로 바꿔 조회한 결과
           { headerName: '처리일시', field: 'complate_dt',
             valueFormatter: this.$comm.datetimeFormatter,
@@ -457,11 +455,23 @@
         this.fullTests = [];
 
         // 검사항목 불러오기
-        if(clicked.is_last == 1){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
-          this.getTests(clicked, 'P03');
-          this.getTests(clicked, 'P02');
+        if(clicked.is_last == 1 || clicked.target_type == 'P03'){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
+          await this.getTests(clicked, 'P03');
+          await this.getTests(clicked, 'P02');
         } else {
-          this.getTests(clicked, 'P02');
+          await this.getTests(clicked, 'P02');
+        }
+
+        // 검사완료목록일 경우 상세 측정결과값 가져오기
+        if(!this.isWaitList){
+          let result = await axios.get('/api/quality/rec/dtl', {params: {test_rec_cd: clicked.test_rec_cd}})
+                                  .catch(err => console.log(err));
+          let data = result.data;
+          if(data){ // 값이 있다면 샘플링테스트 측정값에 넣기
+            this.samplingTests.forEach((test) => {
+              if(test.test_cd == data.test_cd) test.test_value = data.test_value;
+            });
+          }
         }
         
         this.isRowClicked = true; // 검사결과 창 open
@@ -471,21 +481,21 @@
       async getTests(target, type){
         let query = null;
         
-        if(type == 'P03'){
-          query = {cd: target.prd_cd, type: type}; // P03: 완제품대상 검사항목 
+        if(type == 'P03'){  
+          query = {cd: target.target_cd, type: type}; // P03: 완제품대상 검사항목
         } else {
-          query = {cd: target.inst_proc_cd, type: type}; // P02: 공정대상 검사항목
+          query = {cd: target.proc_cd, type: type}; // P02: 공정대상 검사항목
         }
 
         let testLists = await axios.get('/api/quality/test/my', {params: query}) // 해당 품질기준의 검사항목 불러옴
                                     .catch(err => console.log(err));
-
+       
         testLists.data.forEach((test) => {
           test.isPass = null; // 적합/부적합 판단용
         
           if(test.test_metd == 'O01'){ 
             this.samplingTests.push(test); // O01: 샘플링검사일 경우
-            let testQty = target.prod_qty * 0.01;
+            let testQty = target.total_qty * 0.01;
             this.test_qty = testQty < 5 ? 5 : testQty; // 샘플량을 전체에서 1%로 자동 입력하되, 적어도 5개는 되어야 함.
           } else { 
             this.fullTests.push(test); // O02: 전수검사인 경우
@@ -495,14 +505,15 @@
 
       // 그리드 속성으로 선택된 행 색깔 변경
       getRowStyle(params){
-        if(params.data.prod_result_cd == this.selectedTarget.prod_result_cd){
+        if((this.isWaitList && params.data.refer_cd == this.selectedTarget.refer_cd)
+            || (!this.isWaitList && params.data.test_rec_cd == this.selectedTarget.test_rec_cd)){
           return {backgroundColor: '#d6d6d6'}
         }
       },
 
       // 각 검사항목 클릭 시 측정값 입력 혹은 상세정보 표시
       async openDtl(testMetd, idx){
-        if(testMetd == '샘플링'){ // 샘플량 5개 미만이거나, 비어있거나, 숫자가 아닐 시 입력불가
+        if(testMetd == '샘플링' && this.isWaitList){
           let test = this.samplingTests[idx];
           let passMin = !test.pass_min ? 0 : test.pass_min;
           let passMax = !test.pass_max ? 0 : test.pass_max;
@@ -543,9 +554,15 @@
             } else {
               test.isPass = false;
               // 샘플링검사 한 개라도 부적합 시 전량 불량
-              this.def_qty = this.selectedTarget.prod_qty;
+              this.def_qty = this.selectedTarget.total_qty;
             }
           }
+        } else if(testMetd == '샘플링'){ // 검사완료목록일 경우
+          this.$swal({
+            title: `<h4>${this.samplingTests[idx].test_nm} 검사</h4>`,
+            text: this.samplingTests[idx].test_dtl,
+            showConfirmButton: false
+          });
         } else {
           this.$swal({
             title: `<h4>${this.fullTests[idx].test_nm} 검사</h4>`,
@@ -571,8 +588,8 @@
         } else if(val < 0){
           val = val * -1; // 입력값이 음수면 양수로 변환
         }
-        if(val > this.selectedTarget.prod_qty){ // 입력값이 생산량보다 많다면 최대값 적용
-          val = this.selectedTarget.prod_qty;
+        if(val > this.selectedTarget.total_qty){ // 입력값이 생산량보다 많다면 최대값 적용
+          val = this.selectedTarget.total_qty;
         }
 
         if(target == 'def') this.def_qty = Number(val);
@@ -661,10 +678,11 @@
         
         let headerObj = { // 헤더 등록용
           test_dt: this.test_dt.replace('T', ' '), // 날짜 DB형식으로 바꿈 
-          refer_cd: target.prod_result_cd, 
+          refer_cd: target.refer_cd, 
           target_type: isLast ? 'P03' : 'P02', // 마지막 공정에서의 검사는 P03(완제품검사)으로 입력 
-          target_cd: isLast ? target.prd_cd : target.inst_proc_cd, 
-          total_qty: target.prod_qty, 
+          target_cd: target.target_cd, 
+          proc_cd: target.proc_cd,
+          total_qty: target.total_qty, 
           test_qty: this.test_qty, 
           pass_qty: this.pass_qty, 
           def_qty: this.def_qty,
@@ -684,7 +702,7 @@
           );
           // 후처리: 입력완료한 내역은 목록에서 사라져야 함.
           // filter 메소드로 현재 입력한 것을 제외한 내역만 남김
-          let newArr = this.rowData.filter(obj => obj.prod_result_cd != target.prod_result_cd);
+          let newArr = this.rowData.filter(obj => obj.refer_cd != target.refer_cd);
           this.rowData = newArr; // 변경한 배열로 반영
           this.isRowClicked = false; // 결과 창 닫기
         } else {
