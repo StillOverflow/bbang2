@@ -43,7 +43,8 @@ router.post('/plan', async(req, res)=>{
 
 //지시서 전체조회
 router.get('/inst', async (req, res)=>{
-    let instList = await produceService.findAllInst();
+    let searchs = req.query;
+    let instList = await produceService.findAllInst(searchs);
     res.send(instList);
 });
 
@@ -89,6 +90,15 @@ router.get('/inst/:no/mat', async (req,res)=>{
     res.send(info);
   })
 
+  /* ------------------------생산공정------------------------- */
+
+//생산실적 조회
+router.get('/progress/result/:no', async (req,res)=>{
+  let resultNo = req.params.no;
+  let List = await produceService.findResultNo(resultNo);
+  res.send(List);
+})
+
  //지시서 제품별 커스텀된 공정목록 조회
 router.get('/progress/flow', async (req,res)=>{
   let setInfo = req.query;
@@ -110,7 +120,7 @@ router.get('/progress/equ/:no', async (req,res)=>{
   res.send(info);
 })
 
- //지시서 제품별 커스텀된 공정목록 조회 -> 설비목록
+ //생산공정 시작
  router.put('/progress/start/:no', async (req,res)=>{
   let prodNo = req.params.no;
   let info = req.body;

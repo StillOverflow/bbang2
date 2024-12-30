@@ -167,7 +167,7 @@ const login = (datas) => {
             FROM 
                 member m JOIN department d ON m.DPT_CD=d.DPT_CD 
                 
-            WHERE id='${datas.id}' and password='${datas.password}'`;
+            WHERE BINARY id='${datas.id}' and BINARY password='${datas.password}'`;
   return sql;
 };
 

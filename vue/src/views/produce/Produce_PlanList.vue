@@ -24,19 +24,6 @@
             </div>
           </div>
         </div>
-
-        <div class="row">
-          <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">정렬</div>
-          <div class="col-6">
-            <select v-model="selected_list" class="form-select" @change=searchOrder>
-              <option v-for="(val, index) in orderlist" 
-              :value="val.value" 
-              v-bind:key="index">
-              {{val.name}}
-              </option>
-            </select>
-          </div>
-        </div>
       </div>
       
       <div class="card-header ps-5 ps-md-4">
@@ -86,14 +73,6 @@ export default {
       radios: [],
       selected_radio:'',
       selected_list:'',
-
-      orderlist:[
-        { name: "선택해주세요.", value: "" },
-        { name:'작업일자 최신순', value:'order by work_dt desc'},
-        { name:'작업일자 과거순', value:'order by work asc'},
-        { name:'등록일 최신순', value:'order by create_dt desc'},
-        { name:'등록일 과거순', value:'order by create_dt asc'}
-      ],
       
       planDefs: [
         { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 120 },
@@ -182,10 +161,8 @@ export default {
     async searchOrder() {
       let obj = {
         PROD_PLAN_CD : this.plan_cd,
-        STATUS : this.selected_radio,
-        ORDER : this.orderlist
+        STATUS : this.selected_radio
       }
-      console.log(obj);
       let result = await axios.get('/api/plan', {params:obj})
                               .catch(err => console.log(err));
       this.planData = result.data;
