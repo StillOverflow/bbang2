@@ -107,7 +107,7 @@
             </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? matUpdate() : matInsert()" :disabled="isDisabled"> submit </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? matUpdate() : matInsert()"> submit </button>
                     <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delMaterial"> delete </button>
                 </div>
             </div>
@@ -135,7 +135,6 @@ export default {
     },
     data(){
         return{
-            isDisabled: true,
             namePd: '',
             gridOptinos: {
                 rowSelection: {
@@ -338,19 +337,6 @@ export default {
         }
     },
     
-    watch : {
-        matInfo : {
-            deep: true,
-            handler(newVal, oldVal) {
-                console.log("oldVal => ", oldVal);
-                if(newVal){
-                    this.isDisabled = false;
-                }
-                
-            },
-            
-        }
-    },
 
 }
 </script>

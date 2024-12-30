@@ -19,7 +19,7 @@
               <!-- 사원 테이블 ag-gird -->
               <ag-grid-vue
                 class="ag-theme-alpine"
-                style="width: 1000px; height: 600px"
+                style="width: 900px; height: 600px"
                 :columnDefs="memberDefs"
                 :rowData="memberData"
                 :pagination="true"

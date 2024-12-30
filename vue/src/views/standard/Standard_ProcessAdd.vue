@@ -75,7 +75,7 @@
             </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? procUpdate() : procInsert()" :disabled="isDisabled"> submit </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? procUpdate() : procInsert()"> submit </button>
                     <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delProcess"> delete </button>
                 </div>
             </div>
@@ -102,7 +102,6 @@ export default {
     },
     data(){
         return{
-            isDisabled: true,
             namePd: '',
             gridOptinos: {
                 rowSelection: {
@@ -296,20 +295,7 @@ export default {
             return Object.keys(obj1).some((key)=>obj1[key]!=obj2[key]);
         }
     },
-    
-    watch : {
-        procInfo : {
-            deep: true,
-            handler(newVal, oldVal) {
-                console.log("oldVal => ", oldVal);
-                if(newVal){
-                    this.isDisabled = false;
-                }
-                
-            },
-            
-        }
-    },
+
 
 }
 </script>
