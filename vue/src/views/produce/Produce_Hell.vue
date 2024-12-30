@@ -135,7 +135,7 @@
 
           <div class="col-6 bg-light ">
 
-            <template v-if="this.flowArr.PROC_FLOW_CD">
+            <template v-if="this.flowInfo.PROC_FLOW_CD">
               <!--공정설정-->      
               <div class="row mtp10">
                 <div class="col-3 text-center font-weight-bolder mtp10">담당자명</div>
@@ -179,7 +179,7 @@
                   <div class="col-3 text-center">
                     <button class="btn btn-success" @click="processStart">작업시작</button>
                   </div>
-                  <input class="form-control form-control-sm w-50" type="text" v-model="START_TIME" :v-bind="this.$comm.dateFormatter(this.flowArr.START_TIME)" placeholder="0000-00-00 00:00:00" style="height: 41px;">
+                  <input class="form-control form-control-sm w-50" type="text" v-model="START_TIME" :v-bind="this.$comm.dateFormatter(this.flowInfo.START_TIME)" placeholder="0000-00-00 00:00:00" style="height: 41px;">
                 </div>
                 <div class="row mtp10">
                   <div class="col-3 text-center">
@@ -287,7 +287,7 @@ export default {
       isModal3: false, //자재수량 모달
       inst_cd:'',
       proc_flow_cd:'', 
-      flowArr: [],
+      flowInfo: [],
       
       instDefs: [
         { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
@@ -311,6 +311,8 @@ export default {
       matData: [],
       equData: [],
       equ_radio:'',
+
+
     };
   },
   methods: {    
@@ -369,7 +371,7 @@ export default {
 
      //자재 리스트
     async getMatList() {
-      let result = await axios.get(`/api/inst/${this.flowArr.PROC_FLOW_CD}/mat`)
+      let result = await axios.get(`/api/inst/${this.flowInfo.PROC_FLOW_CD}/mat`)
                               .catch(err => console.log(err));
       this.matData = result.data;
     },    
@@ -405,7 +407,7 @@ export default {
     },
 
     showProcess(data){
-      this.flowArr = data;      
+      this.flowInfo = data;      
       let flow_cd = data.PROC_FLOW_CD;
       const elements = document.querySelectorAll('.flowList');
       for (var i = 0; i < elements.length; i++) {
@@ -419,7 +421,7 @@ export default {
 
     //공정별 설비 리스트
     async getFlowEquList() {
-      let result = await axios.get(`/api/progress/equ/${this.flowArr.EQP_TYPE}`)
+      let result = await axios.get(`/api/progress/equ/${this.flowInfo.EQP_TYPE}`)
                               .catch(err => console.log(err));
       this.equData = result.data;
     },
@@ -473,7 +475,7 @@ export default {
               START_TIME: this.$comm.getDateTime()
             };
 
-            let result = axios.put(`/api/progress/start/${this.flowArr.PROD_RESULT_CD}`, obj)
+            let result = axios.put(`/api/progress/start/${this.flowInfo.PROD_RESULT_CD}`, obj)
                               .catch(err => console.log(err));
              console.log(result);
           }

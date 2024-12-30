@@ -185,6 +185,7 @@ export default {
         STATUS : this.selected_radio,
         ORDER : this.orderlist
       }
+      console.log(obj);
       let result = await axios.get('/api/plan', {params:obj})
                               .catch(err => console.log(err));
       this.planData = result.data;
