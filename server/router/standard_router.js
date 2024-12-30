@@ -252,4 +252,30 @@ router.delete('/standard/delDefect/:def_cd', async(req,res)=>{
   res.send(result);
 })
 
+//-------------------------------------사원관리------------------------------------------------
+//사원등록
+router.post('/standard/insertMember', async(req,res)=>{
+  let members = req.body;
+
+  members.birth = members.birth == '' ? null : members.birth;
+  members.quit_dt = members.quit_dt == '' ? null : members.quit_dt;
+
+  let result = await standardService.insertMember(members);
+  res.send(result);
+});
+
+//사원수정
+router.put('/standard/updateMember/:mem_cd', async(req, res)=>{
+  let memCd = req.params.mem_cd;
+  let updateInfo =req.body;
+  let result = await standardService.updateMember(memCd, updateInfo);
+  res.send(result);
+});
+
+//부서
+router.get('/standard/dptSelect', async(req,res)=>{
+  let departments = req.body;
+  let result = await standardService.selectDept(departments);
+  res.send(result);
+})
 module.exports = router;

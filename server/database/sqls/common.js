@@ -20,13 +20,14 @@ const memList = (dpt_cd) => {
         birth,
         hire_dt,
         quit_dt,
-        status,
-        permission,
+        fn_get_codename(status) as status,
+        fn_get_codename(permission) as permission,
         create_dt,
         update_dt,
-        dpt_cd
+        dpt_cd,
+        gender
   FROM member ${!dpt_cd ? "" : "WHERE  UPPER(dpt_cd) = UPPER('" + dpt_cd + "') "} -- 부서번호 있을 시 동적 조건 생성
-  ORDER  BY name `;
+  ORDER  BY id `;
 };
 
 //! 거래처 조회

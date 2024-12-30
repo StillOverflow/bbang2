@@ -34,22 +34,22 @@
                 <div class="mb-3 d-flex justify-content-end" >
                     <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProcess">신규등록</button>
                 </div>
-                <div class="d-flex justify-content-left align-items-center mb-2">
+                <div class="d-flex justify-content-left mb-2">
                     <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정코드 *</div>
                     <div class="input-group mb-3 w-50">
                         <input type="text" class="form-control" v-model="procInfo.proc_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px; background-color: rgb(236, 236, 236);" maxlength="2"/>
+                        style="text-transform: uppercase; height: 41px; background-color: rgb(236, 236, 236);" maxlength="2" :disabled="isUpdated"/>
                         
                     </div>
                 </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정명 *</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="procInfo.proc_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">설비구분 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="procInfo.eqp_type">
@@ -61,21 +61,21 @@
                     </select>
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">평균가동시간</div>
                 <div class="input-group mb-3 w-50">
                     <input type="number" class="form-control" v-model="procInfo.duration" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>                
                         <textarea cols="40" rows="8" type="text" class="form-control h-25" v-model="procInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />                
             </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? procUpdate() : procInsert()" :disabled="isDisabled"> submit </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? procUpdate() : procInsert()"> submit </button>
                     <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delProcess"> delete </button>
                 </div>
             </div>
@@ -102,7 +102,6 @@ export default {
     },
     data(){
         return{
-            isDisabled: true,
             namePd: '',
             gridOptinos: {
                 rowSelection: {
@@ -115,7 +114,8 @@ export default {
                 proc_nm : '',
                 eqp_type : '',
                 duration:'',
-                note:''
+                note:'',
+
             },
             isUpdated : false,
             
@@ -128,17 +128,7 @@ export default {
                     eqp_type: [], // 단위 공통코드
                 },
             },
-            newProcess() {
-                this.procInfo = {
-                proc_cd: '', // 자재코드는 신규등록 시 생성됨
-                proc_nm: '',
-                duration: '',
-                eqp_type: '',    
-                note: '',
-                // prefix:'',
-                };
-                this.isUpdated = false; // 신규등록 모드로 전환
-            },
+            
             processDefs:[
                 {headerName: '공정코드' , field: 'proc_cd'},
                 {headerName: '공정명' , field: 'proc_nm'},
@@ -153,7 +143,18 @@ export default {
 
 
     methods:{
-
+        newProcess() {
+                this.procInfo = {
+                proc_cd: '', // 자재코드는 신규등록 시 생성됨
+                proc_nm: '',
+                duration: '',
+                eqp_type: '',    
+                note: '',
+                // prefix:'',
+                };
+                this.isUpdated = false; // 신규등록 모드로 전환
+                this.isDisabled = false;
+            },
         //----------------------------공통함수()---------------------------
         //공정검색
         async searchProc() {
@@ -179,8 +180,11 @@ export default {
             this.procInfo.duration = params.data.duration;
             this.procInfo.eqp_type = this.matchCode(this.selectedData.selectOptions.eqp_type ,params.data.eqp_type)
             this.procInfo.note = params.data.note;
+            //this.procInfo.create_dt = params.data.create_dt;
             this.isUpdated = true;
             this.prefix='';         
+
+            this.copyProcInfo = {...this.procInfo};
         },
         matchCode(options, value) { //매칭 메소드
             const match = options.find((opt) => opt.comm_dtl_nm == value || opt.comm_dtl_cd == value); //코드나 이름에 벨류가 있는지 확인
@@ -221,6 +225,15 @@ export default {
                 });
         },
         async procUpdate() {
+            if(!this.objectKey(this.procInfo, this.copyProcInfo)){
+                this.$swal({
+                    icon: "warning",
+                    title: "수정할 변경 사항이 없습니다.",
+                    text: "수정 후 저장 버튼을 눌러주세요.",
+                });
+                return; // 작업 중단
+            }
+
                 this.$swal({
                     title: "정말 수정하시겠습니까??",
                     text: "",
@@ -236,12 +249,26 @@ export default {
                         text: "Your file has been modified.",
                         icon: "success"
                         });
+                        await axios.put(`/api/standard/updateProcess/${this.procInfo.proc_cd}`, this.procInfo);
+                        this.searchProc(); // 목록 갱신
                     }
-                    await axios.put(`/api/standard/updateProcess/${this.procInfo.proc_cd}`, this.procInfo);
-                    this.searchProc(); // 목록 갱신
+                   
                 });
         },
-        async delProcess(){           
+        async delProcess(){  
+            //     const currentTime = new Date();
+            //     const createDate = new Date(this.procInfo.create_dt);
+            //     const timeDifference = (currentTime - formattedDate) / (1000 * 60 * 60);
+                
+            //     if (timeDifference > 1) {
+            //     this.$swal({
+            //         icon: "error",
+            //         title: "삭제 불가",
+            //         text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
+            //     });
+            //     return;
+            // }
+                 // 조건 만족하지 않을 경우 작업 중단         
                 this.$swal({
                     title: "정말 삭제하시겠습니까??",
                     text: "",
@@ -261,22 +288,14 @@ export default {
                         this.searchProc(); // 목록 갱신
                     }
                 });
+        },
+
+        //변경여부 확인
+        objectKey(obj1, obj2){
+            return Object.keys(obj1).some((key)=>obj1[key]!=obj2[key]);
         }
     },
-    
-    watch : {
-        procInfo : {
-            deep: true,
-            handler(newVal, oldVal) {
-                console.log("oldVal => ", oldVal);
-                if(newVal){
-                    this.isDisabled = false;
-                }
-                
-            },
-            
-        }
-    },
+
 
 }
 </script>

@@ -358,7 +358,7 @@ const deleteAccount = async(actCd)=>{
 };
 
 //-------------------------------------불량관리------------------------------------------------
-//공정조회
+//불량코드조회
 const defectSelect = async(datas)=>{
   let result = await mariadb.query('defectSelect', datas);
   return result;
@@ -398,6 +398,50 @@ const deleteDefect = async(defCd)=>{
   }
 };
 
+//-------------------------------------사원관리------------------------------------------------
+//비밀번호 자동생성
+const generatePassword = () => {
+  return Math.random().toString(36).slice(2); // 6자리 난수 생성
+};
+
+//사원등록
+const insertMember = async(memInfo)=>{
+  
+  //코드생성
+  let new_mem_cd = (await mariadb.query('getMemCd'))[0].mem_cd;
+  memInfo.mem_cd = new_mem_cd;
+  
+  //아이디생성
+  let new_id = (await mariadb.query('getMemId'))[0].id
+  memInfo.id = new_id;
+
+  //비밀번호생성
+  memInfo.password = generatePassword();
+
+  let result = await mariadb.query('memInsert', memInfo);
+  if(result.affectedRows >0){
+    return {result: true};
+  }else{
+    return {result: false};
+  }
+};
+
+//사원수정
+const updateMember = async(memCd, updateInfo)=>{
+  let datas = [updateInfo, memCd];
+  let result = await mariadb.query('memUpdate', datas);
+  if (result.affectedRows > 0) {
+    return { result: true };
+  } else {
+    return { result: false };
+  }
+};
+
+//부서
+const selectDept = async()=>{
+  let list = await mariadb.query('depSelect');
+  return list;
+}
 module.exports = {
   //BOM
   findAllPrd,
@@ -448,5 +492,10 @@ module.exports = {
   defectSelect,
   insertDefect,
   updateDefect,
-  deleteDefect
+  deleteDefect,
+
+  //사원관리
+  insertMember,
+  updateMember,
+  selectDept
 };

@@ -110,6 +110,9 @@
                   v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0">
                   submit
                 </button>
+                <button type="button" class="btn btn-secondary m-2" @click="reset">
+                        <i class="fa-solid fa-rotate"></i>
+                </button>
               </div>              
             </div>
           </div> 
@@ -313,6 +316,16 @@ export default {
           return;
         }
         for (const dup of selectedMat) {
+          if(!dup.usage||dup.usage<0){
+            this.$swal({
+            icon: "warning",
+            title: "BOM양을 입력해주세요.",
+            text: "BOM양은 0보다 큰 숫자를 적어주세요.",
+          });
+          return; // 입력값이 잘못된 경우 추가 작업 중단
+        }
+
+
           const saveBom = {
             //보여주기용 그리드에 넘기기
             prd_cd: this.selectBomData,
@@ -350,10 +363,14 @@ export default {
           this.bomGridApi.applyTransaction({
             add: [saveBom],
           }); //ui만 반영
-          console.log("saveBom => ", saveBom);
         }
+
+        this.materialData.forEach((mat) => {
+          mat.usage = ""; // usage 필드를 빈 문자열로 초기화
+        });
+
       } catch (error) {
-        console.error("서버 요청 중 오류 발생:", error);
+        console.error("error:", error);
         alert(`오류 발생`);
       }
     },
@@ -408,6 +425,20 @@ export default {
         console.error("오류 발생:", error);
         alert("저장 실패");
       }
+    },
+    reset(){
+      this.bomData = [];
+      this.keyword = "";
+      this.matkeyword = "";
+      this.saveData = [];
+      this.deleteData = [];
+      this.selectBomData = null;
+
+      this.$swal({
+        icon: "success",
+        title: "초기화 완료",
+        text: "모든 데이터가 초기화되었습니다.",
+      });
     },
   },
 };

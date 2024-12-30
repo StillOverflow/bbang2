@@ -34,7 +34,7 @@
                 <div class="mb-3 d-flex justify-content-end" >
                     <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newDefect">신규등록</button>
                 </div>
-                <div class="d-flex justify-content-left align-items-center mb-2">
+                <div class="d-flex justify-content-left  mb-2">
                     <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">불량코드 *</div>
                     <div class="input-group mb-3 w-50">
                         <input type="text" class="form-control" v-model="defInfo.def_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
@@ -42,7 +42,7 @@
                         
                     </div>
                 </div>
-                <div class="d-flex justify-content-left align-items-center mb-2">
+                <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">불량구분 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="defInfo.def_type">
@@ -54,7 +54,7 @@
                     </select>
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">불량명 *</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="defInfo.def_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
@@ -62,21 +62,21 @@
                 </div>
             </div>
             
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">불량내용</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="defInfo.def_detail" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
-            <div class="d-flex justify-content-left align-items-center mb-2">
+            <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>                
                         <textarea cols="40" rows="8" type="text" class="form-control h-25" v-model="defInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />                
             </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? defUpdate() : defInsert()" :disabled="isDisabled"> submit </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? defUpdate() : defInsert()" > submit </button>
                     <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="deldefect"> delete </button>
                 </div>
             </div>
@@ -103,7 +103,6 @@ export default {
     },
     data(){
         return{
-            isDisabled: true,
             namePd: '',
             gridOptinos: {
                 rowSelection: {
@@ -178,7 +177,9 @@ export default {
             this.defInfo.def_detail = params.data.def_detail;
             this.defInfo.def_type = this.matchCode(this.selectedData.selectOptions.def_type ,params.data.def_type)
             this.defInfo.note = params.data.note;
-            this.isUpdated = true;       
+            this.isUpdated = true;    
+            
+            this.copyDefInfo = {...this.defInfo}
         },
         matchCode(options, value) { //매칭 메소드
             const match = options.find((opt) => opt.comm_dtl_nm == value || opt.comm_dtl_cd == value); //코드나 이름에 벨류가 있는지 확인
@@ -219,6 +220,14 @@ export default {
                 });
         },
         async defUpdate() {
+            if(!this.objectKey(this.defInfo, this.copyDefInfo)){
+                this.$swal({
+                    icon: "warning",
+                    title: "수정할 변경 사항이 없습니다.",
+                    text: "수정 후 저장 버튼을 눌러주세요.",
+                });
+                return; // 작업 중단
+            }
                 this.$swal({
                     title: "정말 수정하시겠습니까??",
                     text: "",
@@ -234,9 +243,10 @@ export default {
                         text: "Your file has been modified.",
                         icon: "success"
                         });
-                    }
                     await axios.put(`/api/standard/updateDefInfo/${this.defInfo.def_cd}`, this.defInfo);
                     this.searchProc(); // 목록 갱신
+                    }
+                    
                 });
         },
         async delDefInfo(){           
@@ -259,20 +269,10 @@ export default {
                         this.searchDef(); // 목록 갱신
                     }
                 });
-        }
-    },
-    
-    watch : {
-        defInfo : {
-            deep: true,
-            handler(newVal, oldVal) {
-                console.log("oldVal => ", oldVal);
-                if(newVal){
-                    this.isDisabled = false;
-                }
-                
-            },
-            
+        },
+        //변경여부 확인
+        objectKey(obj1, obj2){
+            return Object.keys(obj1).some((key)=>obj1[key]!=obj2[key]);
         }
     },
 

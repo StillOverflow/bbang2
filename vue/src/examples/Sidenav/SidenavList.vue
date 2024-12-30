@@ -490,7 +490,7 @@ export default {
         </li>
         <ul class="navbar-nav detail Standard_list" :class="urlCompare('Standard') == true ? '' : 'dnone'">
           <li class="nav-item">
-            <sidenav-item to="/Standard_list1" :class="getRoute() === 'Standard_list1' ? 'active' : ''"
+            <sidenav-item to="/Standard_memberManage" :class="getRoute() === 'Standard_memberManage' ? 'active' : ''"
               :navText="'사원관리'">
             </sidenav-item>
           </li>
