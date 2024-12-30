@@ -22,7 +22,10 @@ const orderSearch = (searchObj) => {
     //검색 조건인 거래처명, 시작날짜, 끝나는 날짜 가져와서 담음
     const {search, std, etd} = searchObj;
     let query = `
-        SELECT o.order_cd, a.act_cd, a.act_nm, m.name, o.order_dt, o.due_dt, (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd=o.status) AS status
+        SELECT o.order_cd, 
+               a.act_cd, 
+               a.act_nm, m.name, o.order_dt, o.due_dt, 
+               (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd=o.status) AS status
         FROM \`order\` o 
         JOIN account a ON o.act_cd = a.act_cd
         JOIN member m ON o.ID = m.id
@@ -75,12 +78,12 @@ const orderInsert = (obj) => {
 const orderDtlInsert = ([seq, values]) => {
 
 let sql = `
-INSERT INTO order_detail (order_dtl_cd, order_cd, prd_cd, order_qty)
+INSERT INTO order_detail (order_dtl_cd, order_cd, prd_cd, order_qty, note)
 VALUES 
 `;
 
 values.forEach((obj) => {
-    sql += `(CONCAT('ODT', LPAD(nextval(order_dtl_cd_seq), 3,'0')),'${seq}','${obj.prd_cd}', '${obj.order_qty}'), `;
+    sql += `(CONCAT('ODT', LPAD(nextval(order_dtl_cd_seq), 3,'0')),'${seq}','${obj.prd_cd}', '${obj.order_qty}', '${obj.note}'), `;
   });
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
@@ -112,12 +115,44 @@ FROM \`order\` \`order\` JOIN order_detail order_detail ON \`order\`.order_cd = 
 WHERE \`order\`.order_cd = ?
 `;
 
+//주문서 단건삭제
+const orderListDelete =
+`
+DELETE FROM order_detail WHERE order_dtl_cd = ?
+`;
+
 //주문서 수정
 const orderUpdate = 
 `
 UPDATE order_detail SET ? WHERE order_dtl_cd = ?
 `;
 
+//주문서 수정을 위한 삭제
+const orderUpdateDelete =
+`
+DELETE FROM order_detail WHERE order_cd = ?
+`;
+
+//주문서 수정을 위한 등록
+const orderUpdateInsert = (values) => {
+
+    let sql = `
+    INSERT INTO order_detail (order_dtl_cd, 
+                              order_cd, 
+                              prd_cd, 
+                              order_qty, 
+                              note)
+    VALUES 
+    `;
+
+    values.forEach((obj) => {
+        sql += `('${obj.order_dtl_cd}','${obj.order_cd}','${obj.prd_cd}', '${obj.order_qty}', '${obj.note}'), `;
+    });
+    sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+    return sql;
+
+};
 
 /* --------------------------------------------------제품 출고------------------------------------------------------------------ */
 
@@ -210,7 +245,11 @@ LEFT JOIN
 //출고 등록 LOT 선택
 const outLotList =
 `
-SELECT p.prd_cd, p.prd_nm, i.stock, i.prd_lot_cd, i.exp_dt
+SELECT p.prd_cd, 
+       p.prd_nm, 
+       i.stock, 
+       i.prd_lot_cd, 
+       i.exp_dt
 FROM product p JOIN product_in i ON p.prd_cd = i.prd_cd
 WHERE p.prd_cd = ?
 `;
@@ -229,11 +268,11 @@ const productOutInsert = (obj) => {
                 `;
     const {seq, order_cd, act_cd, ID} = obj; 
     
-    if(Object.keys(obj).length > 0){    // 객체의 길이를 측정(값이 들어온것을 확인) 
+    //if(Object.keys(obj).length > 0){    // 객체의 길이를 측정(값이 들어온것을 확인) 
 
         query += `('${seq}', '${order_cd}', '${act_cd}', '${ID}')`;
 
-    }
+    //}
     return query;
 };
 //출고 디테일 등록
@@ -272,8 +311,8 @@ SELECT r.prd_return_cd,
 		 sum(d.prd_return_qty) AS prd_return_qty, 
 		 (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = r.prd_return_receipt) AS prd_return_receipt
 FROM product_return r JOIN account a ON r.act_cd = a.act_cd
-                        JOIN member m ON r.id = m.id
-                        JOIN product_return_detail d ON r.prd_return_cd = d.prd_return_cd
+                      JOIN member m ON r.id = m.id
+                      JOIN product_return_detail d ON r.prd_return_cd = d.prd_return_cd
 GROUP BY r.prd_return_cd;
 `;
 
@@ -282,16 +321,16 @@ const returnSearch = (searchObj) => {
     //검색 조건인 거래처명, 시작날짜, 끝나는 날짜 가져와서 담음
     const {search, std, etd} = searchObj;
     let query = `
-        SELECT r.prd_return_cd,
+  SELECT r.prd_return_cd,
 		 m.name, 
 		 a.act_nm, 
 		 r.act_cd, 
 		 r.prd_return_dt, 
 		 sum(d.prd_return_qty) AS prd_return_qty, 
 		 (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = r.prd_return_receipt) AS prd_return_receipt
-        FROM product_return r JOIN account a ON r.act_cd = a.act_cd
-                                JOIN member m ON r.id = m.id
-                                JOIN product_return_detail d ON r.prd_return_cd = d.prd_return_cd
+    FROM product_return r JOIN account a ON r.act_cd = a.act_cd
+                          JOIN member m ON r.id = m.id
+                          JOIN product_return_detail d ON r.prd_return_cd = d.prd_return_cd
     `;
     
     const conditions = [];
@@ -306,10 +345,11 @@ const returnSearch = (searchObj) => {
     }
     // WHERE 절 조립
     if (conditions.length > 0) {
-        query += " WHERE " + conditions.join(" AND ") + " GROUP BY r.prd_return_cd ";
-    }else { // 조건이 없을때 GROUP BY절만 실행
-        query += " GROUP BY r.prd_return_cd ";
+        query += " WHERE " + conditions.join(" AND ");
     }
+
+    query += " GROUP BY r.prd_return_cd ";
+    
     
     // 쿼리 반환
     return query; 
@@ -332,7 +372,8 @@ const returnLot = (searchObj) => {
     let query = `
     SELECT d.prd_lot_cd, d.prd_cd, p.prd_nm, d.prd_out_qty, d.prd_out_dtl_cd 
     FROM product p JOIN product_out_detail d ON d.prd_cd = p.prd_cd
-    WHERE prd_out_cd = '${pocd}' AND d.prd_cd = '${pdcd}'
+    WHERE prd_out_cd = '${pocd}' 
+      AND d.prd_cd = '${pdcd}'
     `;
 
     return  query;
@@ -398,6 +439,50 @@ const dtlReturnDtlList = (searchObj) => {
 
     return query;
 };
+
+//반품 제품 상세(디테일 LOT)
+const returnDtlLotList = 
+`
+SELECT r.prd_return_dtl_cd, r.prd_cd, r.prd_return_qty, r.note, r.prd_lot_cd, r.prd_out_dtl_cd, d.prd_out_qty 
+FROM product_return_detail r JOIN product_out_detail d ON r.prd_out_dtl_cd = d.prd_out_dtl_cd
+WHERE prd_return_cd = ?
+`;
+
+//반품 제품 삭제
+const returnDelete =
+`
+DELETE product_return, product_return_detail  
+FROM product_return product_return JOIN product_return_detail product_return_detail ON product_return.prd_return_cd = product_return_detail.prd_return_cd 
+WHERE product_return.prd_return_cd = ?
+`;
+
+//반품 수정을 위한 삭제
+const returnUpdateDelete = 
+`
+DELETE FROM product_return_detail WHERE prd_return_cd = ?
+`;
+
+//반품 수정을 위한 등록
+const returnUpdateInsert = (values) => {
+    let sql = `
+    INSERT INTO product_return_detail ( prd_return_dtl_cd,
+                                        prd_return_cd,
+                                        prd_cd,
+                                        prd_return_qty,
+                                        note,
+                                        prd_lot_cd,
+                                        prd_out_dtl_cd)
+    VALUES
+    `;
+
+    values.forEach((obj) => {
+        sql += `('${obj.prd_return_dtl_cd}','${obj.prd_return_cd}','${obj.prd_cd}', '${obj.prd_return_qty}', '${obj.note}', '${obj.prd_lot_cd}', '${obj.prd_out_dtl_cd}'), `;
+    });
+    sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+    return sql;
+};
+
 
 /* ----------------------------------------------------제품 재고 조회------------------------------------------------------------- */
 
@@ -470,7 +555,8 @@ const moOrderList =
 `
 SELECT o.order_cd, a.act_cd, a.act_nm, o.order_dt, o.due_dt 
 FROM \`order\` o JOIN account a ON o.act_cd = a.act_cd
-WHERE o.status = 'J01' OR o.status = 'J02'
+WHERE o.status = 'J01' 
+   OR o.status = 'J02'
 `;
 //출고목록 조회(모달)
 const moPrdOutList = 
@@ -492,7 +578,11 @@ module.exports = {
     orderDtlList,
     dtlOrderDtlList,
     orderDelete,
+    orderListDelete,
     orderUpdate,
+    orderUpdateDelete,
+    orderUpdateInsert,
+    
 
     //제품출고
     prdOutList,
@@ -514,6 +604,10 @@ module.exports = {
     productReturnDtlInsert,
     returnDtlList,
     dtlReturnDtlList,
+    returnDtlLotList,
+    returnDelete,
+    returnUpdateDelete,
+    returnUpdateInsert,
 
     //제품재고조회
     productAllList,

@@ -79,8 +79,8 @@
                     <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
                 <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
-                    <button class="btn btn-primary mtp30" @click="prdReturnInsert">UPDATE</button>
-                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">DELETE</button>
+                    <button class="btn btn-primary mtp30" @click="prdReturnUpdate">UPDATE</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="prdReturnDelete">DELETE</button>
                 </div>
           </div>
       </div>
@@ -180,6 +180,7 @@ export default {
             prdOut_code: '', 
 
             prd_cd: '',
+            test: 'update',
 
             POLDefs: [
 
@@ -202,17 +203,17 @@ export default {
                         button.className = 'btn btn-warning btn-xsm';
                         button.addEventListener('click', () => {
 
-                            if(this.isdetail == false){
+                            //if(this.isdetail == false){
                             this.modalOpen3(); //LOT모달 오픈
                             this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
                             this.getOutLotList(); 
-                            };
+                            //};
 
-                            if(this.isdetail == true){
-                                console.log("true")
-                                this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
-                                this.getreturnLotList();
-                            }
+                            // if(this.isdetail == true){
+                                
+                            //     this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
+                            //     this.getreturnLotList();
+                            // }
                         });
                         return button;
                     }
@@ -243,6 +244,7 @@ export default {
             },
 
             prdRTDefs: [
+                {headerName: '반품상세코드', field: 'prd_return_dtl_cd'},
                 {headerName: '출고상세코드', field: 'prd_out_dtl_cd', hide: true},
                 {headerName: '제품코드', field: 'prd_cd'},
                 {headerName: 'LOT', field: 'prd_lot_cd'},
@@ -275,10 +277,12 @@ export default {
                         button.className = 'btn btn-danger btn-xsm';
                         button.addEventListener('click', () => {
                             this.prdRTData = this.prdRTData.filter(row => row !== params.data);
+                            
                         });
                         return button;
                     }
                 },
+                // {headerName: 'type', field: 'type'},
             ],
             prdRTData: [],
 
@@ -324,10 +328,6 @@ export default {
             this.$store.dispatch('breadCrumb', { title: '반품 제품 상세' });
             //상세조회(헤드)
             this.returnDtlList(selectNo)
-            //상세조회(디테일 LOT부분)
-
-            
-            
 
         }else{
             //등록
@@ -401,6 +401,8 @@ export default {
 
             this.returnHeadList();
             this.getOutOrdList(); //출고제품코드 따라 나오는 출고목록은 등록이나 상세나 똑같기 때문에 여기서도 선언
+            //상세조회(디테일 LOT부분)
+            this.returnDtlLotList(selectNo)
         },
         returnHeadList(){
             this.acc_code = this.RLHead[0].act_cd;
@@ -413,14 +415,25 @@ export default {
             
         },
 
-        //상세조회 주문서 디테일부분(LOT부분)
-        async getreturnLotList() {
-            let searchLot = { rtc : this.selectNo , pdc : this.prd_cd };
-
-            let result = await axios.get(`/api/sales/dtlReturnDtlList/`, {params : searchLot}) 
-                                    .catch(err => console.log("axiosERROR",err));
+        //상세조회 주문서 디테일부분(LOT)
+        async returnDtlLotList(selectNo) {
+            let result = await axios.get(`/api/sales/returnDtlLotList/${selectNo}`)
+                                    .catch(err => console.log("prdRTDError",err));
             this.prdRTData = result.data;
+
         },
+
+        //상세조회 주문서 디테일부분(LOT부분)-lot선택시
+        // async getreturnLotList() {
+        //     let searchLot = { rtc : this.selectNo , pdc : this.prd_cd };
+
+        //     let result = await axios.get(`/api/sales/dtlReturnDtlList/`, {params : searchLot}) 
+        //                             .catch(err => console.log("axiosERROR",err));
+        //     this.prdRTData = result.data;
+            // console.log("detail1",this.prdRTData.type);
+            // this.prdRTData[0].type = this.test;
+            // console.log("detail",this.prdRTData);
+        //},
 
         //출고제품 코드를 따라 나오는 출고목록들
         async getOutOrdList() { 
@@ -503,6 +516,7 @@ export default {
 
             this.prdRTData.forEach((obj) => {
                 insertReturnDtl.push({
+                    
 
                     prd_out_dtl_cd: obj.prd_out_dtl_cd,
                     prd_cd: obj.prd_cd, 
@@ -557,6 +571,75 @@ export default {
             this.prdRTData = [];         
         },
 
+        //반품 삭제
+        prdReturnDelete() {
+            this.$swal({
+                title: "정말 삭제하시겠습니까??",
+                text: "",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete!"
+            }).then(async(result) => {
+                if (result.isConfirmed) {
+                    let result2 = await axios.delete(`/api/sales/returnDelete/${this.selectNo}`)
+                                            .catch(err => console.log("deleteAxios에러",err));
+
+                    if(result2.data.result == 'success'){
+                        this.resetForm(); // 초기화
+                        
+                        this.$swal({
+                        title: "DELETE!",
+                        text: "GO to Return List",
+                        icon: "success"
+                        }).then(result =>{
+                            if(result){
+                                this.$router.push({name:'sales_ResultList'}) //OK누르면 목록으로 이동
+                            }
+                        })
+                    }                        
+                }
+            });
+        },
+        
+        //반품 수정
+        async prdReturnUpdate() {
+            //반품 수정을 위한 삭제
+            let result = await axios.delete(`/api/sales/returnUpdateDelete/${this.selectNo}`)
+                                    .catch(err => console.log("deleteAxios에러",err));
+            if(result.data.result == 'success'){
+                //반품 수정을 위한 등록
+                this.returnUpdateInsert();
+            }
+        },
+        async returnUpdateInsert() {
+            let updateInsert = [];
+
+            this.prdRTData.forEach((obj) => {
+                updateInsert.push({
+                    prd_return_dtl_cd: obj.prd_return_dtl_cd,
+                    prd_out_dtl_cd: obj.prd_out_dtl_cd, 
+                    prd_cd: obj.prd_cd, 
+                    prd_lot_cd: obj.prd_lot_cd, 
+                    prd_return_qty: obj.prd_return_qty,
+                    note: obj.note,
+                    
+                    prd_return_cd: this.selectNo
+                });
+            });
+            console.log("insert",updateInsert)
+
+            let result = await axios.post('/api/sales/returnUpdateInsert', updateInsert)   
+                                    .catch(err => console.log("axios에러",err));
+            if(result.data.result === 'success'){
+                this.$swal({
+                    icon: "success",
+                    title: "UPDATE!",
+                    text: "반품 제품을 수정 하였습니다.",
+                })
+            };
+        },
 
 
         gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)

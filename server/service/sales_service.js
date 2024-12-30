@@ -28,13 +28,19 @@ const searchOrder = async (search, std, etd) => {
     }
 };
 
-//주문서 등록
+
+/**
+ * 주문 등록
+ * @param {*} values 
+ * @returns 
+ */
 const insertOrder = async (values) => {
 
     let seq = (await mariadb.query('orderSeq'))[0].order_cd;
     let samples = values[0]; // 배열로 넘긴게 첫번째가 헤드부분이고 두번째가 데테일 부분임(2개가 끝 헷갈렸음)
     samples.seq = seq; //seq 넘기기 { } (배열로 받은걸 여기서 객체로 하나씩 만들어서 set절로 바꿔보기)
     
+
     let order = await mariadb.query('orderInsert', samples);
     let order_dtl = await mariadb.query('orderDtlInsert', [seq, values[1]]); // 배열에 디테일 부분이랑 시퀀스를 같이 넘김
 
@@ -64,13 +70,24 @@ const deleteOrder = async (no) => {
     let del = await mariadb.query('orderDelete',no);
 
     if(del.affectedRows > 0){ // 모두 성공했는지 판단
+        return {"result" : "success"};
+    } else {
+        return {"result" : "fail"};
+    }
+};
+
+//주문서 단건삭제
+const deleteListOrder = async (no) => {
+    let del = await mariadb.query('orderListDelete',no);
+
+    if(del.affectedRows > 0){ // 모두 성공했는지 판단
         mariadb.commit();
         return {"result" : "success"};
     } else {
         mariadb.rollback();
         return {"result" : "fail"};
     }
-}
+};
 
 //주문서 수정
 const updateOrder = async (odtNo, updateInfo) => {
@@ -85,7 +102,34 @@ const updateOrder = async (odtNo, updateInfo) => {
         mariadb.rollback();
         return {"result" : "fail"};
     }
-}
+};
+
+//주문서 수정을 위한 삭제
+const deleteUpdateOrder = async (no) => {
+    let del = await mariadb.query('orderUpdateDelete',no);
+
+    if(del.affectedRows > 0){ // 모두 성공했는지 판단
+        mariadb.commit();
+        return {"result" : "success"};
+    } else {
+        mariadb.rollback();
+        return {"result" : "fail"};
+    }
+};
+
+//주문서 수정을 위한 등록
+const insertUpdateOrder = async (values) => {
+
+    let order_dtl = await mariadb.query('orderUpdateInsert', values); 
+
+    if(order_dtl.affectedRows > 0){
+        mariadb.commit();
+        return {"result" : "success"};
+    } else {
+        mariadb.rollback();
+        return {"result" : "fail"};
+    }
+};
 
 /* --------------------------------------------------제품 출고-------------------------------------------------------- */
 
@@ -125,11 +169,20 @@ const listLotOut = async (no) => {
 
 //출고 등록
 const insertPrdOut = async (values) => {
+//     seq = values.header_cd; 주현이가 써준거 업데이트랑 인서트 따로하게
+// if(values.type == update){
+//     let prdOutDtl = await mariadb.query('productOutDtlUpdate', [seq, values[1]]); 
+// }else{
+//     let prdOutDtl = await mariadb.query('productOutDtlInsert', [seq, values[1]]); 
+// }
 
     let seq = (await mariadb.query('productOutSeq'))[0].prd_out_cd;
     let samples = values[0]; 
     samples.seq = seq; 
     
+    if(Object.keys(obj).length == 0){   
+        return {"result" : "fail"};
+    }
     let prdOut = await mariadb.query('productOutInsert', samples);
     let prdOutDtl = await mariadb.query('productOutDtlInsert', [seq, values[1]]); 
 
@@ -142,7 +195,10 @@ const insertPrdOut = async (values) => {
         }
     }
     
-    if(prdOut.affectedRows > 0 && prdOutDtl.affectedRows > 0 && values[2].length  == i){
+    if(prdOut.affectedRows > 0 && 
+       prdOutDtl.affectedRows > 0 && 
+       values[2].length  == i) {
+
         mariadb.commit();
         return {"result" : "success"};
     } else {
@@ -239,6 +295,52 @@ const listDtlReturnDtl = async (rtcd,pdcd) => {
     }
 };
 
+//반품 제품 상세(디테일 LOT)
+const listLotDtlReturn = async (no) => {
+    let list = await mariadb.query('returnDtlLotList',no);
+    return list;
+};
+
+//반품 제품 삭제
+const deleteReturn = async (no) => {
+    let del = await mariadb.query('returnDelete',no);
+
+    if(del.affectedRows > 0){ // 모두 성공했는지 판단
+        mariadb.commit();
+        return {"result" : "success"};
+    } else {
+        mariadb.rollback();
+        return {"result" : "fail"};
+    }
+};
+
+//반품 수정을 위한 삭제
+const  deleteUpdateReturn = async (no) => {
+    let del = await mariadb.query('returnUpdateDelete',no);
+
+    if(del.affectedRows > 0){ 
+        return {"result" : "success"};
+    } else {
+        return {"result" : "fail"};
+    }
+};
+
+//반품 수정을 위한 등록
+const insertUpdateReturn = async (values) => {
+
+    let return_dtl = await mariadb.query('returnUpdateInsert', values); 
+    console.log("service",return_dtl);
+
+    if(return_dtl.affectedRows > 0){
+
+        return {"result" : "success"};
+    } else {
+
+        return {"result" : "fail"};
+    }
+};
+
+
 /* ----------------------------------------------------제품 재고 조회--------------------------------------------------------- */
 
 // 제품 재고 조회
@@ -295,7 +397,10 @@ module.exports = {
     listDtlOrder,
     listDtlOrderDtl,
     deleteOrder,
+    deleteListOrder,
     updateOrder,
+    deleteUpdateOrder,
+    insertUpdateOrder,
 
 
     //제품출고
@@ -313,6 +418,10 @@ module.exports = {
     InsertPrdReturn,
     listDtlReturn,
     listDtlReturnDtl,
+    listLotDtlReturn,
+    deleteReturn,
+    deleteUpdateReturn,
+    insertUpdateReturn,
 
     //제품재고조회
     listAllProduct,

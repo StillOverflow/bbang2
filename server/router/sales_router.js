@@ -58,12 +58,34 @@ router.delete('/sales/orderDelete/:del', async (req, res) => {
     res.send(ordDel);
 });
 
+//주문서 단건삭제
+router.delete('/sales/orderListDelete/:del', async (req, res) => {
+    let del = req.params.del;
+    let ordDel = await salesService.deleteListOrder(del);
+    res.send(ordDel);
+});
+
 //주문서 수정
 router.put('/sales/orderUpdate/:no', async (req, res) => {
     let odtNo = req.params.no;
     let updateInfo = req.body;
     let result = await salesService.updateOrder(odtNo, updateInfo);
     res.send(result);
+  });
+
+//주문서 수정을 위한 삭제
+router.delete('/sales/orderUpdateDelete/:del', async (req, res) => {
+    let del = req.params.del;
+    console.log("router",del)
+    let ordDel = await salesService.deleteUpdateOrder(del);
+    res.send(ordDel);
+});
+
+//주문서 수정을 위한 등록
+router.post('/sales/orderUpdateInsert', async (req, resp) => {
+    let values = req.body; 
+    let result = await salesService.insertUpdateOrder(values);
+    resp.send(result);
   });
 
 /* ---------------------------------출고제품--------------------------------------- */
@@ -183,6 +205,36 @@ router.get('/sales/dtlReturnDtlList/', async (req, res) => {
     }
     
 });
+
+//반품 제품 상세(디테일 LOT)
+router.get('/sales/returnDtlLotList/:no', async (req, res) => {
+    let returnNo = req.params.no;
+    let info = await salesService.listLotDtlReturn(returnNo);
+    res.send(info);
+});
+
+//반품 제품 삭제
+router.delete('/sales/returnDelete/:del', async (req, res) => {
+    let del = req.params.del;
+    let ordDel = await salesService.deleteReturn(del);
+    res.send(ordDel);
+});
+
+//반품 수정을 위한 삭제
+router.delete('/sales/returnUpdateDelete/:del', async (req, res) => {
+    let del = req.params.del;
+    let ordDel = await salesService.deleteUpdateReturn(del);
+    res.send(ordDel);
+});
+
+//반품 수정을 위한 등록
+router.post('/sales/returnUpdateInsert', async (req, resp) => {
+    let values = req.body; 
+    console.log("router",values);
+    let result = await salesService.insertUpdateReturn(values);
+    resp.send(result);
+});
+
 
 /* -----------------------------------제품 재고 조회----------------------------------------- */
 
