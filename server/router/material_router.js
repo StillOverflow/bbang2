@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const materialService = require("../service/material_service.js");
 
-// ^ ------------------------- 자재 발주서(미지시 생산계획) -------------------------
+//! ------------------------- 자재 발주서(미지시 생산계획) -------------------------
 router.get("/material/planList", async (req, res) => {
    let planList = await materialService.produceHeadPlanList();
    res.send(planList);
@@ -27,9 +27,16 @@ router.get("/material/matStockList/:plan_cd", async (req, res) => {
    res.send(result);
 });
 
-// ^ ------------------------- 자재 발주서 관리 -------------------------
+//! ------------------------- 자재 발주서 관리 -------------------------
 router.get("/material/orderList", async (req, res) => {
    let result = await materialService.getMaterialOrder();
+   res.send(result);
+});
+
+router.get("/material/orderDetailList/:code", async (req, res) => {
+   let code = req.params.code;
+   console.log(code)
+   let result = await materialService.getMaterialOrderDetail(code);
    res.send(result);
 });
 

@@ -80,7 +80,7 @@
    import { useStore } from 'vuex';
    import { useRouter } from 'vue-router';
 
-// ^ ---------------------------------------- Vue Hook ----------------------------------------
+// ^ ---------------------------------------- 데이터 정의 ----------------------------------------
    // Vuex store 사용
    const store = useStore();
 
@@ -98,7 +98,8 @@
    // 자재 그리드 선언
    const planListGrid = ref([]);
    const materialGrid = ref([]);
-   
+
+// ^ ---------------------------------------- Vue Hook ----------------------------------------
    // created와 비슷~~
    onBeforeMount(() => {
       store.dispatch('breadCrumb', { title: '미지시 계획서 자재 조회' });  // 페이지 제목 설정
@@ -230,43 +231,6 @@
          });
       }
    };
-
-    // ? input tag ~ focusout & keydown event
-   const handleInputEvent = (params) => (event) => {
-      // 이벤트 타입이 blur이거나 이벤트 타입이 keydown && 키가 엔터일 때 실행 ~~
-      if (event.type === 'blur' || (event.type === 'keydown' && event.key === 'Enter')) {
-         let value = event.target.value;
-         
-         if(typeof value !== 'number') {
-            if(isNaN(value) || value == '') {
-               value = 0; // 기본값 설정
-            }
-         }
-         
-         // rowData 업데이트
-         const rowNode = params.node;
-         rowNode.setDataValue(params.colDef.field, value);
-      }
-   };
-
-   // ? Custom input~~
-   const customCellRenderer = (params) => {
-      const input = document.createElement('input');  // input 태그 생성
-      input.type = 'number';
-      input.value = params.value || ''; // 초기 값 설정
-      input.min = '0';
-      input.style.width = '70%';                // 너비
-      input.style.height = '30px';              // 높이
-      input.style.border = '1px solid #b5b5b5'; // input테두리
-      input.style.borderRadius = '5%';          
-
-      // 이벤트 핸들러 추가
-      const handler = handleInputEvent(params);
-      input.addEventListener('blur', handler); // 포커스 아웃 이벤트
-      input.addEventListener('keydown', handler); // 키 입력 이벤트
-
-      return input;
-   };
    
 // ^ ------------------------------ 미지시 계획서 조회 그리드 ------------------------------
    // 그리드 컬럼명
@@ -323,15 +287,51 @@
             sortable: true,
             filter: 'agSetColumnFilter',
          },
-         { headerName: '자재구분', field: 'type', sortable: true  },
-         { headerName: '필요수량', field: 'require_qty', sortable: true, },
-         { headerName: '재고수량', field: 'stock_qty', sortable: true, },
-         { headerName: '안전재고', field: 'mat_qty', sortable: true, },
-         { headerName: '부족수량', field: 'lack_qty', sortable: true, },
+         { 
+            headerName: '자재구분', 
+            field: 'type', 
+            sortable: true  
+         },
+         { 
+            headerName: '재고수량', 
+            field: 'stock_qty', 
+            sortable: true, 
+            cellRenderer: (params) => {
+               return parseInt(params.value).toLocaleString();
+            },
+         },
+         { 
+            headerName: '필요수량', 
+            field: 'require_qty', 
+            sortable: true,
+            valueFormatter: (params) => {
+               if (params.value == null) return ""; // 값이 없으면 빈 문자열 반환
+               return params.value.toLocaleString(); // 숫자에 쉼표 추가
+            },
+         },
+         { 
+            headerName: '안전재고', 
+            field: 'safe_stk', 
+            sortable: true,
+            valueFormatter: (params) => {
+               if (params.value == null) return ""; // 값이 없으면 빈 문자열 반환
+               return params.value.toLocaleString(); // 숫자에 쉼표 추가
+            },
+         },
+         { 
+            headerName: '부족수량', 
+            field: 'lack_qty', 
+            sortable: true, 
+            valueFormatter: (params) => {
+               if (params.value == null) return ""; // 값이 없으면 빈 문자열 반환
+               return params.value.toLocaleString(); // 숫자에 쉼표 추가
+            },
+         },
+         { headerName: '단위', field: 'unit', sortable: true, },
          { 
             headerName: "발주 수량", 
-            field: "orderingQty", 
-            cellRenderer: customCellRenderer, 
+            field: "mat_qty", 
+            editable: true,   // 편집 가능
          },
       ],
       rowSelection: {
@@ -344,7 +344,7 @@
       rowClassRules: {
          'rowRedStyle': (params) => {
             if (params.data.lack_qty) { // 부족 수량이 있으면 ~~ 
-               const quantity = parseInt(params.data.lack_qty.match(/^(-?\d+)/)); // 부족수량에서 -10000ml -> -10000만 추출하기
+               const quantity = parseInt(params.data.lack_qty); // 부족수량에서 -10000ml -> -10000만 추출하기
 
                return quantity <= 0; // 부족수량이 0 이하일 때 조건 적용하기!
             }
