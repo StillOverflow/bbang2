@@ -267,6 +267,7 @@ export default {
         }
         this.equipmentData = result.data;
 
+
         // 이미지 경로 처리
         this.previewImage = result.data.img_path
           ? `/api/${result.data.img_path}`
