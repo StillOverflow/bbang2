@@ -56,7 +56,8 @@ import MaterialsOutList from '../views/material/MaterialsOutList.vue';
 ////////////////////////////// 품질 //////////////////////////////
 import QualityStdAdd from '../views/quality/QualityStdAdd.vue';
 import QualityTest from '../views/quality/QualityTest.vue';
-
+import QualityTestRecList from '../views/quality/QualityTestRecList.vue';
+import QualityDefManagement from '../views/quality/QualityDefManagement.vue';
 
 
 
@@ -385,8 +386,18 @@ const routes = [
     name: 'QualityTest',
     component: QualityTest,
   },
-
-
+  {
+    // 품질검사결과 목록
+    path: '/Quality_testRecList',
+    name: 'QualityTestRecList',
+    component: QualityTestRecList,
+  },
+  {
+    // 미처리 불량관리
+    path: '/Quality_DefManagement',
+    name: 'QualityDefManagement',
+    component: QualityDefManagement,
+  },
 
 
 

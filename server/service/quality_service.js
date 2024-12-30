@@ -119,13 +119,7 @@ const testRecInsert = async (valueObj) => {
 };
 
 
-// 불량 미처리 내역 조회
-const getTestDefList = async () => {
-    let result = await mariadb.query('testDefList');
-    return result;
-};
-
-// 검사결과내역 조회
+// 검사결과내역 조회+검색
 const getTestRecList = async (valueObj) => {
     let result = await mariadb.query('testRecList', valueObj);
     return result;
@@ -160,7 +154,6 @@ module.exports = {
     getDefList,
     testRecInsert,
 
-    getTestDefList,
     getTestRecList,
     getTestDtl,
 
