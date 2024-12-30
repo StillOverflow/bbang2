@@ -22,6 +22,7 @@ import Produce_PlanAdd from '../views/produce/Produce_PlanAdd.vue';
 import Produce_InstList from '../views/produce/Produce_InstList.vue';
 import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
 import Produce_Hell from '../views/produce/Produce_Hell.vue';
+import Produce_Result from '../views/produce/Produce_Result.vue';
 
 
 
@@ -218,6 +219,12 @@ const routes = [
     path: '/Produce_Hell',
     name: 'Produce_Hell',
     component: Produce_Hell,
+  },
+  {
+    //생산실적 조회
+    path: '/Produce_Result',
+    name: 'Produce_Result',
+    component: Produce_Result,
   },
 
 

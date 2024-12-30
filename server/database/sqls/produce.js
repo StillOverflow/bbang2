@@ -28,8 +28,6 @@ const planSelect = (datas) => {
     query += ` WHERE ` + searchOrder.join(' AND ');
   }
 
-  if (datas.ORDER) query += ` ${datas.ORDER}`; // 정렬
-
   return query; // 합체한 쿼리 전체
 };
 
@@ -120,14 +118,30 @@ WHERE PROD_PLAN_CD = ? `;
 /* -----------생산지시서------------*/
 
 //지시서 전체조회
-const instList =
-`SELECT INST_CD,
-		 PROD_PLAN_CD,
-		 fn_get_codename(STATUS) as ACT_TYPE,
-		 WORK_DT,
-		 CREATE_DT,
-		(SELECT COUNT(*) FROM prod_inst_dtl WHERE INST_CD=PI.INST_CD) AS PRD_CNT
-FROM PROD_INST pi`;
+const instList = (datas) => {
+  let query =
+ `SELECT INST_CD,
+        PROD_PLAN_CD,
+        fn_get_codename(STATUS) as ACT_TYPE,
+        WORK_DT,
+        CREATE_DT,
+        (SELECT COUNT(*) FROM prod_inst_dtl WHERE INST_CD=PI.INST_CD) AS PRD_CNT
+        FROM PROD_INST pi`;
+
+ const searchOrder = [];
+
+  // 거래처조회 조건
+  if (datas.PROD_PLAN_CD) searchOrder.push(`INST_CD = UPPER('${datas.INST_CD}')`);
+  if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
+  
+
+  if (searchOrder.length > 0) {
+    query += ` WHERE ` + searchOrder.join(' AND ');
+  }
+  
+  return query; // 합체한 쿼리 전체
+};
+
 
 //지시서 단건조회
 const instInfo =
@@ -209,12 +223,12 @@ const instInsert = `
 const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT PROD_INST_DTL
-      (INST_DTL_CD, INST_CD,PRD_CD, TOTAL_QTY)
+      (INST_DTL_CD, INST_CD,PRD_CD, TOTAL_QTY, PROD_QTY)
     VALUES 
   `;
 
   values.forEach((obj) => {
-    sql += `(CONCAT('PID', LPAD(nextval(inst_dtl_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.total_qty}'), `;
+    sql += `(CONCAT('PID', LPAD(nextval(inst_dtl_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.total_qty}', '${obj.PROD_QTY}'), `;
   });
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
@@ -266,6 +280,16 @@ SELECT
 
 
 /*------------생산공정-------------*/
+
+//지시서 단건조회
+const resultInfo =
+`SELECT *,
+        (SELECT TOTAL_QTY FROM prod_inst_dtl where INST_CD=pr.INST_CD and PRD_CD=pr.PRD_CD) AS TOTAL_QTY,
+        (SELECT EQP_TYPE FROM process where proc_cd=pr.proc_cd) AS EQP_TYPE 
+FROM 
+  PROD_RESULT pr
+WHERE PROD_RESULT_CD = ?`;
+
 
 //지시서에 커스텀된 제품별 공정 조회
 const instCusFlow = (datas) => {
@@ -334,10 +358,48 @@ const instMatUpdate =
 SET MAT_USE_QTY=? 
 WHERE INST_MAT_CD = ? `;
 
+//생산공정 시작/종료
 const processStart = 
 `UPDATE prod_result 
 SET ? 
 WHERE PROD_RESULT_CD = ? `;
+
+//자재 lot 조회
+const matLotSearch =
+`SELECT 
+  MAT_LOT_CD,
+  MAT_STOCK
+FROM
+  material_in
+where MAT_CD = ? 
+`;
+
+//자재출고 등록
+const matLotInsert = (values) => { // 배열 형식으로 받아야 함.
+  let sql = `
+    INSERT material_out_detail
+      (MAT_OUT_DTL_CD, MAT_OUT_DT, MAT_OUT_QTY, MAT_LOT_CD, MAT_CD, PROD_RESULT_CD)
+    VALUES 
+  `;
+
+  values.forEach((obj) => {
+    sql += `(CONCAT('MOD', LPAD(nextval(result_seq), 3,'0')), 
+            now(), 
+            '${obj.MAT_OUT_QTY}', 
+            '${obj.MAT_LOT_CD}', 
+            '${obj.MAT_CD}', 
+            '${obj.PROD_RESULT_CD}'), `;
+  });
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+  return sql;
+};
+
+
+//자재수량 변경
+const matLotUpdate = 
+`UPDATE material_in 
+SET MAT_STOCK = MAT_STOCK - ? 
+WHERE MAT_LOT_CD = ? `;
 
 
 module.exports = {
@@ -365,5 +427,9 @@ module.exports = {
     instMatInsert,
     instMatUpdate,
 
-    processStart
+    processStart,
+    resultInfo,
+    matLotSearch,
+    matLotInsert,
+    matLotUpdate
 }

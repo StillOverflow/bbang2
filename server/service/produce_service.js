@@ -66,8 +66,8 @@ const planInsert = async (values) => {
 
 /*--------------생산지시서-------------*/
 //지시서 조회
-const findAllInst = async ()=>{
-  let list = await mariadb.query('instList');
+const findAllInst = async (searchs)=>{
+  let list = await mariadb.query('instList', searchs);
   return list;
 }
 
@@ -154,6 +154,16 @@ const deleteInst = async (values)=>{
   }
 }
 
+
+  /* ------------------------생산공정------------------------- */
+
+//지시서 단건조회
+const findResultNo = async (no)=>{
+  let list = await mariadb.query('resultInfo', no);
+  let info = list[0];
+  return info;
+}
+
 //지시서에 커스텀된 제품별 공정 조회
 const findInstCusFlow = async (values)=>{
   let list = await mariadb.query('instCusFlow', values);
@@ -190,15 +200,56 @@ const instMatUpdate = async (updateInfo) => {
 }; 
 
 //공정 작업시작
-const progressStart = async (no, updateInfo)=>{
-  let datas = [updateInfo, no];
-  let result = await mariadb.query('processStart', datas);
-  
-  if(result.affectedRows > 0){
+const progressStart = async (no, updateInfo)=>{ 
+  let resultArr = [];
+
+  let datas = [updateInfo[0], no];
+  let list = await mariadb.query('processStart', datas);
+
+  /* 자재 lot별 출고등록[S] */
+  for (const obj of updateInfo[1]){  //사용 자재 목록
+
+    let use_qty = parseInt(obj.MAT_USE_QTY); //실사용량
+    let lotInserArr = []; //lot 배열 초기화
+    let mat_qty = 0; //lot별 사용량 임시저장
+
+    while (mat_qty < use_qty) { //lot별 사용량이 실사용량과 같아질때까지
+
+      let mat_stock = 0;
+      let rest_qty = use_qty - mat_qty; //잔여량
+      let list = await mariadb.transQuery('matLotSearch', obj.MAT_CD); //자재 lot SELECT
+
+      if(rest_qty <= mat_stock) mat_stock = parseInt(list[0]["MAT_STOCK"]); //자재 재고가 잔여량보다 같거나 적으면 전 수량 다가져옴
+      else mat_stock = rest_qty; //자재 재고가 잔여량보다 많으면 잔여량만큼 가져옴
+      
+      mat_qty += mat_stock; //잔여량에 가져온 재고량 더함
+
+      lotInserArr.push({ //insert할 lot정보 배열에 저장
+        "MAT_OUT_QTY" : mat_stock,
+        "MAT_LOT_CD" : list[0]["MAT_LOT_CD"],
+        "MAT_CD" : obj.MAT_CD,
+        "PROD_RESULT_CD" : obj.PROD_RESULT_CD,
+      });     
+
+      let lot_is = await mariadb.query('matLotInsert', lotInserArr); //자재출고 테이블에 insert
+      let lot_ud = await mariadb.query('matLotUpdate', [mat_stock, list[0]["MAT_LOT_CD"]]); //자재 수량 변경
+
+      if(lot_is.affectedRows > 0 && lot_ud.affectedRows > 0){
+        resultArr.push('success');
+      }else{
+        resultArr.push('fail');
+      }
+    }
+
+    /* 자재 lot별 출고등록[E] */    
+  }
+
+  if(!resultArr.includes('fail') && list.affectedRows > 0){    
     return 'success';
   }else{
     return 'fail';
-  }
+  }  
+
 }; 
 
 
@@ -219,5 +270,6 @@ module.exports = {
   findInstCusEqu,
   deleteInst,
   instMatUpdate,
-  progressStart
+  progressStart,
+  findResultNo
 };

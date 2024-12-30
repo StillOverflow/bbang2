@@ -48,7 +48,7 @@ import * as XLSX from 'xlsx';
 export default {
   components: { AgGridVue },
   created() {
-    this.$store.dispatch('breadCrumb', { title: '생산지시서 조회' });
+    this.$store.dispatch('breadCrumb', { title: '생산실적 조회' });
     this.getInstList();
     this.getStatus();
   },
@@ -66,14 +66,24 @@ export default {
       selected_radio:'',
       selected_list:'',
 
-      instDefs: [
-        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
-        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true },
-        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true },
-        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter },
-        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter },
+      resultDefs: [
+        { headerName: '순번', field: 'STEP', sortable: true, width: 120 },
+        { headerName: '지시서코드', field: 'INST_CD', sortable: true },
+        { headerName: '공정명', field: 'PROD_NM', sortable: true },
+        { headerName: '설비코드', field: 'EQP_CD', sortable: true},
+        { headerName: '설비명', field: 'EQP_NM'},
+        { headerName: '계획량', field: 'TOTAL_QTY'},
+        { headerName: '지시량', field: 'PROD_QTY'},
+        { headerName: '불량양', field: 'DEF_QTY' },
+        { headerName: '불량코드', field: 'CREATE_DT'},
+        { headerName: '불량상세', field: 'CREATE_DT'},
+        { headerName: '공정시작시간', field: 'START_TIME'},
+        { headerName: '공정종료시간', field: 'END_TIME'},
+        { headerName: '담당자', field: 'NAME'},
+        { headerName: '지시일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter },
+
       ],
-      instData: [],
+      resultData: [],
       gridOptions: {
         pagination: true,
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
@@ -100,36 +110,12 @@ export default {
     },
 
     //지시서 리스트
-    async getInstList() {
-      let result = await axios.get('/api/inst')
+    async getResultList() {
+      let result = await axios.get('/api/progress/result')
                               .catch(err => console.log(err));
-      this.instData = result.data;
+      this.resultData = result.data;
     },
 
-    //지시서 삭제
-    async InstCancel() {
-      
-      let selected = null;
-      let delArr = [];
-
-      selected = this.myApi.getSelectedNodes();
-
-      selected.forEach((val) => { 
-        delArr.push("'"+val.data.PROD_PLAN_CD+"'");
-      });            
-      let result = await axios.delete(`/api/inst/`, {params:delArr})
-                              .catch(err => console.log(err));
-                              if(result.data == 'success'){
-      this.$swal({
-            icon: "success",
-            title: "선택한 지시서를 삭제하였습니다.",
-        })
-        .then(() => {
-            this.getInstList();
-        });          
-      }
-      return result;
-    },
     excelDownload() {
       var today = new Date();
       today = this.$comm.dateFormatter(today);

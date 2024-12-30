@@ -5,6 +5,12 @@
   font-size: 12px;
   padding: 0;
 }
+.table {
+  margin-bottom: 0rem !important;  
+}
+.progress-bx { 
+  border: solid 2px #edf0f3;
+}
 </style>
 <template>
   <div class="py-4 container-fluid">
@@ -87,7 +93,7 @@
         <div class="row">
           <!--공정목록-->
           <h5 class="modal-title mb-3">2. 제품 공정목록</h5>
-          <div class="col-6">
+          <div class="col-7">
             <div class="table-responsive produce">
               <table class="table">
                 <thead class="table-secondary">
@@ -101,7 +107,7 @@
                 <tbody>
                   <template v-if="flowCount >0">
                     <template v-for="flow in flowData" :key="flow.PROC_CD">
-                      <tr class="text-center align-middle flowList" :class="'flow_'+flow.PROC_FLOW_CD" @click="showProcess(flow);">
+                      <tr class="text-center align-middle flowList" :class="'flow_'+flow.PROC_FLOW_CD" @click="getResultInfo(flow.PROD_RESULT_CD);">
                         <td width="10%">{{ flow.STEP }}</td>
                         <td width="30%">{{ flow.PROC_CD }}</td>
                         <td width="30%">{{ flow.PROC_NM }}</td>
@@ -133,15 +139,15 @@
             </div>
           </div>
 
-          <div class="col-6 bg-light ">
+          <div class="col-5 progress-bx">
 
-            <template v-if="this.flowInfo.PROC_FLOW_CD">
+            <template v-if="this.resultInfo.PROD_RESULT_CD">
               <!--공정설정-->      
               <div class="row mtp10">
                 <div class="col-3 text-center font-weight-bolder mtp10">담당자명</div>
-                <input type="hidden" v-model="id">
+                <input type="hidden" v-model="resultInfo.ID">
                 <div class="input-group w-50">                  
-                  <input class="form-control form-control-sm" type="text" v-model="name" :v-bind="this.$session.get('user_nm')" placeholder="담당자를 검색해주세요" style="height: 41px;">
+                  <input class="form-control form-control-sm" type="text" v-model="resultInfo.NAME" :v-bind="this.$session.get('user_nm')" placeholder="담당자를 검색해주세요" style="height: 41px;">
                   <button class="btn btn-warning" type="button" @click="modalOpen2"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
               </div>
@@ -169,6 +175,12 @@
             </Layout>
 
               <div class="row mtp10">
+                <div class="col-3 text-center font-weight-bolder mtp10">생산량</div>                
+                  <input class="form-control form-control-sm w-30 mlp10" type="text" v-model="resultInfo.PROD_QTY" :placeholder="resultInfo.TOTAL_QTY" style="height: 41px;" @keyup="prod_qty">
+                  <span class="point-red dnone" :id="'qty_' + resultInfo.PROD_RESULT_CD">계획량보다 높게 설정할 수 없습니다.</span>
+              </div>
+
+              <div class="row mtp10">
                 <div class="col-3 text-center font-weight-bolder mtp10">자재</div>
                 <div class="input-group w-50">
                   <button class="btn btn-secondary" type="button" @click="modalOpen3">실사용량 등록</button>
@@ -177,31 +189,25 @@
               
                 <div class="row mtp10">
                   <div class="col-3 text-center">
-                    <button class="btn btn-success" @click="processStart">작업시작</button>
+                    <button class="btn btn-success" @click="process('start')">작업시작</button>
                   </div>
-                  <input class="form-control form-control-sm w-50" type="text" v-model="START_TIME" :v-bind="this.$comm.dateFormatter(this.flowInfo.START_TIME)" placeholder="0000-00-00 00:00:00" style="height: 41px;">
+                  <input class="form-control form-control-sm w-50" type="text" v-model="resultInfo.START_TIME" placeholder="0000-00-00 00:00:00" style="height: 41px;" readonly>
                 </div>
                 <div class="row mtp10">
                   <div class="col-3 text-center">
-                    <button class="btn btn-danger">작업종료</button>
+                    <button class="btn btn-danger" @click="process('end')">작업종료</button>
                   </div>
-                  <input class="form-control form-control-sm w-50" type="text" v-model="END_TIME" placeholder="0000-00-00 00:00:00" style="height: 41px;">
+                  <input class="form-control form-control-sm w-50" type="text" v-model="resultInfo.END_TIME" placeholder="0000-00-00 00:00:00" style="height: 41px;" readonly>
                 </div>
                 <div class="row mtp10">
                   <div class="text-center mtp10">
-                    <button class="btn btn-outline-primary btn-lg" disabled>품질검사 수행중</button>
+                    <button v-if="this.resultInfo.STATUS == 'Z03' && this.resultInfo.QUE_STATUS == 'A01'" class="btn btn-outline-secondary btn-lg" disabled>공정완료</button>
+                    <button v-else-if="this.resultInfo.STATUS == 'Z03' && this.resultInfo.QUE_STATUS == 'A02'" class="btn btn-outline-primary btn-lg" disabled>품질검사 진행중</button>
+                    <button v-else-if="this.resultInfo.STATUS == 'Z02' && this.resultInfo.QUE_STATUS == 'A02'" class="btn btn-outline-success btn-lg" disabled>공정 진행중</button>
+                    <button v-else-if="this.resultInfo.STATUS == 'Z01' && this.resultInfo.QUE_STATUS == 'A02'" class="btn btn-outline-secondary btn-lg" disabled>공정 대기중</button>
                   </div>
                 </div>
-
-                <div class="center">
-                  <button class="btn btn-primary mtp30" @click="instInsert">SUBMIT</button>
-                  <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
-                </div>
             </template>
-
-            <div v-else>
-              <p class="list-nodata">제품 공정을 선택해주세요.</p>
-            </div>
           </div>
 
           <Layout :modalCheck="isModal3">
@@ -288,6 +294,7 @@ export default {
       inst_cd:'',
       proc_flow_cd:'', 
       flowInfo: [],
+      resultInfo: [],
       
       instDefs: [
         { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
@@ -311,6 +318,7 @@ export default {
       matData: [],
       equData: [],
       equ_radio:'',
+      ID:'',
 
 
     };
@@ -371,7 +379,7 @@ export default {
 
      //자재 리스트
     async getMatList() {
-      let result = await axios.get(`/api/inst/${this.flowInfo.PROC_FLOW_CD}/mat`)
+      let result = await axios.get(`/api/inst/${this.resultInfo.PROC_FLOW_CD}/mat`)
                               .catch(err => console.log(err));
       this.matData = result.data;
     },    
@@ -395,33 +403,54 @@ export default {
       }
     },
 
+    prod_qty(){
+      let qtyEle = document.getElementById('qty_'+this.resultInfo.PROD_RESULT_CD);
+      if(this.resultInfo.PROD_QTY > this.resultInfo.TOTAL_QTY){
+        this.resultInfo.PROD_QTY = '';
+        qtyEle.classList.remove("dnone");
+      }else{
+        qtyEle.classList.add("dnone");
+      }
+    },
+
     //제품별 공정 리스트
     async getFlowList(prd_cd) {
       let obj = {
           INST_CD : this.inst_cd,
           PRD_CD : prd_cd,
       }
+      
       let result = await axios.get('/api/progress/flow', {params:obj})
                               .catch(err => console.log(err));
       this.flowData = result.data;
     },
 
-    showProcess(data){
-      this.flowInfo = data;      
-      let flow_cd = data.PROC_FLOW_CD;
+    async getResultInfo(result_cd){
+
+      let result = await axios.get(`/api/progress/result/${result_cd}`)
+                              .catch(err => console.log(err));
+
+      this.resultInfo = result.data;
+      this.equ_radio = this.resultInfo.EQP_CD;
+
+      this.showProcess();
+      this.getFlowEquList();
+      this.getMatList();
+    },
+
+    showProcess(){
+      let flow_cd = this.resultInfo.PROC_FLOW_CD;
       const elements = document.querySelectorAll('.flowList');
       for (var i = 0; i < elements.length; i++) {
         elements[i].classList.remove('table-primary');
       }
       const flowEle = document.querySelector('.flow_'+flow_cd);
       flowEle.classList.add("table-primary");
-
-      this.getFlowEquList();
     },
 
     //공정별 설비 리스트
     async getFlowEquList() {
-      let result = await axios.get(`/api/progress/equ/${this.flowInfo.EQP_TYPE}`)
+      let result = await axios.get(`/api/progress/equ/${this.resultInfo.EQP_TYPE}`)
                               .catch(err => console.log(err));
       this.equData = result.data;
     },
@@ -444,43 +473,87 @@ export default {
       }
     },
 
-    processStart(){
+    process(mode){
+      /*
       if (!this.equ_radio) {
         this.$swal({
           icon: "error",
           title: "사용할 설비를 선택해주세요",
         });
         return;
-      }else if (!this.id) {
+      }else if (!this.resultInfo.ID) {
         this.$swal({
           icon: "error",
           title: "공정 담당자를 선택해주세요",
         });
         return;
-      }else{
-        this.$swal({
-          title: "해당 공정을 수행하시겠습니까?",
-          icon: "question",
-          showCancelButton: true,
-          confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33",
-          confirmButtonText: "Yes, delete it!"
-        }).then((result) => {
-          if (result.isConfirmed) {
+      }else{*/
+        if(mode == "start"){
+          this.$swal({
+            title: "해당 공정을 수행하시겠습니까?",
+            text: "공정을 시작하면 상세 정보를 수정할 수 없습니다.",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+          }).then((result) => {
+            if (result.isConfirmed) {
+              let matArr = [];
+              let startArr = [];
 
-            let obj = {
-              EQP_CD : this.equ_radio,
-              ID : this.id,
-              STATUS : 'A01',
-              START_TIME: this.$comm.getDateTime()
-            };
+              let obj = {
+                EQP_CD : this.equ_radio,
+                ID : this.ID,
+                NAME : this.NAME,
+                STATUS : 'Z01',
+                PROD_QTY :  this.PROD_QTY,
+                START_TIME: this.$comm.getDateTime()
+              };
 
-            let result = axios.put(`/api/progress/start/${this.flowInfo.PROD_RESULT_CD}`, obj)
-                              .catch(err => console.log(err));
-             console.log(result);
-          }
-        })
-      }
+              this.matData.forEach((val) => {
+                matArr.push({
+                  INST_MAT_CD: val.INST_MAT_CD,
+                  MAT_CD: val.MAT_CD,
+                  MAT_QTY: val.MAT_QTY,
+                  MAT_USE_QTY: val.MAT_USE_QTY,
+                  PROD_RESULT_CD: this.resultInfo.PROD_RESULT_CD
+                });
+              });
+              
+              startArr = [obj, matArr];
+
+              let result = axios.put(`/api/progress/start/${this.resultInfo.PROD_RESULT_CD}`, startArr)
+                                .catch(err => console.log(err));
+
+              if(result.data == 'success'){
+                this.resultInfo.START_TIME = result.data.START_TIME;
+              }              
+            }
+          })
+        }else{
+          this.$swal({
+            title: "해당 공정을 종료하시겠습니까?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+          }).then((result) => {
+            if (result.isConfirmed) {
+
+              let obj = {
+                STATUS : 'Z03',
+                END_TIME: this.$comm.getDateTime()
+              };
+
+              let result = axios.put(`/api/progress/start/${this.resultInfo.PROD_RESULT_CD}`, obj)
+                                .catch(err => console.log(err));
+               this.resultInfo.END_TIME = result.data.END_TIME;
+            }
+          })
+        }
+      
     }
   }    
 };

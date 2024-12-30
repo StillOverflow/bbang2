@@ -164,6 +164,11 @@ export default {
               :navText="'생산공정 관리'">
             </sidenav-item>
           </li>
+          <li class="nav-item">
+            <sidenav-item to="/Produce_Result" :class="getRoute() === 'Produce_Result' ? 'active' : ''"
+              :navText="'생산실적 조회'">
+            </sidenav-item>
+          </li>
         </ul>
 
 
@@ -200,7 +205,7 @@ export default {
             <span class="nav-link-text ms-1">자재</span>
           </a>
         </li>
-        <ul class="navbar-nav detail Material_list" :class="urlCompare('Material') == true ? '' : 'dnone'">
+        <ul class="navbar-nav detail Material_list" :class="urlCompare('materials') == true ? '' : 'dnone'">
           <li class="nav-item">
             <sidenav-item to="/Material_list6" :class="getRoute() === 'Material_list6' ? 'active' : ''"
               :navText="'제품 입고 조회'">
