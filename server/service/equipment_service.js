@@ -104,7 +104,6 @@ const insertInspEq = async (inspData) => {
 };
 
 //점검 수정
-
 const updateInspEq = async (inspData) => {
   try {
     const inspCd = inspData.insp_log_cd; // 설비 코드 추출

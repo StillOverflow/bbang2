@@ -51,6 +51,7 @@ const eqAllListSearch = (searchObj) => {
                       e.id as id,
                       e.create_dt as create_dt,
                       e.update_dt as update_dt
+
 FROM equipment e
       LEFT JOIN inspection_log i 
               ON e.eqp_cd = i.eqp_cd
@@ -99,6 +100,7 @@ const equipInfo = `SELECT eqp_cd,
   uph,
   is_use,
   img_path
+
 FROM equipment
 WHERE eqp_cd = ?
   `;
@@ -153,6 +155,7 @@ const eqInspList = ` SELECT
   i.id as id,
   i.create_dt as create_dt,
   i.update_dt as update_dt
+
 FROM equipment e
 LEFT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
 ORDER BY i.create_dt DESC
@@ -178,6 +181,7 @@ const eqInspInfo = `SELECT
   i.id as id,
   i.create_dt as create_dt,
   i.update_dt as update_dt
+  
 FROM equipment e
 LEFT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
 WHERE i.eqp_cd = ?

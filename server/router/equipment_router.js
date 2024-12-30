@@ -170,16 +170,6 @@ router.post('/equip/insp', async (req, res) => {
   try {
     const inspData = req.body; // 클라이언트로부터 받은 데이터
 
-    /*
-    // 필요 없는 필드 제거 (eqp_type 제거)
-    delete inspData.eqp_type;
-    delete inspData.eqp_nm;
-    delete inspData.model;
-    delete inspData.pur_dt;
-    delete inspData.pur_act;
-    delete inspData.mfg_act;
-    */
-
     console.log('inspData :', inspData);
 
     // undefined, "null", 빈 문자열인 필드 제거
@@ -206,6 +196,30 @@ router.post('/equip/insp', async (req, res) => {
   }
 });
 
+//점검수정
+router.put('/equip/insp/:insp_log_cd', async (req, res) => {
+  console.log('수정 요청 데이터:', req.body);
+
+  const inspData = req.params.insp_log_cd; // URL에서 점검 코드 추출
+  try {
+
+    // 수정할 데이터 구성
+    const eqInspInfo = { ...req.body, insp_log_cd: inspLogCd };
+
+    // 서비스 호출
+    const result = await equipmentService.updateInspEq(inspData);
+
+    // 결과 반환
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('점검 수정 실패:', err);
+    res.status(500).json({
+      success: false,
+      message: '점검 수정 중 오류 발생'
+    });
+  }
+});
+
 
 //점검전체조회
 router.get('/equip/insp', async (req, res) => {
@@ -216,7 +230,7 @@ router.get('/equip/insp', async (req, res) => {
 //점검단건조회
 router.get('/equip/insp/:no', async (req, res) => {
   let equipInspNo = req.params.no;
-  let info = await equipmentService.findInspEquipNo(equipNo);
+  let info = await equipmentService.findInspEquipNo(equipInspNo);
   res.send(info);
 });
 

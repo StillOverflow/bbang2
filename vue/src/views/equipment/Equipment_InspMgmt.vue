@@ -73,8 +73,9 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success mlp10" @click="isEditMode ? inspUpdate() : inspInsert()" :disabled="!selectedEqp">
-            {{ isEditMode ? "UPDATE" : "SAVE" }}
+          <button class="btn btn-success mlp10" @click="isEditMode ? inspUpdate() : inspInsert()"
+            :disabled="!selectedEqp">
+            SAVE
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm" :disabled="!selectedEqp">
             RESET
@@ -131,6 +132,7 @@ export default {
         eqp_cd: '',
         insp_log_cd: '',
         img_path: '',
+        //입력 데이터 값
         start_time: '',
         eqp_type: '',
         eqp_nm: '',
@@ -170,8 +172,10 @@ export default {
     };
   },
   computed: {
+    // 현재 날짜와 시간을 반환
+    // 조건부 현재 시간 반환
     currentDateTime() {
-      return new Date();
+      return new Date(); // 항상 Date 객체 반환
     },
     formattedStartTime() {
       if (this.currentDateTime) {
@@ -187,35 +191,52 @@ export default {
     },
   },
   methods: {
+    gridFit(params) {
+      // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
+      params.api.sizeColumnsToFit();
+    },
+
     modalOpen() {
       this.isModal = !this.isModal;
     },
+
     modalClicked(params) {
       this.getEquipInfo(params.data.eqp_cd);
       this.selectedEqp = params.data.eqp_cd;
 
-      this.equipmentData.insp_log_cd = params.data.insp_log_cd || null;
-      this.isEditMode = !!params.data.insp_log_cd; // insp_log_cd가 존재하면 수정 모드
+      if (params.data.insp_log_cd) {
+        // 점검 기록이 있는 경우 점검 단건 조회 API 호출
+        this.getInspInfo(params.data.insp_log_cd);
+        this.isEditMode = true; // 수정 모드로 전환
+      } else {
+        // 점검 기록이 없는 경우 설비 정보 가져오기
+        this.getEquipInfo(params.data.eqp_cd);
+        this.isEditMode = false; // 신규 등록 모드로 전환
+      }
 
+      // 이미지 로드
       this.previewImage = params.data.img_path
         ? `/api/${params.data.img_path}`
         : require('@/assets/img/blank_img.png');
 
       this.isModal = !this.isModal;
     },
+    // 시작시간 유효성 검사
     validateStartTime() {
-      if (!this.equipmentData.start_time) return;
+      if (!this.equipmentData.start_time) return; // 시작 시간이 비어있으면 검사 건너뜀
       const startTime = new Date(this.equipmentData.start_time);
-      const minStartTime = new Date(this.currentDateTime.getTime());
+      const minStartTime = new Date(this.currentDateTime.getTime()); // 현재 시간
       if (startTime < minStartTime) {
         Swal.fire({
           icon: 'error',
           title: '유효성 검사 실패',
           text: '시작시간은 현재시간 이후로 설정해야 합니다.',
         });
-        this.equipmentData.start_time = '';
+        this.equipmentData.start_time = ''; // input 필드 초기화
       }
     },
+
+    // 종료시간 유효성 검사
     validateEndTime() {
       if (this.equipmentData.end_time < this.equipmentData.start_time) {
         Swal.fire({
@@ -226,27 +247,98 @@ export default {
         this.equipmentData.end_time = '';
       }
     },
+
+    // 공통코드 가져오기
     async getComm(cd) {
       const result = await axios.get(`/api/comm/codeList/${cd}`).catch((err) => console.log(err));
       return result.data;
     },
+
+    // 설비 단건 조회
     async getEquipInfo(eqp_cd) {
       const result = await axios.get(`/api/equip/${eqp_cd}`).catch((err) => console.log(err));
+
       if (result.data) {
         this.equipmentData = {
           ...this.equipmentData,
           ...result.data,
           insp_log_cd: result.data.insp_log_cd || null,
         };
+
+        // 세션에서 점검 담당자 ID 가져오기
+        const sessionId = this.$session.get('user_id'); // const 선언은 여기서 가능
+        if (sessionId) {
+          this.equipmentData.id = sessionId; // 점검 담당자에 세션 ID 설정
+        }
+
+        // 이미지 경로 처리
         this.previewImage = result.data.img_path
           ? `/api/${result.data.img_path}`
           : require('@/assets/img/blank_img.png');
       }
     },
+
+    // 설비 전체 조회
     async getEquipList() {
       const result = await axios.get(`/api/equip`).catch((err) => console.log(err));
-      this.equipData = result.data;
+      this.equipData = result.data; // 서버가 실제로 보낸 데이터
     },
+
+    // 점검 단건 조회
+    async getInspInfo(insp_log_cd) {
+      try {
+        const result = await axios.get(`/api/equip/insp/${insp_log_cd}`);
+        if (result.data && result.data.success) {
+          // 점검 단건 데이터를 폼에 반영
+          this.equipmentData = {
+            ...this.equipmentData,
+            ...result.data.data, // API에서 반환된 데이터 반영
+          };
+          this.previewImage = result.data.data.img_path
+            ? `/api/${result.data.data.img_path}`
+            : require('@/assets/img/blank_img.png');
+        } else {
+          Swal.fire({
+            icon: 'info',
+            title: '점검 기록 없음',
+            text: '점검 기록을 불러올 수 없습니다.',
+          });
+          this.resetForm();
+        }
+      } catch (err) {
+        console.error('점검 단건 조회 오류:', err);
+        Swal.fire({
+          icon: 'error',
+          title: '오류 발생',
+          text: '점검 데이터를 불러오는 중 오류가 발생했습니다.',
+        });
+      }
+    },
+
+    /*
+    getInsertData() {
+      let formData = new FormData();
+
+      Object.keys(this.equipmentData).forEach((key) => {
+        // 빈 문자열 또는 null 값은 추가하지 않음
+        if (
+          this.equipmentData[key] !== '' &&
+          this.equipmentData[key] !== null
+        ) {
+          formData.append(key, this.equipmentData[key]);
+        }
+      });
+
+      if (this.selectedFile) {
+        formData.append('selectedFile', this.selectedFile);
+      }
+
+      return formData;
+    },
+
+    */
+
+    //등록
     async inspInsert() {
       try {
         const obj = {
@@ -259,15 +351,19 @@ export default {
           note: this.equipmentData.note || '',
           id: this.equipmentData.id,
         };
+
+        //서버로 데이터 전송
         const result = await axios.post('/api/equip/insp', obj);
-        
-        if (result.data.success) {
+
+        //서버 응답처리
+        let addRes = result.data; // 서버에서 반환된 응답 처리
+        if (addRes.success) {
           Swal.fire({
             icon: 'success',
             title: '등록 완료',
             text: '점검 데이터가 등록되었습니다.',
           });
-           
+
           this.isEditMode = true; // 등록 후 수정 모드로 전환
           this.equipmentData.insp_log_cd = result.data.insp_log_cd; // 새로 생성된 insp_log_cd 설정
         }
