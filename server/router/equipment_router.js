@@ -229,8 +229,8 @@ router.get('/equip/insp', async (req, res) => {
 
 //점검단건조회
 router.get('/equip/insp/:no', async (req, res) => {
-  let equipInspNo = req.params.no;
-  let info = await equipmentService.findInspEquipNo(equipInspNo);
+  let eqpCd = req.params.no;
+  let info = await equipmentService.findInspEqOne(eqpCd);
   res.send(info);
 });
 

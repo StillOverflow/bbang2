@@ -129,13 +129,19 @@ const findInspEq = async () => {
   return list;
 };
 
-//설비 점검 단건 조회
-const findInspEquipNo = async (no) => {
-  let list = await mariadb.query('equipInspNo', no);
-
-  let info = list[0];
-  return info;
+//설비 점검 전체 조회(설비별 최근 1건씩만)
+const findInspEqOne = async (eqp_cd) => {
+  let list = await mariadb.query('eqInspInfo', eqp_cd);
+  return list[0];
 };
+
+// //설비 점검 단건 조회(설비별 최근 1건씩만)
+// const findInspEqNo = async (eqp_cd) => {
+//   let list = await mariadb.query('eqInspListOne', eqp_cd);
+
+//   let info = list[0];
+//   return info;
+// };
 
 
 module.exports = {
@@ -145,8 +151,8 @@ module.exports = {
   insertEq,
   updateEq,
   findInspEq,
-  findInspEquipNo,
   findFilteredEq,
   insertInspEq,
-  updateInspEq
+  updateInspEq,
+  findInspEqOne
 };
