@@ -16,7 +16,8 @@
 <template>
     <div class="py-4 container-fluid">
         <div class="card">
-            <!-- 주문 테이블 부분 -->
+
+            <!-- 주문 등록 폼 -->
             <div class="card-header bg-light ps-5 ps-md-4">
                 <div class="row">
                     <div class="col-6 col-lg-2"></div>
@@ -79,7 +80,7 @@
                 <div class="row">
                     <div class="col-6 col-lg-11"></div>
                     <div class="col-6 col-lg-1 text-end text-md-start">
-                        <button class="btn btn-warning " v-if="this.isdetail == false" @click="modalOpen3">제품 조회</button>
+                        <button class="btn btn-warning " @click="modalOpen3">제품 조회</button>
                     </div>
                 </div>
                 <ag-grid-vue style="width:100%; height: 380px;"
@@ -179,6 +180,7 @@ export default {
                 order_dt: '',
                 due_dt: ''
             }, 
+            order_dtl_cd: '',
 
             //테스트 값을 넘기기 위해 담을 곳 만들기
             test: '',
@@ -187,7 +189,7 @@ export default {
             order_date: '',
             
             columnDefs: [
-                {headerName: '주문디테일코드', field: 'order_dtl_cd', hide: true},
+                {headerName: '주문디테일코드', field: 'order_dtl_cd'},
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
                 {
@@ -195,10 +197,10 @@ export default {
                     field: 'order_qty', 
                     editable: true, 
                     cellDataType: 'number',
-                    valueFormatter: (params) => {
-                        if (params.value == null || params.value === '') return '';
-                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
-                    },
+                    // valueFormatter: (params) => {
+                    //     if (params.value == null || params.value === '') return '';
+                    //     return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    // },
                     cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
                 },
                 {headerName: '비고', field: 'note', editable: true},
@@ -206,16 +208,25 @@ export default {
                     headerName: '삭제' ,
                     field: 'delete',
                     cellRenderer: (params) => {
-                        if(this.isdetail == false){
-                            const button = document.createElement('button');
-                            button.innerText = 'DELETE';
-                            button.className = 'btn btn-danger btn-xsm';
-                            button.addEventListener('click', () => {
-                                this.rowData = this.rowData.filter(row => row !== params.data);
-                            });
-                            return button;
+                        
+                        const button = document.createElement('button');
+                        button.innerText = 'DELETE';
+                        button.className = 'btn btn-danger btn-xsm';
+                        button.addEventListener('click', () => {
+                            
+                            //행만 삭제 
+                            this.rowData = this.rowData.filter(row => row !== params.data);
+                            
+                            // if(this.isdetail == true){
+                            //     //한 행에 관한 단건 딜리트 메소드
+                            //     this.order_dtl_cd = params.data.order_dtl_cd;
+                            //     this.orderListDelete();
+                            // }
+                        });
+                        return button;
+
                         }
-                    }
+                    
                 },
             ],
             rowData: [ ],
@@ -298,6 +309,7 @@ export default {
         modalOpen3() {
             this.psModal = !this.psModal;
         },
+        //거래처모달선택
         modalClicked(params) {
             document.getElementById('acc_code').value = params.data.act_cd;
             document.getElementById('acc_name').value = params.data.act_nm;
@@ -358,31 +370,66 @@ export default {
 
         //주문서 수정
         async orderUpdate() {
-            let updateResult 
+            //주문서 수정을 위한 삭제
+            let result = await axios.delete(`/api/sales/orderUpdateDelete/${this.selectNo}`)
+                                    .catch(err => console.log("deleteAxios에러",err));
+            if(result.data.result == 'success'){
+                //주문서 수정을 위한 등록
+                this.orderUpdateInsert();
+            }
+            
+            // let updateResult 
 
-            for(let i = 0; i < this.rowData.length; i++){
-                let upRow = this.rowData[i];
-                let upObj = {
-                    order_qty: upRow.order_qty,
-                    note: upRow.note
-                }
-                console.log(upRow);
-                console.log('obj',upObj);
-                updateResult = await axios.put(`/api/sales/orderUpdate/${upRow.order_dtl_cd}`,upObj)
-                                          .catch(err => console.log("updateAxiosError",err));             
-            };
-            if(updateResult.data.result == 'success'){
-                this.resetForm(); // 초기화
+            // for(let i = 0; i < this.rowData.length; i++){
+            //     let upRow = this.rowData[i];
+            //     let upObj = {
+            //         order_qty: upRow.order_qty,
+            //         note: upRow.note
+            //     }
+            //     console.log(upRow);
+            //     console.log('obj',upObj);
+            //     updateResult = await axios.put(`/api/sales/orderUpdate/${upRow.order_dtl_cd}`,upObj)
+            //                               .catch(err => console.log("updateAxiosError",err));             
+            // };
+            // if(updateResult.data.result == 'success'){
+            //     this.resetForm(); // 초기화
                 
-                this.$swal({
-                title: "Update!",
-                text: "GO to Order List",
-                icon: "success"
-                }).then(result =>{
-                    if(result){
-                        this.$router.push({name:'sales_orderlist'}) //OK누르면 목록으로 이동
-                    }
+            //     this.$swal({
+            //     title: "Update!",
+            //     text: "GO to Order List",
+            //     icon: "success"
+            //     }).then(result =>{
+            //         if(result){
+            //             this.$router.push({name:'sales_orderlist'}) //OK누르면 목록으로 이동
+            //         }
+            //     });
+            // };
+
+        },
+
+        //주문서 수정을 위한 등록
+        async orderUpdateInsert() {
+            let updateInsert = [];
+
+            this.rowData.forEach((obj) => {
+                updateInsert.push({
+                    order_dtl_cd: obj.order_dtl_cd,
+                    prd_cd: obj.prd_cd, 
+                    prd_nm: obj.prd_nm, 
+                    order_qty: obj.order_qty, 
+                    note: obj.note,
+                    order_cd: this.selectNo
                 });
+            });
+
+            let result = await axios.post('/api/sales/orderUpdateInsert', updateInsert)   
+                                    .catch(err => console.log("axios에러",err));
+            if(result.data.result === 'success'){
+                this.$swal({
+                    icon: "success",
+                    title: "UPDATE!",
+                    text: "주문서를 수정 하였습니다.",
+                })
             };
 
         },
@@ -418,6 +465,37 @@ export default {
                     }
                 });  
         },
+
+        // //주문서 단건삭제
+        // async orderListDelete() {
+        //     this.$swal({
+        //             title: "정말 삭제하시겠습니까??",
+        //             text: "",
+        //             icon: "warning",
+        //             showCancelButton: true,
+        //             confirmButtonColor: "#3085d6",
+        //             cancelButtonColor: "#d33",
+        //             confirmButtonText: "Yes, delete!"
+        //         }).then(async(result) => {
+        //             if (result.isConfirmed) {
+        //                 let result2 = await axios.delete(`/api/sales/orderListDelete/${this.order_dtl_cd}`)
+        //                                         .catch(err => console.log("deleteAxios에러",err));
+
+        //                 if(result2.data.result == 'success'){
+                            
+        //                     this.$swal({
+        //                     title: "DELETE!",
+        //                     text: "Your product order delete.",
+        //                     icon: "success"
+        //                     }).then(result =>{
+        //                         if(result){
+        //                             window.location.reload(); //페이지 새로고침
+        //                         }
+        //                     });                          
+        //                 }                        
+        //             }
+        //         });  
+        // },
 
         //모달창3개
         async getAccList() {
