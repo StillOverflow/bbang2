@@ -51,6 +51,7 @@ const eqAllListSearch = (searchObj) => {
                       e.id as id,
                       e.create_dt as create_dt,
                       e.update_dt as update_dt
+
 FROM equipment e
       LEFT JOIN inspection_log i 
               ON e.eqp_cd = i.eqp_cd
@@ -99,6 +100,7 @@ const equipInfo = `SELECT eqp_cd,
   uph,
   is_use,
   img_path
+
 FROM equipment
 WHERE eqp_cd = ?
   `;
@@ -153,36 +155,74 @@ const eqInspList = ` SELECT
   i.id as id,
   i.create_dt as create_dt,
   i.update_dt as update_dt
+
 FROM equipment e
 LEFT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
 ORDER BY i.create_dt DESC
 `;
 
-//설비점검 단건조회
-const eqInspInfo = `SELECT   
-  i.insp_log_cd as insp_log_cd,
-  e.eqp_cd as eqp_cd,
-  fn_get_codename(e.eqp_type) as eqp_type,
-  e.eqp_nm as eqp_nm,
-  e.model as model,
-  e.insp_cycle as insp_cycle,
-  e.img_path as img_path,
-  e.last_insp_dt as last_insp_dt,
-  i.start_time as start_time,
-  fn_get_codename(i.insp_type) as insp_type,
-  fn_get_codename(i.insp_reason) as insp_reason,
-  fn_get_codename(i.insp_result) as insp_result,
-  i.insp_action as insp_action,
-  i.note as note,
-  i.end_time as end_time,
-  i.id as id,
-  i.create_dt as create_dt,
-  i.update_dt as update_dt
+//설비점검조회(설비별 최신1건씩만)
+const eqInspListOne = `SELECT 
+  i.insp_log_cd,
+  e.eqp_cd,
+  fn_get_codename(e.eqp_type) AS eqp_type,
+  e.eqp_nm,
+  e.model,
+  e.insp_cycle,
+  e.img_path,
+  e.last_insp_dt,
+  i.start_time,
+  fn_get_codename(i.insp_type) AS insp_type,
+  fn_get_codename(i.insp_reason) AS insp_reason,
+  fn_get_codename(i.insp_result) AS insp_result,
+  i.insp_action,
+  i.note,
+  i.end_time,
+  i.id,
+  i.create_dt,
+  i.update_dt
 FROM equipment e
-LEFT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
-WHERE i.eqp_cd = ?
-ORDER BY start_time DESC 
-LIMIT 1
+LEFT JOIN inspection_log i 
+  ON e.eqp_cd = i.eqp_cd
+  AND i.start_time = (
+    SELECT MAX(start_time) 
+    FROM inspection_log 
+    WHERE eqp_cd = e.eqp_cd
+  )
+    WHERE e.eqp_cd = ?
+ORDER BY e.eqp_cd, i.start_time DESC`;
+
+//설비점검 단건조회
+const eqInspInfo = `SELECT 
+  i.insp_log_cd,
+  e.eqp_cd,
+  fn_get_codename(e.eqp_type) AS eqp_type,
+  e.eqp_nm,
+  e.model,
+  e.insp_cycle,
+  e.img_path,
+  e.last_insp_dt,
+  i.start_time,
+  fn_get_codename(i.insp_type) AS insp_type,
+  fn_get_codename(i.insp_reason) AS insp_reason,
+  fn_get_codename(i.insp_result) AS insp_result,
+  i.insp_action,
+  i.note,
+  i.end_time,
+  i.id,
+  i.create_dt,
+  i.update_dt
+FROM equipment e
+LEFT JOIN inspection_log i 
+  ON e.eqp_cd = i.eqp_cd
+  AND i.start_time = (
+    SELECT MAX(start_time) 
+    FROM inspection_log 
+    WHERE eqp_cd = e.eqp_cd
+  )
+WHERE e.eqp_cd = ?
+ORDER BY e.eqp_cd, i.start_time DESC
+limit 1
   `;
 
 module.exports = {
@@ -197,5 +237,6 @@ module.exports = {
   eqInspInfo,
   getInspCd,
   eqInspInsert,
-  eqInspUpdate
+  eqInspUpdate,
+  eqInspListOne
 };
