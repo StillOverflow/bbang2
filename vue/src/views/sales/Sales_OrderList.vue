@@ -78,9 +78,7 @@ export default {
                         button.innerText = 'DETAILED';
                         button.className = 'btn btn-warning btn-xsm';
                         button.addEventListener('click', () => {
-                            console.log(params.data.order_cd)
-                            // this.rowData = this.rowData.filter(row => row !== params.data);
-                            //this.$router.push({ name : 'boardInfo', params : { bno : boardNo }});
+
                             this.$router.push({ name: 'sales_orderadd' , query : { bno : params.data.order_cd}});
                         });
                         return button;

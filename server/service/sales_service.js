@@ -32,7 +32,6 @@ const searchOrder = async (search, std, etd) => {
 const insertOrder = async (values) => {
 
     let seq = (await mariadb.query('orderSeq'))[0].order_cd;
-    console.log(values[0]);
     let samples = values[0]; // 배열로 넘긴게 첫번째가 헤드부분이고 두번째가 데테일 부분임(2개가 끝 헷갈렸음)
     samples.seq = seq; //seq 넘기기 { } (배열로 받은걸 여기서 객체로 하나씩 만들어서 set절로 바꿔보기)
     
@@ -73,7 +72,20 @@ const deleteOrder = async (no) => {
     }
 }
 
+//주문서 수정
+const updateOrder = async (odtNo, updateInfo) => {
+    let datas = [updateInfo, odtNo];
+    console.log("service",datas);
+    let update = await mariadb.query('orderUpdate', datas);
 
+    if(update.affectedRows > 0){ // 모두 성공했는지 판단
+        mariadb.commit();
+        return {"result" : "success"};
+    } else {
+        mariadb.rollback();
+        return {"result" : "fail"};
+    }
+}
 
 /* --------------------------------------------------제품 출고-------------------------------------------------------- */
 
@@ -115,7 +127,6 @@ const listLotOut = async (no) => {
 const insertPrdOut = async (values) => {
 
     let seq = (await mariadb.query('productOutSeq'))[0].prd_out_cd;
-    console.log("시퀀스",values[0]);
     let samples = values[0]; 
     samples.seq = seq; 
     
@@ -207,6 +218,27 @@ const InsertPrdReturn = async (values) => {
     }
 };
 
+//반품 제품 상세(헤드)
+const listDtlReturn = async (no) => {
+    let list = await mariadb.query('returnDtlList',no);
+    return list;
+}; 
+
+//반품 제품 상세(디테일)
+const listDtlReturnDtl = async (rtcd,pdcd) => {
+    try {
+        let searchObj = {
+            rtcd,
+            pdcd
+        }
+        const list = await mariadb.query('dtlReturnDtlList',searchObj);
+        return list;
+    } catch (err) {
+        console.error("Error searching dtlReturnDtlList 실패:", err);
+        throw err;
+    }
+};
+
 /* ----------------------------------------------------제품 재고 조회--------------------------------------------------------- */
 
 // 제품 재고 조회
@@ -263,6 +295,7 @@ module.exports = {
     listDtlOrder,
     listDtlOrderDtl,
     deleteOrder,
+    updateOrder,
 
 
     //제품출고
@@ -278,6 +311,8 @@ module.exports = {
     listPOutReturn,
     searchRTLot,
     InsertPrdReturn,
+    listDtlReturn,
+    listDtlReturnDtl,
 
     //제품재고조회
     listAllProduct,

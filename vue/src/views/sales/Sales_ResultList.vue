@@ -80,8 +80,8 @@ export default {
                       button.innerText = 'DETAILED';
                       button.className = 'btn btn-warning btn-xsm';
                       button.addEventListener('click', () => {
-                          params.data
-                          // this.rowData = this.rowData.filter(row => row !== params.data);
+                          
+                          this.$router.push({ name: 'sales_ResultAdd' , query : { bno : params.data.prd_return_cd}});
                       });
                       return button;
                   }

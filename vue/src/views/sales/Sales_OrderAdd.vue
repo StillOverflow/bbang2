@@ -90,12 +90,13 @@
                 @grid-ready="gridFit"
                 overlayNoRowsTemplate="제품 조회 버튼을 이용하여 제품을 추가 해주세요.">
                 </ag-grid-vue>
-                <div class="center " v-if="this.isdetail == false">
+                
+                <div class="center " v-if="this.isdetail == false"> <!--등록페이지-->
                     <button class="btn btn-primary mtp30" @click="ordInsert">SUBMIT</button>
                     <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
-                <div class="center " v-if="this.isdetail == true">
-                    <button class="btn btn-primary mtp30" @click="ordInsert">UPDATE</button>
+                <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
+                    <button class="btn btn-primary mtp30" @click="orderUpdate">UPDATE</button>
                     <button class="btn btn-danger mlp10 mtp30" @click="orderDelete">DELETE</button>
                 </div>
             </div> 
@@ -122,7 +123,7 @@
 
     <!-- 담당자 조회 모달 -->
     <Layout :modalCheck="msModal">
-        <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+        <template v-slot:header> 
             <h5 class="modal-title">담당자 조회</h5>
             <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
         </template>
@@ -140,7 +141,7 @@
 
     <!-- 제품 조회 모달 -->
     <Layout :modalCheck="psModal">
-        <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+        <template v-slot:header> 
             <h5 class="modal-title">제품 조회</h5>
             <button type="button" aria-label="Close" class="close" @click="modalOpen3">×</button>
         </template>
@@ -169,7 +170,6 @@ export default {
         return {
             //상세,수정,삭제
             isdetail: false,
-            selectNo: '',
 
             OLHead: {
                 act_cd: '',
@@ -187,6 +187,7 @@ export default {
             order_date: '',
             
             columnDefs: [
+                {headerName: '주문디테일코드', field: 'order_dtl_cd', hide: true},
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
                 {
@@ -265,8 +266,8 @@ export default {
         this.$store.dispatch('breadCrumb', { title: '주문서 등록' });
 
         let selectNo = this.$route.query.bno;
-        this.selectNo = this.$route.query.bno;
-        console.log("seletNo",selectNo)
+        this.selectNo = this.$route.query.bno; //this.으로 저장해야 created()밖에서도 사용 가능
+        
         if(selectNo != null){
             //수정    
             this.isdetail = true;     
@@ -275,8 +276,8 @@ export default {
             this.orderList(selectNo)
             //상세조회(디테일)
             this.orderDtlList(selectNo)
-            //주문서 삭제
-            //this.orderDelete(selectNo)
+            //페이지 이름
+            this.$store.dispatch('breadCrumb', { title: '주문서 상세' });
 
         }else{
             //등록
@@ -355,6 +356,69 @@ export default {
             this.rowData = result.data;
         },
 
+        //주문서 수정
+        async orderUpdate() {
+            let updateResult 
+
+            for(let i = 0; i < this.rowData.length; i++){
+                let upRow = this.rowData[i];
+                let upObj = {
+                    order_qty: upRow.order_qty,
+                    note: upRow.note
+                }
+                console.log(upRow);
+                console.log('obj',upObj);
+                updateResult = await axios.put(`/api/sales/orderUpdate/${upRow.order_dtl_cd}`,upObj)
+                                          .catch(err => console.log("updateAxiosError",err));             
+            };
+            if(updateResult.data.result == 'success'){
+                this.resetForm(); // 초기화
+                
+                this.$swal({
+                title: "Update!",
+                text: "GO to Order List",
+                icon: "success"
+                }).then(result =>{
+                    if(result){
+                        this.$router.push({name:'sales_orderlist'}) //OK누르면 목록으로 이동
+                    }
+                });
+            };
+
+        },
+
+        //주문서 삭제
+        async orderDelete() {
+            this.$swal({
+                    title: "정말 삭제하시겠습니까??",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete!"
+                }).then(async(result) => {
+                    if (result.isConfirmed) {
+                        let result2 = await axios.delete(`/api/sales/orderDelete/${this.selectNo}`)
+                                                .catch(err => console.log("deleteAxios에러",err));
+
+                        if(result2.data.result == 'success'){
+                            this.resetForm(); // 초기화
+                            
+                            this.$swal({
+                            title: "DELETE!",
+                            text: "GO to Order List",
+                            icon: "success"
+                            }).then(result =>{
+                                if(result){
+                                    this.$router.push({name:'sales_orderlist'}) //OK누르면 목록으로 이동
+                                }
+                            })
+                        }                        
+                    }
+                });  
+        },
+
         //모달창3개
         async getAccList() {
             let result = await axios.get('/api/moacc')
@@ -376,9 +440,7 @@ export default {
         async ordInsert() {
 
             // 필수값 입력 알람
-            //let dueDt = document.getElementById('due_date').value;
             let dueDt = this.due_date;
-            //let ordDt = document.getElementById('order_date').value;
             let ordDt = this.order_date;
             let accCode = document.getElementById('acc_code').value;
             let memId = document.getElementById('mem_id').value;
@@ -434,9 +496,7 @@ export default {
             insertOrd.push({
                 mem_id : document.getElementById('mem_id').value,
                 act_cd : document.getElementById('acc_code').value,
-                //due_dt : document.getElementById('due_date').value,
                 due_dt : this.due_date,
-                //order_dt : document.getElementById('order_date').value
                 order_dt : this.order_date
             });
 
@@ -467,43 +527,9 @@ export default {
             document.getElementById('acc_code').value = "";
             document.getElementById('mem_name').value = "";
             document.getElementById('mem_id').value = "";
-            //document.getElementById('due_date').value = "";
             this.due_date = "";
-            //document.getElementById('order_date').value = "";
             this.order_date = "";
             this.rowData = [];         
-        },
-
-        //주문서 삭제
-        async orderDelete() {
-            this.$swal({
-                    title: "정말 삭제하시겠습니까??",
-                    text: "",
-                    icon: "warning",
-                    showCancelButton: true,
-                    confirmButtonColor: "#3085d6",
-                    cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete!"
-                }).then(async(result) => {
-                    if (result.isConfirmed) {
-                        let result2 = await axios.delete(`/api/sales/orderDelete/${this.selectNo}`)
-                                                .catch(err => console.log("deleteAxios에러",err));
-
-                        if(result2.data.result == 'success'){
-                            this.resetForm(); // 초기화
-
-
-                            this.$swal({
-                            title: "delete!",
-                            text: "Your Order deleted.",
-                            icon: "success"
-                            });
-                        }
-                        
-                    }
-                });
-
-            
         },
 
         gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)

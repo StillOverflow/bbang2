@@ -58,7 +58,13 @@ router.delete('/sales/orderDelete/:del', async (req, res) => {
     res.send(ordDel);
 });
 
-
+//주문서 수정
+router.put('/sales/orderUpdate/:no', async (req, res) => {
+    let odtNo = req.params.no;
+    let updateInfo = req.body;
+    let result = await salesService.updateOrder(odtNo, updateInfo);
+    res.send(result);
+  });
 
 /* ---------------------------------출고제품--------------------------------------- */
 
@@ -154,6 +160,28 @@ router.post('/sales/prdReturn', async (req, resp) => {
     let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
     let result = await salesService.InsertPrdReturn(values);
     resp.send(result);
+});
+
+//반품 제품 상세(헤드)
+router.get('/sales/retrunDtlList/:no', async (req, res) => {
+    let returnNo = req.params.no;
+    let info = await salesService.listDtlReturn(returnNo);
+    res.send(info);
+});
+
+//반품 제품 상세(디테일)
+router.get('/sales/dtlReturnDtlList/', async (req, res) => {
+    try {
+        let rtcd = req.query.rtc;
+        let pdcd = req.query.pdc;
+        
+        let info = await salesService.listDtlReturnDtl(rtcd,pdcd);
+        res.send(info);
+
+    } catch (error) {
+        console.error(error);
+    }
+    
 });
 
 /* -----------------------------------제품 재고 조회----------------------------------------- */
