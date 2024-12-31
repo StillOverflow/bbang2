@@ -148,11 +148,25 @@ export default {
         insp_log_cd: '',
       },
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true },
-        { headerName: '설비 구분', field: 'eqp_type', sortable: true },
-        { headerName: '설비명', field: 'eqp_nm', sortable: true },
-        { headerName: '모델명', field: 'model', sortable: true },
-        { headerName: '마지막 점검일', field: 'last_insp_dt', sortable: true },
+        { headerName: '설비 코드', field: 'eqp_cd', sortable: true , width: 120 },
+        { headerName: '설비 구분', field: 'eqp_type', sortable: true , width: 130, valueFormatter: (params) => {
+          const eqpTypeMap = {
+            R01: '배합기',
+            R02: '분할기',
+            R03: '발효기',
+            R04: '성형기',
+            R05: '오븐',
+            R06: '냉각기',
+            R07: '도포기',
+          }; // 코드와 이름 매핑
+          return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
+        }, },
+        { headerName: '설비명', field: 'eqp_nm', sortable: true , width: 130 },
+        { headerName: '모델명', field: 'model', sortable: true , width: 130 },
+        { headerName: '마지막 점검일', field: 'last_insp_dt', sortable: true , width: 130, valueFormatter: (params) => {
+      if (!params.value) return ''; // 값이 없을 경우 빈 문자열 반환
+      return params.value.split('T')[0]; // T로 나눈 뒤 첫 번째 부분만 반환
+    }, },
       ],
       equipData: [],
       leftFields: [

@@ -277,21 +277,21 @@ FROM equipment e
 
 /* -----------설비 비가동 관리------------*/
 
-// 비가동 등록 전 마지막 점검 코드 찾기 +1
-const getDTimeCd = `
+// 비가동 등록 전 마지막 비가동동 코드 찾기 +1
+const getDownCd = `
 SELECT CONCAT('DTM', LPAD(IFNULL(MAX(SUBSTR(d.DOWNTIME_CD, -3)) + 1, 1), 3, '0')) AS downtime_cd FROM downtime_log d`;
 
-//설비점검등록
-const eqDTimeInsert = `INSERT INTO downtime_log
+//설비 비가동 등록
+const eqDownInsert = `INSERT INTO downtime_log
 SET ? `;
 
-//설비점검수정
-const eqDTimeUpdate = `UPDATE downtime_log
+//설비 비가동 수정
+const eqDownUpdate = `UPDATE downtime_log
 SET ?
   WHERE downtime_cd = ? `;
 
-//설비점검조회
-const eqDTimeList = ` SELECT   
+//설비 비가동 조회
+const eqDownList = ` SELECT   
   d.downtime_cd as downtime_cd,
   e.eqp_cd as eqp_cd,
   fn_get_codename(e.eqp_type) as eqp_type,
@@ -311,8 +311,8 @@ LEFT JOIN downtime_log d ON e.eqp_cd = d.eqp_cd
 ORDER BY d.create_dt DESC
 `;
 
-//설비비가동조회(설비별 최신1건씩만)
-const eqDTimeListOne = `SELECT 
+//설비 비가동 조회(설비별 최신1건씩만)
+const eqDownListOne = `SELECT 
   d.downtime_cd as downtime_cd,
   e.eqp_cd as eqp_cd,
   fn_get_codename(e.eqp_type) as eqp_type,
@@ -337,17 +337,17 @@ LEFT JOIN downtime_log d
   )
 ORDER BY e.eqp_cd, d.start_time DESC`;
 
-//설비점검 단건조회
-const eqDtimeInfo = `SELECT 
+//설비 비가동 단건조회
+const eqDownInfo = `SELECT 
   d.downtime_cd as downtime_cd,
   e.eqp_cd as eqp_cd,
-  fn_get_codename(e.eqp_type) as eqp_type,
+  e.eqp_type as eqp_type,
   e.eqp_nm as eqp_nm,
   e.model as model,
   d.start_time as start_time,
   d.end_time as end_time,
-  fn_get_codename(d.status) as status,
-  fn_get_codename(d.downtime_reason) as downtime_reason,
+  d.status as status,
+  d.downtime_reason as downtime_reason,
   d.id as id,
   d.create_dt as create_dt,
   d.update_dt as update_dt,
@@ -382,10 +382,10 @@ module.exports = {
   eqInspUpdate,
   eqInspListOne,
   eqInstListSearch,
-  getDTimeCd,
-  eqDTimeInsert,
-  eqDTimeUpdate,
-  eqDTimeList,
-  eqDTimeListOne,
-  eqDtimeInfo
+  getDownCd,
+  eqDownInsert,
+  eqDownUpdate,
+  eqDownList,
+  eqDownListOne,
+  eqDownInfo
 };

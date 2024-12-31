@@ -265,5 +265,105 @@ router.get('/equip/insp/:no', async (req, res) => {
 
 /*--------------설비 비가동-------------*/
 
+//비가동 등록
+router.post('/equip/down', async (req, res) => {
+  try {
+    const downData = req.body; // 클라이언트로부터 받은 데이터
+
+    console.log('downData :', downData);
+
+    // undefined, "null", 빈 문자열인 필드 제거
+    Object.keys(downData).forEach((key) => {
+      if (
+        downData[key] === undefined ||
+        downData[key] === 'null' ||
+        downData[key] === ''
+      ) {
+        delete downData[key]; // 해당 키 삭제
+      }
+    });
+    // DB 저장 (서비스 함수 호출)
+    const result = await equipmentService.insertDownEq(downData);
+
+    // 결과 반환
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('점검 등록 실패:', err);
+    res.status(500).json({
+      success: false,
+      message: '점검 등록 중 오류 발생'
+    });
+  }
+});
+
+// 비가동수정
+router.put('/equip/down/:downtime_cd', async (req, res) => {
+  console.log('수정 요청 데이터:', req.body);
+
+  const downLogCd = req.params.downtime_cd; // URL에서 점검 코드 추출
+
+  console.log('수신한 downtime_cd:', downLogCd);
+  console.log('수정 요청 데이터:', req.body);
+
+    // insp_log_cd가 유효한지 확인
+    if (!downLogCd || downLogCd === 'null' || downLogCd.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: '유효하지 않은 downtime_cd입니다. 값을 확인하세요.',
+      });
+    }
+  
+  try {
+    // 수정할 데이터 구성
+    const eqDownInfo = { ...req.body, downtime_cd: downLogCd };
+
+    // undefined 및 "null"인 필드만 제거
+    Object.keys(eqDownInfo).forEach((key) => {
+      if (
+        eqDownInfo[key] === undefined || // JavaScript의 undefined
+        eqDownInfo[key] === 'null' // 문자열로 "null"
+      ) {
+        delete eqDownInfo[key]; // 해당 키 삭제
+      }
+      // 실제 null 값은 유지하여 명시적으로 처리 가능
+    });
+
+    console.log('최종 업데이트 데이터:', eqDownInfo);
+
+    // 서비스 호출
+    const result = await equipmentService.updateDownEq(eqDownInfo);
+
+    // 결과 반환
+    if (result.success) {
+      res.json({ success: true, data: result.data });
+    } else {
+      res.status(400).json({ success: false, message: result.message });
+    }
+  } catch (err) {
+    console.error('비가동 수정 실패:', err);
+    res.status(500).json({
+      success: false,
+      message: '비가동 수정 중 오류 발생',
+    });
+  }
+});
+
+
+//점검전체조회
+router.get('/equip/down', async (req, res) => {
+  let eqDownList = await equipmentService.findDownEq();
+  res.send(eqDownList);
+});
+
+//점검단건조회
+router.get('/equip/down/:no', async (req, res) => {
+  let eqpCd = req.params.no;
+  let info = await equipmentService.findDownEqOne(eqpCd);
+  res.send(info);
+});
+
+
+
+
 module.exports = router;
 // module.exports = upload;

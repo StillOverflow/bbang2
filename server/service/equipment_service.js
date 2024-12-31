@@ -121,6 +121,57 @@ const findInspEqOne = async (eqp_cd) => {
 
 /* ---------------------- 설비 비가동 ----------------------- */
 
+// 비가동 등록
+const insertDownEq = async (downData) => {
+  let new_downtime_cd = (await mariadb.query('getDownCd'))[0].downtime_cd;
+  downData['downtime_cd'] = new_downtime_cd;
+
+  let result = await mariadb.query('eqDownInsert', downData);
+  console.log(result);
+  if (result.affectedRows > 0) {
+    return { downtime_cd: new_downtime_cd };
+  } else {
+    return {};
+  }
+};
+
+
+//비가동 수정
+const updateDownEq = async (downData) => {
+  try {
+    const downLogCd = downData.downtime_cd; // 점검 코드 추출
+    delete downData.downtime_cd; // WHERE 조건에 사용되므로 객체에서 제거
+
+    console.log('수정 요청 데이터:', downData, 'downtime_cd:', downLogCd);
+
+    // SQL 실행
+    const result = await mariadb.query('eqDownUpdate', [downData, downLogCd]);
+
+    console.log('SQL 실행 결과:', result);
+
+    if (result && result.affectedRows > 0) {
+      return { success: true, message: '비가동 정보 수정 성공' };
+    } else {
+      return { success: false, message: '수정할 데이터가 없습니다.' };
+    }
+  } catch (err) {
+    console.error('DB 수정 에러:', err);
+    throw new Error('데이터베이스 수정 실패');
+  }
+};
+
+//설비 점검 전체 조회
+const findDownEq = async () => {
+  let list = await mariadb.query('eqDownList');
+  return list;
+};
+
+//설비 점검 전체 조회(설비별 최근 1건씩만)
+const findDownEqOne = async (eqp_cd) => {
+  let list = await mariadb.query('eqDownInfo', eqp_cd);
+  return list[0];
+};
+
 
 module.exports = {
   findStatEq,
@@ -132,5 +183,9 @@ module.exports = {
   findFilteredEq,
   insertInspEq,
   updateInspEq,
-  findInspEqOne
+  findInspEqOne,
+  insertDownEq,
+  updateDownEq,
+  findDownEq,
+  findDownEqOne
 };
