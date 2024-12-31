@@ -5,75 +5,90 @@
       <!-- 검색조건 -->
       <div class="card-header bg-light ps-5 ps-md-4">
 
-        <div class="row mb-3">
+        <!--설비구분-->
+        <div class="row mb-4 align-items-center" style="padding-left: 3rem;">
+          <div class="col-lg-2 text-start fw-bolder">
+            설비구분
+          </div>
+          <div class="col-lg-4">
+            <select class="form-select" v-model="equipmentData.eqp_type" @change="searchEquipments">
+              <option v-for="(opt, idx) in equipmentData.selectOptions.EQP_TYPE" :key="idx" :value="opt.comm_dtl_cd">
+                {{ opt.comm_dtl_nm }}
+              </option>
+            </select>
+          </div>
+        </div>
 
-          <!-- 설비구분 -->
-          <div class=" me-7">
-            <p for="example-text-input" class="text-sm font-weight-bolder me-3 mt-2">설비구분</p>
-            <div class="col-6 col-lg-3 mb-2">
-              <select class="form-select custon-width" v-model="equipmentData.eqp_type">
-                <option v-for="(opt, idx) in equipmentData.selectOptions.EQP_TYPE" :key="idx" :value="opt.comm_dtl_cd">
-                  {{ opt.comm_dtl_nm }}
-                </option>
-              </select>
+        <!-- 사용유무 -->
+        <div class="row mb-4 align-items-center" style="padding-left: 3rem;">
+          <div class="col-lg-2 text-start fw-bolder">
+            사용유무
+          </div>
+          <div class="col-lg-10 d-flex align-items-center">
+            <div v-for="(opt, idx) in equipmentData.selectOptions.IS_USE" :key="idx" class="form-check me-4">
+              <input
+                class="form-check-input radio-inline"
+                type="radio"
+                v-model="equipmentData.is_use"
+                :value="opt.comm_dtl_cd"
+                :id="'is_use_' + idx"
+                @change="searchEquipments"
+              />
+              <label class="form-check-label" :for="'is_use_' + idx">
+                {{ opt.comm_dtl_nm }}
+              </label>
             </div>
           </div>
-          <!-- 사용유무-->
-          <div class="  me-7">
-            <p for="example-text-input" class="text-sm font-weight-bolder me-3 mt-2">사용유무</p>
-            <div class="col-6 col-lg-3 mb-2">
-              <select class="form-select custon-width" v-model="equipmentData.is_use">
-                <option v-for="(opt, idx) in equipmentData.selectOptions.IS_USE" :key="idx" :value="opt.comm_dtl_cd">
-                  {{ opt.comm_dtl_nm }}
-                </option>
-              </select>
-            </div>
-          </div>
+        </div>
 
-          <div class="  me-7">
-            <p for="example-text-input" class="text-sm font-weight-bolder me-3 mt-2">설비상태</p>
-            <div class="col-6 col-lg-3 mb-2">
-              <select class="form-select custon-width" v-model="equipmentData.status">
-                <option v-for="(opt, idx) in equipmentData.selectOptions.STATUS" :key="idx" :value="opt.comm_dtl_cd">
-                  {{ opt.comm_dtl_nm }}
-                </option>
-              </select>
+        <!-- 설비상태 -->
+        <div class="row mb-2 align-items-center" style="padding-left: 3rem;">
+          <div class="col-lg-2 text-start fw-bolder">
+            설비상태
+          </div>
+          <div class="col-lg-10 d-flex align-items-center">
+            <div v-for="(opt, idx) in equipmentData.selectOptions.STATUS" :key="idx" class="form-check me-4">
+              <input
+                class="form-check-input radio-inline"
+                type="radio"
+                v-model="equipmentData.status"
+                :value="opt.comm_dtl_cd"
+                :id="'status_' + idx"
+                @change="searchEquipments"
+              />
+              <label class="form-check-label" :for="'status_' + idx">
+                {{ opt.comm_dtl_nm }}
+              </label>
             </div>
           </div>
         </div>
 
         <!-- 버튼 -->
+
         <div class="row">
-          <div class="center mt-2">
-            <button id="button-addon2" type="button" class="btn btn-warning me-2" @click="searchEquipments">
+          <div class="d-flex justify-content-center align-items-center mt-2">
+            <!-- <button id="button-addon2" type="button" class="btn btn-warning me-2" @click="searchEquipments">
               <i class="fa-solid fa-magnifying-glass"></i>
-            </button>
-            <button id="button-addon2" type="button" class="btn btn-secondary" @click="resetBtn">
+            </button> -->
+            <!-- 초기화 버튼 -->
+            <button id="button-addon2" type="button" class="btn btn-secondary me-3" @click="resetBtn">
               <i class="fa-solid fa-rotate"></i>
+            </button>
+
+            <!-- 엑셀 버튼 -->
+            <button class="btn btn-outline-success" @click="excelDownload()">
+              <i class="fa-regular fa-file-excel"></i> EXCEL
             </button>
           </div>
         </div>
       </div>
 
-
-
-
       <!-- 조회 결과 -->
       <div class="card-body" style="position: relative; height: 600px">
         <ag-grid-vue style="width: 100%; height: 100%" class="ag-theme-alpine" :gridOptions="gridOptions"
           @grid-ready="myGrid" :columnDefs="columnDefs" :rowData="rowData" :pagination="true"></ag-grid-vue>
-
-
       </div>
 
-      <!--엑셀버튼-->
-      <div class="row">
-        <div class="col-12 text-center">
-          <button class="btn btn-outline-success mb-4" @click="excelDownload()">
-            <i class="fa-regular fa-file-excel"></i> EXCEL
-          </button>
-        </div>
-      </div>
 
     </div>
   </div>
@@ -162,6 +177,11 @@ export default {
           { comm_dtl_cd: null, comm_dtl_nm: '전체' }, // "전체" 추가
           ...(statusResponse.data || []),
         ];
+
+        // 기본값 설정
+        this.equipmentData.eqp_type = null; // "전체"
+        this.equipmentData.is_use = null;  // "전체"
+        this.equipmentData.status = null;  // "전체"
 
       } catch (error) {
         console.error('공통코드 가져오기 실패:', error);
@@ -271,6 +291,28 @@ export default {
 </script>
 
 <style scoped lang="scss">
+
+/* 라디오 버튼과 라벨 수직 정렬 */
+.form-check-input {
+  vertical-align: middle; /* 라벨 텍스트와 버튼을 동일 높이에 배치 */
+  margin-top: 0; /* 버튼의 수직 위치 조정 */
+  margin-right: 0.5rem; /* 라디오 버튼과 라벨 사이 간격 */
+}
+
+/* 라벨 텍스트 높이 맞추기 */
+.form-check-label {
+  line-height: 1; /* 라벨 텍스트의 높이를 라디오 버튼과 맞춤 */
+  margin-bottom: 0; /* 불필요한 아래 여백 제거 */
+  display: flex;
+  align-items: center; /* 라디오 버튼과 동일 높이에 위치 */
+}
+
+/* 라디오 버튼 그룹의 전체 정렬 */
+.form-check {
+  display: flex; /* 플렉스 박스 사용 */
+  align-items: center; /* 라디오 버튼과 라벨 수직 정렬 */
+}
+
 //그리드 사용시 아래 스타일 임포트
 @import '../../../node_modules/ag-grid-community/styles/ag-grid.css';
 @import '../../../node_modules/ag-grid-community/styles/ag-theme-alpine.css';

@@ -196,26 +196,54 @@ router.post('/equip/insp', async (req, res) => {
   }
 });
 
-//점검수정
+// 점검수정
 router.put('/equip/insp/:insp_log_cd', async (req, res) => {
   console.log('수정 요청 데이터:', req.body);
 
-  const inspData = req.params.insp_log_cd; // URL에서 점검 코드 추출
-  try {
+  const inspLogCd = req.params.insp_log_cd; // URL에서 점검 코드 추출
 
+  console.log('수신한 insp_log_cd:', inspLogCd);
+  console.log('수정 요청 데이터:', req.body);
+
+    // insp_log_cd가 유효한지 확인
+    if (!inspLogCd || inspLogCd === 'null' || inspLogCd.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: '유효하지 않은 insp_log_cd입니다. 값을 확인하세요.',
+      });
+    }
+  
+  try {
     // 수정할 데이터 구성
     const eqInspInfo = { ...req.body, insp_log_cd: inspLogCd };
 
+    // undefined 및 "null"인 필드만 제거
+    Object.keys(eqInspInfo).forEach((key) => {
+      if (
+        eqInspInfo[key] === undefined || // JavaScript의 undefined
+        eqInspInfo[key] === 'null' // 문자열로 "null"
+      ) {
+        delete eqInspInfo[key]; // 해당 키 삭제
+      }
+      // 실제 null 값은 유지하여 명시적으로 처리 가능
+    });
+
+    console.log('최종 업데이트 데이터:', eqInspInfo);
+
     // 서비스 호출
-    const result = await equipmentService.updateInspEq(inspData);
+    const result = await equipmentService.updateInspEq(eqInspInfo);
 
     // 결과 반환
-    res.json({ success: true, data: result });
+    if (result.success) {
+      res.json({ success: true, data: result.data });
+    } else {
+      res.status(400).json({ success: false, message: result.message });
+    }
   } catch (err) {
     console.error('점검 수정 실패:', err);
     res.status(500).json({
       success: false,
-      message: '점검 수정 중 오류 발생'
+      message: '점검 수정 중 오류 발생',
     });
   }
 });
@@ -233,6 +261,9 @@ router.get('/equip/insp/:no', async (req, res) => {
   let info = await equipmentService.findInspEqOne(eqpCd);
   res.send(info);
 });
+
+
+/*--------------설비 비가동-------------*/
 
 module.exports = router;
 // module.exports = upload;
