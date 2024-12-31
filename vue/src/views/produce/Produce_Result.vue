@@ -7,9 +7,34 @@
           <div class="col-3 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">지시서 코드</div>
           <div class="input-group w-30">
             <input class="form-control" type="text" v-model="inst_cd" placeholder="생산지시서 코드를 검색해주세요" style="height: 41px;">
-            <button class="btn btn-warning mb-3" type="button" @click="searchOrder"><i class="fa-solid fa-magnifying-glass"></i></button>
+            <button class="btn btn-warning mb-3" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
         </div>
+
+        <!--생산지시서 검색모달[S]-->
+        <Layout :modalCheck="isModal">
+            <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+              <h5 class="modal-title">생산지시서 검색</h5>
+              <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
+            </template>
+            <template v-slot:default>
+              <ag-grid-vue class="ag-theme-alpine" 
+              style="width:100%; height:250px;" 
+              :columnDefs="instDefs"
+              :rowData="instData" 
+              @grid-ready="gridFit"
+              @rowClicked="modalClicked" 
+              :grid-options="modalOptions"
+              @rowIndexChanged="RowIndexChangedEvent"
+              overlayNoRowsTemplate="등록된 지시서가 없습니다.">
+              </ag-grid-vue>
+            </template>
+            <template v-slot:footer>
+              <button type="button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
+              <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
+            </template>
+          </Layout>
+        <!--생산지시서 검색모달[E]-->
 
         <div class="row mb-2">
           <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">진행상태</div>
@@ -22,12 +47,11 @@
             </div>
           </div>
         </div>
-
       </div>
 
       <div class="card-header ps-5 ps-md-4">
-        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="instDefs"
-          :rowData="instData" :pagination="true" @grid-ready="myGrid" @rowClicked="modalClicked"
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="resultDefs"
+          :rowData="resultData" :pagination="true" @grid-ready="myGrid" @rowClicked="modalClicked"
           :gridOptions="gridOptions" overlayNoRowsTemplate="등록된 지시서가 없습니다.">
         </ag-grid-vue>
         <div class="center">
@@ -44,12 +68,13 @@
 import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import Layout from '../components/modalLayout.vue';
 
 export default {
-  components: { AgGridVue },
+  components: { AgGridVue, Layout },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산실적 조회' });
-    this.getInstList();
+    this.getResultList();
     this.getStatus();
   },
   computed: {
@@ -59,6 +84,7 @@ export default {
   },
   data() {
     return {
+      isModal: false, //지시서 모달
       rowData: null,
       myApi: null,
       myColApi: null,
@@ -66,10 +92,19 @@ export default {
       selected_radio:'',
       selected_list:'',
 
+      instDefs: [
+        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
+        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true, width: 120 },
+        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, width: 120 },
+        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
+      ],
+      instData: [],
+
       resultDefs: [
         { headerName: '순번', field: 'STEP', sortable: true, width: 120 },
         { headerName: '지시서코드', field: 'INST_CD', sortable: true },
-        { headerName: '공정명', field: 'PROD_NM', sortable: true },
+        { headerName: '공정명', field: 'PROC_NM', sortable: true },
         { headerName: '설비코드', field: 'EQP_CD', sortable: true},
         { headerName: '설비명', field: 'EQP_NM'},
         { headerName: '계획량', field: 'TOTAL_QTY'},
@@ -79,11 +114,11 @@ export default {
         { headerName: '불량상세', field: 'CREATE_DT'},
         { headerName: '공정시작시간', field: 'START_TIME'},
         { headerName: '공정종료시간', field: 'END_TIME'},
-        { headerName: '담당자', field: 'NAME'},
-        { headerName: '지시일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter },
+        { headerName: '담당자', field: 'NAME'}
 
       ],
       resultData: [],
+      
       gridOptions: {
         pagination: true,
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
@@ -96,6 +131,23 @@ export default {
     };
   },
   methods: {
+    
+    modalOpen() { //지시서 모달
+      this.isModal = !this.isModal;
+      this.getInstList();
+    },
+    modalClicked(params) {
+      this.isModal = !this.isModal;
+      this.inst_cd= params.data.INST_CD;       
+    },
+
+    //지시서 리스트
+    async getInstList() {
+      let result = await axios.get('/api/inst')
+                              .catch(err => console.log(err));
+      this.instData = result.data;
+    },
+
     async getStatus() {
       let arr = await this.$comm.getComm("PS");
       let arrAdd = {comm_dtl_cd: '', comm_dtl_nm: '전체'};
@@ -109,9 +161,12 @@ export default {
       this.myColApi = params.columnApi; // api, columnApi 둘 다 꼭 있어야 함
     },
 
-    //지시서 리스트
+    //실적 리스트
     async getResultList() {
-      let result = await axios.get('/api/progress/result')
+      let obj = {
+        INST_CD : this.inst_cd,
+      }
+      let result = await axios.get('/api/progress/result', {params:obj})
                               .catch(err => console.log(err));
       this.resultData = result.data;
     },

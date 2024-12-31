@@ -158,10 +158,10 @@ const deleteInst = async (values)=>{
   /* ------------------------생산공정------------------------- */
 
 //지시서 단건조회
-const findResultNo = async (no)=>{
-  let list = await mariadb.query('resultInfo', no);
-  let info = list[0];
-  return info;
+const findResultNo = async (searchs)=>{
+  console.log(searchs);
+  let list = await mariadb.query('resultInfo', searchs);
+  return list;
 }
 
 //지시서에 커스텀된 제품별 공정 조회
