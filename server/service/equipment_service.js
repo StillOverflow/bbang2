@@ -68,26 +68,6 @@ const updateEq = async (eqInfo) => {
 };
 
 /* ---------------------- 설비 점검 ----------------------- */
-/*
-const getInspCd = `
-SELECT CONCAT('INS', LPAD(IFNULL(MAX(SUBSTR(i.INSP_LOG_CD, -3)) + 1, 1), 3, '0')) AS INSP_LOG_CD FROM inspection_log i`;
-
-//설비점검등록
-const eqInspInsert = `INSERT INTO inspection_log
-SET ? `;
-
-const insertEq = async (eqInfo) => {
-  let new_eqp_cd = (await mariadb.query('getEqpCd'))[0].eqp_cd;
-  eqInfo['eqp_cd'] = new_eqp_cd;
-
-  let result = await mariadb.query('eqInsert', eqInfo);
-  if (result.affectedRows > 0) {
-    return { eqp_cd: new_eqp_cd };
-  } else {
-    return {};
-  }
-};
-*/
 
 // 점검 등록
 const insertInspEq = async (inspData) => {
@@ -106,14 +86,18 @@ const insertInspEq = async (inspData) => {
 //점검 수정
 const updateInspEq = async (inspData) => {
   try {
-    const inspCd = inspData.insp_log_cd; // 설비 코드 추출
-    delete inspData.insp_log_cd; // eqp_cd는 WHERE절에 사용되므로 제거
+    const inspLogCd = inspData.insp_log_cd; // 점검 코드 추출
+    delete inspData.insp_log_cd; // WHERE 조건에 사용되므로 객체에서 제거
 
-    // SQL 실행 (UPDATE ... SET ? WHERE eqp_cd = ?)
-    let result = await mariadb.query('eqInspUpdate', [inspData, insp_log_cd]);
+    console.log('수정 요청 데이터:', inspData, 'insp_log_cd:', inspLogCd);
+
+    // SQL 실행
+    const result = await mariadb.query('eqInspUpdate', [inspData, inspLogCd]);
+
+    console.log('SQL 실행 결과:', result);
 
     if (result && result.affectedRows > 0) {
-      return { success: true, message: '설비 정보 수정 성공' };
+      return { success: true, message: '점검 정보 수정 성공' };
     } else {
       return { success: false, message: '수정할 데이터가 없습니다.' };
     }
