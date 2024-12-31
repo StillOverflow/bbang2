@@ -262,5 +262,8 @@ router.get('/equip/insp/:no', async (req, res) => {
   res.send(info);
 });
 
+
+/*--------------설비 비가동-------------*/
+
 module.exports = router;
 // module.exports = upload;

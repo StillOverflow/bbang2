@@ -119,13 +119,7 @@ const findInspEqOne = async (eqp_cd) => {
   return list[0];
 };
 
-// //설비 점검 단건 조회(설비별 최근 1건씩만)
-// const findInspEqNo = async (eqp_cd) => {
-//   let list = await mariadb.query('eqInspListOne', eqp_cd);
-
-//   let info = list[0];
-//   return info;
-// };
+/* ---------------------- 설비 비가동 ----------------------- */
 
 
 module.exports = {

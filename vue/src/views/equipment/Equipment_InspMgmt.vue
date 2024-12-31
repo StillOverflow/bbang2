@@ -1,3 +1,4 @@
+<!-- 설비 점검 관리 -->
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
@@ -299,41 +300,6 @@ export default {
     //점검조회(최신1건)
     // 설비 단건 조회
     async getInspListOne(eqp_cd) {
-      /*
-      try {
-        console.log(eqp_cd);
-        const result = await axios.get(`/api/equip/insp/${eqp_cd}`);
-        console.log("result data:", result.data);
-        if (result.data) {
-
-          //insp_log_cd가 있고 end_time이 없을 경우 수정
-
-          if (result.data.insp_log_cd && !result.data.end_time) {
-            // 수정 모드: insp_log_cd가 있고 end_time이 없을 경우
-            // this.getInspInfo(result.data.eqp_cd);
-            this.isEditMode = true;
-            this.equipmentData = {
-              ...this.equipmentData,
-              ...result.data, // 최신 점검 데이터를 폼에 반영
-            };
-          } else {
-            // 등록 모드: insp_log_cd가 없거나 end_time이 있는 경우
-            //this.getEquipInfo(result.data.eqp_cd);
-            this.isEditMode = false;
-          }
-
-
-
-          // 이미지 경로 처리
-          this.previewImage = result.data.img_path
-            ? `/api/${result.data.img_path}`
-            : require('@/assets/img/blank_img.png');
-        }
-      } catch (err) {
-        console.error('Error fetching latest inspection data:', err);
-      }
-    },
-    */
 
     try {
     const result = await axios.get(`/api/equip/insp/${eqp_cd}`);

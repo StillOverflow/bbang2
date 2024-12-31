@@ -225,7 +225,7 @@ ORDER BY e.eqp_cd, i.start_time DESC
 limit 1
   `;
 
-  //설비 점검 조회(필터링 적용)
+  //설비 점검 조회(필터링 적용) //아직 조회페이지 전이라 검증 필요
 const eqInstListSearch = (searchObj) => {
   let query = ` SELECT  e.eqp_cd as eqp_cd,
                       fn_get_codename(e.eqp_type) as eqp_type,
@@ -274,6 +274,99 @@ FROM equipment e
   return query;
 };
 
+
+/* -----------설비 비가동 관리------------*/
+
+// 비가동 등록 전 마지막 점검 코드 찾기 +1
+const getDTimeCd = `
+SELECT CONCAT('DTM', LPAD(IFNULL(MAX(SUBSTR(d.DOWNTIME_CD, -3)) + 1, 1), 3, '0')) AS downtime_cd FROM downtime_log d`;
+
+//설비점검등록
+const eqDTimeInsert = `INSERT INTO downtime_log
+SET ? `;
+
+//설비점검수정
+const eqDTimeUpdate = `UPDATE downtime_log
+SET ?
+  WHERE downtime_cd = ? `;
+
+//설비점검조회
+const eqDTimeList = ` SELECT   
+  d.downtime_cd as downtime_cd,
+  e.eqp_cd as eqp_cd,
+  fn_get_codename(e.eqp_type) as eqp_type,
+  e.eqp_nm as eqp_nm,
+  e.model as model,
+  d.start_time as start_time,
+  d.end_time as end_time,
+  fn_get_codename(d.status) as status,
+  fn_get_codename(d.downtime_reason) as downtime_reason,
+  d.id as id,
+  d.create_dt as create_dt,
+  d.update_dt as update_dt,
+  d.note as note
+
+FROM equipment e
+LEFT JOIN downtime_log d ON e.eqp_cd = d.eqp_cd
+ORDER BY d.create_dt DESC
+`;
+
+//설비비가동조회(설비별 최신1건씩만)
+const eqDTimeListOne = `SELECT 
+  d.downtime_cd as downtime_cd,
+  e.eqp_cd as eqp_cd,
+  fn_get_codename(e.eqp_type) as eqp_type,
+  e.eqp_nm as eqp_nm,
+  e.model as model,
+  d.start_time as start_time,
+  d.end_time as end_time,
+  fn_get_codename(d.status) as status,
+  fn_get_codename(d.downtime_reason) as downtime_reason,
+  d.id as id,
+  d.create_dt as create_dt,
+  d.update_dt as update_dt,
+  d.note as note
+
+FROM equipment e
+LEFT JOIN downtime_log d 
+  ON e.eqp_cd = d.eqp_cd
+  AND d.start_time = (
+    SELECT MAX(start_time) 
+    FROM downtime_log 
+    WHERE eqp_cd = e.eqp_cd
+  )
+ORDER BY e.eqp_cd, d.start_time DESC`;
+
+//설비점검 단건조회
+const eqDtimeInfo = `SELECT 
+  d.downtime_cd as downtime_cd,
+  e.eqp_cd as eqp_cd,
+  fn_get_codename(e.eqp_type) as eqp_type,
+  e.eqp_nm as eqp_nm,
+  e.model as model,
+  d.start_time as start_time,
+  d.end_time as end_time,
+  fn_get_codename(d.status) as status,
+  fn_get_codename(d.downtime_reason) as downtime_reason,
+  d.id as id,
+  d.create_dt as create_dt,
+  d.update_dt as update_dt,
+  d.note as note
+
+FROM equipment e
+LEFT JOIN downtime_log d 
+  ON e.eqp_cd = d.eqp_cd
+  AND d.start_time = (
+    SELECT MAX(start_time) 
+    FROM downtime_log 
+    WHERE eqp_cd = e.eqp_cd
+  )
+    WHERE e.eqp_cd = ?
+ORDER BY e.eqp_cd, d.start_time DESC
+limit 1
+  `;
+
+
 module.exports = {
   eqStatList,
   eqAllList,
@@ -288,5 +381,11 @@ module.exports = {
   eqInspInsert,
   eqInspUpdate,
   eqInspListOne,
-  eqInstListSearch
+  eqInstListSearch,
+  getDTimeCd,
+  eqDTimeInsert,
+  eqDTimeUpdate,
+  eqDTimeList,
+  eqDTimeListOne,
+  eqDtimeInfo
 };
