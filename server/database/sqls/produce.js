@@ -99,11 +99,11 @@ const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 //계획서 제품조회
 const planDtlList =
 `SELECT 
-        PROD_PLAN_DTL_CD, 
-        PROD_PLAN_CD, 
-        pp.PRD_CD as PRD_CD, 
-        PRD_NM, 
-        PROD_PLAN_QTY,
+        prod_plan_dtl_cd, 
+        prod_plan_cd, 
+        pp.PRD_CD as prd_cd, 
+        prd_nm, 
+        prod_plan_qty as order_qty,
         (SELECT 
             COUNT(*) 
          FROM 

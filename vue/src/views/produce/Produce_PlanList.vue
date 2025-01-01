@@ -81,6 +81,20 @@ export default {
         { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150 },
         { headerName: '제품수량', field: 'DTL_QTY', sortable: true, width: 100},
         { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
+        {
+          headerName: '상세' ,
+          field: 'detailed',
+          cellRenderer: (params) => {
+              const button = document.createElement('button');
+              button.innerText = 'DETAILED';
+              button.className = 'btn btn-warning btn-xsm';
+              button.addEventListener('click', () => {
+
+                  this.$router.push({ name: 'Produce_PlanAdd' , query : { plan_cd : params.data.PROD_PLAN_CD}});
+              });
+              return button;
+          }
+      }
       ],
       planData: [],
       gridOptions: {
