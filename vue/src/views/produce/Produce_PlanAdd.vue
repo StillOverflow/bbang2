@@ -1,6 +1,6 @@
 <!-- 생산 -->
 <template>
-  <div class="py-4 container-fluid">
+  <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
     <div class="card">      
       <div class="card-header bg-light ps-5 ps-md-4">
         <p class="text-uppercase text-lg font-weight-bolder">기본정보</p>
@@ -40,9 +40,9 @@
             overlayNoRowsTemplate="주문내역이 없습니다.">
             </ag-grid-vue>
           </template>
-          <template v-slot:footer>
+          <template v-slot:footer>            
             <button type="button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
+            <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>          
           </template>
         </Layout>
       <!--검색모달[E]-->
@@ -81,7 +81,7 @@
           </div>
         </div>
         <div class="center">
-          <button class="btn mtp30" :class="isUpdated ? 'btn-success' : 'btn-primary'" @click="isUpdated ? planInsert() : planInsert()"> {{ isUpdated ? "UPDATE" : "SAVE" }}</button>
+          <button class="btn mtp30" :class="isUpdated ? 'btn-success' : 'btn-primary'" @click="planInsert"> {{ isUpdated ? "UPDATE" : "SAVE" }}</button>
           <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
         </div>
       </div>
@@ -103,6 +103,7 @@ export default {
     this.$store.dispatch('breadCrumb', { title: '생산계획서 관리' });
 
     let selectNo = this.$route.query.plan_cd;
+    this.selectNo = selectNo;
     
     if(selectNo){
         //수정
@@ -157,7 +158,7 @@ export default {
             },
             cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
         },
-        {headerName: '현 재고', field: 'in_cnt', valueFormatter:this.$comm.currencyFormatter},
+        {headerName: '현 재고', field: 'in_cnt', valueFormatter:this.$comm.currencyFormatter}
       ],
       orderDtlData: [],
       orderDtlApi: null,
@@ -211,13 +212,16 @@ export default {
                               .catch(err => console.log(err));
       this.orderData = result.data;    
     },
+
+    modalCloseFunc() {
+      this.isModal = !this.isModal;
+    },
     /*모달 [E]*/   
    
-
     //주문서 제품 리스트
     async getOrderDtlList(order_cd) {
       let result = await axios.get(`/api/comm/order/dtl/${order_cd}`)
-                              .catch(err => console.log(err));                              
+                              .catch(err => console.log(err));   
       this.orderDtlData = result.data;
     },
 
@@ -239,7 +243,7 @@ export default {
     //계획서 제품 리스트
     async getPlanDtlList(selectNo) {
       let result = await axios.get(`/api/plan/${selectNo}/dtl`)
-                              .catch(err => console.log(err));               
+                              .catch(err => console.log(err));    
       this.orderDtlData = result.data;
     },
 
@@ -282,9 +286,11 @@ export default {
         }
       }
     },
-    //지시서 등록
+
+    //계획서 등록
     async planInsert() {
-      let rowQty = this.orderDtlData.filter(row => !row.ORDER_QTY || row.ORDER_QTY <= 0);
+      console.log(this.orderDtlData);
+      let rowQty = this.orderDtlData.filter(row => !row.order_qty || row.order_qty <= 0);
       
       if (!this.START_DT || !this.END_DT) {
           this.$swal({
@@ -311,17 +317,28 @@ export default {
       
       this.orderDtlData.forEach((obj) => {
         insertPrd.push({
-          PRD_CD: obj.PRD_CD,
-          PROD_PLAN_QTY: obj.ORDER_QTY
+          PRD_CD: obj.prd_cd,
+          PROD_PLAN_QTY: obj.order_qty
         });
       });
 
       let insertArr = [...insertPlan, insertPrd];
 
-      let result = await axios.post('/api/plan', insertArr)
-                              .catch(err => console.log(err));
+      if(this.selectNo > 0){
+        let result = await axios.put(`/api/plan/${this.selectNo}`, insertArr)
+                                .catch(err => console.log(err));
 
-      if(result.data == 'success'){
+        if(result.data == 'success'){
+          this.$swal({
+              icon: "success",
+              title: "수정에 성공 하였습니다.",
+          })    
+        }
+      }else{
+        let result = await axios.post('/api/plan', insertArr)
+                                .catch(err => console.log(err));
+
+        if(result.data == 'success'){
           this.$swal({
               icon: "success",
               title: "등록에 성공 하였습니다.",
@@ -330,8 +347,8 @@ export default {
           .then(() => {
               this.resetForm();   //등록 후 값 초기화
           });          
+        }
       }
-      return result;
     },
     //폼 초기화
     resetForm() {

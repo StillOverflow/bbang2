@@ -79,6 +79,13 @@ const planInsert = `
 `;
 
 // 디테일 입력
+const planDtlDelete = 
+`
+DELETE FROM PROD_PLAN_DTL
+WHERE PROD_PLAN_CD = ?
+`;
+
+// 디테일 등록
 const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT PROD_PLAN_DTL
@@ -93,6 +100,12 @@ const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 
   return sql;
 };
+
+// 헤더 수정
+const planUpdate = `
+  UPDATE PROD_PLAN SET ?
+  WHERE ?
+`;
 /* 계획서 등록[E] */
 
 
@@ -104,6 +117,9 @@ const planDtlList =
         pp.PRD_CD as prd_cd, 
         prd_nm, 
         prod_plan_qty as order_qty,
+        (SELECT SUM(STOCK)
+         FROM product_in
+         WHERE PRD_CD = p.PRD_CD ) AS in_cnt,
         (SELECT 
             COUNT(*) 
          FROM 
@@ -223,12 +239,12 @@ const instInsert = `
 const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT PROD_INST_DTL
-      (INST_DTL_CD, INST_CD,PRD_CD, TOTAL_QTY, PROD_QTY)
+      (INST_DTL_CD, INST_CD,PRD_CD, TOTAL_QTY)
     VALUES 
   `;
 
   values.forEach((obj) => {
-    sql += `(CONCAT('PID', LPAD(nextval(inst_dtl_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.total_qty}', '${obj.PROD_QTY}'), `;
+    sql += `(CONCAT('PID', LPAD(nextval(inst_dtl_seq), 3,'0')), '${obj.inst_cd}', '${obj.prd_cd}', '${obj.total_qty}'), `;
   });
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
@@ -244,7 +260,7 @@ const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
   `;
 
   values.forEach((obj) => {
-    sql += `(CONCAT('PRS', LPAD(nextval(result_seq), 3,'0')), '${obj.INST_CD}', '${obj.PRD_CD}', '${obj.PROC_FLOW_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
+    sql += `(CONCAT('PRS', LPAD(nextval(result_seq), 3,'0')), '${obj.inst_cd}', '${obj.PRD_CD}', '${obj.PROC_FLOW_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
   });
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
   
@@ -426,7 +442,9 @@ module.exports = {
     planSearch,
     planSeq,
     planInsert,
+    planUpdate,
     planDtlInsert,
+    planDtlDelete,
     planDelete,
     planDtlList,
 

@@ -32,7 +32,7 @@ const productSelect = async (datas) => {
 
 //주문서 제품조회
 const findOrderNo = async (no)=>{
-  let list = await mariadb.query('orderDtlList', no);
+  let list = await mariadb.query('commOrderDtlList', no);
   return list;
 }
 
