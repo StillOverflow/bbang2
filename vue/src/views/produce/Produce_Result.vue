@@ -22,10 +22,8 @@
               style="width:100%; height:250px;" 
               :columnDefs="instDefs"
               :rowData="instData" 
-              @grid-ready="gridFit"
               @rowClicked="modalClicked" 
               :grid-options="modalOptions"
-              @rowIndexChanged="RowIndexChangedEvent"
               overlayNoRowsTemplate="등록된 지시서가 없습니다.">
               </ag-grid-vue>
             </template>
@@ -36,7 +34,7 @@
           </Layout>
         <!--생산지시서 검색모달[E]-->
 
-        <div class="row mb-2">
+        <div class="row">
           <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">진행상태</div>
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">
@@ -50,12 +48,15 @@
       </div>
 
       <div class="card-header ps-5 ps-md-4">
-        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="resultDefs"
-          :rowData="resultData" :pagination="true" @grid-ready="myGrid" @rowClicked="modalClicked"
-          :gridOptions="gridOptions" overlayNoRowsTemplate="등록된 지시서가 없습니다.">
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" 
+        :columnDefs="resultDefs"
+        :rowData="resultData" 
+        :pagination="true" 
+        @grid-ready="myGrid" 
+        :gridOptions="gridOptions" 
+        overlayNoRowsTemplate="등록된 실적이 없습니다.">
         </ag-grid-vue>
         <div class="center">
-          <button class="btn btn-danger mtp30" @click="PlanCancel">DELETE</button>
           <button class="btn btn-outline-success mlp10 mtp30" @click="excelDownload()"><i
               class="fa-regular fa-file-excel"></i> EXCEL</button>
         </div>
@@ -104,8 +105,8 @@ export default {
       resultDefs: [
         { headerName: '순번', field: 'STEP', sortable: true, width: 120 },
         { headerName: '지시서코드', field: 'INST_CD', sortable: true },
+        { headerName: '담당자', field: 'NAME'},
         { headerName: '공정명', field: 'PROC_NM', sortable: true },
-        { headerName: '설비코드', field: 'EQP_CD', sortable: true},
         { headerName: '설비명', field: 'EQP_NM'},
         { headerName: '계획량', field: 'TOTAL_QTY'},
         { headerName: '지시량', field: 'PROD_QTY'},
@@ -114,8 +115,7 @@ export default {
         { headerName: '불량상세', field: 'CREATE_DT'},
         { headerName: '공정시작시간', field: 'START_TIME'},
         { headerName: '공정종료시간', field: 'END_TIME'},
-        { headerName: '담당자', field: 'NAME'}
-
+        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true }
       ],
       resultData: [],
       
@@ -178,25 +178,34 @@ export default {
 
       selected = this.myApi.getSelectedNodes();
       const selectedData = selected.map(item => ({
-        '지시코드': item.data.INST_CD,
-        '작업일자': item.data.WORK_DT,
-        '진행상태': item.data.ACT_TYPE,
-        '등록일': item.data.CREATE_DT
+        '순번': item.data.STEP,
+        '지시서코드': item.data.INST_CD,
+        '담당자': item.data.NAME,
+        '공정명': item.data.PROC_NM,
+        '설비명': item.data.EQP_NM,
+        '계획량': item.data.TOTAL_QTY,
+        '지시량': item.data.PROD_QTY,
+        '불량양': item.data.DEF_QTY,
+        '불량코드': item.data.CREATE_DT,
+        '불량상세': item.data.CREATE_DT,
+        '공정시작시간': item.data.START_TIME,
+        '공정종료시간': item.data.END_TIME,
+        '진행상태': item.data.ACT_TYPE
       }));
 
       const workBook = XLSX.utils.book_new()
       const workSheet = XLSX.utils.json_to_sheet(selectedData)
       XLSX.utils.book_append_sheet(workBook, workSheet, 'example')
-      XLSX.writeFile(workBook, `생산지시서_${today}.xlsx`);
+      XLSX.writeFile(workBook, `생산실적_${today}.xlsx`);
     },
     async searchOrder() {
       let obj = {
             INST_CD : this.inst_cd,
             STATUS : this.selected_radio
         }
-      let result = await axios.get('/api/inst', {params:obj})
+      let result = await axios.get('/api/progress/result', {params:obj})
                               .catch(err => console.log(err));
-      this.instData = result.data;
+      this.resultData = result.data;
     },
   }
 

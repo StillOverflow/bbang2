@@ -13,7 +13,7 @@
         </div>
 
 
-        <div class="row mb-2">
+        <div class="row">
           <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">진행상태</div>
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">

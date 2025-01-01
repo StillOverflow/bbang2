@@ -410,7 +410,7 @@ export default {
     async getResultList(prd_cd){
       let obj = {
         INST_CD : this.inst_cd,
-        PRD_CD : prd_cd,
+        PRD_CD : prd_cd
       }
       let result = await axios.get('/api/progress/result', {params:obj})
                               .catch(err => console.log(err));

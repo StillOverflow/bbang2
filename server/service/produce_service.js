@@ -159,7 +159,6 @@ const deleteInst = async (values)=>{
 
 //지시서 단건조회
 const findResultNo = async (searchs)=>{
-  console.log(searchs);
   let list = await mariadb.query('resultInfo', searchs);
   return list;
 }

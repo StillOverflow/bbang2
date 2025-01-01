@@ -288,7 +288,8 @@ let sql =
   (SELECT TOTAL_QTY FROM prod_inst_dtl where INST_CD=pr.INST_CD and PRD_CD=pr.PRD_CD) AS TOTAL_QTY,
   (SELECT EQP_NM FROM equipment where EQP_CD=pr.EQP_CD) AS EQP_NM ,
   (SELECT EQP_TYPE FROM process where proc_cd=pr.proc_cd) AS EQP_TYPE,
-  (SELECT PROC_NM FROM process where proc_cd=pr.proc_cd) AS PROC_NM
+  (SELECT PROC_NM FROM process where proc_cd=pr.proc_cd) AS PROC_NM,
+  fn_get_codename(pr.STATUS) as ACT_TYPE
 FROM 
   PROD_RESULT pr`;
 
@@ -297,6 +298,7 @@ FROM
   if (datas.PROD_RESULT_CD) searchOrder.push(`PROD_RESULT_CD = UPPER('${datas.PROD_RESULT_CD}')`);
   if (datas.INST_CD) searchOrder.push(`INST_CD = UPPER('${datas.INST_CD}')`);
   if (datas.PRD_CD) searchOrder.push(`PRD_CD = UPPER('${datas.PRD_CD}')`);
+  if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
   
 
   if (searchOrder.length > 0) {
