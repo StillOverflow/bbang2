@@ -80,9 +80,8 @@
             overlayNoRowsTemplate="주문내역이 없습니다."/>
           </div>
         </div>
-  
         <div class="center">
-          <button class="btn btn-primary mtp30" @click="planInsert">SUBMIT</button>
+          <button class="btn mtp30" :class="isUpdated ? 'btn-success' : 'btn-primary'" @click="isUpdated ? planInsert() : planInsert()"> {{ isUpdated ? "UPDATE" : "SAVE" }}</button>
           <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
         </div>
       </div>
@@ -102,12 +101,19 @@ export default {
   },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산계획서 관리' });
+
+    let selectNo = this.$route.query.plan_cd;
+    
+    if(selectNo){
+        //수정
+        this.getPlanInfo(selectNo);     
+        this.isUpdated = true;      
+    }
   },
   computed : {
       orderDtlCount(){
           return this.orderDtlData.length;
       },
-
   },
   data() {
     return {
@@ -215,6 +221,28 @@ export default {
       this.orderDtlData = result.data;
     },
 
+    //계획서 조회
+    async getPlanInfo(selectNo) {
+      let obj = {
+        PROD_PLAN_CD : selectNo,
+      }
+      let result = await axios.get('/api/plan', {params:obj})
+                              .catch(err => console.log(err));
+      this.planInfo = result.data[0];
+      this.order_cd = this.planInfo.ORDER_CD; 
+      this.START_DT = this.$comm.getMyDay(this.planInfo.START_DT);
+      this.END_DT =  this.$comm.getMyDay(this.planInfo.END_DT);
+
+      this.getPlanDtlList(selectNo);
+    },
+
+    //계획서 제품 리스트
+    async getPlanDtlList(selectNo) {
+      let result = await axios.get(`/api/plan/${selectNo}/dtl`)
+                              .catch(err => console.log(err));               
+      this.orderDtlData = result.data;
+    },
+
     getSelected(type){ // 추가(+) / 삭제(-) 버튼 동작
       let selected = null;
       if(type == 'plus') selected = this.productApi.getSelectedNodes(); // 추가버튼일 시
@@ -251,7 +279,6 @@ export default {
           this.orderDtlData = [...this.orderDtlData, ...addArr]; // 펼침연산자로 기존의 값에 추가함
         } else {
           this.orderDtlData = changeArr;
-          //this.productData = [...this.productData, ...addArr];
         }
       }
     },

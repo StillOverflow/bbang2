@@ -99,11 +99,11 @@ const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 //계획서 제품조회
 const planDtlList =
 `SELECT 
-        PROD_PLAN_DTL_CD, 
-        PROD_PLAN_CD, 
-        pp.PRD_CD as PRD_CD, 
-        PRD_NM, 
-        PROD_PLAN_QTY,
+        prod_plan_dtl_cd, 
+        prod_plan_cd, 
+        pp.PRD_CD as prd_cd, 
+        prd_nm, 
+        prod_plan_qty as order_qty,
         (SELECT 
             COUNT(*) 
          FROM 
@@ -282,14 +282,33 @@ SELECT
 /*------------생산공정-------------*/
 
 //지시서 단건조회
-const resultInfo =
+const resultInfo = (datas) => {
+let sql = 
 `SELECT *,
-        (SELECT TOTAL_QTY FROM prod_inst_dtl where INST_CD=pr.INST_CD and PRD_CD=pr.PRD_CD) AS TOTAL_QTY,
-        (SELECT EQP_TYPE FROM process where proc_cd=pr.proc_cd) AS EQP_TYPE 
+  (SELECT TOTAL_QTY FROM prod_inst_dtl where INST_CD=pr.INST_CD and PRD_CD=pr.PRD_CD) AS TOTAL_QTY,
+  (SELECT EQP_NM FROM equipment where EQP_CD=pr.EQP_CD) AS EQP_NM ,
+  (SELECT EQP_TYPE FROM process where proc_cd=pr.proc_cd) AS EQP_TYPE,
+  (SELECT PROC_NM FROM process where proc_cd=pr.proc_cd) AS PROC_NM,
+  fn_get_codename(pr.STATUS) as ACT_TYPE
 FROM 
-  PROD_RESULT pr
-WHERE PROD_RESULT_CD = ?`;
+  PROD_RESULT pr`;
 
+ const searchOrder = [];
+
+  if (datas.PROD_RESULT_CD) searchOrder.push(`PROD_RESULT_CD = UPPER('${datas.PROD_RESULT_CD}')`);
+  if (datas.INST_CD) searchOrder.push(`INST_CD = UPPER('${datas.INST_CD}')`);
+  if (datas.PRD_CD) searchOrder.push(`PRD_CD = UPPER('${datas.PRD_CD}')`);
+  if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
+  
+
+  if (searchOrder.length > 0) {
+    sql += ` WHERE ` + searchOrder.join(' AND ');
+  }
+
+  sql += ` order by STEP asc`;
+
+  return sql; // 합체한 쿼리 전체
+}
 
 //지시서에 커스텀된 제품별 공정 조회
 const instCusFlow = (datas) => {

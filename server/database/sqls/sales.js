@@ -146,7 +146,7 @@ const orderUpdateInsert = (values) => {
     `;
 
     values.forEach((obj) => {
-        sql += `('${obj.order_dtl_cd}','${obj.order_cd}','${obj.prd_cd}', '${obj.order_qty}', '${obj.note}'), `;
+        sql += `(CONCAT('ODT', LPAD(nextval(order_dtl_cd_seq), 3,'0')),'${obj.order_cd}','${obj.prd_cd}', '${obj.order_qty}', '${obj.note}'), `;
     });
     sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 

@@ -93,9 +93,9 @@ router.get('/inst/:no/mat', async (req,res)=>{
   /* ------------------------생산공정------------------------- */
 
 //생산실적 조회
-router.get('/progress/result/:no', async (req,res)=>{
-  let resultNo = req.params.no;
-  let List = await produceService.findResultNo(resultNo);
+router.get('/progress/result', async (req,res)=>{
+  let searchs = req.query;
+  let List = await produceService.findResultNo(searchs);
   res.send(List);
 })
 
