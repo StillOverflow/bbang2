@@ -129,6 +129,18 @@ JOIN common_detail cd ON cd.COMM_DTL_CD = m.unit
 WHERE pf.proc_flow_cd = ?
 `;
 
+//제품별 공정자재 조회
+const selectAllMatByProc=
+`SELECT m.mat_cd ,
+       m.mat_nm ,
+       pfm.mat_qty ,
+       pfm.proc_mat_flow_cd ,
+       cd.comm_dtl_nm AS unit
+FROM proc_flow_mtl pfm
+JOIN process_flow pf  ON pfm.PROC_FLOW_CD = pf.PROC_FLOW_CD
+JOIN material m ON m.mat_cd = pfm.mat_cd
+JOIN common_detail cd ON cd.COMM_DTL_CD = m.unit
+WHERE pfm.prd_cd = ?`;
 //공정별자재코드 시퀀스 생성
 const procMtlSeq = `
 SELECT CONCAT('PMF', LPAD(nextval(proc_mat_flow_seq), 3, '0')) AS seq
@@ -158,6 +170,23 @@ const updateProSeq =
 UPDATE process_flow
 SET proc_seq =?
 WHERE proc_flow_cd =?
+`;
+
+//제품자재별 자재 사용량 계산
+const selectProcMtlsUsage =
+`
+SELECT mat_qty
+FROM proc_flow_mtl
+WHERE mat_cd = ?
+AND prd_cd = ?
+`;
+
+//공정별 자재 사용량 업데이트
+const updateProcMtl =
+`
+UPDATE proc_material
+SET mat_qty = ?
+WHERE proc_mat_flow_cd = ?
 `;
 //---------------------자재관리--------------------------
 //자재목록전체 조회
@@ -429,6 +458,7 @@ insertProcessMtlFlow,
 deleteProcessMtlFlow,
 ProcessSeq,
 updateProSeq,
+selectAllMatByProc,
 
 
 //자재관리
@@ -470,4 +500,10 @@ memInsert,
 memUpdate,
 getMemId,
 depSelect
+
+
+
+
+,selectProcMtlsUsage,
+updateProcMtl
 };

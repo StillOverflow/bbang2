@@ -67,7 +67,12 @@ router.get("/standard/proessMtl/:proc_flow_cd", async (req, res) => {
   let procMtllist = await standardService.searchProMtl(procCd);
   res.send(procMtllist);
 });
-
+//제품별 공정자재조회
+router.get("/standard/procesMtlByPrd/:prd_cd", async(req,res)=>{
+  let prdCd = req.params.prd_cd;
+  let list = await standardService.sarchProMtlByPrd(prdCd);
+  res.send(list);
+})
 //공정코드 조회
 router.get("/standard/procCd", async (req, res) => {
   let procCdlist = await standardService.searchProcCd();
@@ -122,7 +127,19 @@ router.put("/standard/updateFlowSeq", async (req, res) => {
     res.send({ result: true }); 
 });
 
-
+//개수확인
+router.get("/standard/proc_flow_mtl_usage/:mat_cd/:prd_cd", async(req, res)=>{
+  let matCd = req.params.mat_cd;
+  let prdCd = req.params.prd_cd;
+  let result = await standardService.procMatUsage(matCd, prdCd);
+  res.send(result);
+})
+//사용량 업데이트
+router.put("/standard/updateFlowMatUsage",async(req, res)=>{
+  let info = req.body;
+  let result = await standardService.updateMatUsage(info);
+  res.send(result);
+})
 //------------------자재관리-----------------------
 //자재조회
 router.get("/standard/allMaterials", async(req, res)=>{
