@@ -49,8 +49,21 @@ router.get('/quality/targetAll', async (req, resp) => {
 
 // 품질검사결과
 // 검사대기 내역 조회 (생산지시상태 완료 상태 내역을 가져옴(검사대기) => 검사완료 후 다음 공정이 있다면 진행전 상태로 넘겨줌)
-router.get('/quality/rec/wait', async (req, resp) => {
-  let result = await qualityService.getWaitList();
+router.get('/quality/rec/wait/prd', async (req, resp) => {
+  let result = await qualityService.getWaitPrdList();
+  resp.send(result);
+});
+
+// 자재 검사대기 내역 조회
+router.get('/quality/rec/wait/mat/:actCd', async (req, resp) => {
+  let value = req.params.actCd;
+  let result = await qualityService.getWaitMatList(value);
+  resp.send(result);
+});
+
+// 자재 미입고 거래처조회 (모달용)
+router.get('/quality/rec/wait/act', async (req, resp) => {
+  let result = await qualityService.getActList();
   resp.send(result);
 });
 

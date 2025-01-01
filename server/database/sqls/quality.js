@@ -156,21 +156,54 @@ const searchAll  = (valueObj) => {
 // 품질검사결과 (QUALITY_TEST_RECORD)
 // 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
 ///////////////////// ** 테스트용이라 쿼리가 달라질 수 있음에 유의.
-const testWaitList = `
-  SELECT prod_result_cd refer_cd, inst_cd,
-         proc_cd, 
-         fn_get_proc_nm(proc_cd) proc_nm,
+const testWaitPrdList = `
+  SELECT prod_result_cd refer_cd,
          prd_cd target_cd, 
          fn_get_prd_nm(prd_cd) target_nm,
+         proc_cd, 
+         fn_get_proc_nm(proc_cd) proc_nm,
          prod_qty total_qty,
          CASE WHEN step = (SELECT COUNT(*) 
                            FROM   process_flow
-                           WHERE  prd_cd = 'PR01') THEN 1
+                           WHERE  prd_cd = r.prd_cd) THEN 1
                                                    ELSE 0 END is_last, -- 마지막 공정인지 여부
          end_time -- 공정 완료시점 시간
-  FROM   test_prod_result
+  FROM   test_prod_result r
   WHERE  STATUS = 'Z03'
   AND    que_status = 'A02'
+`;
+
+// 자재 입고검사 대기내역
+const testWaitMatList = `
+  SELECT o.mat_order_cd refer_cd,
+         d.mat_order_dtl_cd,
+         fn_get_membername(o.id) name,
+         d.mat_cd target_cd,
+         fn_get_materialname(d.mat_cd) target_nm,
+         d.mat_qty order_qty, -- 총발주량
+         (d.mat_qty - IFNULL((SELECT SUM(mat_qty)
+		                          FROM   test_material_in
+							                WHERE  mat_order_cd = d.mat_order_cd
+							                AND    mat_cd = d.mat_cd), 0)) yet_qty, -- 미입고량
+         o.create_dt -- 발주일자
+  FROM   material_order o JOIN material_order_detail d 
+                            ON o.mat_order_cd = d.mat_order_cd
+  WHERE  o.status != 'L01' -- 입고완료되지 않은 내역
+    AND  o.act_cd = ?
+  ORDER  BY refer_cd, target_nm
+`;
+
+// 자재 미입고 거래처조회 (모달용)
+const actList = `
+  SELECT o.act_cd,
+         fn_get_accountname(o.act_cd) act_nm,
+         a.ceo_nm,
+         a.act_tel,
+         a.mgr_nm,
+         a.mgr_tel
+  FROM   material_order o JOIN account a
+                            ON o.act_cd = a.act_cd
+  WHERE  o.status != 'L01'
 `;
 
 // 타입별 불량조회 (모달용)
@@ -238,7 +271,6 @@ const prodResultUpdate = `
 
 // 검사결과내역 조회+검색
 const testRecList = (valueObj) => {
-  console.log('받은값: ' + (valueObj.targetCd));
   let recCd = valueObj.recCd;
 
   let startDt = valueObj.startDt;
@@ -248,7 +280,7 @@ const testRecList = (valueObj) => {
   let targetCd = valueObj.targetCd;
   let note = valueObj.note;
 
-  let isDef = valueObj.isDef; // boolean
+  let isDef = valueObj.isDef; // boolean타입이지만 json형식으로 강제 String 됨...
   let yetDefect = valueObj.yetDefect;
   let defNm = valueObj.defNm;
   let name = valueObj.name;
@@ -261,7 +293,7 @@ const testRecList = (valueObj) => {
 
             r.target_type,
             r.target_cd,
-            NULLIF(fn_get_prd_nm(r.target_cd), fn_get_materialname(r.target_cd)) target_nm, -- 검사한 제품 or 자재코드
+            IFNULL(fn_get_prd_nm(r.target_cd), fn_get_materialname(r.target_cd)) target_nm, -- 검사한 제품 or 자재코드
             r.proc_cd,
             fn_get_proc_nm(r.proc_cd) proc_nm, -- 제품인 경우 존재
 
@@ -295,7 +327,7 @@ const testRecList = (valueObj) => {
        ${isDef == 'false' ? "AND  r.def_cd IS NULL" : ""} -- 불량이 발생하지 않은 내역
        ${!yetDefect ? "" : "AND r.def_cd IS NOT NULL AND r.def_status IS NULL"} -- 불량이 발생했지만 처리되지 않은 내역
     ${!name ? "" : "HAVING  name LIKE '%" + name + "%' OR complete_name LIKE '%" + name + "%' "} -- alias는 WHERE절 이후에 적용되므로, JOIN 시 HAVING에서 써야 함.
-    ORDER BY r.def_status -- 불량 미처리 내역(null)이 최상단에 옴.
+    ORDER BY r.test_rec_cd DESC
   `;
 };
 
@@ -318,7 +350,6 @@ const testRecDefUpdate = `
 `;
 
 
-
 module.exports = {
   yetList,
   getMyList,
@@ -329,7 +360,9 @@ module.exports = {
   stdDtlInsert,
   searchAll,
 
-  testWaitList,
+  testWaitPrdList,
+  testWaitMatList,
+  actList,
   defectList,
   testRecSeq,
   testRecInsert,
@@ -338,6 +371,5 @@ module.exports = {
 
   testRecList,
   testRecDtlSelect,
-
   testRecDefUpdate
 }
