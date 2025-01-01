@@ -288,10 +288,10 @@ router.post('/equip/down', async (req, res) => {
     // 결과 반환
     res.json({ success: true, data: result });
   } catch (err) {
-    console.error('점검 등록 실패:', err);
+    console.error('비가동 등록 실패:', err);
     res.status(500).json({
       success: false,
-      message: '점검 등록 중 오류 발생'
+      message: '비가동 등록 중 오류 발생'
     });
   }
 });
@@ -305,7 +305,7 @@ router.put('/equip/down/:downtime_cd', async (req, res) => {
   console.log('수신한 downtime_cd:', downLogCd);
   console.log('수정 요청 데이터:', req.body);
 
-    // insp_log_cd가 유효한지 확인
+    // downtime_cd가가 유효한지 확인
     if (!downLogCd || downLogCd === 'null' || downLogCd.trim() === '') {
       return res.status(400).json({
         success: false,
@@ -359,6 +359,106 @@ router.get('/equip/down', async (req, res) => {
 router.get('/equip/down/:no', async (req, res) => {
   let eqpCd = req.params.no;
   let info = await equipmentService.findDownEqOne(eqpCd);
+  res.send(info);
+});
+
+
+/*--------------설비 수리-------------*/
+
+//수리 등록
+router.post('/equip/repair', async (req, res) => {
+  try {
+    const repairData = req.body; // 클라이언트로부터 받은 데이터
+
+    console.log('repairData :', repairData);
+
+    // undefined, "null", 빈 문자열인 필드 제거
+    Object.keys(repairData).forEach((key) => {
+      if (
+        repairData[key] === undefined ||
+        repairData[key] === 'null' ||
+        repairData[key] === ''
+      ) {
+        delete repairData[key]; // 해당 키 삭제
+      }
+    });
+    // DB 저장 (서비스 함수 호출)
+    const result = await equipmentService.insertRepairEq(repairData);
+
+    // 결과 반환
+    res.json({ success: true, data: result });
+  } catch (err) {
+    console.error('수리 등록 실패:', err);
+    res.status(500).json({
+      success: false,
+      message: '수리 등록 중 오류 발생'
+    });
+  }
+});
+
+// 수리 수정
+router.put('/equip/repair/:repair_cd', async (req, res) => {
+  console.log('수정 요청 데이터:', req.body);
+
+  const repairLogCd = req.params.repair_cd; // URL에서 점검 코드 추출
+
+  console.log('수신한 repair_cd:', repairLogCd);
+  console.log('수정 요청 데이터:', req.body);
+
+    // repair_cd가가 유효한지 확인
+    if (!repairLogCd || repairLogCd === 'null' || repairLogCd.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: '유효하지 않은 repair_cd입니다. 값을 확인하세요.',
+      });
+    }
+  
+  try {
+    // 수정할 데이터 구성
+    const eqRepairInfo = { ...req.body, repair_cd: repairLogCd };
+
+    // undefined 및 "null"인 필드만 제거
+    Object.keys(eqRepairInfo).forEach((key) => {
+      if (
+        eqRepairInfo[key] === undefined || // JavaScript의 undefined
+        eqRepairInfo[key] === 'null' // 문자열로 "null"
+      ) {
+        delete eqRepairInfo[key]; // 해당 키 삭제
+      }
+      // 실제 null 값은 유지하여 명시적으로 처리 가능
+    });
+
+    console.log('최종 업데이트 데이터:', eqRepairInfo);
+
+    // 서비스 호출
+    const result = await equipmentService.updateRepairEq(eqRepairInfo);
+
+    // 결과 반환
+    if (result.success) {
+      res.json({ success: true, data: result.data });
+    } else {
+      res.status(400).json({ success: false, message: result.message });
+    }
+  } catch (err) {
+    console.error('수리 수정 실패:', err);
+    res.status(500).json({
+      success: false,
+      message: '수리 수정 중 오류 발생',
+    });
+  }
+});
+
+
+//수리전체조회
+router.get('/equip/repair', async (req, res) => {
+  let eqRepairList = await equipmentService.findRepairEq();
+  res.send(eqRepairList);
+});
+
+//수리단건조회
+router.get('/equip/repair/:no', async (req, res) => {
+  let eqpCd = req.params.no;
+  let info = await equipmentService.findRepairEqOne(eqpCd);
   res.send(info);
 });
 
