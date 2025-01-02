@@ -79,7 +79,7 @@ export default {
                         button.className = 'btn btn-warning btn-xsm';
                         button.addEventListener('click', () => {
 
-                            this.$router.push({ name: 'sales_orderadd' , query : { bno : params.data.order_cd}});
+                            this.$router.push({ name: 'Sales_OrderAdd' , query : { bno : params.data.order_cd}});
                         });
                         return button;
                     }
