@@ -17,17 +17,21 @@
          </div>
 
          <!-- 드롭다운 리스트 -->
-         <div v-show="!isHidden" class="dropdownBox">
-            <button 
-               v-for="(item, index) in searchResults"
-               :key="index"
-               class="dropdown-item actResultList"
-               :data-act-cd="item.act_cd"
-               :class="{ active: index === selectedIndex }"
-               @click="onClickActNm(item.act_cd, item.act_nm)"
-            >
-               {{ item.act_nm }}
-            </button>
+         <div v-if="!isHidden" class="dropdownBox">
+            <div v-if="searchResults.length">
+               <button 
+                  v-for="(item, index) in searchResults" 
+                  :key="index" 
+                  class="dropdown-item actResultList"
+                  :data-act-cd="item.act_cd"
+                  :class="{ active: index === selectedIndex }" 
+                  @click="onClickActNm(item.act_cd, item.act_nm)"
+                  style="font-size: 12px;"
+               >
+                  {{ item.act_nm }}
+               </button>
+            </div>
+            <div v-else class="dropdown-item text-left fw-bolder" style="color: #2bce89; font-size: 12px;">결과 없음</div>
          </div>
       </div>
    </div>

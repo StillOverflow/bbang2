@@ -17,19 +17,23 @@
          </div>
 
          <!-- 드롭다운 리스트 -->
-         <div v-show="!isHidden" class="dropdownBox">
-            <button 
-               v-for="(item, index) in searchResults"
-               :key="index"
-               class="dropdown-item matResultList"
-               :data-mat-cd="item.mat_cd"
-               :data-mat-unit="item.unit"
-               :class="{ active: index === selectedIndex }"
-               @click="onClickMatNm(item.mat_cd, item.mat_nm, item.unit)"
-            >
-               {{ item.mat_nm }}
-            </button>
-         </div>
+         <div v-if="!isHidden" class="dropdownBox">
+            <div v-if="searchResults.length">
+               <button 
+                  v-for="(item, index) in searchResults"
+                  :key="index"
+                  class="dropdown-item matResultList"
+                  :data-mat-cd="item.mat_cd"
+                  :data-mat-unit="item.unit"
+                  :class="{ active: index === selectedIndex }"
+                  @click="onClickMatNm(item.mat_cd, item.mat_nm, item.unit)"
+                  style="font-size: 12px;"
+               >
+                  {{ item.mat_nm }}
+               </button>
+            </div>
+         <div v-else class="dropdown-item text-left fw-bolder" style="color: #2bce89; font-size: 12px;">결과 없음</div>
+      </div>
       </div>
    </div>
    

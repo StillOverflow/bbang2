@@ -211,6 +211,7 @@
    // 선택한 행 저장
    const materialReady = (params) => {
       materialGrid.value = params.api
+      params.api.sizeColumnsToFit();
    };
 
    // 미지시 생산 계획서 클릭 시 자재 정보 넘기기
@@ -246,15 +247,13 @@
             text: "발주 수량은 0 이상의 숫자여야 합니다.",
          });
 
-         // 편집된 값 사라지기
+         // 문자이거나 음수이면 그 전 데이터 값으로 세팅
          params.node.setDataValue("mat_qty", params.oldValue);
          return;
       }
 
-      // 입력 값
-      let mat_qty = params.newValue.toLocaleString();
-      console.log(mat_qty);
-      params.node.setDataValue("mat_qty", params.newValue.toLocaleString());
+      // 입력값으로 세팅
+      params.node.setDataValue("mat_qty", params.newValue);
       
    }
    
@@ -402,7 +401,7 @@
             cellRenderer: (params) => {
                // 값이 있으면 입력값 표시 없으면 Double Click 표시
                if (!params.value) {
-                  return `<span style="color: #c1c1c1;">Double Click!</span>`;
+                  return `<span style="color: #c1c1c1; text-align: left; !important;">Double Click!</span>`;
                }
                return `<span style="color: #000;">${params.value.toLocaleString()}</span>`;
             },
