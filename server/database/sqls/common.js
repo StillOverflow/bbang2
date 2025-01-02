@@ -117,7 +117,7 @@ const productSelect = (datas) => {
          (SELECT SUM(STOCK)
          FROM product_in
          WHERE PRD_CD = p.PRD_CD ) AS in_cnt
-  FROM product p
+  FROM   product p
   `;
   
   const conditions = [];

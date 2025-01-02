@@ -58,8 +58,10 @@
                         :pagination="true"
                         :gridOptions="materialOptions"
                         @grid-ready="gridReady"
-                        @first-data-rendered="materialReady">
-                     </ag-grid-vue>
+                        @first-data-rendered="materialReady"
+                        @cellEditingStopped="cellEditingStoppedEvent"
+                     />
+                     
                   </div>
                </div>
             </div>
@@ -99,7 +101,7 @@
    const planListGrid = ref([]);
    const materialGrid = ref([]);
 
-// ^ ---------------------------------------- Vue Hook ----------------------------------------
+//! ---------------------------------------- Vue Hook ----------------------------------------
    // created와 비슷~~
    onBeforeMount(() => {
       store.dispatch('breadCrumb', { title: '미지시 계획서 자재 조회' });  // 페이지 제목 설정
@@ -122,7 +124,7 @@
       }
    });
 
-// ^ ---------------------------------------- 공통 함수 ----------------------------------------
+//! ---------------------------------------- 공통 함수 ----------------------------------------
    // 날짜포맷
    const dateFormat = (value) => {
       let date = value == null ? new Date() : new Date(value);
@@ -160,8 +162,8 @@
             if (planListGrid.value.api) {
                 planListGrid.value.api.hideOverlay(); // "데이터 없음" 메시지 숨김
             }
-            
             let prodPlanCode = result.data[0].prod_plan_cd
+
             if(prodPlanCode != null && prodPlanCode != '') {
                planToMaterialStkStock(result.data[0].prod_plan_cd);
             } else {
@@ -198,7 +200,7 @@
       endDt.value = '';
    }
 
-// ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
+//! ---------------------------------------- 그리드 이벤트 ----------------------------------------
    // 그리드 준비
    const gridReady = (params) => {
       if (params.api) {
@@ -214,7 +216,7 @@
    // 미지시 생산 계획서 클릭 시 자재 정보 넘기기
    const rowClicked = (params) => {
       prodPlanCode.value= params.data.prod_plan_cd;
-      planToMaterialStkStock(prodPlanCode.value);
+      planToMaterialStkStock(params.data.prod_plan_cd);
    };
 
    // SUBMIT 버튼 클릭 시
@@ -231,26 +233,73 @@
          });
       }
    };
+
+   const cellEditingStoppedEvent = (params) => {
+      if(!params.newValue) return; // 값이 없을 때 편집이 종료되면 return;
+      
+      // 발주 수량 값이 숫자인지 확인
+      const newValue = parseInt(params.newValue, 10);
+      if (isNaN(newValue) || newValue < 0) {
+         Swal.fire({
+            icon: "warning",
+            title: "유효하지 않은 값",
+            text: "발주 수량은 0 이상의 숫자여야 합니다.",
+         });
+
+         // 편집된 값 사라지기
+         params.node.setDataValue("mat_qty", params.oldValue);
+         return;
+      }
+
+      // 입력 값
+      let mat_qty = params.newValue.toLocaleString();
+      console.log(mat_qty);
+      params.node.setDataValue("mat_qty", params.newValue.toLocaleString());
+      
+   }
    
-// ^ ------------------------------ 미지시 계획서 조회 그리드 ------------------------------
+//! ------------------------------ 미지시 계획서 조회 그리드 ------------------------------
    // 그리드 컬럼명
    const planOptions = {
       columnDefs : [
-         { headerName: '계획서코드', field: 'prod_plan_cd', sortable: true,  },
+         { 
+            headerName: '계획서코드', 
+            field: 'prod_plan_cd', 
+            sortable: true,
+            cellClass: "text-center",
+         },
          { 
             headerName: '시작예정일', 
             field: 'start_dt', 
             sortable: true, 
+            cellClass: "text-center",
             valueFormatter: (params) => dateFormat(params.value),
          },
          { 
             headerName: '종료예정일', 
             field: 'end_dt', 
             sortable: true,
+            cellClass: "text-center",
             valueFormatter: (params) => dateFormat(params.value),
          },
-         { headerName: '담당자번호', field: 'id', sortable: true },
-         { headerName: '담당자', field: 'name', sortable: true },
+         { 
+            headerName: '담당자번호', 
+            field: 'id', 
+            sortable: true,
+            cellClass: "text-center",
+            cellRenderer: () => {
+               return '담당자 번호 없음';
+            },
+         },
+         { 
+            headerName: '담당자', 
+            field: 'name', 
+            sortable: true,
+            cellClass: "text-center",
+            cellRenderer: () => {
+               return '담당자 없음';
+            },
+         },
       ],
       overlayNoRowsTemplate: `<span class="text-danger">데이터가 없습니다.</span>`, // 데이터 없음 메시지
    };
@@ -261,9 +310,10 @@
       try {
          const response = await axios.get('/api/material/planList');
          prodPlanListData.value = response.data || [];
+         prodPlanCode.value = response.data[0].prod_plan_cd;
 
          if(prodPlanListData.value.length > 0) {
-            planToMaterialStkStock(prodPlanListData.value[0].prod_plan_cd)
+            planToMaterialStkStock(prodPlanListData.value[0].prod_plan_cd);
          }
          
       } catch (err) {
@@ -280,22 +330,30 @@
    // 계획서에 대한 자재 재고 컬럼명
    const materialOptions = {
       columnDefs : [
-         { headerName: '자재코드', field: 'mat_cd', sortable: true },
+         { 
+            headerName: '자재코드', 
+            field: 'mat_cd', 
+            sortable: true,
+            cellClass: "text-center", 
+         },
          { 
             headerName: '자재명', 
             field: 'mat_nm', 
             sortable: true,
             filter: 'agSetColumnFilter',
+            cellClass: "text-center",
          },
          { 
             headerName: '자재구분', 
             field: 'type', 
-            sortable: true  
+            sortable: true,
+            cellClass: "text-center",
          },
          { 
             headerName: '재고수량', 
             field: 'stock_qty', 
-            sortable: true, 
+            sortable: true,
+            cellClass: "text-right",
             cellRenderer: (params) => {
                return parseInt(params.value).toLocaleString();
             },
@@ -304,6 +362,7 @@
             headerName: '필요수량', 
             field: 'require_qty', 
             sortable: true,
+            cellClass: "text-right",
             valueFormatter: (params) => {
                if (params.value == null) return ""; // 값이 없으면 빈 문자열 반환
                return params.value.toLocaleString(); // 숫자에 쉼표 추가
@@ -313,6 +372,7 @@
             headerName: '안전재고', 
             field: 'safe_stk', 
             sortable: true,
+            cellClass: "text-right",
             valueFormatter: (params) => {
                if (params.value == null) return ""; // 값이 없으면 빈 문자열 반환
                return params.value.toLocaleString(); // 숫자에 쉼표 추가
@@ -322,16 +382,36 @@
             headerName: '부족수량', 
             field: 'lack_qty', 
             sortable: true, 
+            cellClass: "text-right",
             valueFormatter: (params) => {
                if (params.value == null) return ""; // 값이 없으면 빈 문자열 반환
                return params.value.toLocaleString(); // 숫자에 쉼표 추가
             },
          },
-         { headerName: '단위', field: 'unit', sortable: true, },
+         { 
+            headerName: '단위', 
+            field: 'unit', 
+            sortable: true, 
+            cellClass: "text-center",
+         },
          { 
             headerName: "발주 수량", 
             field: "mat_qty", 
             editable: true,   // 편집 가능
+            cellClass: "text-right",
+            cellRenderer: (params) => {
+               // 값이 있으면 입력값 표시 없으면 Double Click 표시
+               if (!params.value) {
+                  return `<span style="color: #c1c1c1;">Double Click!</span>`;
+               }
+               return `<span style="color: #000;">${params.value.toLocaleString()}</span>`;
+            },
+            valueSetter: (params) => {
+               const numberFormat = parseInt(params.newValue, 10); // 10진수 정수로 변환하여 숫자로 저장
+               
+               params.data.mat_qty = numberFormat;
+               return true; // 값 변경 성공
+            },
          },
       ],
       rowSelection: {
@@ -381,5 +461,12 @@
    .rowRedStyle {
       background-color: rgb(253, 211, 211) !important; /* 셀 배경 빨간색 */
       color: rgb(59, 59, 59) !important; /* 텍스트 흰색으로 변경 */
+   }
+
+   .text-center {
+      text-align: center;
+   }
+   .text-right {
+      text-align: right;
    }
 </style>
