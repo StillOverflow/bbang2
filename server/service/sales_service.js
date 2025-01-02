@@ -89,6 +89,50 @@ const deleteListOrder = async (no) => {
     }
 };
 
+//주문서 업데이트,등록 한번에 하기
+const updateOrders = async (updateInfo) => {
+    let resultArr = [];
+    for (const val of updateInfo){  
+
+        if(val.order_dtl_cd){ //수정될 행
+            let obj = {
+                order_qty : val.order_qty,
+                note : val.note
+            }
+            let updateRes = await mariadb.query('orderUpdate', [obj, val.order_dtl_cd]);
+
+            if(updateRes.affectedRows > 0){
+                resultArr.push("succeess");
+            }else{
+                resultArr.push("fail");
+            }            
+        }else{ //추가될 행
+            let obj = {
+                order_cd: val.order_cd,
+                prd_cd: val.prd_cd, 
+                prd_nm : val.prd_nm,
+                order_qty: val.order_qty,
+                note: val.note
+            }
+            console.log("service",obj);
+            let insertRes = await mariadb.query('orderUpdateInsert', [obj]); 
+
+            if(insertRes.affectedRows > 0){
+                resultArr.push("succeess");
+            }else{
+                resultArr.push("fail");
+            }
+        }
+    }
+    if(resultArr.includes("fail")){ // 모두 성공했는지 판단
+        mariadb.rollback();
+        return {"result" : "fail"};       
+    } else {
+        mariadb.commit();
+        return {"result" : "success"};        
+    }
+}
+
 //주문서 수정
 const updateOrder = async (odtNo, updateInfo) => {
     let datas = [updateInfo, odtNo];
@@ -180,9 +224,11 @@ const insertPrdOut = async (values) => {
     let samples = values[0]; 
     samples.seq = seq; 
     
-    if(Object.keys(obj).length == 0){   
+    //길이를 측정해서 안 들어오면 값이 안들어오면 실행이 안되게 하기
+    if(Object.keys(values).length == 0){   
         return {"result" : "fail"};
     }
+
     let prdOut = await mariadb.query('productOutInsert', samples);
     let prdOutDtl = await mariadb.query('productOutDtlInsert', [seq, values[1]]); 
 
@@ -314,6 +360,61 @@ const deleteReturn = async (no) => {
     }
 };
 
+//반품 제품 단건 삭제
+const deleteListReturn = async (no) => {
+    let del = await mariadb.query('returnListDelete',no);
+
+    if(del.affectedRows > 0){ // 모두 성공했는지 판단
+        return {"result" : "success"};
+    } else {
+        return {"result" : "fail"};
+    }
+};
+
+//반품 제품 수정(업데이트, 등록 한번에 하기)
+const updateReturn = async (updateInfo) => {
+    let resultArr = [];
+    for (const val of updateInfo){  
+
+        if(val.prd_return_dtl_cd){ //수정될 행
+            let obj = {
+                prd_return_qty : val.prd_return_qty,
+                note : val.note
+            }
+            let updateRes = await mariadb.query('returnUpdate', [obj, val.prd_return_dtl_cd]);
+
+            if(updateRes.affectedRows > 0){
+                resultArr.push("succeess");
+            }else{
+                resultArr.push("fail");
+            }            
+        }else{ //추가될 행
+            let obj = {
+                prd_return_cd: val.prd_return_cd,
+                prd_cd: val.prd_cd, 
+                prd_return_qty : val.prd_return_qty,
+                prd_lot_cd: val.prd_lot_cd,
+                note: val.note,
+                prd_out_dtl_cd: val.prd_out_dtl_cd
+            }
+            let insertRes = await mariadb.query('returnUpdateInsert', [obj]); 
+
+            if(insertRes.affectedRows > 0){
+                resultArr.push("succeess");
+            }else{
+                resultArr.push("fail");
+            }
+        }
+    }
+    if(resultArr.includes("fail")){ // 모두 성공했는지 판단
+        mariadb.rollback();
+        return {"result" : "fail"};       
+    } else {
+        mariadb.commit();
+        return {"result" : "success"};        
+    }
+};
+
 //반품 수정을 위한 삭제
 const  deleteUpdateReturn = async (no) => {
     let del = await mariadb.query('returnUpdateDelete',no);
@@ -398,6 +499,7 @@ module.exports = {
     listDtlOrderDtl,
     deleteOrder,
     deleteListOrder,
+    updateOrders,
     updateOrder,
     deleteUpdateOrder,
     insertUpdateOrder,
@@ -420,6 +522,8 @@ module.exports = {
     listDtlReturnDtl,
     listLotDtlReturn,
     deleteReturn,
+    deleteListReturn,
+    updateReturn,
     deleteUpdateReturn,
     insertUpdateReturn,
 

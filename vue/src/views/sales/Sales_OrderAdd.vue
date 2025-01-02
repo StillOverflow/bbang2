@@ -193,7 +193,7 @@ export default {
             order_date: '',
             
             columnDefs: [
-                {headerName: '주문디테일코드', field: 'order_dtl_cd'},
+                {headerName: '주문디테일코드', field: 'order_dtl_cd', hide: true},
                 {headerName: '제품 코드', field: 'prd_cd'},
                 {headerName: '제품 이름', field: 'prd_nm'},
                 {
@@ -343,7 +343,6 @@ export default {
 
             //수정후에 인서트 할 값들 담기
             this.upInsert.push(newRowData);
-            this.updateRow = this.rowData;
 
             this.rowData = [...this.rowData, newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
             this.psModal = !this.psModal;
@@ -379,7 +378,39 @@ export default {
             this.rowData = result.data;
         },
 
-        //주문서 수정
+        //주문서 수정 한번에 하기
+        async orderUpdate() {
+            let updateResult 
+            let upObj = [];
+            let upRow = '';
+            //뒷단에서 업데이트랑 인서트 한번에 하게 할려고 필요한 값들 한번에 보내기
+            for(let i = 0; i < this.rowData.length; i++){
+                upRow = this.rowData[i];
+                upObj.push({
+                    order_dtl_cd : upRow.order_dtl_cd,
+                    order_cd: this.selectNo,
+                    prd_cd: upRow.prd_cd, 
+                    prd_nm : upRow.prd_nm,
+                    order_qty: upRow.order_qty,
+                    note: upRow.note
+                })
+            };
+            updateResult = await axios.put(`/api/sales/orderUpdates`,upObj)
+                                        .catch(err => console.log("updateAxiosError",err));       
+            if(updateResult.data.result == 'success'){
+                this.$swal({
+                title: "Update!",
+                text: "GO to Order List",
+                icon: "success"
+                }).then(result =>{
+                    if(result){
+                        this.$router.push({name:'sales_orderlist'}) //OK누르면 목록으로 이동
+                    }
+                });     
+            };
+        },
+
+/*        //주문서 수정
         async orderUpdate() {
             // //주문서 수정을 위한 삭제
             // let result = await axios.delete(`/api/sales/orderUpdateDelete/${this.selectNo}`)
@@ -387,24 +418,20 @@ export default {
             // if(result.data.result == 'success'){
             //     //주문서 수정을 위한 등록
             //     this.orderUpdateInsert();
-            // }
-            
+            // }  
             let updateResult 
-            console.log("합치거전?",this.updateRow)
-
             for(let i = 0; i < this.rowData.length; i++){
-                let upRow = this.rowData[i];
-                let upObj = {
-                    order_qty: upRow.order_qty,
-                    note: upRow.note
+                let upRow = this.rowData[i]
+                if(upRow.order_dtl_cd){
+                    let upObj = {
+                        order_qty: upRow.order_qty,
+                        note: upRow.note
+                    }
+                    updateResult = await axios.put(`/api/sales/orderUpdate/${upRow.order_dtl_cd}`,upObj)
+                                            .catch(err => console.log("updateAxiosError",err));             
                 }
-                console.log(upRow);
-                console.log('obj',upObj);
-                updateResult = await axios.put(`/api/sales/orderUpdate/${upRow.order_dtl_cd}`,upObj)
-                                          .catch(err => console.log("updateAxiosError",err));             
             };
-            if(updateResult.data.result == 'success'){
-                
+            if(updateResult.data.result == 'success'){ 
                 if(this.upInsert.length > 0){
                     this.orderUpdateInsert()
                 }else{
@@ -418,17 +445,11 @@ export default {
                         }
                     });
                 }
-                
             };
-
         },
-
         //주문서 수정을 위한 등록
         async orderUpdateInsert() {
             let updateInsert = [];
-
-            console.log("upInsert",this.upInsert);
-
             this.upInsert.forEach((obj) => {
                 updateInsert.push({
                     prd_cd: obj.prd_cd, 
@@ -438,8 +459,6 @@ export default {
                     order_cd: this.selectNo
                 });
             });
-            console.log("updateInsert",updateInsert)
-
             let result = await axios.post('/api/sales/orderUpdateInsert', updateInsert)   
                                     .catch(err => console.log("axios에러",err));
             if(result.data.result === 'success'){
@@ -453,9 +472,8 @@ export default {
                     }
                 });
             };
-
         },
-
+*/
         //주문서 삭제
         async orderDelete() {
             this.$swal({
