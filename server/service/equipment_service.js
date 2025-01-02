@@ -123,9 +123,14 @@ const updateInspEq = async (inspData) => {
 };
 
 //설비 점검 전체 조회
-const findInspEq = async () => {
-  let list = await mariadb.query('eqInspList');
-  return list;
+const findInspEq = async (datas) => {
+  try {
+    let list = await mariadb.query('eqInspList', datas);
+    return list;
+  } catch (err) {
+    console.error('설비 점검 DB 쿼리 실패:', err);
+    throw err;
+  }
 };
 
 //설비 점검 전체 조회(설비별 최근 1건씩만)

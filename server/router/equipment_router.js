@@ -257,9 +257,16 @@ router.put('/equip/insp/:insp_log_cd', async (req, res) => {
 
 
 //점검전체조회
-router.get('/equip/insp', async (req, res) => {
-  let eqInspList = await equipmentService.findInspEq();
-  res.send(eqInspList);
+router.get('/equipList/insp', async (req, res) => {
+  try {
+    let searchList = req.query;
+
+    let result = await equipmentService.findInspEq(searchList);
+    res.send(result);
+  } catch (err) {
+    console.error('필터링된 점검 조회 실패:', err);
+    res.status(500).json({ error: '필터링된 점검 조회 실패' });
+  }
 });
 
 //점검단건조회

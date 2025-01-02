@@ -1,7 +1,7 @@
 /* -----------설비------------*/
 
 /* -----------설비 관리------------*/
-//설비상태조회
+//설비 상태 조회
 const eqStatList = (datas) => {
 
   let sql = `SELECT 
@@ -38,6 +38,7 @@ LEFT JOIN
   return sql;
 
 }
+
 //설비정보조회
 const eqAllList = `SELECT eqp_cd,
                           eqp_type,
@@ -87,8 +88,13 @@ const eqAllListSearch = (searchObj) => {
                       e.update_dt as update_dt
 
 FROM equipment e
-      LEFT JOIN inspection_log i 
-              ON e.eqp_cd = i.eqp_cd
+    LEFT JOIN inspection_log i 
+      ON e.eqp_cd = i.eqp_cd
+      AND i.last_insp_dt = (
+        SELECT MAX(last_insp_dt)
+        FROM inspection_log
+        WHERE inspection_log.eqp_cd = e.eqp_cd
+      )
 `;
 
   const conditions = [];
@@ -109,6 +115,9 @@ FROM equipment e
   if (conditions.length > 0) {
     query += ` WHERE ` + conditions.join(' AND ');
   }
+
+  query += ` order by eqp_cd asc`; // 정렬
+
   // 쿼리 반환
   return query;
 };
@@ -169,31 +178,45 @@ const eqInspUpdate = `UPDATE inspection_log
 SET ?
   WHERE insp_log_cd = ? `;
 
-//설비점검조회
-const eqInspList = ` SELECT   
-  i.insp_log_cd as insp_log_cd,
-  e.eqp_cd as eqp_cd,
-  fn_get_codename(e.eqp_type) as eqp_type,
-  e.eqp_nm as eqp_nm,
-  e.model as model,
-  e.insp_cycle as insp_cycle,
-  e.img_path as img_path,
-  e.last_insp_dt as last_insp_dt,
-  i.start_time as start_time,
-  fn_get_codename(i.insp_type) as insp_type,
-  fn_get_codename(i.insp_reason) as insp_reason,
-  fn_get_codename(i.insp_result) as insp_result,
-  i.insp_action as insp_action,
-  i.note as note,
-  i.end_time as end_time,
-  i.id as id,
-  i.create_dt as create_dt,
-  i.update_dt as update_dt
+//설비 점검 전체 조회(필터링)
+const eqInspList = (datas) => {
 
-FROM equipment e
-LEFT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
-ORDER BY i.create_dt DESC
-`;
+  let sql = ` SELECT   
+    fn_get_codename(e.eqp_type) as eqp_type,
+    e.eqp_cd as eqp_cd,
+    e.eqp_nm as eqp_nm,
+    e.insp_cycle as insp_cycle,
+    e.last_insp_dt as last_insp_dt,
+    i.start_time as start_time,
+    i.end_time as end_time,
+    fn_get_codename(i.insp_reason) as insp_reason,
+    fn_get_codename(i.insp_type) as insp_type,
+    fn_get_codename(i.insp_result) as insp_result,
+    i.insp_action as insp_action,
+    i.note as note,
+    i.id as id
+  
+  FROM equipment e
+  LEFT JOIN inspection_log i ON e.eqp_cd = i.eqp_cd
+  `;
+
+  const queryArr = [];
+
+  // 설비점검조회 조건
+  if (datas.eqp_type) queryArr.push(`e.eqp_type = UPPER('${datas.eqp_type}')`);
+  if (datas.insp_reason) queryArr.push(`insp_reason = UPPER('${datas.insp_reason}')`);
+
+  if (queryArr.length > 0) {
+    sql += ` WHERE ` + queryArr.join(' AND ');
+  }
+
+  sql += ` order by eqp_cd asc, last_insp_dt desc`; // 정렬
+
+  console.log('Generated SQL:', sql); // SQL 쿼리 출력
+
+  return sql;
+
+}
 
 //설비점검조회(설비별 최신1건씩만)
 const eqInspListOne = `SELECT 
@@ -259,7 +282,7 @@ ORDER BY e.eqp_cd, i.start_time DESC
 limit 1
   `;
 
-//설비 점검 조회(필터링 적용) //아직 조회페이지 전이라 검증 필요
+//설비 점검 조회(필터링 적용) 
 const eqInstListSearch = (searchObj) => {
   let query = ` SELECT  e.eqp_cd as eqp_cd,
                       fn_get_codename(e.eqp_type) as eqp_type,

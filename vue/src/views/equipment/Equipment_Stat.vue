@@ -228,30 +228,30 @@ export default {
         if (selectedNodes.length > 0) {
           // 선택된 데이터가 있을 경우
           selectedData = selectedNodes.map(item => ({
-            '설비코드': item.eqp_cd,
-            '설비구분': item.eqp_type,
-            '설비명': item.eqp_nm,
-            '모델': item.model,
-            '공정코드': item.proc_cd,
-            '공정명': item.proc_nm,
-            '최종점검일': item.last_insp_dt,
-            '담당자 ID': item.id,
-            '설비상태': item.status,
-            '사용유무': item.is_use,
+            '설비코드': item?.eqp_cd,
+            '설비구분': item?.eqp_type,
+            '설비명': item?.eqp_nm,
+            '모델': item?.model,
+            '공정코드': item?.proc_cd,
+            '공정명': item?.proc_nm,
+            '최종점검일': item?.last_insp_dt,
+            '담당자 ID': item?.id,
+            '설비상태': item?.status,
+            '사용유무': item?.is_use,
           }));
         } else {
           // 선택된 데이터가 없으면 전체 데이터를 사용
           selectedData = this.rowData.map(item => ({
-            '설비코드': item.eqp_cd,
-            '설비구분': item.eqp_type,
-            '설비명': item.eqp_nm,
-            '모델': item.model,
-            '공정코드': item.proc_cd,
-            '공정명': item.proc_nm,
-            '최종점검일': item.last_insp_dt,
-            '담당자 ID': item.id,
-            '설비상태': item.status,
-            '사용유무': item.is_use,
+            '설비코드': item?.eqp_cd,
+            '설비구분': item?.eqp_type,
+            '설비명': item?.eqp_nm,
+            '모델': item?.model,
+            '공정코드': item?.proc_cd,
+            '공정명': item?.proc_nm,
+            '최종점검일': item?.last_insp_dt,
+            '담당자 ID': item?.id,
+            '설비상태': item?.status,
+            '사용유무': item?.is_use,
           }));
         }
 
