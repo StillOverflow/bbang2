@@ -6,7 +6,6 @@
       <div class="card-header bg-light ps-5 ps-md-4">
 
         <!-- 일자별 검색 -->
-
         <div class="row mt-2 mb-4" style="padding-left: 3rem;">
           <div class="col col-lg-2 text-start fw-bolder w-10">
             점검 기간
@@ -37,24 +36,6 @@
             </div>
           </div>
 
-          <!--검색모달[S]-->
-          <Layout v-if="isModal" :modalCheck="isModal">
-            <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-              <h5 class="modal-title">설비 코드 검색</h5>
-              <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
-            </template>
-            <template v-slot:default>
-              <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="equipDefs"
-                :rowData="equipData" @rowClicked="modalClicked" @grid-ready="gridFit"
-                overlayNoRowsTemplate="등록된 설비가 없습니다.">
-              </ag-grid-vue>
-            </template>
-            <template v-slot:footer>
-              <button type=" button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
-              <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
-            </template>
-          </Layout>
-          <!--검색모달[E]-->
 
           <!-- 설비명 검색 -->
           <div class="col col-lg-2 text-start fw-bolder w-10">
@@ -122,6 +103,25 @@
 
     </div>
   </div>
+
+  <!--검색모달[S]-->
+  <Layout :modalCheck="isModal">
+    <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+      <h5 class="modal-title">설비 코드 검색</h5>
+      <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
+    </template>
+    <template v-slot:default>
+      <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="equipDefs"
+        :rowData="equipData" @rowClicked="modalClicked" @grid-ready="gridFit" overlayNoRowsTemplate="등록된 설비가 없습니다.">
+      </ag-grid-vue>
+    </template>
+    <template v-slot:footer>
+      <button type=" button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
+      <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
+    </template>
+  </Layout>
+  <!--검색모달[E]-->
+
 </template>
 
 <script>
@@ -222,6 +222,10 @@ export default {
     /*모달 [S]*/
     modalOpen() {
       this.isModal = !this.isModal;
+
+      if (this.isModal) {
+        this.getEquipInfo(this.selectedEqp);
+      }
     },
     modalClicked(params) {
       this.getEquipInfo(params.data.eqp_cd);
@@ -344,9 +348,12 @@ export default {
     }, 300), // 300ms 딜레이 설정
 
     resetBtn() {
+      this.selectedEqp = ''; // 설비 코드 입력란 초기화
       this.equipmentData.eqp_type = null; // "전체" 선택
       this.equipmentData.insp_reason = null;  // "전체" 선택
       this.equipmentData.eqp_nm = ''; // 설비명 초기화
+      this.start_datetime = ''; // 점검 시작 기간 초기화
+      this.end_datetime = ''; // 점검 종료 기간 초기화
       this.fetchFilteredEquip();         // 초기화 후 데이터 조회
     },
     //엑셀 함수
