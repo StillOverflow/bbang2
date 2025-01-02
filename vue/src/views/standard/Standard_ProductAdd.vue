@@ -58,7 +58,7 @@
             <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">유통가능기간(일) *</div>
                 <div class="input-group mb-3 w-50">
-                    <input type="number" class="form-control" v-model="prdInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                    <input type="number" class="form-control" v-model="prdInfo.exp_range" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
