@@ -200,12 +200,13 @@ export default {
             odtCd: '',
             
             OLDefs: [
-                {headerName: '주문상세코드', field: 'order_dtl_cd', hide: true},
-                {headerName: '제품 코드', field: 'prd_cd'},
-                {headerName: '제품 이름', field: 'prd_nm'},
+                {headerName: '주문상세코드', field: 'order_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
+                {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
                 {
                     headerName: '주문 수량', 
-                    field: 'order_qty',
+                    field: 'order_qty', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -213,7 +214,8 @@ export default {
                 },
                 {
                     headerName: '기출고수량', 
-                    field: 'prd_out_qty',
+                    field: 'prd_out_qty', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -221,7 +223,8 @@ export default {
                 },
                 {
                     headerName: '미출고수량', 
-                    field: 'no_qty',
+                    field: 'no_qty', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -229,7 +232,8 @@ export default {
                 },
                 {
                     headerName: 'LOT보기' ,
-                    field: 'lotlist',
+                    field: 'lotlist', 
+                    cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'SEARCH';
@@ -248,18 +252,19 @@ export default {
             OLData: [ ],
 
             proDefs: [
-                {headerName: '제품 코드', field: 'prd_cd', hide: true},
-                {headerName: '제품 이름', field: 'prd_nm'},
+                {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }, hide: true},
+                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
                 {
                     headerName: '제품 수량', 
-                    field: 'stock',
+                    field: 'stock', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
                     },
                 },
-                {headerName: 'LOT', field: 'prd_lot_cd'},
-                {headerName: '유통기한', field: 'exp_dt', valueFormatter: this.$comm.dateFormatter},
+                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '유통기한', field: 'exp_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
             ],
             lotMo: "",
             proData: [],
@@ -270,15 +275,16 @@ export default {
             },
 
             proOutDefs: [
-                {headerName: '출고상세코드', field: 'prd_out_dtl_cd'},
-                {headerName: '주문상세코드', field: 'order_dtl_cd', hide: true},
-                {headerName: 'LOT', field: 'prd_lot_cd'},
-                {headerName: '제품코드', field: 'prd_cd', hide: true},
-                {headerName: '제품 이름', field: 'prd_nm'},
-                {headerName: '유통기한', field: 'exp_dt', valueFormatter: this.$comm.dateFormatter},
+                {headerName: '출고상세코드', field: 'prd_out_dtl_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '주문상세코드', field: 'order_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
+                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '제품코드', field: 'prd_cd', cellStyle: { textAlign: "center" }, hide: true},
+                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
+                {headerName: '유통기한', field: 'exp_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
                 {
                     headerName: '제품 수량', 
-                    field: 'stock',
+                    field: 'stock', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -288,6 +294,7 @@ export default {
                     headerName: '출고 수량', 
                     field: 'prd_out_qty', 
                     editable: true, 
+                    cellStyle: { textAlign: "center" }, 
                     cellDataType: 'number',
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
@@ -295,10 +302,11 @@ export default {
                     },
                     cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
                 },
-                {headerName: '비고', field: 'note', editable: true},
+                {headerName: '비고', field: 'note', editable: true, cellStyle: { textAlign: "center" }},
                 {
                     headerName: '삭제' ,
-                    field: 'delete',
+                    field: 'delete', 
+                    cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'DELETE';
@@ -325,17 +333,17 @@ export default {
             proOutData: [],
 
             ordDefs: [
-                {headerName: '주문서 코드', field: 'order_cd', filter: 'agTextColumnFilter' },
-                {headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter' },
-                {headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter' },
-                {headerName: '주문 일자', field: 'order_dt', valueFormatter: this.$comm.dateFormatter},
-                {headerName: '납기 일자', field: 'due_dt', valueFormatter: this.$comm.dateFormatter},
+                {headerName: '주문서 코드', field: 'order_cd', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter' },
+                {headerName: '거래처 명', field: 'act_nm', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter' },
+                {headerName: '거래처 코드', field: 'act_cd', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter' },
+                {headerName: '주문 일자', field: 'order_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
+                {headerName: '납기 일자', field: 'due_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
             ],
             ordData: [],
             memDefs: [
-                {headerName: '담당자 ID', field: 'ID'},
-                {headerName: '담당자 명', field: 'name', filter: 'agTextColumnFilter'},
-                {headerName: '부서', field: 'dpt_nm', filter: 'agTextColumnFilter'},
+                {headerName: '담당자 ID', field: 'ID', cellStyle: { textAlign: "center" }},
+                {headerName: '담당자 명', field: 'name', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter'},
+                {headerName: '부서', field: 'dpt_nm', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter'},
             ],
             memData: [],
             

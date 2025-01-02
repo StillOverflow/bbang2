@@ -55,24 +55,27 @@ export default {
     data() {
         return {
             columnDefs: [
-                {field: 'order_cd', headerName: '주문코드'},
-                {field: 'act_cd', headerName: '거래처코드'},
-                {field: 'act_nm', headerName: '거래처이름'},
-                {field: 'name', headerName: '담당자'},
+                {field: 'order_cd', headerName: '주문코드', cellStyle: { textAlign: "center" }},
+                {field: 'act_cd', headerName: '거래처코드', cellStyle: { textAlign: "center" }},
+                {field: 'act_nm', headerName: '거래처이름', cellStyle: { textAlign: "center" }},
+                {field: 'name', headerName: '담당자', cellStyle: { textAlign: "center" }},
                 {
                     field: 'order_dt',
                     headerName: '주문일자',
-                    valueFormatter: this.$comm.dateFormatter // 날짜 포맷터 추가
+                    valueFormatter: this.$comm.dateFormatter, // 날짜 포맷터 추가 
+                    cellStyle: { textAlign: "center" }
                 },
                 {
                     field: 'due_dt',
                     headerName: '납기일자',
-                    valueFormatter: this.$comm.dateFormatter 
+                    valueFormatter: this.$comm.dateFormatter, 
+                    cellStyle: { textAlign: "center" }
                 },
-                {field: 'status', headerName: '현재진행상태'},
+                {field: 'status', headerName: '현재진행상태', cellStyle: { textAlign: "center" }},
                 {
                     headerName: '상세' ,
-                    field: 'detailed',
+                    field: 'detailed', 
+                    cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'DETAILED';

@@ -61,11 +61,12 @@ export default {
         return {
             //제품 재고 조회
             PALDefs: [
-                {field: 'prd_cd', headerName: '제품코드'},
-                {field: 'prd_nm', headerName: '제품명'},
+                {field: 'prd_cd', headerName: '제품코드', cellStyle: { textAlign: "center" }},
+                {field: 'prd_nm', headerName: '제품명', cellStyle: { textAlign: "center" }},
                 {
                   field: 'stock', 
-                  headerName: '총재고수량',
+                  headerName: '총재고수량', 
+                  cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -73,7 +74,8 @@ export default {
                 },
                 {
                     field: 'prd_out_qty',
-                    headerName: '출고량',
+                    headerName: '출고량', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -81,7 +83,8 @@ export default {
                 },
                 {
                     headerName: '상세' ,
-                    field: 'detailed',
+                    field: 'detailed', 
+                    cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'DETAILED';
@@ -99,11 +102,12 @@ export default {
             PALData: [],
             //제품 lot별 조회
             PDLDefs: [
-                {field: 'prd_nm', headerName: '제품명'},
-                {field: 'prd_lot_cd', headerName: 'LOT'},
+                {field: 'prd_nm', headerName: '제품명', cellStyle: { textAlign: "center" }},
+                {field: 'prd_lot_cd', headerName: 'LOT', cellStyle: { textAlign: "center" }},
                 {
                   field: 'stock', 
-                  headerName: '재고수량',
+                  headerName: '재고수량', 
+                  cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -112,12 +116,14 @@ export default {
                 {
                     field: 'exp_dt',
                     headerName: '유통기한',
-                    valueFormatter: this.$comm.dateFormatter 
+                    valueFormatter: this.$comm.dateFormatter, 
+                    cellStyle: { textAlign: "center" }
                 },
                 {
                     field: 'prd_in_dt',
                     headerName: '입고날짜',
-                    valueFormatter: this.$comm.dateFormatter 
+                    valueFormatter: this.$comm.dateFormatter, 
+                    cellStyle: { textAlign: "center" } 
                 },
             ],
             PDLData: [],
