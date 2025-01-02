@@ -250,7 +250,7 @@
    // 자재 리스트
    const getMaterial = async (keyword) => {
       try {
-         const result = await axios.get('/api/comm/material', { params : { mat_nm : String(keyword).trim() } });
+         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : String(keyword).trim() } });
          materialModalData.value = result.data;
       } catch (err) {
          Swal.fire({

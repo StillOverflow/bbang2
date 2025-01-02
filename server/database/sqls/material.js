@@ -143,30 +143,36 @@ const getMaterialOrderDetail = `
 `
 //! ----------------------------------- 자재 출고조회 -----------------------------------
 // 생산완료된 생산지시서 조회
-const getProduceInstruction = (workDate) => {
-   
-   const query = `
+const getProduceInstruction = (searchObj) => {
+   console.log("sql.js => ", searchObj)
+   let query = `
       SELECT
          inst_cd, -- 지시서 코드
          work_dt, -- 작업일자
-         status   -- 진행 상태         
+         status,
+         fn_get_codename(status) AS statusName   -- 진행 상태         
       FROM
          prod_inst
       WHERE
-         UPPER(STATUS) = 'Z01'
+         UPPER(STATUS) <> 'Z01'
    `
-   let conditions = "";
+   const conditions = [];
 
    // 날짜 조건 추가
-   if (workDate.startDt && workDate.endDt) {
-      conditions = `DATE(work_dt) BETWEEN '${workDate.startDt}' AND '${workDate.endDt}'`;
+   if (searchObj.startDt && searchObj.endDt) {
+      conditions.push(`DATE(work_dt) BETWEEN DATE('${searchObj.startDt}') AND DATE('${searchObj.endDt}')`);
    }
+
+   if(searchObj.status) {
+      conditions.push(`UPPER(status) = UPPER('${searchObj.status}')`)
+   }
+
    // WHERE 절 조립
-   if (conditions != null && conditions != undefined && conditions != '') {
-      query += " AND " + conditions;
+   if (conditions.length > 0) {
+      query += " AND " + conditions.join(" AND ");
    }
    // 쿼리 반환
-   return query; 
+   return query;
 }
 
 const getMaterialOutForProduction = `
@@ -194,35 +200,6 @@ const getMaterialOutForProduction = `
       UPPER(c.inst_cd) = UPPER( ? ) 
 
 `
-
-// 지시서에 대한 자재 출고 내역
-// const getMaterialOutForProduction = (searchObj) => {
-//    const query = `
-//       SELECT 
-//          d.inst_dtl_cd,                           -- 지시서 상세 코드
-//          c.proc_cd,                               -- 공정 코드
-//          fn_get_proc_nm(proc_cd) AS proc_nm,      -- 공정명
-//          a.mat_cd,                                -- 자재코드
-//          fn_get_materialname(a.mat_cd) AS mat_nm, -- 자재명 
-//          fn_get_codename(b.unit) AS unit,         -- 자재 단위
-//          a.mat_out_qty,                           -- 출고량
-//          a.mat_out_dt,                            -- 출고날짜
-//          fn_get_codename(b.category) AS CATEGORY, -- 자재 카테고리
-//          fn_get_codename(b.\`type\`) AS type,       -- 자재 구분
-//          mat_lot_cd                               -- 자재 lot
-//       FROM   
-//          material_out_detail a                    -- 자재 출고 디테일 테이블
-//       LEFT JOIN 
-//          material b ON a.mat_cd = b.mat_cd        -- 자재 정보 테이블
-//       INNER JOIN 
-//          prod_result c ON c.prod_result_cd = a.prod_result_cd
-//       INNER JOIN 
-//          prod_inst_dtl d ON c.inst_cd = d.inst_cd
-//       WHERE
-//          UPPER(c.inst_cd) = UPPER( ? ) 
-//    `
-// }
-
 
 module.exports = {
    produceHeadPlanList,    // 미지시 생산계획서 조회
