@@ -25,9 +25,13 @@
           </div>
         </div>
       </div>
-      
+      <div class="alert alert-success alert-dismissible fade show">
+        <strong>Success!</strong> Your message has been sent successfully.
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
       <div class="card-header ps-5 ps-md-4">
-        
+        <div class="bg-secondary-subtle p-2" style="--bs-bg-opacity: .5;">진행중이거나 완료된 계획서는 수정/삭제 불가합니다.</div>
         <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" 
         :columnDefs="planDefs"
         :rowData="planData"

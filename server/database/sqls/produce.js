@@ -53,8 +53,9 @@ WHERE PROD_PLAN_CD LIKE "%"?"%"`;
 const planDelete = (datas) => {
 
   let sql =
-      `DELETE FROM PROD_PLAN 
-      WHERE PROD_PLAN_CD IN `;
+      `DELETE PROD_PLAN, PROD_PLAN_DTL FROM PROD_PLAN PROD_PLAN join PROD_PLAN_DTL PROD_PLAN_DTL
+        ON PROD_PLAN.PROD_PLAN_CD=PROD_PLAN_DTL.PROD_PLAN_CD
+        WHERE STATUS='Z01' and PROD_PLAN_DTL.PROD_PLAN_CD IN `;
 
   let delArr = [];
   delArr.push(Object.values(datas));
@@ -104,7 +105,7 @@ const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 // 헤더 수정
 const planUpdate = `
   UPDATE PROD_PLAN SET ?
-  WHERE ?
+  WHERE PROD_PLAN_CD = ?
 `;
 /* 계획서 등록[E] */
 
@@ -164,12 +165,15 @@ const instInfo =
 `SELECT * FROM PROD_INST
 WHERE INST_CD = ?`;
 
-//계획서 다중 삭제
+//지시서 다중 삭제
 const instDelete = (datas) => {
 
   let sql =
-      `DELETE FROM PROD_INST 
-      WHERE INST_CD IN `;
+      `DELETE PROD_INST, prod_inst_dtl, prod_result, proc_mat FROM 
+		  PROD_INST prod_inst join prod_inst_dtl prod_inst_dtl ON prod_inst.INST_CD=prod_inst_dtl.INST_CD
+		  							 JOIN prod_result prod_result ON prod_inst.INST_CD=prod_result.INST_CD
+									 JOIN proc_mat proc_mat ON prod_inst.INST_CD=proc_mat.INST_CD;
+        WHERE prod_inst_dtl.INST_CD IN `;
 
   let delArr = [];
   delArr.push(Object.values(datas));
@@ -272,6 +276,7 @@ const instMatInsert =
 `INSERT INTO
   proc_mat (
       INST_MAT_CD
+    ,INST_CD
     ,PROC_FLOW_CD
     ,MAT_CD
     ,MAT_QTY
@@ -281,6 +286,7 @@ const instMatInsert =
 
 SELECT 
     CONCAT('IM', LPAD(nextval(inst_mat_seq), 3,'0')) AS 'INST_MAT_CD',
+    ?,
     pf.PROC_FLOW_CD AS 'PROC_FLOW_CD',
     pf.MAT_CD AS MAT_CD,
     pf.MAT_QTY AS MAT_QTY,

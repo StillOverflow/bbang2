@@ -55,12 +55,12 @@ import MaterialsOutList from '../views/material/MaterialsOutList.vue';
 
 
 ////////////////////////////// 품질 //////////////////////////////
+import QualityTestManagement from '../views/quality/QualityTestManagement.vue';
 import QualityStandard from '../views/quality/QualityStandard.vue';
 import QualityPrdTest from '../views/quality/QualityPrdTest.vue';
 import QualityMatTest from '../views/quality/QualityMatTest.vue';
 import QualityTestRecList from '../views/quality/QualityTestRecList.vue';
 import QualityDefManagement from '../views/quality/QualityDefManagement.vue';
-
 
 
 
@@ -96,6 +96,7 @@ import Signup from '../views/Signup.vue';
 import Signin from '../views/Signin.vue';
 import Grid from '../views/Grid.vue';
 
+
 /////////////////////// 여기부터 라우트 등록 //////////////////////
 const routes = [
   {
@@ -125,44 +126,44 @@ const routes = [
   },
   {
     //주문서 등록
-    path: '/sales_orderadd',
-    name: 'sales_orderadd',
+    path: '/Sales_OrderAdd',
+    name: 'Sales_OrderAdd',
     component: Sales_OrderAdd,
   },
   {
     //주문서 목록
-    path: '/sales_orderlist',
-    name: 'sales_orderlist',
+    path: '/Sales_OrderList',
+    name: 'Sales_OrderList',
     component: Sales_OrderList,
   },
   {
     //출고제품 등록
-    path: '/sales_ProOutAdd',
-    name: 'sales_ProOutAdd',
+    path: '/Sales_ProOutAdd',
+    name: 'Sales_ProOutAdd',
     component: Sales_ProOutAdd,
   },
   {
     //출고제품 목록
-    path: '/sales_ProOutList',
-    name: 'sales_ProOutList',
+    path: '/Sales_ProOutList',
+    name: 'Sales_ProOutList',
     component: Sales_ProOutList,
   },
   {
     //반품제품 등록
-    path: '/sales_ResultAdd',
-    name: 'sales_ResultAdd',
+    path: '/Sales_ResultAdd',
+    name: 'Sales_ResultAdd',
     component: Sales_ResultAdd,
   },
   {
     //반품제품 목록
-    path: '/sales_ResultList',
-    name: 'sales_ResultList',
+    path: '/Sales_ResultList',
+    name: 'Sales_ResultList',
     component: Sales_ResultList,
   },
   {
     //제품 목록
-    path: '/sales_ProList',
-    name: 'sales_ProList',
+    path: '/Sales_ProList',
+    name: 'Sales_ProList',
     component: Sales_ProList,
   },
 
@@ -382,6 +383,12 @@ const routes = [
 
 
   ////////////////////////////// 품질 //////////////////////////////
+  {
+    // 검사항목 관리
+    path: '/Quality_test',
+    name: 'QualityTest',
+    component: QualityTestManagement,
+  },
   {
     // 품질기준 관리
     path: '/Quality_standard',

@@ -4,7 +4,7 @@
       <div class="card py-5 px-6">
         <div class="row">
           <!-- 제품목록 -->
-          <div class="col-md-5" style="height: auto">
+          <div class="col-md-6" style="height: auto">
             <h4 class="mb-3 text-center">제품 목록</h4>
             <div
               class="d-flex justify-content-left align-items-center mb-2"
@@ -36,7 +36,7 @@
             <!-- 제품 테이블 ag-gird -->
             <ag-grid-vue
               class="ag-theme-alpine my-4"
-              style="width: 100%; height: 600px"
+              style="width: 100%; height: 683px"
               :columnDefs="productDefs"
               :rowData="productData"
               :pagination="true"
@@ -48,7 +48,7 @@
               <!--행선택시 bom데이터 조회-->
             </ag-grid-vue>
           </div>
-          <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
+          <!-- <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div> -->
           <div class="col-md-6" style="height: auto">
             <!-- 자재 목록 -->
             <h4 class="mb-3 text-center">자재 목록</h4>
@@ -69,7 +69,7 @@
             </div>
             <!-- 자재 테이블 ag-gird -->
             <ag-grid-vue
-              class="ag-theme-alpine"
+              class="ag-theme-alpine my-4"
               style="width: 100%; height: 300px"
               :columnDefs="materialDefs"
               :rowData="materialData"
@@ -87,7 +87,7 @@
                 자재 추가
               </button>
               <button class="btn btn-outline-danger mt-2 mb-2 ms-2" @click="deleteBom">
-                delete
+                삭제
               </button>
             </div>
             <!-- BOM 테이블 ag-grid -->
@@ -105,13 +105,12 @@
               </ag-grid-vue>
               <div class="text-center">
                 <button
-                  class="btn btn-primary mt-3 saveBtn "
-                  @click="save"
+                  type="button" class="btn btn-success mt-3 saveBtn " @click="save"
                   v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0">
-                  submit
+                  저장
                 </button>
-                <button type="button" class="btn btn-secondary m-2" @click="reset">
-                        <i class="fa-solid fa-rotate"></i>
+                <button type="button" class="btn btn-secondary ms-2 mt-3 saveBtn" @click="reset">
+                        초기화
                 </button>
               </div>              
             </div>
@@ -216,7 +215,7 @@ export default {
         },
         { headerName: "자재코드", field: "mat_cd", sortable: true },
         { headerName: "자재명", field: "mat_nm", sortable: true },
-        { headerName: "BOM양", field: "usage", sortable: true },
+        { headerName: "BOM양", field: "usage", sortable: true ,cellStyle: {textAlign: "right"}},
         { headerName: "단위", field: "unit", sortable: true },
       ],
       // BOM 테이블 데이터

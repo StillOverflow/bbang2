@@ -9,6 +9,10 @@
             <input class="form-control" type="text" v-model="inst_cd" placeholder="생산지시서 코드를 검색해주세요" style="height: 41px;">
             <button class="btn btn-warning mb-3" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
+          <select class="form-select w-50" aria-label="Default select example" v-model="prd_cd" style="height: 41px;" @change="getResultList">
+            <option selected>제품을 선택해주세요</option>
+            <option v-for="val in instDtlData" :value=month :key="val">{{ val.PRD_NM }}</option>
+          </select>
         </div>
 
         <!--생산지시서 검색모달[S]-->
@@ -75,7 +79,6 @@ export default {
   components: { AgGridVue, Layout },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산실적 조회' });
-    this.getResultList();
     this.getStatus();
   },
   computed: {
@@ -92,6 +95,7 @@ export default {
       radios: [],
       selected_radio:'',
       selected_list:'',
+      instDtlData: [],
 
       instDefs: [
         { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
@@ -138,7 +142,8 @@ export default {
     },
     modalClicked(params) {
       this.isModal = !this.isModal;
-      this.inst_cd= params.data.INST_CD;       
+      this.inst_cd= params.data.INST_CD;      
+      this.getInstDtlList(); 
     },
     modalCloseFunc() {
       this.isModal = !this.isModal;
@@ -149,6 +154,13 @@ export default {
       let result = await axios.get('/api/inst')
                               .catch(err => console.log(err));
       this.instData = result.data;
+    },
+    
+    //지시서 제품 리스트
+    async getInstDtlList() {
+      let result = await axios.get(`/api/inst/dtl/${this.inst_cd}`)
+                              .catch(err => console.log(err));
+      this.instDtlData = result.data;
     },
 
     async getStatus() {
@@ -168,6 +180,7 @@ export default {
     async getResultList() {
       let obj = {
         INST_CD : this.inst_cd,
+        PRD_CD : this.prd_cd
       }
       let result = await axios.get('/api/progress/result', {params:obj})
                               .catch(err => console.log(err));

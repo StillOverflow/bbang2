@@ -140,6 +140,40 @@ router.post('/sales/prdOut', async (req, resp) => {
     resp.send(result);
 });
 
+//출고 제품 상세(헤드)
+router.get('/sales/prdOutDtlList/:no', async (req, res) => {
+    let prdOutNo = req.params.no;
+    let info = await salesService.listDtlOutPrd(prdOutNo);
+    res.send(info);
+});
+
+//출고 제품 상세(디테일 LOT)
+router.get('/sales/prdOutDtlLotList/:no', async (req, res) => {
+    let prdOutLotNo = req.params.no;
+    let info = await salesService.listLotDtlOutPrd(prdOutLotNo);
+    res.send(info);
+});
+
+//출고 제품 삭제
+router.delete('/sales/prdOutDelete/:del', async (req, res) => {
+    let del = req.params.del;
+    let outDel = await salesService.deleteOutPrd(del);
+    res.send(outDel);
+});
+//출고 제품 삭제시 제품수량 원복
+router.put('/sales/prdOutDeleteQty', async (req, res) => {
+    let updateInfo = req.body;
+    let result = await salesService.qtyDeleteOutPrd(updateInfo);
+    res.send(result);
+});
+//출고 제품 단건 삭제
+router.delete('/sales/prdOutListDelete/:del', async (req, res) => {
+    let del = req.params.del;
+    let outDtlDel = await salesService.deleteListOutPrd(del);
+    res.send(outDtlDel);
+});
+
+
 /* ---------------------------------반품제품--------------------------------------- */
 
 //반품 제품 목록 조회

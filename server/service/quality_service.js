@@ -13,9 +13,15 @@ const getMyList = async (values) => {
     return result;
 };
 
-// 전체 검사항목 조회 (조건 받음, 실험용)
-const findTestList = async (search) => { 
-    let result = await mariadb.query('testList', search);
+// 해당 품질기준에 속한 검사항목 조회 (검사결과목록에서 조회용)
+const getStdTestList = async (values) => { 
+    let result = await mariadb.query('stdTestList', values);
+    return result;
+};
+
+// 전체 검사항목 조회+검색
+const findTestList = async (valueObj) => { 
+    let result = await mariadb.query('testList', valueObj);
     return result;
 };
 
@@ -165,6 +171,7 @@ const updateDefStatus = async (values) => {
 module.exports = {
     getYetList,
     getMyList,
+    getStdTestList,
     findTestList,
 
     stdInsert,

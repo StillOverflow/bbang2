@@ -56,7 +56,7 @@
             </div>
             <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">성별</div>
-                <div class="input-group mb-3 w-10">
+                <div class="input-group mb-3 w-20">
                     <select class="form-select custon-width" v-model="memInfo.gender">
                         <option v-for="(opt, idx) in selectedData.selectOptions.gender"
                             :key="idx"
@@ -88,7 +88,7 @@
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">연락처</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="memInfo.phone" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
+                    style="height: 41px;" @input="autoSeparate"  maxlength="13" />
                 </div>
             </div>
 
@@ -115,9 +115,10 @@
             </div>
             <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주소</div>
-                <div class="input-group mb-3 w-50">
+                <div class="input-group mb-3 w-70">
                     <input type="text" class="form-control" v-model="memInfo.addr" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
+                    <button type="button" class="btn btn-warning " @click="openPostcode"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
             </div>
 
@@ -158,6 +159,7 @@ import axios from "axios";
 //prefix 코드인풋
 export default {
     components: { AgGridVue },
+    name: "PostCode",
     created(){
         this.$store.dispatch('breadCrumb', { title: '사원 관리' });
         this.searchMem();
@@ -246,6 +248,33 @@ export default {
 
 
     methods:{
+        //휴대폰
+        autoSeparate() {
+        let inputValue = this.memInfo.phone;
+
+        // 숫자가 아닌 문자 제거
+        inputValue = inputValue.replace(/[^0-9]/g, '');
+
+        // 올바른 위치에 대시 추가
+        if (inputValue.length > 3 && inputValue.charAt(3) !== '-') {
+            inputValue = inputValue.slice(0, 3) + '-' + inputValue.slice(3);
+        }
+        if (inputValue.length > 8 && inputValue.charAt(8) !== '-') {
+            inputValue = inputValue.slice(0, 8) + '-' + inputValue.slice(8);
+        }
+
+        // 입력값 업데이트
+        this.memInfo.phone = inputValue;
+        },
+        //주소api
+        openPostcode() {
+        new window.daum.Postcode({
+            oncomplete: (data) => {
+            // 주소 데이터를 v-model로 바인딩
+            this.memInfo.addr = data.address;
+            },
+        }).open();
+        },
         //----------------------------공통함수()---------------------------
         //사원 검색 조회
         async searchMem() {

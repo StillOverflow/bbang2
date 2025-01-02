@@ -14,11 +14,6 @@ export default {
     return year + '-' + month + '-' + day;
   },
 
-  // 두 자리 숫자 포맷팅용 전역 함수1 (1 => 01, 2 => 02 형식으로 반환)
-  twoNum(num){
-    return ('0' + num).slice(-2);
-  },
-
   // 단순 숫자 포맷팅용 전역 함수 (천단위 콤마 표시)
   getCurrency(num){
     if (!num) return '0';
@@ -104,11 +99,11 @@ export default {
   ////////////////////////////// Ag-Grid //////////////////////////////
 
   // 날짜 포맷 변환 ag-grid용 [S]
-  dateFormatter(params) { //여기서 ag grid에 date형식을 보냄
-    let value = params.value; // getMyDay() 와의 차이점!
+  dateFormatter(params) { // 여기서 ag grid에 date형식을 보냄
+    let value = params.value; // null 그냥 넣으면 오류남
     let format = 'yyyy-MM-dd';
     let date = value == null ? new Date() : new Date(value); // null이면 오늘 날짜 입력
-    date = new Date(date.getTime() + (9 * 60 * 60 * 1000)); // 밀리초 단위 계산
+    date = new Date(date.getTime() + (9 * 60 * 60 * 1000)); // 밀리초 단위 계산 (DB 시간 차이때문)
 
     let year = date.getFullYear();
     let month = ('0' + (date.getMonth() + 1)).slice(-2);
@@ -174,7 +169,7 @@ export default {
   /////////////////////////////// axios ///////////////////////////////
 
   // 공통코드 가져오기 (리턴값 : [{comm_dtl_cd, comm_dtl_nm}, ....])
-  async getComm(cd){
+  async getComm(cd){ // comm_cd
     let result = await axios.get('/api/comm/codeList/' + cd)
                             .catch(err => console.log(err));
     return result.data;

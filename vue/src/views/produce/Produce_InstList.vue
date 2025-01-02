@@ -80,7 +80,7 @@ export default {
               button.innerText = 'DETAILED';
               button.className = 'btn btn-warning btn-xsm';
               button.addEventListener('click', () => {
-                  this.$router.push({ name: 'Produce_PlanAdd' , query : { plan_cd : params.data.PROD_PLAN_CD}});
+                  this.$router.push({ name: 'Produce_InstAdd' , query : { inst_cd : params.data.INST_CD}});
               });
               return button;
           }
@@ -132,8 +132,8 @@ export default {
       });            
       let result = await axios.delete(`/api/inst/`, {params:delArr})
                               .catch(err => console.log(err));
-                              if(result.data == 'success'){
-      this.$swal({
+      if(result.data == 'success'){
+        this.$swal({
             icon: "success",
             title: "선택한 지시서를 삭제하였습니다.",
         })
