@@ -1,19 +1,11 @@
 <!-- 생산계획서 조회 -->
  <style>
-.point-red{
-  color: red;
-  font-size: 12px;
-  padding: 0;
-}
 .table {
   margin-bottom: 0rem !important;  
 }
-.progress-bx { 
-  border: solid 2px #edf0f3;
-}
 </style>
 <template>
-  <div class="py-4 container-fluid">
+  <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
     <div class="card">      
       <div class="card-header ps-5 ps-md-4">
         <h5 class="modal-title mb-3">1. 생산지시서 선택</h5>
@@ -76,7 +68,7 @@
                   <td>{{ val.TOTAL_QTY }}</td>
                   <td>{{ val.PRD_OUT_QTY }}</td>
                   <td>{{ val.TOTAL_QTY-val.PRD_OUT_QTY }}</td>
-                  <td><button class="btn btn-dark btn-sm" @click="getFlowList(val.PRD_CD)">선택하기</button></td>
+                  <td><button class="btn btn-dark btn-sm" @click="getResultList(val.PRD_CD)">선택하기</button></td>
                 </tr>
               </template>
               <tr v-else>
@@ -319,8 +311,6 @@ export default {
       equData: [],
       equ_radio:'',
       ID:'',
-
-
     };
   },
   methods: {    
@@ -356,10 +346,15 @@ export default {
       }
     },
     modalClicked2(params) {
-      this.id = params.data.ID;
-      this.name = params.data.name;
+      this.resultInfo.ID = params.data.ID;
+      this.resultInfo.NAME = params.data.name;
 
       this.isModal2 = !this.isModal2;
+    },
+    modalCloseFunc() {
+      this.isModal = !this.isModal;
+      this.isModal2 = !this.isModal2;
+      this.isModal3= !this.isModal3;
     },
     /*모달 [E]*/
 
@@ -392,6 +387,8 @@ export default {
       this.instDtlData = result.data;
     },
 
+
+    //자재 수량 조정
     matHandle(mat){
       let matEle = document.getElementById('point_'+mat.MAT_CD);
       if(parseFloat(mat.MAT_QTY) < parseFloat(mat.MAT_USE_QTY)){
@@ -403,6 +400,7 @@ export default {
       }
     },
 
+    //지시량 조정
     prod_qty(){
       let qtyEle = document.getElementById('qty_'+this.resultInfo.PROD_RESULT_CD);
       if(this.resultInfo.PROD_QTY > this.resultInfo.TOTAL_QTY){
@@ -413,31 +411,36 @@ export default {
       }
     },
 
-    //제품별 공정 리스트
-    async getFlowList(prd_cd) {
+    //생산 공정리스트
+    async getResultList(prd_cd){
       let obj = {
-          INST_CD : this.inst_cd,
-          PRD_CD : prd_cd,
+        INST_CD : this.inst_cd,
+        PRD_CD : prd_cd
       }
-      
-      let result = await axios.get('/api/progress/flow', {params:obj})
+      let result = await axios.get('/api/progress/result', {params:obj})
                               .catch(err => console.log(err));
+
       this.flowData = result.data;
+      this.equ_radio = result.data.EQP_CD;
     },
 
+    //공정정보 가져오기
     async getResultInfo(result_cd){
-
-      let result = await axios.get(`/api/progress/result/${result_cd}`)
+      let obj = {
+        PROD_RESULT_CD : result_cd
+      }
+      let result = await axios.get('/api/progress/result', {params:obj})
                               .catch(err => console.log(err));
 
-      this.resultInfo = result.data;
+      this.resultInfo = result.data[0];
       this.equ_radio = this.resultInfo.EQP_CD;
 
-      this.showProcess();
-      this.getFlowEquList();
-      this.getMatList();
+      this.showProcess(); //공정관리화면 노출
+      this.getFlowEquList(); //설비 선택목록 조회
+      this.getMatList(); //사용 자재목록 조회
     },
 
+    //공정관리화면 노출
     showProcess(){
       let flow_cd = this.resultInfo.PROC_FLOW_CD;
       const elements = document.querySelectorAll('.flowList');
@@ -448,13 +451,14 @@ export default {
       flowEle.classList.add("table-primary");
     },
 
-    //공정별 설비 리스트
+    //설비 선택목록 조회
     async getFlowEquList() {
       let result = await axios.get(`/api/progress/equ/${this.resultInfo.EQP_TYPE}`)
                               .catch(err => console.log(err));
       this.equData = result.data;
     },
 
+    //사용 자재목록 조회
     async matInsert(){
       let matArr = [];
 
@@ -473,6 +477,7 @@ export default {
       }
     },
 
+    //공정 시작/종료
     process(mode){
       /*
       if (!this.equ_radio) {
@@ -506,7 +511,7 @@ export default {
                 EQP_CD : this.equ_radio,
                 ID : this.ID,
                 NAME : this.NAME,
-                STATUS : 'Z01',
+                STATUS : 'Z02',
                 PROD_QTY :  this.PROD_QTY,
                 START_TIME: this.$comm.getDateTime()
               };

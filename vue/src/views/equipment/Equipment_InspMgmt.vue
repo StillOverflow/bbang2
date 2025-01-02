@@ -1,3 +1,4 @@
+<!-- 설비 점검 관리 -->
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
@@ -201,20 +202,38 @@ export default {
       this.isModal = !this.isModal;
     },
 
-    modalClicked(params) {
-
+    async modalClicked(params) {
 
       console.log('Row Data:', params.data);
 
       this.selectedEqp = params.data.eqp_cd;
-      // 설비점검조회(최신1건)
-      this.getInspListOne(this.selectedEqp);
 
-      this.previewImage = params.data.img_path
-        ? `/api/${params.data.img_path}`
-        : require('@/assets/img/blank_img.png');
+      try {
+        // 최신 점검 데이터 가져오기
+        await this.getInspListOne(this.selectedEqp);
 
-      this.isModal = false;
+        // 설비 데이터 가져오기
+        await this.getEquipInfo(this.selectedEqp);
+
+        // 세션에서 점검 담당자 ID 가져오기
+        const sessionId = this.$session.get('user_id');
+        console.log('모달 클릭 시 가져온 세션 ID:', sessionId);
+
+        // 항상 세션 ID로 덮어쓰기
+        this.equipmentData.id = sessionId;
+
+        console.log('Updated equipmentData:', this.equipmentData);
+
+        // 이미지 처리
+        this.previewImage = this.equipmentData.img_path
+          ? `/api/${this.equipmentData.img_path}`
+          : require('@/assets/img/blank_img.png');
+
+        this.isModal = false;
+
+      } catch (error) {
+        console.error('Error in modalClicked:', error);
+      }
     },
     // 시작시간 유효성 검사
     validateStartTime() {
@@ -233,6 +252,7 @@ export default {
 
     // 종료시간 유효성 검사
     validateEndTime() {
+
       if (this.equipmentData.end_time < this.equipmentData.start_time) {
         Swal.fire({
           icon: 'error',
@@ -250,14 +270,6 @@ export default {
     },
 
 
-    /*
-    // 세션에서 점검 담당자 ID 가져오기
-    const sessionId = this.$session.get('user_id'); // const 선언은 여기서 가능
-    if (sessionId) {
-      this.equipmentData.id = sessionId; // 점검 담당자에 세션 ID 설정
-    }
-
-    */
 
     // 설비 단건 조회
     async getEquipInfo(eqp_cd) {
@@ -267,7 +279,6 @@ export default {
         this.equipmentData = {
           ...this.equipmentData,
           ...result.data,
-          insp_log_cd: null,
         };
 
 
@@ -289,82 +300,47 @@ export default {
     //점검조회(최신1건)
     // 설비 단건 조회
     async getInspListOne(eqp_cd) {
-      try {
-        console.log(eqp_cd);
-        const result = await axios.get(`/api/equip/insp/${eqp_cd}`);
-        console.log("result data:", result.data);
-        if (result.data) {
 
-          //insp_log_cd가 있고 end_time이 없을 경우 수정
+    try {
+    const result = await axios.get(`/api/equip/insp/${eqp_cd}`);
+    console.log('Result data:', result.data);
+    if (result.data) {
+      this.equipmentData = {
+        ...this.equipmentData,
+        ...result.data,
+        insp_log_cd: result.data.insp_log_cd, // 덮어쓰지 않도록
+        start_time: this.formatDate(result.data.start_time),
+        end_time: this.formatDate(result.data.end_time),
+      };
 
-          if (result.data.insp_log_cd && !result.data.end_time) {
-            // 수정 모드: insp_log_cd가 있고 end_time이 없을 경우
-            // this.getInspInfo(result.data.eqp_cd);
-            this.isEditMode = true;
-            this.equipmentData = {
-              ...this.equipmentData,
-              ...result.data, // 최신 점검 데이터를 폼에 반영
-            };
-          } else {
-            // 등록 모드: insp_log_cd가 없거나 end_time이 있는 경우
-            //this.getEquipInfo(result.data.eqp_cd);
-            this.isEditMode = false;
-          }
-
-
-
-          // 이미지 경로 처리
-          this.previewImage = result.data.img_path
-            ? `/api/${result.data.img_path}`
-            : require('@/assets/img/blank_img.png');
-        }
-      } catch (err) {
-        console.error('Error fetching latest inspection data:', err);
+      
+      // 등록 모드 조건: insp_log_cd가 없거나 end_time이 존재하는 경우
+      if (!result.data.insp_log_cd || result.data.end_time) {
+        this.isEditMode = false;
+        this.resetForm(); // 등록 모드로 초기화
+        this.equipmentData.eqp_cd = eqp_cd; // 설비 코드 유지
+      } else {
+        // 수정 모드 조건: insp_log_cd가 있고 end_time이 비어 있는 경우
+        this.isEditMode = true;
       }
-    },
-
-    /*
-
-    // 점검 단건 조회
-    async getInspInfo(eqp_cd) {
-      alert(`/api/equip/insp/${eqp_cd}`);
-      try {
-        const result = await axios.get(`/api/equip/insp/${eqp_cd}`);
-        if (result.data && result.data.success) {
-          // 점검 단건 데이터를 폼에 반영
-          this.equipmentData = {
-            ...this.equipmentData,
-            ...result.data.data, // API에서 반환된 데이터 반영
-          };
-          this.previewImage = result.data.data.img_path
-            ? `/api/${result.data.data.img_path}`
-            : require('@/assets/img/blank_img.png');
-        } else {
-          Swal.fire({
-            icon: 'info',
-            title: '점검 기록 없음',
-            text: '점검 기록을 불러올 수 없습니다.',
-          });
-          this.resetForm();
-        }
-      } catch (err) {
-        console.error('점검 단건 조회 오류:', err);
-        Swal.fire({
-          icon: 'error',
-          title: '오류 발생',
-          text: '점검 데이터를 불러오는 중 오류가 발생했습니다.',
-        });
-      }
-    },
-
-    */
-
-
-
+      
+    }
+  } catch (err) {
+    console.error('Error fetching inspection data:', err);
+  }
+},
 
     //등록
     async inspInsert() {
+
       try {
+
+        // 세션에서 점검 담당자 ID 가져오기
+        const sessionId = this.$session.get('user_id');
+        console.log('등록 시 가져온 세션 ID:', sessionId);
+
+        this.equipmentData.id = sessionId; // 기존 값을 무시하고 세션 ID로 덮어쓰기
+
         const obj = {
           eqp_cd: this.equipmentData.eqp_cd,
           start_time: this.equipmentData.start_time ? this.formatDate(this.equipmentData.start_time) : null,
@@ -400,18 +376,37 @@ export default {
       }
     },
     async inspUpdate() {
+
+      console.log('Updating data:', this.equipmentData); // 데이터 출력
+
+      
       try {
+
+        // 세션에서 점검 담당자 ID 가져오기
+        const sessionId = this.$session.get('user_id');
+        console.log('수정 시 가져온 세션 ID:', sessionId);
+
+        // 기존 ID가 없을 경우에만 세션 ID를 설정
+        if (!this.equipmentData.id && sessionId) {
+          this.equipmentData.id = sessionId; // 점검 담당자에 세션 ID 설정
+        }
+
         const obj = {
           eqp_cd: this.equipmentData.eqp_cd,
           start_time: this.equipmentData.start_time ? this.formatDate(this.equipmentData.start_time) : null,
           end_time: this.equipmentData.end_time ? this.formatDate(this.equipmentData.end_time) : null,
+          insp_log_cd: this.equipmentData.insp_log_cd, // 수정 요청에 필요한 insp_log_cd 추가
           insp_reason: this.equipmentData.insp_reason || '',
           insp_result: this.equipmentData.insp_result || '',
           insp_action: this.equipmentData.insp_action || '',
           note: this.equipmentData.note || '',
           id: this.equipmentData.id,
         };
+
+        console.log('보낼 데이터:', obj);
+
         const result = await axios.put(`/api/equip/insp/${this.equipmentData.insp_log_cd}`, obj);
+
         if (result.data.success) {
           Swal.fire({
             icon: 'success',
@@ -427,24 +422,29 @@ export default {
         });
       }
     },
+
     resetForm() {
       const resetFields = {
         start_time: '',
         end_time: '',
         insp_reason: '',
+        insp_type: '',
         insp_result: '',
         insp_action: '',
         note: '',
       };
+
       this.equipmentData = {
         ...this.equipmentData,
-        ...resetFields,
+        ...resetFields, // 초기화된 데이터 병합
       };
-      // 선택된 설비 정보 유지
+
+       // 선택된 설비 코드 초기화
       this.selectedEqp = this.equipmentData.eqp_cd;
       this.isEditMode = false; // 초기화 시 수정 모드도 해제
-      this.previewImage = require('@/assets/img/blank_img.png');
+      this.previewImage = require('@/assets/img/blank_img.png'); // 이미지 초기화
     },
+
     formatDate(date) {
       if (!date) return null;
       const d = new Date(date);
@@ -453,23 +453,42 @@ export default {
       const day = String(d.getDate()).padStart(2, '0');
       const hours = String(d.getHours()).padStart(2, '0');
       const minutes = String(d.getMinutes()).padStart(2, '0');
-      const seconds = String(d.getSeconds()).padStart(2, '0');
-      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+      return `${year}-${month}-${day}T${hours}:${minutes}`; // datetime-local 형식
     },
     isFieldDisabled(fieldName) {
+      // 설비 코드가 선택되지 않았을 경우 모든 항목 비활성화
+      if (!this.selectedEqp) return true;
+
       const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle', 'last_insp_dt', 'id'];
-      return !this.selectedEqp || alwaysDisabled.includes(fieldName);
+
+      // 등록 모드와 수정 모드에 따른 비활성화 처리
+      if (!this.isEditMode) {
+        return alwaysDisabled.includes(fieldName); // 등록 모드에서 특정 필드 비활성화
+      }
+
+      return alwaysDisabled.includes(fieldName);
     },
   },
   created() {
+    this.resetForm(); // 초기화 호출
     this.getEquipList();
     this.$store.dispatch('breadCrumb', { title: '설비 점검 관리' });
-    this.equipmentData.start_time = this.currentDateTime;
+
+    // this.equipmentData.start_time = this.currentDateTime;
+
+
+    // 세션에서 점검 담당자 ID 가져오기
+    const sessionId = this.$session.get('user_id');
+    console.log('Created에서 가져온 세션 ID:', sessionId);
+
+
+
     this.getComm('EQ').then((result) => {
       this.leftFields.find((field) => field.value === 'eqp_type').selectOptions = result.map((item) => ({
         item: item.comm_dtl_cd,
         name: item.comm_dtl_nm,
       }));
+      
     });
     this.getComm('EI').then((result) => {
       this.leftFields.find((field) => field.value === 'insp_type').selectOptions = result.map((item) => ({

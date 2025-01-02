@@ -171,6 +171,10 @@ export default {
         return {
             //상세,수정,삭제
             isdetail: false,
+            
+            //수정후에 인서트할 값 담기
+            upInsert: [],
+            updateRow: [],
 
             OLHead: {
                 act_cd: '',
@@ -217,11 +221,14 @@ export default {
                             //행만 삭제 
                             this.rowData = this.rowData.filter(row => row !== params.data);
                             
-                            // if(this.isdetail == true){
-                            //     //한 행에 관한 단건 딜리트 메소드
-                            //     this.order_dtl_cd = params.data.order_dtl_cd;
-                            //     this.orderListDelete();
-                            // }
+                            // 상세 페이지 일떄
+                            if(this.isdetail == true){
+                                //한 행에 관한 단건 딜리트 메소드
+                                this.order_dtl_cd = params.data.order_dtl_cd;
+                                this.orderListDelete();
+
+                                this.rowData = this.rowData.filter(row => row !== params.data);
+                            };
                         });
                         return button;
 
@@ -334,6 +341,10 @@ export default {
                 delete: 'delete', 
             };
 
+            //수정후에 인서트 할 값들 담기
+            this.upInsert.push(newRowData);
+            this.updateRow = this.rowData;
+
             this.rowData = [...this.rowData, newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
             this.psModal = !this.psModal;
         },
@@ -342,7 +353,7 @@ export default {
             if (!params.value) {
                 return `<span style="color: gray; font-style: italic;">수량은 숫자만 입력하세요.</span>`;
             }
-            return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
+            return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시(천 단위 콤마 표시도 같이 해줌)
         },
 
         //상세조회 주문서 헤드부분
@@ -370,40 +381,45 @@ export default {
 
         //주문서 수정
         async orderUpdate() {
-            //주문서 수정을 위한 삭제
-            let result = await axios.delete(`/api/sales/orderUpdateDelete/${this.selectNo}`)
-                                    .catch(err => console.log("deleteAxios에러",err));
-            if(result.data.result == 'success'){
-                //주문서 수정을 위한 등록
-                this.orderUpdateInsert();
-            }
+            // //주문서 수정을 위한 삭제
+            // let result = await axios.delete(`/api/sales/orderUpdateDelete/${this.selectNo}`)
+            //                         .catch(err => console.log("deleteAxios에러",err));
+            // if(result.data.result == 'success'){
+            //     //주문서 수정을 위한 등록
+            //     this.orderUpdateInsert();
+            // }
             
-            // let updateResult 
+            let updateResult 
+            console.log("합치거전?",this.updateRow)
 
-            // for(let i = 0; i < this.rowData.length; i++){
-            //     let upRow = this.rowData[i];
-            //     let upObj = {
-            //         order_qty: upRow.order_qty,
-            //         note: upRow.note
-            //     }
-            //     console.log(upRow);
-            //     console.log('obj',upObj);
-            //     updateResult = await axios.put(`/api/sales/orderUpdate/${upRow.order_dtl_cd}`,upObj)
-            //                               .catch(err => console.log("updateAxiosError",err));             
-            // };
-            // if(updateResult.data.result == 'success'){
-            //     this.resetForm(); // 초기화
+            for(let i = 0; i < this.rowData.length; i++){
+                let upRow = this.rowData[i];
+                let upObj = {
+                    order_qty: upRow.order_qty,
+                    note: upRow.note
+                }
+                console.log(upRow);
+                console.log('obj',upObj);
+                updateResult = await axios.put(`/api/sales/orderUpdate/${upRow.order_dtl_cd}`,upObj)
+                                          .catch(err => console.log("updateAxiosError",err));             
+            };
+            if(updateResult.data.result == 'success'){
                 
-            //     this.$swal({
-            //     title: "Update!",
-            //     text: "GO to Order List",
-            //     icon: "success"
-            //     }).then(result =>{
-            //         if(result){
-            //             this.$router.push({name:'sales_orderlist'}) //OK누르면 목록으로 이동
-            //         }
-            //     });
-            // };
+                if(this.upInsert.length > 0){
+                    this.orderUpdateInsert()
+                }else{
+                    this.$swal({
+                    title: "Update!",
+                    text: "GO to Order List",
+                    icon: "success"
+                    }).then(result =>{
+                        if(result){
+                            this.$router.push({name:'sales_orderlist'}) //OK누르면 목록으로 이동
+                        }
+                    });
+                }
+                
+            };
 
         },
 
@@ -411,9 +427,10 @@ export default {
         async orderUpdateInsert() {
             let updateInsert = [];
 
-            this.rowData.forEach((obj) => {
+            console.log("upInsert",this.upInsert);
+
+            this.upInsert.forEach((obj) => {
                 updateInsert.push({
-                    order_dtl_cd: obj.order_dtl_cd,
                     prd_cd: obj.prd_cd, 
                     prd_nm: obj.prd_nm, 
                     order_qty: obj.order_qty, 
@@ -421,15 +438,20 @@ export default {
                     order_cd: this.selectNo
                 });
             });
+            console.log("updateInsert",updateInsert)
 
             let result = await axios.post('/api/sales/orderUpdateInsert', updateInsert)   
                                     .catch(err => console.log("axios에러",err));
             if(result.data.result === 'success'){
                 this.$swal({
-                    icon: "success",
-                    title: "UPDATE!",
-                    text: "주문서를 수정 하였습니다.",
-                })
+                title: "Update!",
+                text: "GO to Order List",
+                icon: "success"
+                }).then(result =>{
+                    if(result){
+                        this.$router.push({name:'sales_orderlist'}) //OK누르면 목록으로 이동
+                    }
+                });
             };
 
         },
@@ -466,36 +488,12 @@ export default {
                 });  
         },
 
-        // //주문서 단건삭제
-        // async orderListDelete() {
-        //     this.$swal({
-        //             title: "정말 삭제하시겠습니까??",
-        //             text: "",
-        //             icon: "warning",
-        //             showCancelButton: true,
-        //             confirmButtonColor: "#3085d6",
-        //             cancelButtonColor: "#d33",
-        //             confirmButtonText: "Yes, delete!"
-        //         }).then(async(result) => {
-        //             if (result.isConfirmed) {
-        //                 let result2 = await axios.delete(`/api/sales/orderListDelete/${this.order_dtl_cd}`)
-        //                                         .catch(err => console.log("deleteAxios에러",err));
-
-        //                 if(result2.data.result == 'success'){
-                            
-        //                     this.$swal({
-        //                     title: "DELETE!",
-        //                     text: "Your product order delete.",
-        //                     icon: "success"
-        //                     }).then(result =>{
-        //                         if(result){
-        //                             window.location.reload(); //페이지 새로고침
-        //                         }
-        //                     });                          
-        //                 }                        
-        //             }
-        //         });  
-        // },
+        //주문서 단건삭제
+        async orderListDelete() {           
+            let result2 = await axios.delete(`/api/sales/orderListDelete/${this.order_dtl_cd}`)
+                                    .catch(err => console.log("deleteAxios에러",err));                        
+            console.log(result2);
+        },
 
         //모달창3개
         async getAccList() {

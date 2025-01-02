@@ -138,7 +138,7 @@ const productSelect = (datas) => {
 
 
 //주문서별 제품목록
-const orderDtlList = 
+const commOrderDtlList = 
 `
   SELECT order_dtl_cd,
          order_cd,
@@ -181,6 +181,6 @@ module.exports = {
   accountSelect,  // 거래처
   materialSelect, // 자재
   productSelect,  // 제품
-  orderDtlList,
+  commOrderDtlList,
   login // 로그인
 };

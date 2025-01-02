@@ -11,7 +11,7 @@
           </div>
         </div>
 
-        <div class="row mb-2">
+        <div class="row">
           <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">진행상태</div>
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">
@@ -72,6 +72,19 @@ export default {
         { headerName: '진행상태', field: 'ACT_TYPE', sortable: true },
         { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter },
         { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter },
+        {
+          headerName: '상세' ,
+          field: 'detailed',
+          cellRenderer: (params) => {
+              const button = document.createElement('button');
+              button.innerText = 'DETAILED';
+              button.className = 'btn btn-warning btn-xsm';
+              button.addEventListener('click', () => {
+                  this.$router.push({ name: 'Produce_PlanAdd' , query : { plan_cd : params.data.PROD_PLAN_CD}});
+              });
+              return button;
+          }
+        }
       ],
       instData: [],
       gridOptions: {

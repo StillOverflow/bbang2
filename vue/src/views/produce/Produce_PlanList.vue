@@ -13,7 +13,7 @@
         </div>
 
 
-        <div class="row mb-2">
+        <div class="row">
           <div class="col-3 col-lg-1 text-center fw-bolder" style="white-space: nowrap;">진행상태</div>
           <div class="form-check col-10 d-flex">
             <div v-for="(opt, idx) in radios" :key="idx">
@@ -81,6 +81,19 @@ export default {
         { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150 },
         { headerName: '제품수량', field: 'DTL_QTY', sortable: true, width: 100},
         { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
+        {
+          headerName: '상세' ,
+          field: 'detailed',
+          cellRenderer: (params) => {
+              const button = document.createElement('button');
+              button.innerText = 'DETAILED';
+              button.className = 'btn btn-warning btn-xsm';
+              button.addEventListener('click', () => {
+                  this.$router.push({ name: 'Produce_PlanAdd' , query : { plan_cd : params.data.PROD_PLAN_CD}});
+              });
+              return button;
+          }
+      }
       ],
       planData: [],
       gridOptions: {
