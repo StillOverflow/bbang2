@@ -25,13 +25,14 @@
           </div>
         </div>
       </div>
-      <div class="alert alert-success alert-dismissible fade show">
-        <strong>Success!</strong> Your message has been sent successfully.
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+      
 
       <div class="card-header ps-5 ps-md-4">
-        <div class="bg-secondary-subtle p-2" style="--bs-bg-opacity: .5;">진행중이거나 완료된 계획서는 수정/삭제 불가합니다.</div>
+        <div class="alert alert-light alert-dismissible fade show">
+          <strong>진행중이거나 완료된 계획서는 수정/삭제 불가합니다.</strong>
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        
         <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" 
         :columnDefs="planDefs"
         :rowData="planData"
@@ -79,12 +80,12 @@ export default {
       selected_list:'',
       
       planDefs: [
-        { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 120 },
-        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true },
-        { headerName: '생산시작일', field: 'START_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
-        { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150 },
+        { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 100 },
+        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, width: 100 },
+        { headerName: '생산시작일', field: 'START_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120  },
+        { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120 },
         { headerName: '제품수량', field: 'DTL_QTY', sortable: true, width: 100},
-        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 100 },
         {
           headerName: '상세' ,
           field: 'detailed',
@@ -96,8 +97,9 @@ export default {
                   this.$router.push({ name: 'Produce_PlanAdd' , query : { plan_cd : params.data.PROD_PLAN_CD}});
               });
               return button;
-          }
-      }
+          },
+          width: 100 
+        }
       ],
       planData: [],
       gridOptions: {

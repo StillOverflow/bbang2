@@ -70,7 +70,7 @@
                     <tr :key="i" v-for="(Dtl, i) in planDtlData" class="text-center align-middle planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
                       <td>
                         <div class="form-check">
-                          <input class="form-check-input" :class="'sub_'+Dtl.prd_cd" type="checkbox" v-model="Dtl.prd_cd" :value="Dtl">
+                          <input class="form-check-input" :class="'sub_'+Dtl.prd_cd" type="checkbox" v-model="prdArr" :value="Dtl">
                         </div>
                       </td>
                       <td>{{ Dtl.prd_cd }}</td>
@@ -110,7 +110,7 @@
                       <tr :key="i" v-for="(Flow, i) in planFlowData" class="text-center align-middle">
                         <td>
                           <div class="form-check col-4 col-md-2">
-                            <input class="form-check-input" :class="'sub_'+Flow.PROC_FLOW_CD" type="checkbox" v-model="Flow.PROC_FLOW_CD" :value="Flow" :id="'fl' + Flow.PROC_FLOW_CD"> 
+                            <input class="form-check-input" :class="'sub_'+Flow.PROC_FLOW_CD" type="checkbox" v-model="flowArr" :value="Flow" :id="'fl' + Flow.PROC_FLOW_CD"> 
                             <span id="'num' + Flow.PROC_FLOW_CD">{{Flow.PROC_SEQ}}</span>
                           </div>
                         </td>
@@ -256,12 +256,11 @@ export default {
         this.prdArr = this.planDtlData;        
       }else{
         let upResult = await axios.get(`/api/inst/dtl/${this.selectNo}`)
-                              .catch(err => console.log(err));  
+                              .catch(err => console.log(err)); 
         this.prdArr = upResult.data;
-
         this.prdArr.forEach((obj) => {
           const checkboxes = document.querySelector('.sub_'+obj.PRD_CD);
-          checkboxes.checked = true;
+          console.log(checkboxes);
         })
       }
 
@@ -376,21 +375,21 @@ export default {
           STEP: obj.PROC_SEQ
         });
       });
-
+      console.log(insertFlow);
       let insertArr = [...insertInst, insertPrd, insertFlow];
       
       let result = await axios.post('/api/inst', insertArr)
                  .catch(err => console.log(err));
 
       if(result.data == 'success'){
-          this.$swal({
-              icon: "success",
-              title: "등록에 성공 하였습니다.",
-              text: "등록한 지시서는 목록에서 확인 해주세요.",
-          })
-          .then(() => {
-              this.resetForm();   //등록 후 값 초기화
-          });          
+        this.$swal({
+            icon: "success",
+            title: "등록에 성공 하였습니다.",
+            text: "등록한 지시서는 목록에서 확인 해주세요.",
+        })
+        .then(() => {
+            this.resetForm();   //등록 후 값 초기화
+        });          
       }
       return result;
     },
