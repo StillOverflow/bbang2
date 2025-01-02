@@ -5,37 +5,95 @@
       <!-- 검색조건 -->
       <div class="card-header bg-light ps-5 ps-md-4">
 
+        <!-- 일자별 검색 -->
+
+        <div class="row mt-2 mb-4" style="padding-left: 3rem;">
+          <div class="col col-lg-2 text-start fw-bolder w-10">
+            점검 기간
+          </div>
+          <div class="col col-lg-2">
+            <input class="form-control" type="date" v-model="start_datetime" :max="this.end_datetime"
+              @change="searchEquipments">
+          </div>
+          <div class="col col-sm-1 text-center mt-2 fw-bolder" :style="t_overflow">~</div>
+          <div class="col col-lg-2">
+            <input class="form-control" type="date" v-model="end_datetime" :min="this.start_datetime"
+              @change="searchEquipments">
+          </div>
+        </div>
+
+        <!-- 설비코드 검색 아직모달반영안함-->
+        <div class="row mb-4" style="padding-left: 3rem;">
+          <div class="col col-lg-2 text-start fw-bolder w-10">
+            설비코드
+          </div>
+          <div class="col col-lg-3">
+            <div class="input-group">
+              <input type="text" class="form-control" v-model="equipmentData.eqp_cd" placeholder="설비코드"
+                aria-label="설비코드" aria-describedby="button-addon2" @input="searchEquipments" @click="modalOpen" />
+              <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+            </div>
+          </div>
+
+          <!--검색모달[S]-->
+          <Layout v-if="isModal" :modalCheck="isModal">
+            <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+              <h5 class="modal-title">설비 코드 검색</h5>
+              <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
+            </template>
+            <template v-slot:default>
+              <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="equipDefs"
+                :rowData="equipData" @rowClicked="modalClicked" @grid-ready="gridFit"
+                overlayNoRowsTemplate="등록된 설비가 없습니다.">
+              </ag-grid-vue>
+            </template>
+            <template v-slot:footer>
+              <button type=" button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
+              <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
+            </template>
+          </Layout>
+          <!--검색모달[E]-->
+
+          <!-- 설비명 검색 -->
+          <div class="col col-lg-2 text-start fw-bolder w-10">
+            설비명
+          </div>
+          <div class="col col-lg-3">
+            <input type="text" class="form-control" v-model="equipmentData.eqp_nm" placeholder="설비명을 입력하세요"
+              @input="searchEquipments" />
+          </div>
+        </div>
+
         <!--설비구분-->
-        <div class="row mb-4 align-items-center" style="padding-left: 3rem;">
-          <div class="col-lg-2 text-start fw-bolder">
+        <div class=" row mb-4" style="padding-left: 3rem;">
+          <div class="col col-lg-2 text-start fw-bolder w-10">
             설비구분
           </div>
-          <div class="col-lg-4">
-            <select class="form-select" v-model="equipmentData.eqp_type" @change="searchEquipments">
+          <div class="col col-lg-3">
+            <select class="form-select selectBSJ" v-model="equipmentData.eqp_type" @change="searchEquipments">
               <option v-for="(opt, idx) in equipmentData.selectOptions.EQP_TYPE" :key="idx" :value="opt.comm_dtl_cd">
                 {{ opt.comm_dtl_nm }}
               </option>
             </select>
           </div>
-        </div>
 
-        <!-- 점검사유 -->
-        <div class="row mb-4 align-items-center" style="padding-left: 3rem;">
-          <div class="col-lg-2 text-start fw-bolder">
+          <!-- 점검사유 -->
+          <div class="col col-lg-2 text-start fw-bolder w-10">
             점검사유
           </div>
-          <div class="col-lg-4">
-            <select class="form-select" v-model="equipmentData.insp_reason" @change="searchEquipments">
+          <div class="col col-lg-3">
+            <select class="form-select selectBSJ" v-model="equipmentData.insp_reason" @change="searchEquipments">
               <option v-for="(opt, idx) in equipmentData.selectOptions.INSP_REASON" :key="idx" :value="opt.comm_dtl_cd">
                 {{ opt.comm_dtl_nm }}
               </option>
             </select>
           </div>
+
         </div>
 
-
         <!-- 버튼 -->
-
         <div class="row">
           <div class="d-flex justify-content-center align-items-center mt-2">
             <!-- <button id="button-addon2" type="button" class="btn btn-warning me-2" @click="searchEquipments">
@@ -70,14 +128,41 @@
 import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
+import debounce from 'lodash/debounce';
 
 export default {
   name: 'EquipmentInspList',
   data() {
     return {
+      isModal: false,
+      start_datetime: '',
+      end_datetime: '',
+
+      //모달 설비 목록
+      equipDefs: [
+        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 163 },
+        {
+          headerName: '설비 구분',
+          field: 'eqp_type',
+          sortable: true, width: 163
+        },
+        {
+          headerName: '설비명',
+          field: 'eqp_nm',
+          sortable: true, width: 163
+        },
+        { headerName: '모델명', field: 'model', sortable: true, width: 163 },
+      ],
+
+      equipData: [],
+
       equipmentData: {
         eqp_type: '', // 설비구분
         insp_reason: '', // 점검사유
+        eqp_nm: '', // 설비명
+        start_time: '',
+        end_time: '',
+
         selectOptions: {
           EQP_TYPE: [], // 설비구분 공통코드
           INSP_REASON: [], // 점검사유 공통코드
@@ -133,6 +218,51 @@ export default {
   },
   methods: {
 
+
+    /*모달 [S]*/
+    modalOpen() {
+      this.isModal = !this.isModal;
+    },
+    modalClicked(params) {
+      this.getEquipInfo(params.data.eqp_cd);
+      this.selectedEqp = params.data.eqp_cd;
+      this.isModal = !this.isModal;
+    },
+
+    //주문서 리스트
+    async getOrderList() {
+      let result = await axios.get('/api/sales')
+        .catch(err => console.log(err));
+      this.orderData = result.data;
+    },
+
+    modalCloseFunc() {
+      this.isModal = !this.isModal;
+    },
+    /*모달 [E]*/
+
+
+    // 설비 단건 조회
+    async getEquipInfo(eqp_cd) {
+      let result = await axios
+        .get(`api/equip/${eqp_cd}`)
+        .catch((err) => console.log(err));
+
+      if (result.data) {
+        // 날짜 필드 스플릿
+        if (result.data.pur_dt) {
+          result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
+        }
+        this.equipmentData = result.data;
+
+
+        // 이미지 경로 처리
+        this.previewImage = result.data.img_path
+          ? `/api/${result.data.img_path}`
+          : require('@/assets/img/blank_img.png');
+      }
+    },
+
     myGrid(params) { // 매개변수 속성으로 자동 접근
       params.api.sizeColumnsToFit(); // 가로스크롤 삭제
       this.myApi = params.api;
@@ -174,11 +304,14 @@ export default {
       }
     },
     // 필터링된 설비 데이터 가져오기
-    async fetchFilteredEquip() {
+    async fetchFilteredEquip(start, end) {
       try {
         const obj = {
           eqp_type: this.equipmentData.eqp_type || null,
           insp_reason: this.equipmentData.insp_reason || null,
+          eqp_nm: this.equipmentData.eqp_nm ? `%${this.equipmentData.eqp_nm}%` : null, // 설비명 없으면 null
+          start_time: start || null, // 시작 날짜 추가
+          end_time: end || null,    // 종료 날짜 추가
         };
         const result = await axios.get('/api/equipList/insp', { params: obj });
 
@@ -205,13 +338,15 @@ export default {
       }
     },
     // 조회 버튼 클릭 시 실행
-    searchEquipments() {
-      this.fetchFilteredEquip();
-    },
+    searchEquipments: debounce(function () {
+      console.log("startDT => ", this.start_datetime);
+      this.fetchFilteredEquip(this.start_datetime, this.end_datetime);
+    }, 300), // 300ms 딜레이 설정
 
     resetBtn() {
       this.equipmentData.eqp_type = null; // "전체" 선택
       this.equipmentData.insp_reason = null;  // "전체" 선택
+      this.equipmentData.eqp_nm = ''; // 설비명 초기화
       this.fetchFilteredEquip();         // 초기화 후 데이터 조회
     },
     //엑셀 함수
@@ -286,6 +421,36 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.fade-enter-from {
+  /* opacity: 0; */
+  transform: translateY(-1000px);
+}
+
+.fade-enter-active {
+  transition: all 0.5s;
+}
+
+.fade-enter-to {
+  /* opacity: 1; */
+  transform: translateY(0px);
+}
+
+.fade-leave-from {
+  opacity: 1;
+}
+
+.fade-leave-active {
+  transition: all 0.7s;
+}
+
+.fade-leave-to {
+  opacity: 0;
+}
+
+.modal-container {
+  width: 700px;
+}
+
 /* 라디오 버튼과 라벨 수직 정렬 */
 .form-check-input {
   vertical-align: middle;
@@ -314,6 +479,22 @@ export default {
   align-items: center;
   /* 라디오 버튼과 라벨 수직 정렬 */
 }
+
+.row.mb-4 {
+  gap: 10px;
+  /* 열 간격 조정 */
+  align-items: center;
+  /* 수직 가운데 정렬 */
+}
+
+.gap-adjustment {
+  gap: 5px;
+  /* 열 간격 조정 */
+}
+
+
+
+
 
 //그리드 사용시 아래 스타일 임포트
 @import '../../../node_modules/ag-grid-community/styles/ag-grid.css';

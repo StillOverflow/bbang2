@@ -29,6 +29,7 @@ LEFT JOIN
   if (datas.is_use) queryArr.push(`is_use = UPPER('${datas.is_use}')`);
   if (datas.status) queryArr.push(`e.status = UPPER('${datas.status}')`);
 
+  // WHERE 절 조립
   if (queryArr.length > 0) {
     sql += ` WHERE ` + queryArr.join(' AND ');
   }
@@ -203,9 +204,24 @@ const eqInspList = (datas) => {
   const queryArr = [];
 
   // 설비점검조회 조건
+
+  // 설비명 검색
+  if (datas.eqp_nm) queryArr.push(`e.eqp_nm LIKE '%${datas.eqp_nm}%'`);
+  // 점검 시작일
+  if (datas.start_time) {
+    queryArr.push(`(i.start_time IS NULL OR date(i.start_time) >= '${datas.start_time}')`);
+  }
+  // 점검 종료일
+  if (datas.end_time) {
+    queryArr.push(`(i.end_time IS NULL OR date(i.end_time) <= '${datas.end_time}')`);
+  }
+  //설비구분
   if (datas.eqp_type) queryArr.push(`e.eqp_type = UPPER('${datas.eqp_type}')`);
+  //점검사유
   if (datas.insp_reason) queryArr.push(`insp_reason = UPPER('${datas.insp_reason}')`);
 
+
+  // WHERE 절 조립
   if (queryArr.length > 0) {
     sql += ` WHERE ` + queryArr.join(' AND ');
   }

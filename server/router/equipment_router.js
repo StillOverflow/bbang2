@@ -260,7 +260,7 @@ router.put('/equip/insp/:insp_log_cd', async (req, res) => {
 router.get('/equipList/insp', async (req, res) => {
   try {
     let searchList = req.query;
-
+    console.log("router query => ", req.query)
     let result = await equipmentService.findInspEq(searchList);
     res.send(result);
   } catch (err) {
@@ -319,7 +319,7 @@ router.put('/equip/down/:downtime_cd', async (req, res) => {
   console.log('수신한 downtime_cd:', downLogCd);
   console.log('수정 요청 데이터:', req.body);
 
-  // downtime_cd가가 유효한지 확인
+  // downtime_cd가 유효한지 확인
   if (!downLogCd || downLogCd === 'null' || downLogCd.trim() === '') {
     return res.status(400).json({
       success: false,

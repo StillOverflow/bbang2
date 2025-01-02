@@ -148,25 +148,29 @@ export default {
         insp_log_cd: '',
       },
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true , width: 120 },
-        { headerName: '설비 구분', field: 'eqp_type', sortable: true , width: 130, valueFormatter: (params) => {
-          const eqpTypeMap = {
-            R01: '배합기',
-            R02: '분할기',
-            R03: '발효기',
-            R04: '성형기',
-            R05: '오븐',
-            R06: '냉각기',
-            R07: '도포기',
-          }; // 코드와 이름 매핑
-          return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
-        }, },
-        { headerName: '설비명', field: 'eqp_nm', sortable: true , width: 130 },
-        { headerName: '모델명', field: 'model', sortable: true , width: 130 },
-        { headerName: '마지막 점검일', field: 'last_insp_dt', sortable: true , width: 130, valueFormatter: (params) => {
-      if (!params.value) return ''; // 값이 없을 경우 빈 문자열 반환
-      return params.value.split('T')[0]; // T로 나눈 뒤 첫 번째 부분만 반환
-    }, },
+        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 120 },
+        {
+          headerName: '설비 구분', field: 'eqp_type', sortable: true, width: 130, valueFormatter: (params) => {
+            const eqpTypeMap = {
+              R01: '배합기',
+              R02: '분할기',
+              R03: '발효기',
+              R04: '성형기',
+              R05: '오븐',
+              R06: '냉각기',
+              R07: '도포기',
+            }; // 코드와 이름 매핑
+            return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
+          },
+        },
+        { headerName: '설비명', field: 'eqp_nm', sortable: true, width: 130 },
+        { headerName: '모델명', field: 'model', sortable: true, width: 130 },
+        {
+          headerName: '마지막 점검일', field: 'last_insp_dt', sortable: true, width: 130, valueFormatter: (params) => {
+            if (!params.value) return ''; // 값이 없을 경우 빈 문자열 반환
+            return params.value.split('T')[0]; // T로 나눈 뒤 첫 번째 부분만 반환
+          },
+        },
       ],
       equipData: [],
       leftFields: [
@@ -315,34 +319,34 @@ export default {
     // 설비 단건 조회
     async getInspListOne(eqp_cd) {
 
-    try {
-    const result = await axios.get(`/api/equip/insp/${eqp_cd}`);
-    console.log('Result data:', result.data);
-    if (result.data) {
-      this.equipmentData = {
-        ...this.equipmentData,
-        ...result.data,
-        insp_log_cd: result.data.insp_log_cd, // 덮어쓰지 않도록
-        start_time: this.formatDate(result.data.start_time),
-        end_time: this.formatDate(result.data.end_time),
-      };
+      try {
+        const result = await axios.get(`/api/equip/insp/${eqp_cd}`);
+        console.log('Result data:', result.data);
+        if (result.data) {
+          this.equipmentData = {
+            ...this.equipmentData,
+            ...result.data,
+            insp_log_cd: result.data.insp_log_cd, // 덮어쓰지 않도록
+            start_time: this.formatDate(result.data.start_time),
+            end_time: this.formatDate(result.data.end_time),
+          };
 
-      
-      // 등록 모드 조건: insp_log_cd가 없거나 end_time이 존재하는 경우
-      if (!result.data.insp_log_cd || result.data.end_time) {
-        this.isEditMode = false;
-        this.resetForm(); // 등록 모드로 초기화
-        this.equipmentData.eqp_cd = eqp_cd; // 설비 코드 유지
-      } else {
-        // 수정 모드 조건: insp_log_cd가 있고 end_time이 비어 있는 경우
-        this.isEditMode = true;
+
+          // 등록 모드 조건: insp_log_cd가 없거나 end_time이 존재하는 경우
+          if (!result.data.insp_log_cd || result.data.end_time) {
+            this.isEditMode = false;
+            this.resetForm(); // 등록 모드로 초기화
+            this.equipmentData.eqp_cd = eqp_cd; // 설비 코드 유지
+          } else {
+            // 수정 모드 조건: insp_log_cd가 있고 end_time이 비어 있는 경우
+            this.isEditMode = true;
+          }
+
+        }
+      } catch (err) {
+        console.error('Error fetching inspection data:', err);
       }
-      
-    }
-  } catch (err) {
-    console.error('Error fetching inspection data:', err);
-  }
-},
+    },
 
     //등록
     async inspInsert() {
@@ -393,7 +397,7 @@ export default {
 
       console.log('Updating data:', this.equipmentData); // 데이터 출력
 
-      
+
       try {
 
         // 세션에서 점검 담당자 ID 가져오기
@@ -453,7 +457,7 @@ export default {
         ...resetFields, // 초기화된 데이터 병합
       };
 
-       // 선택된 설비 코드 초기화
+      // 선택된 설비 코드 초기화
       this.selectedEqp = this.equipmentData.eqp_cd;
       this.isEditMode = false; // 초기화 시 수정 모드도 해제
       this.previewImage = require('@/assets/img/blank_img.png'); // 이미지 초기화
@@ -467,7 +471,8 @@ export default {
       const day = String(d.getDate()).padStart(2, '0');
       const hours = String(d.getHours()).padStart(2, '0');
       const minutes = String(d.getMinutes()).padStart(2, '0');
-      return `${year}-${month}-${day}T${hours}:${minutes}`; // datetime-local 형식
+      const seconds = String(d.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`; // datetime-local 형식
     },
     isFieldDisabled(fieldName) {
       // 설비 코드가 선택되지 않았을 경우 모든 항목 비활성화
@@ -502,7 +507,7 @@ export default {
         item: item.comm_dtl_cd,
         name: item.comm_dtl_nm,
       }));
-      
+
     });
     this.getComm('EI').then((result) => {
       this.leftFields.find((field) => field.value === 'insp_type').selectOptions = result.map((item) => ({
