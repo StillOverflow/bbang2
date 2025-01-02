@@ -410,6 +410,11 @@ export default {
         </li>
         <ul class="navbar-nav detail Quality_list" :class="urlCompare('Quality') == true ? '' : 'dnone'">
           <li class="nav-item">
+            <sidenav-item to="/Quality_test" :class="getRoute() === 'Quality_test' ? 'active' : ''"
+              :navText="'검사항목 관리'">
+            </sidenav-item>
+          </li>
+          <li class="nav-item">
             <sidenav-item to="/Quality_standard" :class="getRoute() === 'Quality_standard' ? 'active' : ''"
               :navText="'품질기준 관리'">
             </sidenav-item>

@@ -116,6 +116,7 @@
           </div>
           <div class="col-3 col-md-2 col-xl-1 text-end">
             <button class="btn btn-primary" :style="t_overflow" @click="recInsert" v-show="isWaitList">SUBMIT</button>
+            <button class="btn btn-outline-success" @click="excelDownload" v-show="!isWaitList">EXCEL 상세</button>
           </div>
         </div>
 
@@ -146,7 +147,8 @@
     props: {
         isWaitList: Boolean, // true: 검사대기 탭, false: 검사완료 탭 (읽기전용)
         isMatTest: Boolean, // true: 자재검사, false: 공정/완제품검사
-        selectedTarget: Object
+        selectedTarget: Object,
+        excelDownload: Function
     },
     data() {
       return {
@@ -177,6 +179,8 @@
         // 검사결과 입력에 필요한 데이터
         // selectedTarget: {}, // 목록에서 선택한 대상. 컴포넌트 분리를 위해 props로 뺌.
 
+        target_qu_std_cd: null,
+        proc_qu_std_cd: null,
         samplingTests: [], // 선택한 대상의 검사항목 중 샘플링검사 유형
         fullTests: [], // 선택한 대상의 검사항목 중 전수검사 유형
         members: [], // 품질부서의 사원들
@@ -247,6 +251,9 @@
       // 목록에서 타겟 선택 시, 검사결과란 불러오기 전 모든 값 초기화
       reset(clicked){
         if(clicked.id){ // 검사완료목록에서는 값을 가지고 있음.
+          this.target_qu_std_cd = clicked.target_qu_std_cd;
+          this.proc_qu_std_cd = clicked.proc_qu_std_cd;
+
           this.total_qty = clicked.total_qty;
           this.test_qty = clicked.test_qty;
           this.pass_qty = clicked.pass_qty;
@@ -263,6 +270,9 @@
           this.note = clicked.note;
           this.test_dt = this.$comm.getDatetimeMin(clicked.test_dt);
         } else { // 검사대기목록은 값이 없음.
+          this.target_qu_std_cd = null;
+          this.proc_qu_std_cd = null;
+
           this.total_qty = 0;
           this.test_qty = null;
           this.pass_qty = null;
@@ -314,15 +324,25 @@
       async getTests(target, type){
         let query = null;
         
-        if(type == 'P02'){  
-          query = {cd: target.proc_cd, type: type}; // P02: 공정대상 검사항목
-        } else {
-          query = {cd: target.target_cd, type: type}; // P01(자재대상), P03(완제품대상) 검사항목
+        if(type == 'P02'){ // P02: 공정대상 검사항목
+          if(!this.isWaitList) query = this.proc_qu_std_cd;
+          else query = {cd: target.proc_cd, type: type};
+        } else { // P01(자재대상), P03(완제품대상) 검사항목
+          if(!this.isWaitList) query = this.target_qu_std_cd;
+          else query = {cd: target.target_cd, type: type};
         }
 
-        let testLists = await axios.get('/api/quality/test/my', {params: query}) // 해당 품질기준의 검사항목 불러옴
-                                    .catch(err => console.log(err));
-       
+        let testLists = [];
+        if(!this.isWaitList){ // 검사완료 목록인 경우
+          testLists = await axios.get('/api/quality/test/std/' + query) // 해당되는 품질기준을 불러옴
+                                 .catch(err => console.log(err));
+        } else { // 검사대기 목록인 경우
+          testLists = await axios.get('/api/quality/test/my', {params: query}) // 가장 최신 품질기준의 검사항목 불러옴
+                                 .catch(err => console.log(err));
+          if(type == 'P02') this.proc_qu_std_cd = testLists.data[0].qu_std_cd;
+          else this.target_qu_std_cd = testLists.data[0].qu_std_cd;
+        }
+        
         testLists.data.forEach((test) => {
           test.isPass = null; // 적합/부적합 판단용
         
@@ -508,6 +528,8 @@
         }
         
         let headerObj = { // 헤더 등록용
+          target_qu_std_cd: this.target_qu_std_cd,
+          proc_qu_std_cd: this.proc_qu_std_cd,
           test_dt: this.test_dt.replace('T', ' '), // 날짜 DB형식으로 바꿈 
           refer_cd: target.refer_cd,
           target_cd: target.target_cd, 

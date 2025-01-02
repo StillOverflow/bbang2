@@ -55,12 +55,12 @@ import MaterialsOutList from '../views/material/MaterialsOutList.vue';
 
 
 ////////////////////////////// 품질 //////////////////////////////
+import QualityTestManagement from '../views/quality/QualityTestManagement.vue';
 import QualityStandard from '../views/quality/QualityStandard.vue';
 import QualityPrdTest from '../views/quality/QualityPrdTest.vue';
 import QualityMatTest from '../views/quality/QualityMatTest.vue';
 import QualityTestRecList from '../views/quality/QualityTestRecList.vue';
 import QualityDefManagement from '../views/quality/QualityDefManagement.vue';
-
 
 
 
@@ -95,6 +95,7 @@ import Profile from '../views/Profile.vue';
 import Signup from '../views/Signup.vue';
 import Signin from '../views/Signin.vue';
 import Grid from '../views/Grid.vue';
+
 
 /////////////////////// 여기부터 라우트 등록 //////////////////////
 const routes = [
@@ -382,6 +383,12 @@ const routes = [
 
 
   ////////////////////////////// 품질 //////////////////////////////
+  {
+    // 검사항목 관리
+    path: '/Quality_test',
+    name: 'QualityTest',
+    component: QualityTestManagement,
+  },
   {
     // 품질기준 관리
     path: '/Quality_standard',
