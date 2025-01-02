@@ -132,6 +132,7 @@ const instInsert = async (values) => {
       // 헤더 시퀀스 nextval 얻기
       let seq_res = await mariadb.transQuery('instSeq');
       let mySeq = seq_res[0].seq;
+      console.log(mySeq);
               
       // 헤더 삽입
       values[0]["inst_cd"] = mySeq;      
@@ -150,6 +151,7 @@ const instInsert = async (values) => {
       values[2].forEach((val) => { // 헤더 시퀀스값 추가
         val["inst_cd"] = mySeq;
       });
+      
       let flow_res = await mariadb.transQuery('instFlowInsert', values[2]);
       
       // 공정별 자재 삽입
@@ -162,8 +164,7 @@ const instInsert = async (values) => {
           i++;
         }
       }
-      console.log("☆★☆★☆★☆★☆★☆★☆★☆★");
-console.log(values[2]);
+      
       if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && flow_res.affectedRows > 0 && i > 0){ // 모두 성공했는지 판단
         await mariadb.commit();
         return 'success';
@@ -291,6 +292,7 @@ const progressStart = async (no, updateInfo)=>{
 
 const progressEnd = async (no, updateInfo)=>{ 
   let result = await mariadb.transQuery('processStart', [updateInfo, no]); //자재 lot SELECT
+
   if(result.affectedRows > 0){
     return 'success';
   }else{

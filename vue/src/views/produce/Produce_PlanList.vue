@@ -43,7 +43,7 @@
         overlayNoRowsTemplate="등록된 계획서가 없습니다.">
         </ag-grid-vue>
         <div class="center">
-          <button class="btn btn-danger mtp30" @click="PlanCancel">DELETE</button>
+          <button class="btn btn-danger mtp30" @click="PlanCancel" v-if="this.$session.get('user_ps') == 'H01'">DELETE</button>
           <button class="btn btn-outline-success mlp10 mtp30" @click="excelDownload()"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
         </div>
       </div>

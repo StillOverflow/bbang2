@@ -21,6 +21,7 @@ import Produce_PlanList from '../views/produce/Produce_PlanList.vue';
 import Produce_PlanAdd from '../views/produce/Produce_PlanAdd.vue';
 import Produce_InstList from '../views/produce/Produce_InstList.vue';
 import Produce_InstAdd from '../views/produce/Produce_InstAdd.vue';
+import Produce_InstView from '../views/produce/Produce_InstView.vue';
 import Produce_Hell from '../views/produce/Produce_Hell.vue';
 import Produce_Result from '../views/produce/Produce_Result.vue';
 
@@ -204,6 +205,12 @@ const routes = [
     path: '/Produce_InstAdd',
     name: 'Produce_InstAdd',
     component: Produce_InstAdd,
+  },
+  {
+    //생산지시서 상세보기
+    path: '/Produce_InstView',
+    name: 'Produce_InstView',
+    component: Produce_InstView,
   },
   {
     //생산계획서 조회

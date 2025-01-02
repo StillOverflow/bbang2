@@ -267,7 +267,7 @@ const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
     sql += `(CONCAT('PRS', LPAD(nextval(result_seq), 3,'0')), '${obj.inst_cd}', '${obj.PRD_CD}', '${obj.PROC_FLOW_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
   });
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
-  
+
   return sql;
 };
 
@@ -311,6 +311,8 @@ let sql =
   (SELECT EQP_NM FROM equipment where EQP_CD=pr.EQP_CD) AS EQP_NM ,
   (SELECT EQP_TYPE FROM process where proc_cd=pr.proc_cd) AS EQP_TYPE,
   (SELECT PROC_NM FROM process where proc_cd=pr.proc_cd) AS PROC_NM,
+  IFNULL((SELECT STATUS FROM prod_result WHERE inst_cd=pr.INST_CD AND prd_cd=pr.PRD_CD AND step=(pr.step-1)),0) AS LAST_STATUS,
+  IFNULL((SELECT QUE_STATUS FROM prod_result WHERE inst_cd=pr.INST_CD AND prd_cd=pr.PRD_CD AND step=(pr.step-1)),0) AS LAST_QUE_STATUS,
   fn_get_codename(pr.STATUS) as ACT_TYPE
 FROM 
   PROD_RESULT pr`;
