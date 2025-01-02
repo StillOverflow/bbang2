@@ -126,6 +126,9 @@ const findInstMatFlow = async (no)=>{
 const instInsert = async (values) => { 
   let result = await mariadb.transOpen( async () => {
 
+      // insert하기 전 전체 삭제
+      await mariadb.query('instDelete', values);
+
       // 헤더 시퀀스 nextval 얻기
       let seq_res = await mariadb.transQuery('instSeq');
       let mySeq = seq_res[0].seq;
@@ -152,7 +155,7 @@ const instInsert = async (values) => {
       // 공정별 자재 삽입
       let i = 0;
       for (const obj of values[2]){   
-        let mat_res =  await mariadb.transQuery('instMatInsert', obj.PROC_FLOW_CD);
+        let mat_res =  await mariadb.transQuery('instMatInsert', [obj.inst_cd, obj.PROC_FLOW_CD]);
            
 
         if(mat_res.affectedRows > 0){                                       
@@ -285,6 +288,14 @@ const progressStart = async (no, updateInfo)=>{
 
 }; 
 
+const progressEnd = async (no, updateInfo)=>{ 
+  let result = await mariadb.transQuery('processStart', [updateInfo, no]); //자재 lot SELECT
+  if(result.affectedRows > 0){
+    return 'success';
+  }else{
+    return 'fail';
+  }
+}; 
 
 module.exports = {
   findAllPlan,
@@ -305,5 +316,6 @@ module.exports = {
   deleteInst,
   instMatUpdate,
   progressStart,
+  progressEnd,
   findResultNo
 };
