@@ -28,7 +28,7 @@ const memList = (dpt_cd) => {
          fn_get_codename(permission) as permission,
          create_dt,
          update_dt,
-         dpt_cd,
+         fn_get_departname(dpt_cd) as dpt_cd,
          gender
   FROM member ${!dpt_cd ? "" : "WHERE  UPPER(dpt_cd) = UPPER('" + dpt_cd + "') "} -- 부서번호 있을 시 동적 조건 생성
   ORDER  BY id `;

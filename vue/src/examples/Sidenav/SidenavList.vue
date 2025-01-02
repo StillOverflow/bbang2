@@ -490,7 +490,7 @@ export default {
 
 
         <!-- 기준관리  -->
-        <li class="nav-item head" id="Standard" @click="showList('Standard')">
+        <li class="nav-item head" id="Standard" @click="showList('Standard')" v-if="this.$session.get('user_ps') == 'H01'">
           <a class="nav-link" :class="urlCompare('Standard') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
               <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
@@ -645,3 +645,6 @@ export default {
     </div>
   </div>
 </template>
+<script>
+
+</script>
