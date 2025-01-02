@@ -1,30 +1,64 @@
 <template>
    <div id="page-inner" class="mx-auto">
-      <div class="py-4 container-fluid">
-         <div class="row">
+      <div class="container-fluid">
+         <div class="card">
             <!-- //! 생산 완료된 지시서 조회 -->
-            <div class="col-md-3">
-               <div class="card">
-                  <div class="card-header">
-                     <div class="row my-3">
-                        <h5 class="mb-0">생산 중 & 완료된 지시서 조회</h5>
-                     </div>
-
+            <div class="card-body p-5 pt-5">
+               <div class="row" @keydown="keyEventHandler($event)">
+                  <div class="col-3">
                      <div class="row">
-                        <div style="width: 100%" class="text-left fw-bolder my-2">작업일자</div>
-                        <div class="d-flex justify-content-left align-items-center text-left mb-3" style="width: 100%">
-                           <div style="width: 45%">
-                              <input class="form-control" type="date" :max="endDt" v-model="startDt" style="width: 100%"/>
+                        <div class="text-left mb-4">
+                           <h5 class="mb-0">생산 중 & 완료된 지시서 조회</h5>
+                        </div>
+                     </div>
+                     
+                     <div class="row">
+                        <div style="margin-bottom: 65px" class="d-flex justify-content-left align-items-center" >
+                           <div style="width: 100%" class="text-left fw-bolder font_15px">작업일자</div>
+                           <div style="width: 100%" class="d-flex justify-content-left align-items-center text-left">
+                              <div style="width: 45%">
+                                 <input class="form-control" type="date" :max="endDt" v-model="startDt" @change="onChangeSearchDate"/>
+                              </div>
+                              <div style="width: 10%" class="text-center fw-bolder">~</div>
+                              <div style="width: 45%">
+                                 <input class="form-control" type="date" :min="startDt" v-model="endDt" @change="onChangeSearchDate"/>
+                              </div>
                            </div>
-                           <div style="width: 10%" class="text-center fw-bolder">~</div>
-                           <div style="width: 45%">
-                              <input class="form-control" type="date" :min="startDt" v-model="endDt" style="width: 100%" />
+                        </div>
+                        <div class="col">
+                           <div class="d-flex justify-content-left align-items-center mb-3">
+                              <div class="text-left fw-bolder font_15px" style="width: 20%;">진행상태</div>
+                              <div class="form-check d-flex justify-content-between align-items-center" style="width: 80%;">
+                                 <div style="width: 25%;">
+                                    <input 
+                                       class="form-check-input text-left"
+                                       type="radio"
+                                       name="produceStatus"
+                                       value="statusAll"
+                                       v-model="selectedStatus"
+                                       @change="radioStatusChange($event)"
+                                       checked="checked"
+                                    />
+                                    <label class="form-check-label m-0 text-start font_13px">전체</label>
+                                 </div>
+                                 <div style="width: 25%;" v-for="(data, idx) in produceStatus" :key="idx">
+                                    <input 
+                                       class="form-check-input text-left" 
+                                       type="radio"
+                                       name="produceStatus"
+                                       :value="data.comm_dtl_cd" 
+                                       v-model="selectedStatus"
+                                       @change="radioStatusChange($event)"
+                                    />
+                                    <label class="form-check-label m-0 text-start font_13px" :for="'radio' + data.comm_dtl_cd">
+                                       {{ data.comm_dtl_nm }}
+                                    </label>
+                                 </div>
+                              </div>
                            </div>
                         </div>
                      </div>
-                  </div>
 
-                  <div class="card-body pt-4 p-3">
                      <ag-grid-vue 
                         class="ag-theme-alpine " 
                         style="width: 100%; height: 700px;"  
@@ -35,13 +69,11 @@
                         @firstDataRendered="instructionsGridRendered"
                      />
                   </div>
-               </div>
-            </div>
-
-            <!-- //! 자재 출고 내역 조회 Layout -->
-            <div class="col-md-9" @keydown="keyEventHandler($event)">
-               <div class="card">
-                  <div class="card-header">
+                  <div class="col-1">
+                     <button class="btn btn-secondary">RESET</button>
+                  </div>
+                  <!-- //! 자재 출고 내역 조회 Layout -->
+                  <div class="col-8" @keydown="keyEventHandler($event)">
                      <Layout :modalCheck="isMatModal">
                         <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
                            <h5 class="modal-title">자재 조회</h5>
@@ -50,11 +82,11 @@
                         <template v-slot:default>
                            <ag-grid-vue
                               class="ag-theme-alpine"
-                              style="width: 100%; height: 300px; margin: auto;"
+                              style="width: 100%; height: 300px;"
                               :rowData="materialArr"
                               :pagination="true"
                               :gridOptions="materialModalOptions"
-                              @grid-ready="materialGridReady"
+                              @grid-ready="materialGrid"
                               @firstDataRendered="materialGridRendered"
                            />
                         </template>
@@ -66,122 +98,118 @@
                      </Layout>
 
                      <div class="row">
-                        <div class="row my-3">
-                           <div class="col-md-6">
+                        <!-- 검색 박스 -->
+                        <div class="row">
+                           <div class="d-flex justify-content-between align-items-center mb-4">
                               <h5 class="mb-0 fw-bolder">지시서에 대한 자재 출고 내역</h5>
-                           </div>
-                           <div class="col-md-6 d-flex justify-content-end align-items-center">
                               <small><span class="fw-bolder">"{{ instCode }}"</span>에 대한 자재 출고 내역</small>
+                           </div>
+                           <div class="d-flex justify-content-left align-items-center mb-3" style="width: 100%;">
+                              <div class="text-left fw-bolder font_15px" style="width: 13%;">자재명</div>
+                              <div class="searchInputBox" style="width: 87%;">
+                                 <!-- 입력 필드 -->
+                                 <div class="input-group">
+                                    <input type="text" class="form-control" v-model="keyword" autocomplete="off" @input="inputChange" placeholder="자재명을 입력하세요"/>
+                                    <button type="button" id="button-addon3" @click="materialModalOpen" class="btn btn-warning">
+                                       <i class="fa-solid fa-magnifying-glass"></i>
+                                    </button>
+                                 </div>
+
+                                 <!-- 드롭다운 리스트 -->
+                                 <div v-if="!isHidden" class="dropdownBox">
+                                    <div v-if="materialArr.length">
+                                       <button 
+                                          v-for="(item, index) in materialArr" 
+                                          :key="index" 
+                                          class="dropdown-item materialBtn font_15px" 
+                                          :class="{ active: index === selectedIndex }" 
+                                          @click="onClickMatNm(null, item.mat_cd, item.mat_nm)"
+                                       >
+                                          {{ item.mat_nm }}
+                                       </button>
+                                    </div>
+                                    <div v-else class="dropdown-item text-left fw-bolder" style="color: #2bce89">결과 없음</div>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+
+                        <!-- 자재구분 -->
+                        <div class="row">
+                           <div class="d-flex justify-content-left align-items-center mb-3" style="width: 100%;">
+                              <div class="text-left fw-bolder font_15px" style="width: 13%;">자재구분</div>
+                              <div class="form-check d-flex justify-content-left align-items-center" style="width: 88%;">
+                                 <div style="width: 14%;">
+                                    <input 
+                                       class="form-check-input text-left"
+                                       type="radio"
+                                       :id="typeAll"
+                                       :name="materialType"
+                                       :isRadioChecked="isTypeChecked"
+                                       checked="checked"
+                                    />
+                                    <label class="form-check-label m-0 text-start font_13px">전체</label>
+                                 </div>
+                                 <div style="width: 14%;" v-for="(data, idx) in materialType" :key="idx">
+                                    <input 
+                                       class="form-check-input text-left" 
+                                       type="radio" 
+                                       :id="'type' + data.comm_dtl_cd" 
+                                       :name="materialType"
+                                       :value="data.comm_dtl_cd" 
+                                       v-model="selectedType"
+                                    />
+                                    <label class="form-check-label m-0 text-start font_13px" :for="'radio' + data.comm_dtl_cd">
+                                       {{ data.comm_dtl_nm }}
+                                    </label>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                           
+                        <div class="row">
+                           <div class="d-flex justify-content-left align-items-center text-left mb-3">
+                              <div class="text-left fw-bolder font_15px" style="width: 13%;">카테고리</div>
+                              <div class="form-check d-flex justify-content-left align-items-center" style="width: 88%;">
+                                 <div style="width: 14%;">
+                                    <input 
+                                       class="form-check-input text-left" 
+                                       type="radio"
+                                       :id="categoryAll"
+                                       :name="materialCategory"
+                                       checked="checked"
+                                    >
+                                    <label class="form-check-label text-start font_13px m-0">전체</label>
+                                 </div>
+                                 <div style="width: 14%;" v-for="(data, idx) in materialCategory" :key="idx">
+                                    <input 
+                                       class="form-check-input text-left" 
+                                       type="radio" 
+                                       :id="'category' + data.comm_dtl_cd" 
+                                       :name="materialCategory"
+                                       :value="data.comm_dtl_cd" 
+                                       v-model="selectedCategory" 
+                                       :isRadioChecked="isCategoryChecked"
+                                    >
+                                    <label class="form-check-label text-start m-0 font_13px" :for="'radioCategory' + data.comm_dtl_cd">
+                                       {{ data.comm_dtl_nm }}
+                                    </label> 
+                                 </div>
+                              </div>
                            </div>
                         </div>
                         
-                        <!-- 검색 박스 -->
-                        <div class="mx-auto">
-                           <div class="row">
-                              <div class="d-flex justify-content-left align-items-center mb-3" style="width: 100%;">
-                                 <div class="text-center fw-bolder font_15px" style="width: 15%;">자재명</div>
-                                 <div class="searchInputBox" style="width: 85%;">
-                                    <!-- 입력 필드 -->
-                                    <div class="input-group">
-                                       <input type="text" class="form-control" v-model="keyword" autocomplete="off" @input="inputChange" placeholder="자재명을 입력하세요"/>
-                                       <button type="button" id="button-addon3" @click="materialModalOpen" class="btn btn-warning">
-                                          <i class="fa-solid fa-magnifying-glass"></i>
-                                       </button>
-                                    </div>
-
-                                    <!-- 드롭다운 리스트 -->
-                                    <div v-if="!isHidden" class="dropdownBox">
-                                       <div v-if="materialArr.length">
-                                          <button 
-                                             v-for="(item, index) in materialArr" 
-                                             :key="index" 
-                                             class="dropdown-item materialBtn font_15px" 
-                                             :class="{ active: index === selectedIndex }" 
-                                             @click="onClickMatNm(null, item.mat_cd, item.mat_nm)"
-                                          >
-                                             {{ item.mat_nm }}
-                                          </button>
-                                       </div>
-                                       <div v-else class="dropdown-item text-left fw-bolder" style="color: #2bce89">결과 없음</div>
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
-
-                           <!-- 자재구분 -->
-                           <div class="row">
-                              <div class="d-flex justify-content-left align-items-center mb-3" style="width: 100%;">
-                                 <div class="text-center fw-bolder font_15px" style="width: 15%;">자재구분</div>
-                                 <div class="form-check d-flex justify-content-between align-items-center" style="width: 85%;">
-                                    <div style="width: 14%;">
-                                       <input 
-                                          class="form-check-input"
-                                          type="radio"
-                                          :id="typeAll"
-                                          :name="materialType"
-                                       />
-                                       <label class="form-check-label text-start font_13px">전체</label>
-                                    </div>
-                                    <div style="width: 14%;" v-for="(data, idx) in materialType" :key="idx">
-                                       <input 
-                                          class="form-check-input " 
-                                          type="radio" 
-                                          :id="'type' + data.comm_dtl_cd" 
-                                          :name="materialType"
-                                          :value="data.comm_dtl_cd" 
-                                          v-model="selectedType"
-                                       />
-                                       <label class="form-check-label text-start font_13px" :for="'radio' + data.comm_dtl_cd">
-                                          {{ data.comm_dtl_nm }}
-                                       </label>
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
-                           
-                           <div class="row">
-                              <div class="d-flex justify-content-left align-items-center text-left mb-3">
-                                 <div class="text-center fw-bolder font_15px" style="width: 15%;">카테고리</div>
-                                 <div class="form-check d-flex justify-content-between align-items-center" style="width: 85%;">
-                                    <div style="width: 14%;">
-                                       <input 
-                                          class="form-check-input me-1" 
-                                          type="radio"
-                                          :id="categoryAll"
-                                          :name="materialCategory"
-                                       >
-                                       <label class="form-check-label text-start font_13px">전체</label>
-                                    </div>
-                                    <div  style="width: 14%;" v-for="(data, idx) in materialCategory" :key="idx">
-                                       <input 
-                                          class="form-check-input me-1" 
-                                          type="radio" 
-                                          :id="'category' + data.comm_dtl_cd" 
-                                          :name="materialCategory"
-                                          :value="data.comm_dtl_cd" 
-                                          v-model="selectedCategory" 
-                                       >
-                                       <label class="form-check-label text-start font_13px" :for="'radioCategory' + data.comm_dtl_cd">
-                                          {{ data.comm_dtl_nm }}
-                                       </label>
-                                    </div>
-                                 </div>
-                              </div>
-                           </div>
-                        </div>
+                        
+                        <ag-grid-vue
+                           class="ag-theme-alpine"
+                           style="width: 100%; height: 700px;"
+                           :rowData="materialOutData"
+                           :pagination="true"
+                           :gridOptions="materialOutOptions"
+                           @grid-ready="materialOutGrid"
+                           @firstDataRendered="materialOutGridRendered"
+                        />
                      </div>
-                  </div>
-                  
-                  <div class="card-body p-3">
-                     <ag-grid-vue
-                        class="ag-theme-alpine"
-                        style="width: 100%; height: 700px;"
-                        :rowData="materialOutData"
-                        :pagination="true"
-                        :gridOptions="materialOutOptions"
-                        @grid-ready="materialOutGrid"
-                        @firstDataRendered="materialOutGridRendered"
-                     />
                   </div>
                </div>
             </div>
@@ -205,15 +233,16 @@
    const materialType = shallowRef([]);     // 자재 구분
    const materialCategory = shallowRef([]); // 자재 카테고리
    const materialArr = ref([]);             // 자재결과
+   const produceStatus = ref([]);           // 생산 지시 진행여부
 
-   // const selectedMaterialType = ref('');
-   // const selectedCategory = ref('');
-   let startDt = ref('');                 // 시작 날짜
-   let endDt = ref('');                   // 종료 날짜
-   let keyword = ref('');                 // 검색어
+   let startDt = ref('');                   // 시작 날짜
+   let endDt = ref('');                     // 종료 날짜
+   let keyword = ref('');                   // 검색어
 
-   let isHidden = ref(true);              // 드롭다운 표시 여부 (true: 숨김, false: 표시)
-   let isMatModal = ref(false);            // 모달 표시 여부 (true : 표시, false : 숨김)
+   let isHidden = ref(true);                // 드롭다운 표시 여부 (true: 숨김, false: 표시)
+   let isMatModal = ref(false);             // 모달 표시 여부 (true : 표시, false : 숨김)
+   let isCategoryChecked = ref(false);      // 카테고리 체크여부()
+   let isTypeChecked = ref(false);          // 자재구분 체크여부()
 
    let instCode = ref('');
    
@@ -225,8 +254,10 @@
       store.dispatch('breadCrumb', { title: '자재 출고 조회' });  // 페이지 제목 설정
       getCategory(); // 카테고리
       getType();     // 자재유형 
+      getStatus();   // 생산지시 진행여부
 
       getProduceInstruction(); // 생산중 이거나 완료된 지시서 조회
+      
    });
 
 //! ---------------------------------------- Modal ----------------------------------------
@@ -268,6 +299,22 @@
          });
       }
    }
+
+   const getStatus = async () => {
+      try {
+         const result = await axios.get('/api/comm/codeList/PS');
+         
+         produceStatus.value = result.data.filter((data) => data.comm_dtl_nm != "진행전" && data.comm_dtl_cd != 'Z01' );
+      } catch (err) {
+         produceStatus.value = [];
+
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
+   }
    // 자재 목록 조회
    const getMaterial = async (keyword) => {
       try {
@@ -283,14 +330,25 @@
          });
       }
    };
+
    // 생산중 이거나 완료된 지시서 조회 instructionsOptions
-   const getProduceInstruction = async (workDate) => {
+   const getProduceInstruction = async (searchObj = {}) => {
       try {
-         console.log("workDate => ", workDate);
-         const result = await axios.get(`/api/material/produceInstruction/${workDate}`);
+         let startDt = searchObj.startDt || '';
+         let endDt = searchObj.endDt || '';
+         let status = searchObj.status || '';
+         console.log(status)
+         const result = await axios.get(`/api/material/produceInstruction`, { params : { 'startDt' : startDt, 'endDt' : endDt, 'status' : status } });
          instructionsData.value = result.data || [];
-         instCode.value = result.data[0].inst_cd
-         console.log("Instruction => ", result.data)
+         
+         console.log("axios타고 난 후", instructionsData.value)
+         if(result.data.length > 0) {
+            instCode.value = result.data[0].inst_cd || "";
+            getMaterialOutForProduction(instCode.value);
+         } else {
+            instCode.value = "";
+            getMaterialOutForProduction(instCode.value);
+         }
       } catch (err) {
          instructionsData.value = [];
          
@@ -330,6 +388,24 @@
       getMaterial(keyword.value);
    };
 
+   // 날짜 검색
+   const onChangeSearchDate = () => {
+      if(startDt.value != '' && endDt.value != '') {
+         let dateObj = {'startDt' : startDt.value, 'endDt' : endDt.value}
+         getProduceInstruction(dateObj);
+         
+         startDt.value = '';
+         endDt.value = '';
+      };
+   }
+
+   // radio Change 생산지시 상태
+   const radioStatusChange = (event) => {
+      let data = event.target.value;
+      let conditionObj = { 'status' : data };
+      getProduceInstruction(conditionObj);
+   }
+
    // 드롭다운 박스에 버튼 클릭 시 input에 입력 & 모달창 자재 클릭시 검색창에 입력
    const onClickMatNm = (params, code, name, ) => {
       isHidden.value = true;       // 드롭다운 숨김
@@ -343,8 +419,8 @@
    };
    
    const onClickInstructionsRow = (params) => {
+      instCode.value = params.data.inst_cd || '';
       getMaterialOutForProduction(params.data.inst_cd);
-      instCode.value = params.data.inst_cd;
    } 
 
    // 아래, 위 방향키 및 엔터 이벤트 핸들러
@@ -398,6 +474,9 @@
 
 //! ---------------------------------------- Ag Grid ----------------------------------------
    const materialGridRendered = (params) => {
+      params.api.sizeColumnsToFit();
+   }
+   const materialGrid = (params) => {
       params.api.sizeColumnsToFit();
    }
    
@@ -455,7 +534,7 @@
          },
          {
             headerName: '진행상태',
-            field: 'status',
+            field: 'statusName',
             cellClass: "text-center",
          },
       ],
@@ -464,19 +543,47 @@
    }
 
    const materialOutGridRendered = (params) => {
-      console.log(params)
       params.api.autoSizeAllColumns();
    };
-   const materialOutGrid = (params) => {
-      params.api.sizeColumnsToFit();
-   }
 
    const materialOutOptions = {
+      suppressRowTransform: true,   // 행 끄기 -> 이것을 해줘야 병합을 할 수 있음
       columnDefs : [
          { 
             headerName: '지시서 상세 코드', 
             field: 'inst_dtl_cd',
             cellClass: "text-center",
+            rowSpan: (params) => {
+               const rowIndex = params.node.rowIndex;
+               const instDtlCode = params.data.inst_dtl_cd;
+
+               if ( rowIndex > 0 && params.api.getDisplayedRowAtIndex(rowIndex - 1).data.inst_dtl_cd === instDtlCode ) {
+                  return 0; // 병합 내부 셀
+               }
+
+               let span = 1;
+
+               for (let i = rowIndex + 1; i <= params.api.getLastDisplayedRowIndex(); i++) {
+                  const nextRowNode = params.api.getDisplayedRowAtIndex(i);
+                  
+                  if (nextRowNode && nextRowNode.data.inst_dtl_cd === instDtlCode) {
+                     span++;
+                  } else {
+                     break;
+                  }
+               }
+
+               return span;
+            },
+            cellClassRules: {
+               "cell-span": (params) => {
+                  if (!params) {
+                     return false;
+                  }
+                  return params.value !== undefined;
+               },
+            },
+            //columnHoverHighlight : true
          },
          { 
             headerName: '공정 코드', 
@@ -509,12 +616,7 @@
             field: 'mat_out_qty',
             cellClass: "text-right",
             cellRenderer: (params) => {
-               // 렌더링 시 값이 없을 경우 표시
-               if (params.value == '') {
-                  return params.value ? params.value : 0;
-               } else {
-                  return params.value.toLocaleString()
-               }
+               return params.value ? params.value.toLocaleString() : "0";
             },
          },
          {
@@ -522,7 +624,10 @@
             field: 'mat_out_dt',
             cellClass: "text-center",
             cellRenderer: (params) => {
+               if (!params.value) return "-"; // 값이 없을 경우 대체 값 표시
+
                const date = new Date(params.value);
+               if (isNaN(date)) return "-"; // 날짜가 유효하지 않을 경우 대체 값 표시
 
                const formattedDate = date.toLocaleDateString("ko-KR", {
                   year: "numeric",
@@ -552,8 +657,10 @@
          },
          
       ],
-      onRowClicked : onClickInstructionsRow,
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
+      onGridReady: (params) => {
+         params.api.sizeColumnsToFit(); // 그리드가 준비된 후 호출
+      },
    };
 
 </script>
@@ -570,6 +677,15 @@
       font-size: 15px;
    }
 
+   .cell-span {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      background-color: #fafafa;
+      border: 1px solid #BABFC7;
+      border-collapse: collapse;
+   }
    .text-center {
       text-align: center;
    }

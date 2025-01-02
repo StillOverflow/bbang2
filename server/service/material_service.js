@@ -41,9 +41,8 @@ const getMaterialOrderDetail = async(code) => {
 
 //! ------------------------------ 자재 출고조회 ------------------------------
 // 생산 중이거나 생산 완료된 지시서 리스트 조회
-const getProduceInstruction = async(workDate) => {
-    console.log("service workDate => ", workDate)
-    let list = await mariadb.query('getProduceInstruction', workDate);
+const getProduceInstruction = async(searchObj) => {
+    let list = await mariadb.query('getProduceInstruction', searchObj);
     return list;
 }
 

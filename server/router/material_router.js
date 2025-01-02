@@ -35,17 +35,16 @@ router.get("/material/orderList", async (req, res) => {
 
 router.get("/material/orderDetailList/:code", async (req, res) => {
    let code = req.params.code;
-   console.log(code)
+
    let result = await materialService.getMaterialOrderDetail(code);
    res.send(result);
 });
 
 //! ------------------------------ 자재 출고조회 ------------------------------
-router.get("/material/produceInstruction/:work_dt", async (req, res) => {
-   let workDate = req.params.work_dt || null;
-   console.log("router workDate => ", workDate)
-   let result = await materialService.getProduceInstruction(workDate);
-
+router.get("/material/produceInstruction", async (req, res) => {
+   console.log("router searchObj => ", req.query)
+   let result = await materialService.getProduceInstruction(req.query);
+   console.log("조회 결과 -> ", result);
    res.send(result);
 });
 
