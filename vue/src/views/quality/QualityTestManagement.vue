@@ -15,7 +15,7 @@
           </div>
 
           <h6 class="col-2 col-xxl-1 mb-2 d-flex justify-content-center align-items-center" :style="t_overflow">검사방식</h6>
-          <div class="form-check col-5 d-flex align-items-center">
+          <div class="form-check col-10 col-xxl-5 d-flex align-items-center">
             <div>
               <input class="form-check-input ms-1" type="radio" v-model="search.testMetd" :value="null" :id="'metdNull'">
               <label class="form-check-label ms-1 me-3 text-start" :for="'metdNull'">
@@ -50,7 +50,7 @@
           </div>
 
           <h6 class="col-2 col-xxl-1 mb-2 d-flex justify-content-center align-items-center" :style="t_overflow">적용대상</h6>
-          <div class="form-check col-5 d-flex align-items-center">
+          <div class="form-check col-10 col-xxl-5 d-flex align-items-center">
             <div>
               <input class="form-check-input ms-1" type="radio" v-model="search.targetType" :value="null" :id="'targetTypeNull'">
               <label class="form-check-label ms-1 me-3 text-start" :for="'targetTypeNull'">
@@ -83,12 +83,68 @@
       </div>
     </div>
 
+    <!-- 검사항목 모달 -->
+    <ModalLayout :modalCheck="isModal">
+        <template v-slot:header>
+        <h5>검사항목 상세</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalToggle">×</button>
+        </template>
+        <template v-slot:default>
+
+          <div class="row g-2">
+            <h6 class="col-4 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">검사항목코드</h6>
+            <div class="col-6 mb-2">
+              <input type="text" class="form-control" v-model="selected.test_cd" readonly>
+            </div>
+            <h6 class="col-4 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">검사명</h6>
+            <div class="col-6 mb-2">
+              <input type="text" class="form-control" v-model="selected.test_nm">
+            </div>
+            <h6 class="col-4 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">검사내용</h6>
+            <div class="col-6 mb-2">
+              <input type="text" class="form-control" v-model="selected.test_dtl">
+            </div>
+
+            <h6 class="col-4 mb-2 d-flex justify-content-center align-items-center" :style="t_overflow">검사방식</h6>
+            <div class="form-check col-8 d-flex align-items-center">
+              <div v-for="(opt, idx) in testMetds" :key="idx">
+                <input class="form-check-input ms-1" type="radio" v-model="selected.test_metd" :value="opt.comm_dtl_cd" :id="'m_metd' + opt.comm_dtl_cd">
+                <label class="form-check-label ms-1 me-3 text-start" :for="'m_metd' + opt.comm_dtl_cd">
+                  {{opt.comm_dtl_nm}}
+                </label>
+              </div>
+            </div>
+
+            <h6 class="col-4 mb-2 d-flex justify-content-center align-items-center" :style="t_overflow">적용대상</h6>
+            <div class="form-check col-8 d-flex align-items-center">
+              <div v-for="(opt, idx) in targetTypes" :key="idx">
+                <input class="form-check-input ms-1" type="checkbox" v-model="selected.target_type" :value="opt.comm_dtl_cd" :id="'m_metd' + opt.comm_dtl_cd">
+                <label class="form-check-label ms-1 me-3 text-start" :for="'m_metd' + opt.comm_dtl_cd">
+                  {{opt.comm_dtl_nm}}
+                </label>
+              </div>
+            </div>
+
+            <h6 class="col-4 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">등록일자</h6>
+            <div class="col-6 mb-2">
+              <input type="text" class="form-control" v-model="selected.create_dt">
+            </div>
+          </div>
+
+        </template>
+        <template v-slot:footer> <!-- 아무것도 안 넣으면 기본 버튼이 표시됨. -->
+          <!-- 저장버튼 -->
+        <button type="button" class="btn btn-secondary" @click="modalToggle">CLOSE</button>
+        </template>
+    </ModalLayout>
+
   </div>
 </template>
 
 <script>
   import { AgGridVue } from "ag-grid-vue3";
   import axios from "axios";
+  import ModalLayout from "../components/modalLayout.vue";
 
   export default {
     name: 'QualityTestManagement',
@@ -99,15 +155,15 @@
         t_break: {wordBreak: 'keep-all'},
 
         // 모달용
-        modalDefs: [
-          { headerName: '코드', field: 'test_cd', width: 70 },
-          { headerName: '검사방식', field: 'test_metd_nm', width: 80 },
-          { headerName: '검사명', field: 'test_nm', width: 90 },
-          { headerName: '검사내용', field: 'test_dtl', width: 80 },
-          { headerName: '이름', field: 'nm', width: 126 },
-          { headerName: '마지막 등록일', field: 'std_date', width: 120, valueFormatter: this.$comm.dateFormatter_returnNull}
-        ],
-        modalData: [],
+        isModal: false, // 토글기능
+        selected: {
+          test_cd: null,
+          test_nm: null,
+          test_dtl: null,
+          test_metd: null,
+          target_type: [],
+          create_dt: null,
+        },
 
         // 일반 grid API 데이터
         defs: [
@@ -151,7 +207,8 @@
     },
 
     components: { 
-        AgGridVue // grid API
+        AgGridVue, // grid API
+        ModalLayout
     },
 
     created(){ 
@@ -193,8 +250,27 @@
       
       // 검사항목 상세 모달 띄우기
       rowClicked(params){ // @rowClicked
-        console.log(params.data);
-      }
+        let data = params.data;
+        this.selected = {
+          test_cd: data.test_cd,
+          test_nm: data.test_nm,
+          test_dtl: data.test_dtl,
+          test_metd: data.test_metd,
+          target_type: [data.target_type],
+          create_dt: this.$comm.getMyDay(data.create_dt)
+        };
+        this.modalToggle();
+      },
+
+      // ------------ 모달 메소드 ------------
+      modalToggle(){
+        this.isModal = !this.isModal;
+      },
+
+      async getModalList(){
+        
+      },
+      // ---------- 모달 메소드 끝 -----------
 
     }
   };
