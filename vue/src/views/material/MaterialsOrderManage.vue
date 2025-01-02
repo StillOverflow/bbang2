@@ -17,8 +17,8 @@
                   :rowData="accountModalData"
                   :pagination="true"
                   :gridOptions="accountModalGridOptions"
-                  @grid-ready="(params) => gridReady(params, 'account')"
-                  @first-data-rendered="accountModalGrid"
+                  @grid-ready="accountModalGrid"
+                  @first-data-rendered="accountModalGridRendered"
                />
             </template>
             <template v-slot:footer>
@@ -41,8 +41,8 @@
                   :rowData="orderModalData"
                   :pagination="true"
                   :gridOptions="orderModalGridOptions"
-                  @grid-ready="(params) => gridReady(params, 'orderList')"
-                  @first-data-rendered="orderModalGrid"
+                  @grid-ready="orderModalGrid"
+                  @first-data-rendered="orderModalGridRendered"
                />
             </template>
             <template v-slot:footer>
@@ -65,13 +65,38 @@
                   :rowData="materialModalData"
                   :pagination="true"
                   :gridOptions="materialModalGridOptions"
-                  @grid-ready="materialGridReady"
+                  @grid-ready="materialGrid"
+                  @first-data-rendered="materialGridRendered"
                />
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
                   
                   <button type="button" class="btn btn-secondary m-1" @click="materialModalOpen">Cancel</button>
+               </div>
+            </template>
+         </Layout>
+
+         <Layout :modalCheck="isMemberModal">
+            <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+               <h5 class="modal-title">사원 조회</h5>
+               <button type="button" aria-label="Close" class="close" @click="memberModalOpen">×</button>
+            </template>
+            <template v-slot:default>
+               <ag-grid-vue
+                  class="ag-theme-alpine"
+                  style="width: 100%; height: 500px;"
+                  :rowData="memberModalData"
+                  :pagination="true"
+                  :gridOptions="memberModalGridOptions"
+                  @grid-ready="memberModalGrid"
+                  @first-data-rendered="memberModalGridRendered"
+               />
+            </template>
+            <template v-slot:footer>
+               <div class="mx-auto">
+                  <button type="button" class="btn btn-success m-1" @click="memberModalOpen">Save</button>
+                  <button type="button" class="btn btn-secondary m-1" @click="memberModalOpen">Cancel</button>
                </div>
             </template>
          </Layout>
@@ -107,8 +132,8 @@
                            :gridOptions="orderFormOptions"
                            @cellEditingStarted="cellEditingStartedEvent"
                            @cellEditingStopped="cellEditingStoppedEvent"
-                           @grid-ready="(params) => gridReady(params, 'orderForm')"
-                           @first-data-rendered="orderFormGrid"
+                           @grid-ready="orderFormGrid"
+                           @first-data-rendered="orderFormGridRendered"
                         />
                      </div>
                   </div>
@@ -145,18 +170,19 @@
    let isAccountModal = ref(false);          // 거래처 모달 열림여부
    let isOrderModal = ref(false);            // 주문서 모달 열림여부
    let isMatModal = ref(false);              // 자재 검색 모달 열림여부
+   let isMemberModal = ref(false);           // 자재 담당자 검색
 
    const accountModalGrid = ref(null);       // 거래처 모달 그리드 참조
+   const orderModalGrid = ref(null);         // 주문서 조회 모달
+   const orderFormGrid = ref(null);          // 주문서 등록 그리드
+   const materialGrid = ref(null);           // 자재 조회 그리드
+   const memberModalGrid = ref(null);        // 사원조회 그리드
+
    const accountModalData = shallowRef([]);  // 거래처 모달 데이터
-
-   const orderModalGrid = ref(null);         // 발주서 내역 조회 모달 그리드 참조
    const orderModalData = shallowRef([]);    // 발주서 내역 조회 모달 데이터
-   
-   const orderFormGrid = ref(null);          // 발주서 그리드
    const orderFormData = shallowRef([]);     // 발주서 관리 데이터
-
-   const materialGridReady = ref(null);      // 자재 모달 그리드
    const materialModalData = ref([]);        // 자재 모달 데이터
+   const memberModalData = ref([]);        // 자재 모달 데이터
 
 //! ----------------------------------------- Vue Hook -----------------------------------------
    onBeforeMount(() => {
@@ -181,7 +207,7 @@
       }
    });
 
-   watch(orderFormGrid, (newValue) => {
+   watch(orderModalGrid, (newValue) => {
       if (newValue && newValue.api) {
          newValue.api.sizeColumnsToFit();
       }
@@ -209,12 +235,22 @@
          newObj[data.field] = '';   // 필드 초기화
       });
 
-      orderFormGrid.value.applyTransaction( { add : [newObj] } );
+      orderFormGridRendered.api.applyTransaction( { add : [newObj] } );
    };
 
    // 행 삭제
    const removeRow = () => {
+      if (!orderFormGrid.value) {
+         Swal.fire({
+            icon: "error",
+            title: "그리드 초기화 오류",
+            text: "그리드가 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.",
+         });
+         return;
+      };
+
       const selRows = orderFormGrid.value.getSelectedRows();
+
       if(selRows.length > 0 ) {
          orderFormGrid.value.applyTransaction( { remove : selRows } );
       } else {
@@ -293,6 +329,22 @@
       }
    };
 
+   const getMember = async () => {
+      try {
+         const result = await axios.get(`/comm/member/DPT5`)
+         memberModalData.value = result.data || [];
+         console.log("adf -> ",memberModalData.value)
+      } catch (err) {
+         memberModalData.value = [];
+         
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
+   }
+
 //^ ------------------------------------------- Modal -------------------------------------------   
    // 거래처 검색 모달'
    const accountModalOpen = (keyword) => {
@@ -320,10 +372,20 @@
       
       getMaterial(keyword);   // 자재 리스트
 
-      if (materialGridReady.value) {
-         materialGridReady.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
+      if (materialGrid.value) {
+         materialGrid.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
       }
    };
+
+   const isMemberModalOpen = (keyword) => {
+      isMemberModal.value = !isMemberModal.value;
+
+      getMember(keyword);
+
+      if (memberModalGrid.value) {
+         memberModalGrid.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
+      }
+   }
 
    // esc 누르면 모달 닫기
    const modalCloseFunc = (e) => {
@@ -341,21 +403,6 @@
    }
 
 // ^ ---------------------------------------- 그리드 이벤트 ----------------------------------------
-   const gridReady = (params, gridType) => {
-      if (params.api) {
-         if (gridType === 'account') {
-            accountModalGrid.value = params.api; // 거래처 모달 그리드 API 저장
-         }
-         if (gridType === 'orderList') {
-            orderModalGrid.value = params.api; // 주문서 모달 그리드 API 저장
-         }
-         if (gridType === 'orderForm') {
-            orderFormGrid.value = params.api; // 발주서 관리 그리드 API 저장
-         }
-         params.api.sizeColumnsToFit();
-      }
-   };
-
    // 발주서 모달 행 클릭시
    const orderModalRowClicked = (params) => {
       getOrderDetailList(params.data.mat_order_cd);   // 발주서 헤더에 대한 디테일 정보 조회
@@ -397,7 +444,21 @@
          actObj.value = {};
       }
    }
-
+   const orderFormGridRendered = (params) =>{
+      params.api.sizeColumnsToFit();
+   };
+   const memberModalGridRendered = (params) =>{
+      params.api.sizeColumnsToFit();
+   };
+   const materialGridRendered = (params) =>{
+      params.api.sizeColumnsToFit();
+   };
+   const orderModalGridRendered = (params) =>{
+      params.api.sizeColumnsToFit(); // 열 크기 조정
+   };
+   const accountModalGridRendered = (params) =>{
+      params.api.sizeColumnsToFit();
+   };
 // ^ ----------------------------------- 그리드 데이터 정의 및 바인딩 -----------------------------------
    // 주문서 그리드 option
    const orderModalGridOptions = {
@@ -491,6 +552,69 @@
          materialModalOpen(); // 자재조회 모달
       }
    }
+
+   const memberModalGridOptions = {
+      columnDefs : [
+         { 
+            headerName: '사원코드', 
+            field: 'mat_order_cd', 
+            sortable: true,
+            editable: false,  // 편집 비활성화
+            cellClass: "text-center",
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자동 입력</span>`;
+            },
+         },
+         { 
+            headerName: '사원명', 
+            field: 'mat_cd', 
+            sortable: true, 
+            editable: false,  // 편집 비활성화
+            cellClass: "text-center",
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자동 입력</span>`;
+            },
+         },
+         {
+            headerName: '부서코드',
+            field: 'mat_nm',
+            editable: true,   // 편집 가능
+            cellClass: "text-center",
+            cellEditor : CustomDropdownEditor,  // 커스텀 드롭다운 셀 에디터
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자재명 입력</span>`;
+            },
+            cellEditorParams: {
+               isModal: {
+                  openModal: materialModalOpen, // 컴포넌트로 함수 전달
+               },
+            },
+         },
+         { 
+            headerName: '부서명', 
+            field: 'mat_qty', 
+            sortable: true, 
+            cellClass: "text-right",
+            editable: true, // 편집 가능
+            cellDataType: "number", // 숫자 데이터 타입
+            cellEditorParams: {
+               min: 0,     // 최소값
+            },
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               if (params.value == '') {
+                  return params.value ? params.value : `<span style="color: #cacaca; text-align: right; font-size: 11px">숫자를 입력하세요</span>`;
+               } else {
+                  return params.value.toLocaleString()
+               }
+            },
+         },
+         
+      ],
+   }
    
    let clickedGrid = ref(null);
    const orderFormRowClick = (event) => {
@@ -509,6 +633,7 @@
             field: 'mat_order_cd', 
             sortable: true,
             editable: false,  // 편집 비활성화
+            cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
                return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자동 입력</span>`;
@@ -519,6 +644,7 @@
             field: 'mat_cd', 
             sortable: true, 
             editable: false,  // 편집 비활성화
+            cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
                return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자동 입력</span>`;
@@ -528,6 +654,7 @@
             headerName: '자재명',
             field: 'mat_nm',
             editable: true,   // 편집 가능
+            cellClass: "text-center",
             cellEditor : CustomDropdownEditor,  // 커스텀 드롭다운 셀 에디터
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
@@ -543,6 +670,7 @@
             headerName: '발주 수량', 
             field: 'mat_qty', 
             sortable: true, 
+            cellClass: "text-right",
             editable: true, // 편집 가능
             cellDataType: "number", // 숫자 데이터 타입
             cellEditorParams: {
@@ -551,7 +679,7 @@
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
                if (params.value == '') {
-                  return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">숫자를 입력하세요</span>`;
+                  return params.value ? params.value : `<span style="color: #cacaca; text-align: right; font-size: 11px">숫자를 입력하세요</span>`;
                } else {
                   return params.value.toLocaleString()
                }
@@ -561,6 +689,7 @@
             headerName: '단위', 
             field: 'unit', 
             sortable: true, 
+            cellClass: "text-center",
             editable: false, // 편집 가능
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
@@ -571,6 +700,7 @@
             headerName: '거래처코드', 
             field: 'act_cd', 
             sortable: true, 
+            cellClass: "text-center",
             editable: false, 
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
@@ -581,6 +711,7 @@
             headerName: '거래처명', 
             field: 'act_nm', 
             sortable: true,
+            cellClass: "text-center",
             editable: true,   // 편집 가능
             cellEditor : AccountDropdownEditor,  // 커스텀 드롭다운 셀 에디터
             cellRenderer: (params) => {
@@ -594,9 +725,27 @@
             },
          },
          { 
+            headerName: '담당자', 
+            field: 'id', 
+            sortable: true,
+            cellClass: "text-center",
+            editable: true,   // 편집 가능
+            cellEditor : AccountDropdownEditor,  // 커스텀 드롭다운 셀 에디터
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">거래처명 입력</span>`;
+            },
+            cellEditorParams: {
+               isModal: {
+                  openModal: isMemberModalOpen, // 컴포넌트로 함수 전달
+               },
+            },
+         },
+         { 
             headerName: '납기 요청일', 
             field: 'delivery_dt', 
-            sortable: true, 
+            sortable: true,
+            cellClass: "text-center",
             editable: true,
             cellDataType: "date",   // Date 타입
             cellEditor: "agDateCellEditor",
@@ -629,3 +778,13 @@
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
 </script>
+
+<style>
+
+   .text-center {
+      text-align: center;
+   }
+   .text-right {
+      text-align: right;
+   }
+</style>
