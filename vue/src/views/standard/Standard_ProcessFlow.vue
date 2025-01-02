@@ -558,45 +558,61 @@ export default {
       });
     },
 //------------------------------드래그 실험-------------------------------------
+    cellValueMtlChanged(params)  {
+        const updatedMaterial = params.data;
 
+        // 값이 숫자인지 확인하고 변환
+        if (!isNaN(params.newValue)) {
+          updatedMaterial.mat_qty = parseFloat(params.newValue);
+        } else {
+          updatedMaterial.mat_qty = 0; // 잘못된 입력 처리
+        }
+
+        // 수정된 데이터 저장
+        const saveIndex = this.updatedMaterials.findIndex(
+          (item) => item.proc_mat_flow_cd === updatedMaterial.proc_mat_flow_cd
+        );
+
+        if (saveIndex !== -1) {
+          this.updatedMaterials[saveIndex] = {
+            mat_qty: updatedMaterial.mat_qty,
+            proc_mat_flow_cd: updatedMaterial.proc_mat_flow_cd,
+          };
+        } else {
+          this.updatedMaterials.push({
+            mat_qty: updatedMaterial.mat_qty,
+            proc_mat_flow_cd: updatedMaterial.proc_mat_flow_cd,
+          });
+        }
+
+      console.log("수정된 값:", this.updatedMaterials);
+    },
     //저장
     async save() {
       //업데이트
-      // if (this.saveProwMtlData.length > 0) {
-      //       console.log("전송 데이터:", this.saveProwMtlData);
+      const updatedMaterials = this.procFlowMtlData.map((material) => ({
+        mat_qty: material.mat_qty,
+        proc_mat_flow_cd: material.proc_mat_flow_cd,
+      }));
 
-      //       // 서버로 데이터 전송
-      //       const response = await axios.put('/api/standard/updateFlowMatUsage', {
-      //           updateInfo: this.saveProwMtlData, // 변경된 데이터 배열
-      //       });
+      if (updatedMaterials.length > 0) {
+        console.log("전송 데이터:", this.updatedMaterials); // 전송 전 확인
+        const response = await axios.put('/api/standard/updateFlowMatUsage', updatedMaterials);
 
-      //       console.log("서버 응답:", response.data);
-
-      //       // 서버 응답 처리
-      //       if (response.data == 'success') {
-      //           this.$swal({
-      //               icon: "success",
-      //               title: "저장 성공",
-      //               text: "자재 사용량이 성공적으로 업데이트되었습니다!",
-      //           });
-      //           // 데이터 초기화
-      //           this.saveProwMtlData = [];
-      //           this.isdisabled = true; // 저장 버튼 비활성화
-      //       } else {
-      //           this.$swal({
-      //               icon: "error",
-      //               title: "저장 실패",
-      //               text: "자재 사용량 업데이트 중 문제가 발생했습니다.",
-      //           });
-      //       }
-      //   } else {
-      //       this.$swal({
-      //           icon: "warning",
-      //           title: "변경 사항 없음",
-      //           text: "변경된 데이터가 없습니다.",
-      //       });
-      //   }
-
+        if (response.data == 'success') {
+          this.$swal({
+            icon: "success",
+            title: "저장 성공",
+            text: "자재 사용량 및 공정 데이터가 성공적으로 저장되었습니다!",
+          });
+        } else {
+          this.$swal({
+            icon: "error",
+            title: "저장 실패",
+            text: "자재 사용량 업데이트 중 문제가 발생했습니다.",
+          });
+        }
+      }
 
       //드래그-----------------------------
         // 공정 흐름 순서 업데이트
