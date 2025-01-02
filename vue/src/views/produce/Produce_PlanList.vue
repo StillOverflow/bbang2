@@ -89,7 +89,6 @@ export default {
               button.innerText = 'DETAILED';
               button.className = 'btn btn-warning btn-xsm';
               button.addEventListener('click', () => {
-
                   this.$router.push({ name: 'Produce_PlanAdd' , query : { plan_cd : params.data.PROD_PLAN_CD}});
               });
               return button;

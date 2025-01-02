@@ -18,8 +18,8 @@
                   :pagination="true"
                   :gridOptions="accountModalGridOptions"
                   @grid-ready="(params) => gridReady(params, 'account')"
-                  @first-data-rendered="accountModalGrid">
-               </ag-grid-vue>
+                  @first-data-rendered="accountModalGrid"
+               />
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
@@ -42,8 +42,8 @@
                   :pagination="true"
                   :gridOptions="orderModalGridOptions"
                   @grid-ready="(params) => gridReady(params, 'orderList')"
-                  @first-data-rendered="orderModalGrid">
-               </ag-grid-vue>
+                  @first-data-rendered="orderModalGrid"
+               />
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
@@ -65,8 +65,8 @@
                   :rowData="materialModalData"
                   :pagination="true"
                   :gridOptions="materialModalGridOptions"
-                  @grid-ready="materialGridReady">
-               </ag-grid-vue>
+                  @grid-ready="materialGridReady"
+               />
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
@@ -108,8 +108,8 @@
                            @cellEditingStarted="cellEditingStartedEvent"
                            @cellEditingStopped="cellEditingStoppedEvent"
                            @grid-ready="(params) => gridReady(params, 'orderForm')"
-                           @first-data-rendered="orderFormGrid">
-                        </ag-grid-vue>
+                           @first-data-rendered="orderFormGrid"
+                        />
                      </div>
                   </div>
                   <div class="text-center mtp30">
@@ -374,6 +374,7 @@
       if(params.colDef.field == 'mat_nm' && params.newValue.matCode != null) {
          params.node.setDataValue("mat_cd", params.newValue.matCode);
          params.node.setDataValue("mat_nm", params.newValue.matName);
+         params.node.setDataValue("unit", params.newValue.matUnit);
       }
 
       if(params.colDef.field == 'act_nm' && params.newValue.actCode != null) {
@@ -548,7 +549,6 @@
                min: 0,     // 최소값
             },
             cellRenderer: (params) => {
-               console.log(params.value)
                // 렌더링 시 값이 없을 경우 표시
                if (params.value == '') {
                   return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">숫자를 입력하세요</span>`;

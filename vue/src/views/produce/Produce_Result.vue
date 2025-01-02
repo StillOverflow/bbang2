@@ -1,6 +1,6 @@
 <!-- 생산계획서 조회 -->
 <template>
-  <div class="py-4 container-fluid">
+  <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
     <div class="card">
       <div class="card-header bg-light ps-5 ps-md-4">
         <div class="row">
@@ -139,6 +139,9 @@ export default {
     modalClicked(params) {
       this.isModal = !this.isModal;
       this.inst_cd= params.data.INST_CD;       
+    },
+    modalCloseFunc() {
+      this.isModal = !this.isModal;
     },
 
     //지시서 리스트

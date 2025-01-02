@@ -65,7 +65,11 @@ const searchProMtl = async (proc_cd) => {
   let list = await mariadb.query("selectMatByProc", proc_cd);
   return list;
 };
-
+//제품별 자재조회
+const sarchProMtlByPrd = async (prdCd)=>{
+  let list = await mariadb.query("selectAllMatByProc", prdCd);
+  return list;
+}
 //공정 코드 조회
 const searchProcCd = async () => {
   let list = await mariadb.query("selectProcCd");
@@ -203,7 +207,31 @@ const updateProcSeq = async (procFlowCd, procSeq) => {
   await mariadb.query("updateProSeq", [procSeq, procFlowCd]);
 };
 
+//개수체크
+const procMatUsage = async(matCd, prdCd)=>{
+  let result = await mariadb.query("selectProcMtlsUsage", [matCd, prdCd]);
+  return result;
+}
 
+//자재사용량 업데이트
+const updateMatUsage = async(updateInfo)=>{
+  let resultArr = [];
+  for (const obj of updateInfo) {
+    let datas = [obj.mat_qty, obj.proc_mat_flow_cd];
+    let result = await mariadb.query("updateProcMtl", datas);
+    
+    if (result.affectedRows > 0) {
+        resultArr.push("success");
+    } else {
+        resultArr.push("fail");
+    }
+  }
+  if(resultArr.includes('fail')){    
+    return 'fail';
+  }else{
+    return 'success';
+  } 
+}
 //-----------------------------자재관리----------------------------------
 const bringMaterial = async()=>{
   let result = await mariadb.query("bringMat");
@@ -253,7 +281,7 @@ const insertProduct = async(prdInfo)=>{
 
   let result = await mariadb.query('prdInsert', prdInfo);
   if(result.affectedRows >0){
-    return {result: true, mat_cd:new_mat_cd};
+    return {result: true};
   }else{
     return {};
   }
@@ -464,6 +492,7 @@ module.exports = {
   getMaxProcSeq,
   updateProSeq,
   updateProcSeq,
+  sarchProMtlByPrd,
   
   //자재관리
   bringMaterial,
@@ -496,5 +525,9 @@ module.exports = {
   //사원관리
   insertMember,
   updateMember,
-  selectDept
+  selectDept,
+
+
+  procMatUsage,
+  updateMatUsage
 };

@@ -55,7 +55,7 @@ export default {
     data() {
         return {
             columnDefs: [
-                {field: 'order_cd', headerName: '주문코드', hide: true},
+                {field: 'order_cd', headerName: '주문코드'},
                 {field: 'act_cd', headerName: '거래처코드'},
                 {field: 'act_nm', headerName: '거래처이름'},
                 {field: 'name', headerName: '담당자'},

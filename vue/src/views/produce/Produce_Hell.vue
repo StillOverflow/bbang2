@@ -5,7 +5,7 @@
 }
 </style>
 <template>
-  <div class="py-4 container-fluid">
+  <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
     <div class="card">      
       <div class="card-header ps-5 ps-md-4">
         <h5 class="modal-title mb-3">1. 생산지시서 선택</h5>
@@ -346,10 +346,15 @@ export default {
       }
     },
     modalClicked2(params) {
-      this.id = params.data.ID;
-      this.name = params.data.name;
+      this.resultInfo.ID = params.data.ID;
+      this.resultInfo.NAME = params.data.name;
 
       this.isModal2 = !this.isModal2;
+    },
+    modalCloseFunc() {
+      this.isModal = !this.isModal;
+      this.isModal2 = !this.isModal2;
+      this.isModal3= !this.isModal3;
     },
     /*모달 [E]*/
 
@@ -506,7 +511,7 @@ export default {
                 EQP_CD : this.equ_radio,
                 ID : this.ID,
                 NAME : this.NAME,
-                STATUS : 'Z01',
+                STATUS : 'Z02',
                 PROD_QTY :  this.PROD_QTY,
                 START_TIME: this.$comm.getDateTime()
               };

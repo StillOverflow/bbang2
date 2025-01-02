@@ -410,17 +410,17 @@ export default {
         </li>
         <ul class="navbar-nav detail Quality_list" :class="urlCompare('Quality') == true ? '' : 'dnone'">
           <li class="nav-item">
-            <sidenav-item to="/Quality_stdAdd" :class="getRoute() === 'Quality_stdAdd' ? 'active' : ''"
+            <sidenav-item to="/Quality_standard" :class="getRoute() === 'Quality_standard' ? 'active' : ''"
               :navText="'품질기준 관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Quality_test" :class="getRoute() === 'Quality_test' ? 'active' : ''"
+            <sidenav-item to="/Quality_prdTest" :class="getRoute() === 'Quality_prdTest' ? 'active' : ''"
               :navText="'제품 품질검사'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Quality_list5" :class="getRoute() === 'Quality_list5' ? 'active' : ''"
+            <sidenav-item to="/Quality_matTest" :class="getRoute() === 'Quality_matTest' ? 'active' : ''"
               :navText="'자재 입고검사'">
             </sidenav-item>
           </li>

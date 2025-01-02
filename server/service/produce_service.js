@@ -33,7 +33,7 @@ const deletePlan = async (values)=>{
   }
 }
 
-//지시서 등록
+//계획서 등록
 const planInsert = async (values) => { 
   let result = await mariadb.transOpen( async () => {
 
@@ -50,6 +50,7 @@ const planInsert = async (values) => {
       values[1].forEach((val) => { // 헤더 시퀀스값 추가
           val["PROD_PLAN_CD"] = mySeq;
       });
+      console.log(values[1]);
       let dtl_res = await mariadb.transQuery('planDtlInsert', values[1]);
       
       if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
@@ -61,6 +62,31 @@ const planInsert = async (values) => {
       }
     });
     return result;
+}; 
+
+//계획서 수정
+const planUpdate = async (no, values) => { 
+  let result = await mariadb.transOpen( async () => {
+
+    // 헤더 수정
+    let header_res = await mariadb.transQuery('planUpdate', [values[0], no]);
+    
+    // 디테일 삽입
+    values[1].forEach((val) => { // 헤더 시퀀스값 추가
+        val["PROD_PLAN_CD"] = no;
+    });
+    let dtl_del = await mariadb.transQuery('planDtlDelete', no);
+    let dtl_res = await mariadb.transQuery('planDtlInsert', values[1]);
+    
+    if(header_res.affectedRows > 0 && dtl_del.affectedRows > 0 && dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
+      await mariadb.commit();
+      return 'success';
+    } else {
+        await mariadb.rollback();
+        return 'fail';
+    }
+  });
+  return result;
 }; 
 
 
@@ -105,26 +131,30 @@ const instInsert = async (values) => {
       let mySeq = seq_res[0].seq;
               
       // 헤더 삽입
-      values[0]["INST_CD"] = mySeq;      
-
+      values[0]["inst_cd"] = mySeq;      
+      
       let header_res = await mariadb.transQuery('instInsert', values[0]);
       
       // 디테일 삽입
       values[1].forEach((val) => { // 헤더 시퀀스값 추가
-          val["INST_CD"] = mySeq;
-      });
-      let dtl_res = await mariadb.transQuery('instDtlInsert', values[1]);      
-
+          val["inst_cd"] = mySeq;
+      });      
+        
+      let dtl_res = await mariadb.transQuery('instDtlInsert', values[1]);     
+      
+      
       // 공정흐름 삽입
       values[2].forEach((val) => { // 헤더 시퀀스값 추가
-        val["INST_CD"] = mySeq;
+        val["inst_cd"] = mySeq;
       });
       let flow_res = await mariadb.transQuery('instFlowInsert', values[2]);
-
+      
       // 공정별 자재 삽입
       let i = 0;
       for (const obj of values[2]){   
         let mat_res =  await mariadb.transQuery('instMatInsert', obj.PROC_FLOW_CD);
+           
+
         if(mat_res.affectedRows > 0){                                       
           i++;
         }
@@ -235,8 +265,10 @@ const progressStart = async (no, updateInfo)=>{
 
       if(lot_is.affectedRows > 0 && lot_ud.affectedRows > 0){
         resultArr.push('success');
+        
       }else{
         resultArr.push('fail');
+        
       }
     }
 
@@ -245,8 +277,10 @@ const progressStart = async (no, updateInfo)=>{
 
   if(!resultArr.includes('fail') && list.affectedRows > 0){    
     return 'success';
+    await mariadb.commit();
   }else{
     return 'fail';
+    await mariadb.rollback();
   }  
 
 }; 
@@ -258,6 +292,7 @@ module.exports = {
   findAllPlanDtl,
   findAllInst,
   planInsert,
+  planUpdate,
   deletePlan,
 
   findInstNo,

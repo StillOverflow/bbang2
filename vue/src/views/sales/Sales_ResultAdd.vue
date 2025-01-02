@@ -79,7 +79,7 @@
                     <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
                 <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
-                    <button class="btn btn-primary mtp30" @click="prdReturnUpdate">UPDATE</button>
+                    <button class="btn btn-primary mtp30" @click="returnUpdate">UPDATE</button>
                     <button class="btn btn-secondary mlp10 mtp30" @click="prdReturnDelete">DELETE</button>
                 </div>
           </div>
@@ -170,6 +170,8 @@ export default {
                 prd_out_cd: '',
                 prd_out_dt: ''
             }, 
+            //단건 삭제를 위해 선언
+            prd_return_dtl_cd: '',
 
             //input박스에 값 넣기 위해 선언
             acc_code: '',
@@ -244,7 +246,7 @@ export default {
             },
 
             prdRTDefs: [
-                {headerName: '반품상세코드', field: 'prd_return_dtl_cd'},
+                {headerName: '반품상세코드', field: 'prd_return_dtl_cd', hide: true},
                 {headerName: '출고상세코드', field: 'prd_out_dtl_cd', hide: true},
                 {headerName: '제품코드', field: 'prd_cd'},
                 {headerName: 'LOT', field: 'prd_lot_cd'},
@@ -277,6 +279,15 @@ export default {
                         button.className = 'btn btn-danger btn-xsm';
                         button.addEventListener('click', () => {
                             this.prdRTData = this.prdRTData.filter(row => row !== params.data);
+
+                            // 상세 페이지 일떄
+                            if(this.isdetail == true){
+                                //한 행에 관한 단건 딜리트 메소드
+                                this.prd_return_dtl_cd = params.data.prd_return_dtl_cd;
+                                this.returnListDelete();
+
+                                this.prdRTData = this.prdRTData.filter(row => row !== params.data);
+                            };
                             
                         });
                         return button;
@@ -459,8 +470,6 @@ export default {
           this.returnLotData = result.data;
         },
 
-        
-
         async getMemList() {
             let result = await axios.get('/api/momem')
                                     .catch(err => console.log(err));
@@ -602,44 +611,84 @@ export default {
                 }
             });
         },
-        
-        //반품 수정
-        async prdReturnUpdate() {
-            //반품 수정을 위한 삭제
-            let result = await axios.delete(`/api/sales/returnUpdateDelete/${this.selectNo}`)
-                                    .catch(err => console.log("deleteAxios에러",err));
-            if(result.data.result == 'success'){
-                //반품 수정을 위한 등록
-                this.returnUpdateInsert();
-            }
+
+        //반품 단건삭제
+        async returnListDelete() {           
+            let result2 = await axios.delete(`/api/sales/returnListDelete/${this.prd_return_dtl_cd}`)
+                                    .catch(err => console.log("deleteAxios에러",err));                        
+            console.log(result2);
         },
-        async returnUpdateInsert() {
-            let updateInsert = [];
-
-            this.prdRTData.forEach((obj) => {
-                updateInsert.push({
-                    prd_return_dtl_cd: obj.prd_return_dtl_cd,
-                    prd_out_dtl_cd: obj.prd_out_dtl_cd, 
-                    prd_cd: obj.prd_cd, 
-                    prd_lot_cd: obj.prd_lot_cd, 
-                    prd_return_qty: obj.prd_return_qty,
-                    note: obj.note,
-                    
-                    prd_return_cd: this.selectNo
-                });
-            });
-            console.log("insert",updateInsert)
-
-            let result = await axios.post('/api/sales/returnUpdateInsert', updateInsert)   
-                                    .catch(err => console.log("axios에러",err));
-            if(result.data.result === 'success'){
-                this.$swal({
-                    icon: "success",
-                    title: "UPDATE!",
-                    text: "반품 제품을 수정 하였습니다.",
+        
+        //반품 제품 수정 한번에 하기
+        async returnUpdate() {
+            let updateResult 
+            let upObj = [];
+            let upRow = '';
+            //뒷단에서 업데이트랑 인서트 한번에 하게 할려고 필요한 값들 한번에 보내기
+            for(let i = 0; i < this.prdRTData.length; i++){
+                upRow = this.prdRTData[i];
+                upObj.push({
+                    prd_return_dtl_cd : upRow.prd_return_dtl_cd,
+                    prd_return_cd: this.selectNo,
+                    prd_cd: upRow.prd_cd, 
+                    prd_lot_cd : upRow.prd_lot_cd,
+                    prd_return_qty: upRow.prd_return_qty,
+                    note: upRow.note,
+                    prd_out_dtl_cd: upRow.prd_out_dtl_cd
                 })
             };
+            updateResult = await axios.put(`/api/sales/returnUpdates`,upObj)
+                                        .catch(err => console.log("updateAxiosError",err));       
+            if(updateResult.data.result == 'success'){
+                this.$swal({
+                title: "Update!",
+                text: "GO to return List",
+                icon: "success"
+                }).then(result =>{
+                    if(result){
+                        this.$router.push({name:'sales_ResultList'}) //OK누르면 목록으로 이동
+                    }
+                });     
+            };
         },
+
+        // //반품 수정
+        // async prdReturnUpdate() {
+        //     //반품 수정을 위한 삭제
+        //     let result = await axios.delete(`/api/sales/returnUpdateDelete/${this.selectNo}`)
+        //                             .catch(err => console.log("deleteAxios에러",err));
+        //     if(result.data.result == 'success'){
+        //         //반품 수정을 위한 등록
+        //         this.returnUpdateInsert();
+        //     }
+        // },
+        // async returnUpdateInsert() {
+        //     let updateInsert = [];
+
+        //     this.prdRTData.forEach((obj) => {
+        //         updateInsert.push({
+        //             prd_return_dtl_cd: obj.prd_return_dtl_cd,
+        //             prd_out_dtl_cd: obj.prd_out_dtl_cd, 
+        //             prd_cd: obj.prd_cd, 
+        //             prd_lot_cd: obj.prd_lot_cd, 
+        //             prd_return_qty: obj.prd_return_qty,
+        //             note: obj.note,
+                    
+        //             prd_return_cd: this.selectNo
+        //         });
+        //     });
+        //     console.log("insert",updateInsert)
+
+        //     let result = await axios.post('/api/sales/returnUpdateInsert', updateInsert)   
+        //                             .catch(err => console.log("axios에러",err));
+        //     if(result.data.result === 'success'){
+        //         this.$swal({
+        //             icon: "success",
+        //             title: "UPDATE!",
+        //             text: "반품 제품을 수정 하였습니다.",
+        //         })
+        //     };
+        // },
 
 
         gridFit(params){ // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)

@@ -4,7 +4,7 @@
 </style>
 
 <template>
-  <div class="py-4 container-fluid">
+  <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
     <div class="card">      
       <div class="card-header bg-light ps-5 ps-md-4">
 
@@ -65,15 +65,15 @@
                 </thead>
                 <tbody>
                   <template v-if="planDtlCount >0">
-                    <tr :key="i" v-for="(Dtl, i) in planDtlData" @click="prdClicked(Dtl.PRD_CD)" class="text-center planDtl" v-bind:id="Dtl.PRD_CD+'_dtl'" >
+                    <tr :key="i" v-for="(Dtl, i) in planDtlData" @click="prdClicked(Dtl.prd_cd)" class="text-center planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
                       <td>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" v-model="prdArr" :value="Dtl" :id="'fl' + Dtl.PRD_CD">
+                          <input class="form-check-input" type="checkbox" v-model="prdArr" :value="Dtl" :id="'fl' + Dtl.prd_cd">
                         </div>
                       </td>
-                      <td>{{ Dtl.PRD_CD }}</td>
-                      <td>{{ Dtl.PRD_NM }}</td>
-                      <td>{{ Dtl.PROD_PLAN_QTY }}</td>
+                      <td>{{ Dtl.prd_cd }}</td>
+                      <td>{{ Dtl.prd_nm }}</td>
+                      <td>{{ Dtl.prod_plan_cd }}</td>
                     </tr>
                   </template>
 
@@ -95,7 +95,13 @@
               <table class="table">
                 <thead class="table-secondary">
                   <tr>
-                    <th class="text-center text-uppercase text-ser opacity-7" width="5%"></th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="5%">
+                      <td>
+                        <div class="form-check col-4 col-md-2">
+                          <input class="form-check-input" type="checkbox" v-model="flowTotal" checked="true" @click="checkAll(this.prd_cd)"> 
+                        </div>
+                      </td>
+                    </th>
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 공정코드 </th>
                     <th class="text-center text-uppercase text-ser opacity-7">공정명</th>
                     <th class="text-center text-uppercase text-ser opacity-7">공정설명</th>
@@ -108,7 +114,7 @@
                         :key="Flow.PROC_FLOW_CD">
                         <td>
                           <div class="form-check col-4 col-md-2">
-                            <input class="form-check-input" type="checkbox" v-model="flowArr" :value="Flow" :id="'fl' + Flow.PROC_FLOW_CD" checked="true"> 
+                            <input class="form-check-input " :class="Flow.PRD_CD" type="checkbox" v-model="flowArr" :value="Flow" :id="'fl' + Flow.PROC_FLOW_CD" checked="true"> 
                             <span id="'num' + Flow.PROC_FLOW_CD">{{Flow.PROC_SEQ}}</span>
                           </div>
                         </td>
@@ -168,6 +174,7 @@ export default {
       prdArr: [],
       planDtlData: [],
       planFlowData: [],
+      prd_cd: "",
       
 
       /* 모달 계획서 목록 */
@@ -233,6 +240,9 @@ export default {
       this.order_cd= params.data.ORDER_CD;
       this.isModal = !this.isModal;
     },
+    modalCloseFunc() {
+      this.isModal = !this.isModal;
+    },
     /*모달 [E]*/
     
     //계획서 리스트
@@ -251,6 +261,7 @@ export default {
 
     //계획서 제품 리스트 선택
     prdClicked(prd_cd) {
+      this.prd_cd = prd_cd;
       this.getPlanFlowList(prd_cd); //공정 및 자재설정 리스트 노출
       
       //선택된 생산제품 색깔표기[S]
@@ -263,8 +274,16 @@ export default {
       
     },
 
+    checkAll(prd_cd){
+      const checkboxes = document.getElementsByClassName(prd_cd);
+      checkboxes.forEach((checkbox)=>{ 
+        checkbox.checked;
+      })
+    },
+
     //제품별 공정 리스트
     async getPlanFlowList(prd_cd) {
+
       let result = await axios.get(`/api/inst/${prd_cd}/flow`)
                               .catch(err => console.log(err));                              
       this.planFlowData = result.data;
@@ -299,8 +318,8 @@ export default {
       
       this.prdArr.forEach((obj) => {
         insertPrd.push({
-          PRD_CD: obj.PRD_CD,
-          total_qty: obj.PROD_PLAN_QTY
+          prd_cd: obj.prd_cd,
+          total_qty: obj.order_qty
         });
       });
 

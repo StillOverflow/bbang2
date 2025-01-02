@@ -17,18 +17,23 @@
          </div>
 
          <!-- 드롭다운 리스트 -->
-         <div v-show="!isHidden" class="dropdownBox">
-            <button 
-               v-for="(item, index) in searchResults"
-               :key="index"
-               class="dropdown-item matResultList"
-               :data-mat-cd="item.mat_cd"
-               :class="{ active: index === selectedIndex }"
-               @click="onClickMatNm(item.mat_cd, item.mat_nm)"
-            >
-               {{ item.mat_nm }}
-            </button>
-         </div>
+         <div v-if="!isHidden" class="dropdownBox">
+            <div v-if="searchResults.length">
+               <button 
+                  v-for="(item, index) in searchResults"
+                  :key="index"
+                  class="dropdown-item matResultList"
+                  :data-mat-cd="item.mat_cd"
+                  :data-mat-unit="item.unit"
+                  :class="{ active: index === selectedIndex }"
+                  @click="onClickMatNm(item.mat_cd, item.mat_nm, item.unit)"
+                  style="font-size: 12px;"
+               >
+                  {{ item.mat_nm }}
+               </button>
+            </div>
+         <div v-else class="dropdown-item text-left fw-bolder" style="color: #2bce89; font-size: 12px;">결과 없음</div>
+      </div>
       </div>
    </div>
    
@@ -45,6 +50,7 @@
    let searchResults = ref([]);  // 드롭다운 박스에 나타날 데이터
    let matCode = ref('');        // 자재 코드
    let matName = ref('');        // 자재명
+   let matUnit = ref('');
 
    const props = defineProps(["params"]);  // 부모에서 전달한 params 정의
 //! ----------------------------------------- Vue Method -----------------------------------------
@@ -80,6 +86,7 @@
       switch (event.key) {
          case 'ArrowDown' :
             if(event.isComposing) return; // 한글 끝부분 2개씩 입력막기
+            event.preventDefault();       // 스크롤 이벤트 막기
 
             if (elementBtns.length > 0) {
                selectedIndex.value = (selectedIndex.value + 1) % elementBtns.length; // 순환
@@ -89,42 +96,45 @@
 
          case "ArrowUp" :
             if(event.isComposing) return; // 한글 끝부분 2개씩 입력막기
+            event.preventDefault();       // 스크롤 이벤트 막기
 
             if (elementBtns.length > 0 && document.activeElement) {
                if(selectedIndex.value !== 0) {
-                  selectedIndex.value = (selectedIndex.value - 1) % elementBtns.length; // 순환
+                  selectedIndex.value = (selectedIndex.value - 1) % elementBtns.length; // 드롭박스 순환
                } else {
                   selectedIndex.value = elementBtns.length -1;
                }
-               elementBtns[selectedIndex.value].focus();
+               elementBtns[selectedIndex.value].focus(); // 포커스 잡기
             }
          break;
 
          case "Enter" :
             if (document.activeElement) {
+               matName.value = document.activeElement.innerText;
                matCode.value = document.activeElement.getAttribute("data-mat-cd");
-               matName.value = document.activeElement.innerText
+               matUnit.value = document.activeElement.getAttribute("data-mat-unit");
             }
          break;
       }
    }
 
-   const onClickMatNm = (code, name) => {
+   const onClickMatNm = (code, name, unit) => {
       searchKeyword.value = name;  // 클릭한 항목의 이름을 검색어 필드에 설정
       isHidden.value = true;       // 드롭다운 숨김
 
-      matCode.value = code;
-      matName.value = searchKeyword.value;
+      matCode.value = code; // 자재 코드
+      matName.value = name; // 자재명
+      matUnit.value = unit; // 자재 단위
    };
 
    const onClickModalOpen = () => {
-      props.params.isModal.openModal(searchKeyword.value);
+      props.params.isModal.openModal(searchKeyword.value);  // 부모에 있는 모달 제어하기 
    }
 
 //! ------------------------------------ grid 내장함수 ------------------------------------
    // 그리드 최종값 가져오기
    const getValue = () => {
-      let newObj = { matName : matName.value, matCode : matCode.value };
+      let newObj = { matName : matName.value, matCode : matCode.value, matUnit : matUnit.value };
       return newObj;
    }
 

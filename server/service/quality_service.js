@@ -66,9 +66,21 @@ const searchAll = async (valueObj) => {
 
 
 // 품질검사결과
-// 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
-const getWaitList = async () => { 
-    let result = mariadb.query('testWaitList');
+// 제품 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
+const getWaitPrdList = async () => { 
+    let result = mariadb.query('testWaitPrdList');
+    return result;
+};
+
+// 자재 검사대기 내역 조회
+const getWaitMatList = async (value) => { 
+    let result = mariadb.query('testWaitMatList', value);
+    return result;
+};
+
+// 자재 미입고 거래처조회 (모달용)
+const getActList = async () => { 
+    let result = mariadb.query('actList');
     return result;
 };
 
@@ -103,10 +115,18 @@ const testRecInsert = async (valueObj) => {
         }
         
         // 생산실적의 검사상태 업데이트
-        let update_res = await mariadb.transQuery('prodResultUpdate', [header.def_qty, header.pass_qty, header.refer_cd]);
+        let isMat = header.target_type == 'P01';
+        let update_res = null;
+        if(!isMat){
+            update_res = await mariadb.transQuery('prodResultUpdate', [header.def_qty, header.pass_qty, header.refer_cd]);
+        }
 
-        if((dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && update_res.affectedRows > 0) ||
-            (header_res.affectedRows > 0 && update_res.affectedRows > 0)) { // 디테일 있으면 다 성공했는지, 없으면 헤더 성공했는지 판단
+        // 성공여부 판단
+        if((!isMat && dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && update_res.affectedRows > 0) ||
+            (!isMat && header_res.affectedRows > 0 && update_res.affectedRows > 0) ||
+            // 자재 검사인 경우
+            (isMat && dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0) || 
+            (isMat && header_res.affectedRows > 0)){
             await mariadb.commit();
             return 'success';
         } else {
@@ -150,7 +170,9 @@ module.exports = {
     stdInsert,
     searchAll,
     
-    getWaitList,
+    getWaitPrdList,
+    getWaitMatList,
+    getActList,
     getDefList,
     testRecInsert,
 

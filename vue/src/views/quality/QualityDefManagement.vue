@@ -16,8 +16,8 @@
 
         <h6 class="col-4 col-md-1 mb-2 d-flex align-items-center justify-content-center g-0" :style="t_break">처리방법</h6>
         <div class="form-check col-8 col-md-3 d-flex align-items-center justify-content-start">
-          <input class="form-check-input ms-1 ms-xl-3" type="radio" v-model="def_status" value="재투입" id="defRepeat">
-          <label class="form-check-label ms-2 me-xl-4 mt-2 text-start" for="defRepeat" :style="t_overflow">
+          <input class="form-check-input ms-1 ms-xl-3" type="radio" v-model="def_status" value="재투입" id="defRepeat" v-show="selectedTarget.target_type == 'P03'"> <!-- 마지막 공정에서만 재투입 -->
+          <label class="form-check-label ms-2 me-xl-4 mt-2 text-start" for="defRepeat" :style="t_overflow" v-show="selectedTarget.target_type == 'P03'">
             재투입
           </label>
           <input class="form-check-input ms-3" type="radio" v-model="def_status" value="폐기" id="defDispose">
@@ -49,7 +49,7 @@
     <div class="card" v-show="isRowClicked">
       <div class="card-header bg-success p-1 text-white fw-bold text-center fs-4">검사결과 조회</div>
       <div class="card-body pb-1 pe-0 pe-md-4">
-        <quality-test-box :isWaitList="false" :selectedTarget="selectedTarget" ref="testBox"/>
+        <quality-test-box :isWaitList="false" :isMatTest="false" :selectedTarget="selectedTarget" ref="testBox"/>
       </div>
     </div>
 
@@ -139,7 +139,7 @@
         params.api.redrawRows(); // 그리드 강제 새로고침 (getRowStyle()에서 적용한 행 스타일 즉시 반영)
 
         await this.$refs.testBox.loadTarget(clicked);
-        
+        if(clicked.target_type != 'P03') this.def_status = '폐기'; // 마지막 공정이 아닌 경우 폐기만 가능
         this.isRowClicked = true; // 검사결과 창 open
       },
       
@@ -152,7 +152,6 @@
 
       // 불량 처리 SAVE 버튼 동작
       async defUpdate(){
-        ////////////// 입력값 유효성검사 해야함. 재투입 어떻게 처리할지 해야함.
         if(!this.def_status){
           this.$swal(
             '처리방법 미선택',

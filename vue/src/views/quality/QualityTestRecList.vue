@@ -35,7 +35,7 @@
           <h6 class="col-2 col-xxl-1 mb-2 d-flex align-items-center justify-content-center" :style="t_overflow">담당자</h6>
           <div class="col-10 col-lg-4 col-xxl-2 mb-2">
             <select class="form-select" v-model="search.name">
-              <option :value="null" disabled hidden>전체</option>
+              <option :value="null">전체</option>
               <option v-for="(mem) in members" :key="mem.id" :value="mem.name">{{ mem.name }}</option>
             </select>
           </div>
@@ -71,7 +71,7 @@
       <div class="card-header bg-success p-1 text-white fw-bold text-center fs-4">검사결과 조회</div>
       <div class="card-body text-center" v-show="!isRowClicked">선택된 내역이 없습니다.</div>
       <div class="card-body pb-1 pe-0 pe-md-4" v-show="isRowClicked">
-        <quality-test-box :isWaitList="false" :selectedTarget="selectedTarget" ref="testBox"/>
+        <quality-test-box :isWaitList="false" :isMatTest="selectedTarget.target_type == 'P01'" :selectedTarget="selectedTarget" ref="testBox"/>
       </div>
     </div>
 
@@ -103,13 +103,13 @@
 
         // 일반 grid API 데이터
         defs: [
-          { headerName: '검사번호', field: 'test_rec_cd' },
+          { headerName: '검사번호', field: 'test_rec_cd', minWidth: 90 },
           { headerName: '검사일시', field: 'test_dt', 
             valueFormatter: this.$comm.datetimeFormatter,
             minWidth: 145
           },
           { headerName: '참조번호', field: 'refer_cd' },
-          { headerName: '제품명', field: 'target_nm' },
+          { headerName: '검사대상', field: 'target_nm', minWidth: 100 },
           { headerName: '공정명', field: 'proc_nm' },
           { headerName: '생산량', field: 'total_qty', valueFormatter: this.$comm.currencyFormatter },
           { headerName: '합격량', field: 'pass_qty', valueFormatter: this.$comm.currencyFormatter },
@@ -119,8 +119,7 @@
           { headerName: '불량상태', field: 'def_status' },
           { headerName: '처리자', field: 'complete_name' }, // id => 이름으로 바꿔 조회한 결과
           { headerName: '처리일시', field: 'complete_dt',
-            valueFormatter: this.$comm.datetimeFormatter,
-            minWidth: 145
+            valueFormatter: this.$comm.datetimeFormatter
           },
         ],
         rowData: [],
@@ -164,7 +163,6 @@
 
       this.getMembers();
       this.getRecList(false);
-      this.isRowClicked = false;
     },
     
     methods: {     
@@ -177,7 +175,7 @@
         this.members = await this.$comm.getMembers('DPT2');
       },
 
-      // 검사완료목록(품질검사결과) 불러오기
+      // 검사완료목록 불러오기
       async getRecList(isSearch){
         // this.search에서 검색조건을 담고 있음.
         // 자식 컴포넌트의 값 포함시키기
@@ -187,19 +185,39 @@
 
         let result = await axios.get('/api/quality/rec', {params: this.search})
                                 .catch(err => console.log(err));
+        this.isRowClicked = false;
         this.rowData = result.data;
       },
 
       // 목록에서 타겟 선택 시 검사결과란에 정보 불러오기
-      async selectTarget(params){
+      selectTarget(params){
         let clicked = params.data;
         this.selectedTarget = clicked;
         params.api.redrawRows(); // 그리드 강제 새로고침 (getRowStyle()에서 적용한 행 스타일 즉시 반영)
 
-        await this.$refs.testBox.loadTarget(clicked);
+        this.$refs.testBox.loadTarget(clicked);
         
         this.isRowClicked = true; // 검사결과 창 open
-      }
+      },
+
+      // 그리드 속성으로 선택된 행 색깔 변경
+      getRowStyle(params){
+        if((params.data.test_rec_cd == this.selectedTarget.test_rec_cd)){
+          return {backgroundColor: '#d6d6d6'}
+        }
+      },
+
+      // 검색조건 초기화 버튼 동작
+      searchReset(){
+        // search 객체의 값을 모두 null로 초기화
+        let keys = Object.keys(this.search);
+        keys.forEach((key) => this.search[key] = null);
+
+        // 자식컴포넌트의 값도 모두 초기화
+        this.$refs.selectTarget.selected_radio = null;
+        this.$refs.selectTarget.modal_val = {};
+        this.$refs.selectTarget.changeDivs();
+      },
       
     }
   };

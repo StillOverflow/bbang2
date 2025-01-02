@@ -40,4 +40,21 @@ router.get("/material/orderDetailList/:code", async (req, res) => {
    res.send(result);
 });
 
+//! ------------------------------ 자재 출고조회 ------------------------------
+router.get("/material/produceInstruction/:work_dt", async (req, res) => {
+   let workDate = req.params.work_dt || null;
+   console.log("router workDate => ", workDate)
+   let result = await materialService.getProduceInstruction(workDate);
+
+   res.send(result);
+});
+
+router.get("/material/out", async (req, res) => {
+   let searchObj = req.query.inst_cd
+   console.log("router searchObj => ", searchObj)
+   let result = await materialService.getMaterialOutForProduction(searchObj);
+
+   res.send(result);
+});
+
 module.exports = router;

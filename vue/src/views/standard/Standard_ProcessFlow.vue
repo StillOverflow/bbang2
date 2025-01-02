@@ -87,7 +87,7 @@
               :rowData="procFlowMtlData"
               :rowSelection="multiple"
               :pagination="true"
-              :cellValueChanged="cellValueChanged"
+              :cellValueChanged="cellValueMtlChanged"
               overlayNoRowsTemplate="공정에 대한 자재정보가 없습니다."
               :gridOptions="bomOptions"
               @rowClicked="ProFlowMtlClicked"
@@ -176,7 +176,6 @@ export default {
   data() {
     return {
       isdisabled: true,
-
       bomOptions: {
         rowSelection: { mode: "singleRow", enableClickSelection: true },
         suppressMovableColumns: true,
@@ -219,7 +218,7 @@ export default {
       bomDefs: [
         { headerName: "자재코드", field: "mat_cd", sortable: true },
         { headerName: "자재명", field: "mat_nm", sortable: true },
-        { headerName: "BOM양", field: "usage", sortable: true},
+        { headerName: "BOM양", field: "usage", sortable: true, editable: true, cellValueChanged: this.cellValueChanged,},
         { headerName: "단위", field: "unit", sortable: true },
       ],
       bomData: [],
@@ -228,7 +227,7 @@ export default {
         { headerName: "자재코드", field: "mat_cd", sortable: true },
         { headerName: "자재명", field: "mat_nm", sortable: true },
         { headerName: "투입량", field: "mat_qty", sortable: true, editable: true,
-        cellValueChanged: this.cellValueChanged,
+        cellValueChanged: this.cellValueMtlChanged,
         },
         { headerName: "단위", field: "unit", sortable: true },
       ],
@@ -251,10 +250,13 @@ export default {
       prdKeyword: {},
       selected_radio:'',
       radios:[],
+      bomFixedData: [],  
     };
   },
 
   methods: {
+
+    //----------------------------------------------------
     //카테고리 불러오기
     async getCategory() {
       let arr = await this.$comm.getComm("PC");
@@ -296,24 +298,25 @@ export default {
     async searchPrd() {
         this.prdKeyword = {prd_nm: this.keyword};
         let result = await axios.get('/api/comm/product/', { params: this.prdKeyword });
-        this.productData = result.data;
-        
+        this.productData = result.data;   
         },
 
 
     //공정흐름도 조회
     async bringProFlow(prdCd) {
+      
       let result = await axios
         .get(`/api/standard/flow/${prdCd}`)
-        .catch((err) => console.log(err));
       this.procFlowData = result.data;
+    
     },
+
+
     //제품선택정보
     prodClicked(params) {
       this.selectProData = params.data.prd_cd;
       this.bringProFlow(this.selectProData);
       this.bringBomData(this.selectProData);
-
     },
     //공정흐름도선택정보
     proFlowClicked(params) {
@@ -328,6 +331,7 @@ export default {
     ProFlowMtlClicked(params) {
       this.selectroFlowMtllData = params.data.proc_mat_flow_cd;
     },
+
     //공정코드 조회
     async bringProcCd() {
       let result = await axios
@@ -337,11 +341,17 @@ export default {
     },
     //bom조회
     async bringBomData(prdCd) {
-      let result = await axios
-        .get(`/api/standard/bom/${prdCd}`)
-        .catch((err) => console.log(err));
-      this.bomData = result.data;
-    },
+      let result = await axios.get(`/api/standard/bom/${prdCd}`).catch((err) => console.log(err));
+    this.bomData = result.data;
+
+    // 고정된 BOM 데이터를 설정
+    this.bomFixedData = this.bomData.map((bom) => ({
+      mat_cd: bom.mat_cd,
+      usage: parseFloat(bom.usage) || 0, // 고정된 BOM 양
+    }));
+
+    console.log("고정된 BOM 데이터:", this.bomFixedData);
+  },
     //공정별 자재
     async bringMtlData(procCd) {
       let result = await axios
@@ -349,6 +359,8 @@ export default {
         .catch((err) => console.log(err));
       this.procFlowMtlData = result.data;
     },
+
+
     gridReady(params) {
       this.gridApi = params.api;
       params.api.sizeColumnsToFit();
@@ -431,14 +443,51 @@ export default {
 
     //공정 자재추가
     async InsertProcMtl() {
+      
       const selectedNodes = this.gridApi.getSelectedRows(); // 선택된 BOM 데이터
-      let dupMat = [];
+
       for (const material of selectedNodes) {
-        // 중복여부확인 -> 중복된 자재는 제외 
-        if(this.procFlowMtlData.some((obj)=>obj.mat_cd == material.mat_cd)){
-          dupMat.push[material.mat_cd]
-          continue;
-        }
+      // 중복여부확인 -> 중복된 자재는 제외 
+      if(this.procFlowMtlData.some((obj)=>obj.mat_cd == material.mat_cd)){
+         this.$swal({
+              icon: "error",
+              title: " 존재하는 자재가 있습니다.",
+              text: "다시 선택해주세요",
+            });
+        return;
+        };
+      
+      // 아직 저장하기전 데이터  
+      if (this.saveProwMtlData.some((obj) => obj.mat_cd === material.mat_cd)) {
+      this.$swal({
+        icon: "error",
+        title: "이미 추가하려는 자재입니다.",
+        text: "저장되지 않은 자재 중복입니다. 다시 선택해주세요.",
+      });
+      return; // 중복 발견 시 추가 작업 중단
+    } 
+      //------------------------------------
+      // 고정된 BOM 한도를 가져오기
+      const fixedMaterial = this.bomFixedData.find((bom) => bom.mat_cd === material.mat_cd);
+      const maxUsageForMaterial = fixedMaterial ? fixedMaterial.usage : 0;
+
+      // 현재 사용량 계산
+      const currentUsage = await this.calculateCurrentMaterialUsage(material.mat_cd);
+
+      const projectedTotal = currentUsage + parseFloat(material.usage || 0);
+
+      if (projectedTotal > maxUsageForMaterial) {
+        this.$swal({
+          icon: "error",
+          title: "BOM 사용량 초과",
+          text: `현재 사용량: ${currentUsage}, 추가 예정: ${material.usage || 0}, BOM 한도: ${maxUsageForMaterial}`,
+        });
+        return; // 추가 작업 중단
+      }
+
+      console.log("자재 추가 가능: 사용량 초과 없음");
+      //-----------------------------------
+
         //그리드에 추가
         const saveMaterial = {
           mat_cd: material.mat_cd,
@@ -451,6 +500,8 @@ export default {
           add: [saveMaterial],
         });
 
+
+        
         //실제 넘겨주는 값
         const newMaterial = {
           mat_cd: saveMaterial.mat_cd,
@@ -463,15 +514,20 @@ export default {
       }
 
       //중복된 자재 확인
-      if(dupMat.lenth >0){
-        this.$swal({
-              icon: "error",
-              title: JSON.stringify(dupMat)+" 존재하는 자재가 있습니다.",
-              text: "다시 선택해주세요",
-            });
-      }
       this.bomModal = !this.bomModal;
     },
+    //상용량계산
+    async calculateCurrentMaterialUsage(matCd) {
+    try {
+      const response = await axios.get(`/api/standard/proc_flow_mtl_usage/${matCd}/${this.selectProData}`);
+      const totalUsage = response.data.reduce((sum, item) => sum + (parseFloat(item.mat_qty) || 0), 0);
+      console.log(`현재 자재(${matCd}) 총 사용량:`, totalUsage);
+      return totalUsage;
+    } catch (error) {
+      console.error("현재 사용량 계산 오류:", error);
+      return 0;
+    }
+  },
 
     //공정별 자재 삭제
     async deleteProcMtl() {
@@ -499,6 +555,42 @@ export default {
 
     //저장
     async save() {
+      //업데이트
+      // if (this.saveProwMtlData.length > 0) {
+      //       console.log("전송 데이터:", this.saveProwMtlData);
+
+      //       // 서버로 데이터 전송
+      //       const response = await axios.put('/api/standard/updateFlowMatUsage', {
+      //           updateInfo: this.saveProwMtlData, // 변경된 데이터 배열
+      //       });
+
+      //       console.log("서버 응답:", response.data);
+
+      //       // 서버 응답 처리
+      //       if (response.data == 'success') {
+      //           this.$swal({
+      //               icon: "success",
+      //               title: "저장 성공",
+      //               text: "자재 사용량이 성공적으로 업데이트되었습니다!",
+      //           });
+      //           // 데이터 초기화
+      //           this.saveProwMtlData = [];
+      //           this.isdisabled = true; // 저장 버튼 비활성화
+      //       } else {
+      //           this.$swal({
+      //               icon: "error",
+      //               title: "저장 실패",
+      //               text: "자재 사용량 업데이트 중 문제가 발생했습니다.",
+      //           });
+      //       }
+      //   } else {
+      //       this.$swal({
+      //           icon: "warning",
+      //           title: "변경 사항 없음",
+      //           text: "변경된 데이터가 없습니다.",
+      //       });
+      //   }
+
 
       //드래그실험-----------------------------
         // 공정 흐름 순서 업데이트

@@ -71,7 +71,7 @@ export default {
                       
                   },
               },
-              {field: 'prd_return_receipt', headerName: '반품접수상태'},
+              {field: 'prd_return_receipt', headerName: '반품접수상태', hide: true},
               {
                   headerName: '상세' ,
                   field: 'detailed',

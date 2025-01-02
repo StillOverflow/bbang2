@@ -39,6 +39,14 @@ router.post('/plan', async(req, res)=>{
   res.send(result);
 });
 
+//계획서 수정
+router.put('/plan/:no', async(req, res)=>{
+  let planNo = req.params.no;
+  let values = req.body; // body: 객체 또는 배열로 값을 받을 수 있음
+  let result = await produceService.planUpdate(planNo, values);
+  res.send(result);
+});
+
 /*--------------생산지시서-------------*/
 
 //지시서 전체조회

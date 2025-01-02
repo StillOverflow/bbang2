@@ -267,12 +267,9 @@ const productOutInsert = (obj) => {
                 VALUES 
                 `;
     const {seq, order_cd, act_cd, ID} = obj; 
-    
-    //if(Object.keys(obj).length > 0){    // 객체의 길이를 측정(값이 들어온것을 확인) 
 
-        query += `('${seq}', '${order_cd}', '${act_cd}', '${ID}')`;
+    query += `('${seq}', '${order_cd}', '${act_cd}', '${ID}')`;
 
-    //}
     return query;
 };
 //출고 디테일 등록
@@ -456,6 +453,18 @@ FROM product_return product_return JOIN product_return_detail product_return_det
 WHERE product_return.prd_return_cd = ?
 `;
 
+//반품 제품 단건 삭제
+const returnListDelete =
+`
+DELETE FROM product_return_detail WHERE prd_return_dtl_cd = ?
+`;
+
+//반품 제품 수정
+const returnUpdate =
+`
+UPDATE product_return_detail SET ? WHERE prd_return_dtl_cd = ?
+`;
+
 //반품 수정을 위한 삭제
 const returnUpdateDelete = 
 `
@@ -476,7 +485,7 @@ const returnUpdateInsert = (values) => {
     `;
 
     values.forEach((obj) => {
-        sql += `('${obj.prd_return_dtl_cd}','${obj.prd_return_cd}','${obj.prd_cd}', '${obj.prd_return_qty}', '${obj.note}', '${obj.prd_lot_cd}', '${obj.prd_out_dtl_cd}'), `;
+        sql += `(CONCAT('PRDC', LPAD(nextval(prd_out_dtl_cd_seq), 3,'0')),'${obj.prd_return_cd}','${obj.prd_cd}', '${obj.prd_return_qty}', '${obj.note}', '${obj.prd_lot_cd}', '${obj.prd_out_dtl_cd}'), `;
     });
     sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
@@ -606,6 +615,8 @@ module.exports = {
     dtlReturnDtlList,
     returnDtlLotList,
     returnDelete,
+    returnListDelete,
+    returnUpdate,
     returnUpdateDelete,
     returnUpdateInsert,
 

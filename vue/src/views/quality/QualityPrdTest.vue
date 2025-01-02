@@ -13,7 +13,7 @@
       <div class="card-header bg-success p-1 text-white fw-bold text-center fs-4">검사결과 등록</div>
       <div class="card-body text-center" v-show="!isRowClicked">선택된 내역이 없습니다.</div>
       <div class="card-body pb-1 pe-0 pe-md-4" v-show="isRowClicked">
-        <quality-test-box :isWaitList="true" :selectedTarget="selectedTarget" ref="testBox" @afterInsert="afterInsert" />
+        <quality-test-box :isWaitList="true" :isMatTest="false" :selectedTarget="selectedTarget" ref="testBox" @afterInsert="afterInsert" />
       </div>
     </div>
   </div>
@@ -25,7 +25,7 @@
   import QualityTestBox from "../../components/quality/QualityTestBox.vue";
 
   export default {
-    name: 'QualityTest',
+    name: 'QualityPrdTest',
     data() {
       return {
         // 일반 grid API 데이터
@@ -66,7 +66,6 @@
       this.$store.dispatch('breadCrumb', {title: '제품 품질검사'});
 
       this.getWaitList();
-      this.isRowClicked = false;
     },
     
     methods: {     
@@ -76,7 +75,7 @@
 
       // 검사대기목록 불러오기
       async getWaitList(){
-        let waitResult = await axios.get('/api/quality/rec/wait')
+        let waitResult = await axios.get('/api/quality/rec/wait/prd')
                                     .catch(err => console.log(err));
         this.rowData = waitResult.data;
       },
