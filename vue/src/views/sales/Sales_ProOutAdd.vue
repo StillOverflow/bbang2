@@ -90,9 +90,14 @@
                         </ag-grid-vue>
                     </div>
                 </div>
-                <div class="center ">
+               
+                <div class="center " v-if="this.isdetail == false"> <!--등록페이지-->
                     <button class="btn btn-primary mtp30" @click="prdOutInsert">SUBMIT</button>
                     <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
+                </div>
+                <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
+                    <button class="btn btn-primary mtp30" @click="returnUpdate">UPDATE</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="prdReturnDelete">DELETE</button>
                 </div>
           </div>
       </div>
@@ -171,6 +176,9 @@ export default {
     name: 'App',
     data() {
         return {
+            //상세,수정,삭제
+            isdetail: false,
+
             odtCd: '',
             
             OLDefs: [
@@ -317,6 +325,23 @@ export default {
     
     created() {
         this.$store.dispatch('breadCrumb', { title: '출고 제품 등록' });
+
+        let selectNo = this.$route.query.bno;
+        this.selectNo = this.$route.query.bno; //this.으로 저장해야 created()밖에서도 사용 가능
+        
+        if(selectNo != null){
+            //수정    
+            this.isdetail = true;     
+
+            //페이지 이름
+            this.$store.dispatch('breadCrumb', { title: '출고 제품 상세' });
+            //상세조회(헤드)
+            //this.returnDtlList(selectNo)
+
+        }else{
+            //등록
+            // this.boardInfo.created_date = this.getToday();  
+        }
 
         this.getOrdList();
         this.getMemList();

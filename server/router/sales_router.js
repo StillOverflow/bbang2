@@ -65,6 +65,13 @@ router.delete('/sales/orderListDelete/:del', async (req, res) => {
     res.send(ordDel);
 });
 
+//주문서 업데이트,등록 한번에 하기
+router.put('/sales/orderUpdates', async (req, res) => {
+    let updateInfo = req.body;
+    let result = await salesService.updateOrders(updateInfo);
+    res.send(result);
+});
+
 //주문서 수정
 router.put('/sales/orderUpdate/:no', async (req, res) => {
     let odtNo = req.params.no;
@@ -128,6 +135,7 @@ router.get('/sales/lot/:no', async (req, res) => {
 //출고 등록
 router.post('/sales/prdOut', async (req, resp) => {
     let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
+    console.log(values);
     let result = await salesService.insertPrdOut(values);
     resp.send(result);
 });
@@ -218,6 +226,20 @@ router.delete('/sales/returnDelete/:del', async (req, res) => {
     let del = req.params.del;
     let ordDel = await salesService.deleteReturn(del);
     res.send(ordDel);
+});
+
+//반품 제품 단건 삭제
+router.delete('/sales/returnListDelete/:del', async (req, res) => {
+    let del = req.params.del;
+    let RTDel = await salesService.deleteListReturn(del);
+    res.send(RTDel);
+});
+
+//반품 제품 수정(업데이트,등록 한번에 하기)
+router.put('/sales/returnUpdates', async (req, res) => {
+    let updateInfo = req.body;
+    let result = await salesService.updateReturn(updateInfo);
+    res.send(result);
 });
 
 //반품 수정을 위한 삭제
