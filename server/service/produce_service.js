@@ -162,7 +162,8 @@ const instInsert = async (values) => {
           i++;
         }
       }
-
+      console.log("☆★☆★☆★☆★☆★☆★☆★☆★");
+console.log(values[2]);
       if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && flow_res.affectedRows > 0 && i > 0){ // 모두 성공했는지 판단
         await mariadb.commit();
         return 'success';
