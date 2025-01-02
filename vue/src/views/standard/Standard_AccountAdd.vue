@@ -48,10 +48,10 @@
                 </div>
            
             <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">사업자등록번호 *</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder w-22" :style="t_overflow">사업자등록번호 *</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="actInfo.business_no" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;" />
+                    style="height: 41px;" @input = "autoBusinessNo" maxlength ="12"/>
                 </div>
             </div>
             <div class="d-flex justify-content-left  mb-2">
@@ -67,10 +67,12 @@
                     <input type="text" class="form-control" v-model="actInfo.mgr_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처담당자 연락처</div>
+            </div>
+            <div class="d-flex justify-content-left  mb-2">
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder align-items-center" :style="t_overflow">거래처담당자<br> 연락처</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="actInfo.mgr_tel" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
+                    style="height: 41px;" @input="autoSeparate"  maxlength="13" placeholder="010-0000-0000" />
                 </div>
             </div>
 
@@ -78,7 +80,7 @@
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">업체연락처</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="actInfo.act_tel" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
+                    style="height: 41px;" @input="autoSeparateTel"  maxlength="12" placeholder="000-000-0000"/>
                 </div>
             </div>
             <div class="d-flex justify-content-left  mb-2">
@@ -87,10 +89,13 @@
                     <input type="text" class="form-control" v-model="actInfo.location" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
+            </div>
+            <div class="d-flex justify-content-left  mb-2">    
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처주소</div>
-                <div class="input-group mb-3 w-50">
+                <div class="input-group mb-3 w-70">
                     <input type="text" class="form-control" v-model="actInfo.act_addr" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
+                    <button type="button" class="btn btn-warning " @click="openPostcode"><i class="fa-solid fa-magnifying-glass"></i></button>
                 </div>
             </div>
 
@@ -108,7 +113,7 @@
             </div>
             <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>                
-                        <textarea cols="40" rows="8" type="text" class="form-control h-25" v-model="actInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                        <textarea cols="30" rows="6" type="text" class="form-control h-25" v-model="actInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />                
             </div>
             </div> 
@@ -201,7 +206,64 @@ export default {
 
 
     methods:{
- 
+        //휴대폰
+        autoSeparate() {
+        let inputValue = this.actInfo.mgr_tel;
+        // 숫자가 아닌 문자 제거
+        inputValue = inputValue.replace(/[^0-9]/g, '');
+
+        // 올바른 위치에 대시 추가
+        if (inputValue.length > 3 && inputValue.charAt(3) !== '-') {
+            inputValue = inputValue.slice(0, 3) + '-' + inputValue.slice(3);
+        }
+        if (inputValue.length > 8 && inputValue.charAt(8) !== '-') {
+            inputValue = inputValue.slice(0, 8) + '-' + inputValue.slice(8);
+        }
+
+        // 입력값 업데이트
+        this.actInfo.mgr_tel = inputValue;
+        },
+
+        //사업자등록번호
+        autoBusinessNo() {
+        let inputValue = this.actInfo.business_no;
+
+        inputValue = inputValue.replace(/[^0-8]/g, '');
+
+        if (inputValue.length > 3 && inputValue.charAt(3) !== '-') {
+            inputValue = inputValue.slice(0, 3) + '-' + inputValue.slice(3);
+        }
+        if (inputValue.length > 6 && inputValue.charAt(6) !== '-') {
+            inputValue = inputValue.slice(0, 6) + '-' + inputValue.slice(6);
+        }
+
+        this.actInfo.business_no = inputValue;
+        },
+        //업체전화번호
+        autoSeparateTel(){
+        let inputValue = this.actInfo.act_tel;
+
+        inputValue = inputValue.replace(/[^0-8]/g, '');
+
+        if (inputValue.length > 3 && inputValue.charAt(3) !== '-') {
+            inputValue = inputValue.slice(0, 3) + '-' + inputValue.slice(3);
+        }
+        if (inputValue.length > 7 && inputValue.charAt(7) !== '-') {
+            inputValue = inputValue.slice(0, 7) + '-' + inputValue.slice(7);
+        }
+
+        this.actInfo.act_tel = inputValue;
+        },
+
+        //주소api
+        openPostcode() {
+        new window.daum.Postcode({
+            oncomplete: (data) => {
+            // 주소 데이터를 v-model로 바인딩
+            this.actInfo.act_addr = data.address;
+            },
+        }).open();
+        },
 
         //----------------------------공통함수()---------------------------
         //거래처 검색 조회

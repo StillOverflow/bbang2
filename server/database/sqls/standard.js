@@ -114,6 +114,14 @@ DELETE
 FROM process_flow
 WHERE proc_flow_cd = ?
 `;
+
+//흐름도삭제시 자재도 삭제
+const deleteProcFlowMtl=
+`
+delete 
+from proc_flow_mtl 
+where proc_flow_cd = ?
+`;
 //------------------------공정별 자재관리--------------------------
 //공정자재 조회
 const selectMatByProc = `
@@ -505,5 +513,6 @@ depSelect
 
 
 ,selectProcMtlsUsage,
-updateProcMtl
+updateProcMtl,
+deleteProcFlowMtl
 };

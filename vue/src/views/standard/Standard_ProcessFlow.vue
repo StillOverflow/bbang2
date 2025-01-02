@@ -97,6 +97,7 @@
               <template v-slot:header>
                   <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
                   <h5 class="modal-title">공정코드 검색</h5>
+                  <input type="text" oninput="onQuickFilterChanged()" v-model="quickFilter" placeholder="quick filter..." />
                   <button type="button" aria-label="Close" class="close" @click="modalOpen"> × </button>
               </template>
               <template v-slot:default>
@@ -208,6 +209,7 @@ export default {
           valueGetter: "node.rowIndex + 1",
           sortale: true,
           rowDrag: true,
+          cellStyle: {textAlign: "center"}
         },
         { headerName: "공정코드", field: "proc_cd", sortale: true },
         { headerName: "공정명", field: "proc_nm", sortale: true },
@@ -228,6 +230,7 @@ export default {
         { headerName: "자재명", field: "mat_nm", sortable: true },
         { headerName: "투입량", field: "mat_qty", sortable: true, editable: true,
         cellValueChanged: this.cellValueMtlChanged,
+        cellStyle: {textAlign: "right"}
         },
         { headerName: "단위", field: "unit", sortable: true },
       ],
@@ -236,7 +239,7 @@ export default {
       //모달 공정코드
       modalDefs: [
         { headerName: "공정코드", field: "proc_cd", sortable: true },
-        { headerName: "공정명", field: "proc_nm", sortable: true, filter: "agMultiColumnFilter" },
+        { headerName: "공정명", field: "proc_nm", sortable: true, filter: true ,floatingFilter: true },
       ],
       modalData: [],
       //저장 버튼 누르기전 담아둘 장소
@@ -255,7 +258,9 @@ export default {
   },
 
   methods: {
-
+    onQuickFilterChanged() {
+    this.modalApi.setQuickFilter(this.quickFilter);
+    },
     //----------------------------------------------------
     //카테고리 불러오기
     async getCategory() {
@@ -482,6 +487,7 @@ export default {
           title: "BOM 사용량 초과",
           text: `현재 사용량: ${currentUsage}, 추가 예정: ${material.usage || 0}, BOM 한도: ${maxUsageForMaterial}`,
         });
+        this.bomModal = !this.bomModal;
         return; // 추가 작업 중단
       }
 
@@ -592,7 +598,7 @@ export default {
       //   }
 
 
-      //드래그실험-----------------------------
+      //드래그-----------------------------
         // 공정 흐름 순서 업데이트
         try {
           const updatedProcFlow = this.procFlowData.map((obj) => ({
@@ -605,7 +611,7 @@ export default {
         } catch (error) {
           console.error("공정 흐름 순서 업데이트 실패:", error);
         }
-      //드래거실험----------------------------------------
+      //드래거----------------------------------------
 
       //공정흐름삭제
       if (this.deleteModal.length > 0) {
