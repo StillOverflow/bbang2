@@ -19,8 +19,7 @@
                   <div class="input-group mb-2 w-25">
                       <input type="text" class="form-control" v-model="order_code" aria-label="Recipient's username" aria-describedby="button-addon2" 
                       style="height: 41px; background-color: rgb(236, 236, 236);"  readonly />
-                      <button class="btn btn-warning" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
-                      <!--<button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen">SEARCH</button>-->
+                      <button class="btn btn-warning" type="button" v-if="this.isdetail == false" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
                   </div>
               
               </div>
@@ -56,8 +55,7 @@
                   <div class="input-group w-25">
                       <input type="text" class="form-control" id="mem_name" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
-                      <button class="btn btn-warning" type="button" @click="modalOpen2"><i class="fa-solid fa-magnifying-glass"></i></button>
-                      <!-- <button class="btn btn-warning" type="button" id="button-addon2" @click="modalOpen2">SEARCH</button> -->
+                      <button class="btn btn-warning" type="button" v-if="this.isdetail == false" @click="modalOpen2"><i class="fa-solid fa-magnifying-glass"></i></button>
                   </div>
                   <div class="col-6 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">담당자 ID</div> 
                   <div class="col-6 col-lg-2">
@@ -97,7 +95,7 @@
                 </div>
                 <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
                     <button class="btn btn-primary mtp30" @click="returnUpdate">UPDATE</button>
-                    <button class="btn btn-secondary mlp10 mtp30" @click="prdReturnDelete">DELETE</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="prdOutDelete">DELETE</button>
                 </div>
           </div>
       </div>
@@ -179,6 +177,26 @@ export default {
             //상세,수정,삭제
             isdetail: false,
 
+            //상세 헤드부분에 넣을 데이터 
+            POHead: {
+                act_cd: '',
+                act_nm: '',
+                id: '',
+                name: '',
+                order_cd: '',
+                order_dt: '',
+                due_dt: '',
+            },
+            //input박스에 값 넣기 위해 선언
+            due_date: '',
+            order_date: '',
+            order_code: '',
+
+
+            prd_out_dtl_cd: '',
+            prd_lot_cd: '',
+            prd_out_qty: '',
+
             odtCd: '',
             
             OLDefs: [
@@ -252,6 +270,7 @@ export default {
             },
 
             proOutDefs: [
+                {headerName: '출고상세코드', field: 'prd_out_dtl_cd'},
                 {headerName: '주문상세코드', field: 'order_dtl_cd', hide: true},
                 {headerName: 'LOT', field: 'prd_lot_cd'},
                 {headerName: '제품코드', field: 'prd_cd', hide: true},
@@ -286,6 +305,18 @@ export default {
                         button.className = 'btn btn-danger btn-xsm';
                         button.addEventListener('click', () => {
                             this.proOutData = this.proOutData.filter(row => row !== params.data);
+
+                            // 상세 페이지 일떄
+                            if(this.isdetail == true){
+                                //한 행에 관한 단건 딜리트 메소드
+                                this.prd_out_dtl_cd = params.data.prd_out_dtl_cd;
+                                this.prd_lot_cd = params.data.prd_lot_cd;
+                                this.prd_out_qty = params.data.prd_out_qty;
+                                this.prdOutListDelete();
+
+                                this.proOutData = this.proOutData.filter(row => row !== params.data);
+                            };
+
                         });
                         return button;
                     }
@@ -336,7 +367,7 @@ export default {
             //페이지 이름
             this.$store.dispatch('breadCrumb', { title: '출고 제품 상세' });
             //상세조회(헤드)
-            //this.returnDtlList(selectNo)
+            this.prdOutDtlList(selectNo)
 
         }else{
             //등록
@@ -402,6 +433,36 @@ export default {
                 return `<span style="color: gray; font-style: italic;">숫자만 입력하세요.</span>`;
             }
             return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
+        },
+
+        //상세조회 출고제품 헤드부분
+        async prdOutDtlList(selectNo) {
+            let result = await axios.get(`/api/sales/prdOutDtlList/${selectNo}`)
+                                    .catch(err => console.log("PODListError",err));
+            this.POHead = result.data;
+
+            this.prdOutHeadList();
+            //주문서코드 따라 나오는 주문서목록은 등록이나 상세나 똑같기 때문에 여기서도 선언
+            this.getOutOrdList();
+            //상세조회 디테일(lot)
+            this.prdOutDtlLotList(selectNo);
+        },
+        prdOutHeadList(){
+            document.getElementById('acc_name').value = this.POHead[0].act_nm;
+            document.getElementById('acc_code').value = this.POHead[0].act_cd;
+            document.getElementById('mem_name').value = this.POHead[0].name;
+            document.getElementById('mem_id').value = this.POHead[0].id;
+            this.due_date = this.POHead[0].due_dt.slice(0, 10); //길이가 안맞아서 안나옴 그래서 뒤에 시간부분 자름
+            this.order_date = this.POHead[0].order_dt.slice(0, 10);
+            this.order_code = this.POHead[0].order_cd;
+        },
+
+        //상세조회 출고제품 디테일부분(LOT)
+        async prdOutDtlLotList(selectNo) {
+            let result = await axios.get(`/api/sales/prdOutDtlLotList/${selectNo}`)
+                                    .catch(err => console.log("prdRTDError",err));
+            this.proOutData = result.data;
+
         },
 
         //주문서 코드를 따라 나오는 제품들
@@ -484,7 +545,8 @@ export default {
 
             this.proOutData.forEach((obj) => {
                 updatePrdOutQty.push({
-                        prd_lot_cd: obj.prd_lot_cd
+                        prd_lot_cd: obj.prd_lot_cd,
+                        prd_out_qty: obj.prd_out_qty
                     });
             });
             console.log("업데이트조건",updatePrdOutQty)
@@ -521,10 +583,11 @@ export default {
                 this.$swal({
                     icon: "success",
                     title: "등록에 성공 하였습니다.",
-                    text: "등록한 출고제품은 목록에서 확인 해주세요.",
+                    text: "출고 제품 목록으로 이동합니다.",
                 })
                 .then(() => {
                     this.resetForm();   //등록 후 값 초기화
+                    this.$router.push({name:'Sales_ProOutList'}) //OK누르면 목록으로 이동
                 });              
             }
             return result;
@@ -541,6 +604,76 @@ export default {
             this.order_code = "";
             this.OLData = [];
             this.proOutData = [];         
+        },
+
+        //출고 삭제(제품수량 업데이트 후)
+        async prdOutDelete() {
+            let updateResult
+            let upObj = [];
+            let upRow = '';
+            
+            for(let i = 0; i < this.proOutData.length; i++){
+                upRow = this.proOutData[i];
+                upObj.push({
+                    prd_lot_cd : upRow.prd_lot_cd,
+                    prd_out_qty: upRow.prd_out_qty,
+                })
+            };
+            updateResult = await axios.put(`/api/sales/prdOutDeleteQty`,upObj)
+                                      .catch(err => console.log("updateAxiosError",err));  
+            if(updateResult.data.result == 'success'){
+                this.$swal({
+                    title: "정말 삭제하시겠습니까??",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "Yes, delete!"
+                }).then(async(result) => {
+                    if (result.isConfirmed) {
+                        let result2 = await axios.delete(`/api/sales/prdOutDelete/${this.selectNo}`)
+                                                .catch(err => console.log("deleteAxios에러",err));
+
+                        if(result2.data.result == 'success'){
+                            this.resetForm(); // 초기화
+                            
+                            this.$swal({
+                            title: "DELETE!",
+                            text: "GO to ProductOut List",
+                            icon: "success"
+                            }).then(result =>{
+                                if(result){
+                                    this.$router.push({name:'Sales_ProOutList'}) //OK누르면 목록으로 이동
+                                }
+                            })
+                        }                        
+                    }
+                });
+            };
+        },
+
+        //출고 삭제(제품수량 업데이트 후)
+        async prdOutListDelete() {
+            let updateResult
+            let upObj = [];
+
+            if(this.prd_out_qty == null){
+                this.prd_out_qty = 0;
+            }
+
+            upObj.push({
+                prd_lot_cd : this.prd_lot_cd,
+                prd_out_qty: this.prd_out_qty,
+            })
+
+            updateResult = await axios.put(`/api/sales/prdOutDeleteQty`,upObj)
+                                      .catch(err => console.log("updateAxiosError",err));  
+            if(updateResult.data.result == 'success'){
+                let result2 = await axios.delete(`/api/sales/prdOutListDelete/${this.prd_out_dtl_cd}`)
+                                         .catch(err => console.log("deleteAxios에러",err));
+                console.log(result2.data.result);
+            }
         },
 
 

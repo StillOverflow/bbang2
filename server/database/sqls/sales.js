@@ -290,10 +290,56 @@ const productOutDtlInsert = ([seq, values]) => {
 //출고 등록시 제품수량 업데이트
 const productOutQty = 
 ` 
-UPDATE product_in i JOIN product_out_detail o ON i.prd_cd = o.prd_cd
-SET i.stock = (i.stock - o.PRD_OUT_QTY)
+UPDATE product_in i JOIN product_out_detail o ON i.prd_lot_cd = o.prd_lot_cd
+SET i.stock = (i.stock - ? )
 WHERE i.prd_lot_cd = ? ; 
 `;
+//출고 등록시 상태 변경
+const orderStautsPrdOut =
+`
+UPDATE \`order\` SET \`status\` = 'J04' WHERE order_cd = ?
+`;
+
+//출고 제품 상세(헤드)
+const prdOutDtlList =
+`
+SELECT p.order_cd, a.act_nm, p.act_cd, o.order_dt, o.due_dt, m.name, p.id
+FROM product_out p JOIN \`order\` o ON p.order_cd = o.order_cd
+						 JOIN account a ON p.act_cd = a.act_cd
+						 JOIN member m ON p.id = m.id
+WHERE prd_out_cd = ?
+`;
+
+//출고 제품 상세(디테일 LOT)
+const prdOutDtlLotList =
+`
+SELECT o.order_dtl_cd, o.prd_lot_cd, p.prd_nm, i.exp_dt, i.stock, o.prd_out_qty, o.note, o.prd_out_dtl_cd
+FROM product_out_detail o JOIN product_in i ON o.prd_lot_cd = i.prd_lot_cd
+								  JOIN product p ON o.prd_cd = p.prd_cd
+WHERE prd_out_cd = ?
+`;
+
+//출고 제품 삭제
+const prdOutDelete =
+`
+DELETE product_out, product_out_detail  
+FROM product_out product_out JOIN product_out_detail product_out_detail ON product_out.prd_out_cd = product_out_detail.prd_out_cd 
+WHERE product_out.prd_out_cd = ?
+`;
+//출고 제품 삭제시 제품수량 원복
+const prdOutDeleteQty = 
+` 
+UPDATE product_in i JOIN product_out_detail o ON i.prd_lot_cd = o.prd_lot_cd
+SET i.stock = ( i.stock + ? )
+WHERE i.prd_lot_cd = ? ; 
+`;
+
+//출고 제품 단건삭제
+const prdOutListDelete =
+`
+DELETE FROM product_out_detail WHERE prd_out_dtl_cd = ?
+`;
+
 
 /* --------------------------------------------------------------제품 반품----------------------------------------------------------------- */
 
@@ -602,6 +648,12 @@ module.exports = {
     productOutInsert,
     productOutDtlInsert,
     productOutQty,
+    orderStautsPrdOut,
+    prdOutDtlList,
+    prdOutDtlLotList,
+    prdOutDelete,
+    prdOutDeleteQty,
+    prdOutListDelete,
 
     //제품반품
     returnList,

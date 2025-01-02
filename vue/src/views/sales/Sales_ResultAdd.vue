@@ -280,7 +280,7 @@ export default {
                         button.addEventListener('click', () => {
                             this.prdRTData = this.prdRTData.filter(row => row !== params.data);
 
-                            // 상세 페이지 일떄
+                            // 상세 페이지 일때
                             if(this.isdetail == true){
                                 //한 행에 관한 단건 딜리트 메소드
                                 this.prd_return_dtl_cd = params.data.prd_return_dtl_cd;
@@ -404,7 +404,7 @@ export default {
             return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
         },
 
-        //상세조회 주문서 헤드부분
+        //상세조회 반품제품 헤드부분
         async returnDtlList(selectNo) {
             let result = await axios.get(`/api/sales/retrunDtlList/${selectNo}`)
                                     .catch(err => console.log("RDListError",err));
@@ -426,7 +426,7 @@ export default {
             
         },
 
-        //상세조회 주문서 디테일부분(LOT)
+        //상세조회 반품제품 디테일부분(LOT)
         async returnDtlLotList(selectNo) {
             let result = await axios.get(`/api/sales/returnDtlLotList/${selectNo}`)
                                     .catch(err => console.log("prdRTDError",err));
@@ -434,7 +434,7 @@ export default {
 
         },
 
-        //상세조회 주문서 디테일부분(LOT부분)-lot선택시
+        //상세조회 반품제품 디테일부분(LOT부분)-lot선택시
         // async getreturnLotList() {
         //     let searchLot = { rtc : this.selectNo , pdc : this.prd_cd };
 
@@ -616,7 +616,7 @@ export default {
         async returnListDelete() {           
             let result2 = await axios.delete(`/api/sales/returnListDelete/${this.prd_return_dtl_cd}`)
                                     .catch(err => console.log("deleteAxios에러",err));                        
-            console.log(result2);
+            console.log(result2.data.result);
         },
         
         //반품 제품 수정 한번에 하기
@@ -646,7 +646,7 @@ export default {
                 icon: "success"
                 }).then(result =>{
                     if(result){
-                        this.$router.push({name:'sales_ResultList'}) //OK누르면 목록으로 이동
+                        this.$router.push({name:'Sales_ResultList'}) //OK누르면 목록으로 이동
                     }
                 });     
             };

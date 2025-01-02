@@ -404,7 +404,7 @@ export default {
                 icon: "success"
                 }).then(result =>{
                     if(result){
-                        this.$router.push({name:'sales_orderlist'}) //OK누르면 목록으로 이동
+                        this.$router.push({name:'Sales_OrderList'}) //OK누르면 목록으로 이동
                     }
                 });     
             };
