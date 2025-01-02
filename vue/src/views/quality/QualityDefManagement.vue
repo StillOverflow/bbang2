@@ -127,7 +127,7 @@
 
       // 미처리 불량내역 불러오기
       async getDefList(){
-        let DefResult = await axios.get('/api/quality/rec', {params: {yetDefect: true}})
+        let DefResult = await axios.get('/api/quality/rec', {params: {yetDefect: true, exceptTargetType: 'P01'}})
                                     .catch(err => console.log(err));
         this.rowData = DefResult.data;
       },
@@ -145,7 +145,7 @@
       
       // 그리드 속성으로 선택된 행 색깔 변경
       getRowStyle(params){
-        if((params.data.refer_cd == this.selectedTarget.refer_cd)){
+        if((params.data.test_rec_cd == this.selectedTarget.test_rec_cd)){
           return {backgroundColor: '#d6d6d6'}
         }
       },
@@ -186,7 +186,7 @@
 
         if(result.data == 'success'){
           this.$swal(
-            '등록완료',
+            '완료',
             '불량내역이 처리되었습니다.',
             'success'
           );

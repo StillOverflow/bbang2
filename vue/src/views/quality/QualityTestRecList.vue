@@ -57,6 +57,7 @@
           <div class="col text-center mt-3">
             <button class="btn btn-warning" @click="getRecList">SEARCH</button>
             <button class="btn btn-secondary ms-3" @click="searchReset">RESET</button>
+            <button class="btn btn-outline-success ms-3" @click="excelDownload"><i class="fa-regular fa-file-excel"></i>EXCEL</button>
           </div>
         </div>
 
@@ -71,7 +72,8 @@
       <div class="card-header bg-success p-1 text-white fw-bold text-center fs-4">검사결과 조회</div>
       <div class="card-body text-center" v-show="!isRowClicked">선택된 내역이 없습니다.</div>
       <div class="card-body pb-1 pe-0 pe-md-4" v-show="isRowClicked">
-        <quality-test-box :isWaitList="false" :isMatTest="selectedTarget.target_type == 'P01'" :selectedTarget="selectedTarget" ref="testBox"/>
+        <quality-test-box :isWaitList="false" :isMatTest="selectedTarget.target_type == 'P01'" :selectedTarget="selectedTarget" 
+         :excelDownload="excelDownloadDtl" ref="testBox"/>
       </div>
     </div>
 
@@ -83,6 +85,7 @@
   import axios from "axios";
   import SelectTarget from "../../components/quality/SelectTarget.vue";
   import QualityTestBox from "../../components/quality/QualityTestBox.vue";
+  import * as XLSX from 'xlsx';
 
   export default {
     name: 'QualityTestRecList',
@@ -109,6 +112,7 @@
             minWidth: 145
           },
           { headerName: '참조번호', field: 'refer_cd' },
+          { headerName: '검사유형', field: 'target_type_nm' },
           { headerName: '검사대상', field: 'target_nm', minWidth: 100 },
           { headerName: '공정명', field: 'proc_nm' },
           { headerName: '생산량', field: 'total_qty', valueFormatter: this.$comm.currencyFormatter },
@@ -180,6 +184,7 @@
         // this.search에서 검색조건을 담고 있음.
         // 자식 컴포넌트의 값 포함시키기
         if(isSearch){
+          this.search.targetType = this.$refs.selectTarget.selected_radio;
           this.search.targetCd = this.$refs.selectTarget.modal_val.cd;
         }
 
@@ -217,6 +222,79 @@
         this.$refs.selectTarget.selected_radio = null;
         this.$refs.selectTarget.modal_val = {};
         this.$refs.selectTarget.changeDivs();
+      },
+
+      // 전체 목록 엑셀 다운로드
+      excelDownload() {
+        var today = new Date();
+        today = this.$comm.getMyDay(today);
+        let selectedData = []; // 엑셀 형태
+
+        this.rowData.forEach((obj) => {
+          let newObj = {};
+          this.defs.forEach((def) => {
+            newObj[def.headerName] = obj[def.field];
+          });
+          selectedData.push(newObj);
+        });
+
+        const workBook = XLSX.utils.book_new()
+        const workSheet = XLSX.utils.json_to_sheet(selectedData)
+        XLSX.utils.book_append_sheet(workBook, workSheet, today)
+        XLSX.writeFile(workBook, `품질검사목록_전체_${today}.xlsx`); 
+      },
+
+      // 개별 검사결과 엑셀 다운로드
+      excelDownloadDtl() {
+        let target = this.selectedTarget;
+        let date = this.$comm.getDatetimeMin(target.test_dt);
+        let samplings = this.$refs.testBox.samplingTests;
+        let fulls = this.$refs.testBox.fullTests;
+        let selectedData = []; // 엑셀 형태
+        
+        let newObj = {
+          '검사번호': target.test_rec_cd,
+          '검사일시': target.test_dt,
+          '참조번호': target.refer_cd,
+          '검사유형': target.target_type_nm,
+          '검사대상코드': target.target_cd,
+          '검사대상': target.target_nm,
+          '공정코드': target.proc_cd,
+          '공정명': target.proc_nm,
+          '생산량': target.total_qty,
+          '샘플량': target.test_qty,
+          '불량양': target.def_qty,
+          '합격량': target.pass_qty,
+          '불량코드': target.def_cd,
+          '불량명': target.def_nm,
+          '담당자': target.name,
+          '비고': target.note,
+        };
+        selectedData.push(newObj);
+        
+        // 측정값 저장
+        let push = (test) => {
+          selectedData.push({
+            '검사항목코드': test.test_cd,
+            '검사방식': test.test_metd_nm,
+            '검사명': test.test_nm,
+            '검사내용': test.test_dtl,
+            '합격최소값': test.pass_min,
+            '합격최대값': test.pass_max,
+            '%여부': test.pass_ispercent == 'A01' ? '%' : '',
+            '측정값': test.test_value,
+            '판정결과': (test.pass_min >= 0 && test.test_value >= test.pass_min && test.test_value <= test.pass_max)
+                        || target.def_qty == 0 ? '적합' : '부적합'
+          });
+        };
+
+        samplings.forEach(test => push(test));
+        fulls.forEach(test => push(test));
+
+        const workBook = XLSX.utils.book_new()
+        const workSheet = XLSX.utils.json_to_sheet(selectedData)
+        XLSX.utils.book_append_sheet(workBook, workSheet, date)
+        XLSX.writeFile(workBook, `품질검사결과_${target.target_cd}_${date}.xlsx`); 
       },
       
     }

@@ -26,30 +26,69 @@ const yetList = `
 
 // 특정 대상에 현재 적용중인 검사항목 조회
 const getMyList = () => {
-  let myListSql = yetList.replace('NOT IN', 'IN');
+  let myListSql = yetList.replace('NOT IN', 'IN')
+                         .replace('pass_ispercent', `pass_ispercent,
+                                                     (SELECT qu_std_cd
+                                                      FROM   quality_standard
+                                                      WHERE  target_cd = ?
+                                                      ORDER  BY qu_std_cd DESC LIMIT 1) qu_std_cd`); // 해당 품질기준코드 필요
   return myListSql;
 };
 
-// 실험용!!!! 검색조건을 포함한 전체 검사항목 조회
-// 매개변수로 검색조건을 유동적으로 받아 쿼리 생성. 값이 없을 시 전체출력
-// 잘 작동하지만 완전일치만 검색 가능한 문제가 있음. (BETWEEN, LIKE 등 미적용)
-const testList = (sc) => {
-  let query = selectTSql;
-  let scArr = Object.keys(sc);
-  // 검색조건이 있을 경우 WHERE절 생성
-  if(scArr.length != 0){
-    let where = `WHERE `;
-    for(let i = 0; i < scArr.length; i++){
-      where += `${scArr[i]} = '${sc[scArr[i]]}' `;
-      if(i != scArr.length - 1){ // 마지막 값이 아닌 경우 AND 생성
-        where += `AND `;
-      }
-    }
-    query += where;
-  };
+// 해당 품질기준에 속한 검사항목 조회 (검사결과목록에서 조회용)
+const stdTestList = `
+  SELECT test_cd, 
+         fn_get_codename(test_metd) test_metd_nm, 
+         test_metd,
+         test_nm, 
+         test_dtl,
+         target_type,
+         pass_min, -- 샘플링검사인 경우 합격기준이 있음.
+         pass_max,
+         pass_ispercent
+  FROM   quality_test
+  WHERE  test_cd IN (
+                     SELECT test_cd
+                     FROM   quality_standard_detail
+                     WHERE  qu_std_cd = ?
+                     ) 
+  ORDER BY test_nm `;
 
-  query += `ORDER BY test_nm, create_dt DESC`; // 마지막에 정렬
-  return query;
+// 검색조건을 포함한 전체 검사항목 조회
+const testList = (valueObj) => {
+  let testNm = valueObj.testNm;
+  let testDtl = valueObj.testDtl;
+  let testMetd = valueObj.testMetd;
+  let status = valueObj.status;
+  let useStatus = valueObj.useStatus;
+  let targetType = valueObj.targetType;
+
+  return `
+    SELECT test_cd, 
+           test_metd,
+           fn_get_codename(test_metd) test_metd_nm, 
+           test_nm, 
+           test_dtl,
+           target_type,
+           fn_get_codename(target_type) target_type_nm,
+           pass_min, -- 샘플링검사인 경우 합격기준이 있음.
+           pass_max,
+           pass_ispercent,
+           status,
+           fn_get_codename(status) status_nm,
+           use_status,
+           fn_get_codename(use_status) use_status_nm,
+           create_dt,
+           update_dt
+    FROM   quality_test
+    WHERE  test_cd IS NOT NULL
+      ${!testNm ? "" : "AND  test_nm LIKE '%" + testNm + "%' "}
+      ${!testDtl ? "" : "AND  test_dtl LIKE '%" + testDtl + "%' "}
+      ${!testMetd ? "" : "AND  test_metd = '" + testMetd + "' "}
+      ${!status ? "" : "AND  status = '" + status + "' "}
+      ${!useStatus ? "" : "AND  use_status = '" + useStatus + "' "}
+      ${!targetType ? "" : "AND  target_type = '" + targetType + "' "}
+  `;
 };
 
 
@@ -277,6 +316,8 @@ const testRecList = (valueObj) => {
   let endDt = valueObj.endDt;
 
   let referCd = valueObj.referCd;
+  let exceptTargetType = valueObj.exceptTargetType;
+  let targetType = valueObj.targetType;
   let targetCd = valueObj.targetCd;
   let note = valueObj.note;
 
@@ -288,10 +329,14 @@ const testRecList = (valueObj) => {
   // 쿼리에 동적으로 다중조건 생성
   return `
      SELECT r.test_rec_cd, 
+            r.target_qu_std_cd,
+            r.proc_qu_std_cd,
+            
             r.test_dt, 
             r.refer_cd,
 
             r.target_type,
+            fn_get_codename(r.target_type) target_type_nm,
             r.target_cd,
             IFNULL(fn_get_prd_nm(r.target_cd), fn_get_materialname(r.target_cd)) target_nm, -- 검사한 제품 or 자재코드
             r.proc_cd,
@@ -318,7 +363,9 @@ const testRecList = (valueObj) => {
        ${!startDt ? "" : "AND  r.test_dt >= '" + startDt + "' "} -- '2024-12-26 17:00' 형식
        ${!endDt ? "" : "AND  r.test_dt <= '" + endDt + "' "}
        ${!referCd ? "" : "AND  r.refer_cd LIKE '%" + referCd + "%' "}
-
+       
+       ${!exceptTargetType ? "" : "AND  r.target_type != '" + exceptTargetType + "' "}
+       ${targetType && !targetCd ? "AND  r.target_type = '" + targetType + "' " : ""}
        ${!targetCd ? "" : "AND  (r.target_cd = '" + targetCd + "' OR r.proc_cd = '" + targetCd + "') "}
        ${!note ? "" : "AND  r.note LIKE '%" + note + "%' "}
 
@@ -353,6 +400,7 @@ const testRecDefUpdate = `
 module.exports = {
   yetList,
   getMyList,
+  stdTestList,
   testList,
 
   stdSeq,
