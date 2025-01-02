@@ -50,8 +50,15 @@ const upload = multer({
 
 // 설비 상태 조회
 router.get('/equipList/stat', async (req, res) => {
-  let eqStatList = await equipmentService.findStatEq();
-  res.send(eqStatList);
+  try {
+    let searchList = req.query;
+
+    let result = await equipmentService.findStatEq(searchList);
+    res.send(result);
+  } catch (err) {
+    console.error('필터링된 설비상태 조회 실패:', err);
+    res.status(500).json({ error: '필터링된 설비상태 조회 실패' });
+  }
 });
 
 // 설비 전체 조회

@@ -2,14 +2,17 @@
 
 /* -----------설비 관리------------*/
 //설비상태조회
-const eqStatList = `SELECT 
-    fn_get_codename(e.eqp_type) as eqp_type, 
+const eqStatList = (datas) => {
+
+  let sql = `SELECT 
     e.eqp_cd as eqp_cd,
-    p.proc_cd as proc_cd,
-    p.proc_nm as proc_nm,
+    fn_get_codename(e.eqp_type) as eqp_type, 
     e.eqp_nm as eqp_nm,
     e.model as model,
+    p.proc_cd as proc_cd,
+    p.proc_nm as proc_nm,
     e.last_insp_dt AS last_insp_dt,
+    e.id as id,
     fn_get_codename(e.status) as status,
     fn_get_codename(e.is_use) as is_use
 FROM 
@@ -17,8 +20,24 @@ FROM
 LEFT JOIN 
     prod_result pr ON e.eqp_cd = pr.eqp_cd
 LEFT JOIN 
-    process p ON pr.proc_cd = p.proc_cd;`;
+    process p ON pr.proc_cd = p.proc_cd`;
 
+  const queryArr = [];
+
+  // 설비상태조회 조건
+  if (datas.eqp_type) queryArr.push(`e.eqp_type = UPPER('${datas.eqp_type}')`);
+  if (datas.is_use) queryArr.push(`is_use = UPPER('${datas.is_use}')`);
+  if (datas.status) queryArr.push(`e.status = UPPER('${datas.status}')`);
+
+  if (queryArr.length > 0) {
+    sql += ` WHERE ` + queryArr.join(' AND ');
+  }
+
+  sql += ` order by eqp_cd asc`; // 정렬
+
+  return sql;
+
+}
 //설비정보조회
 const eqAllList = `SELECT eqp_cd,
                           eqp_type,

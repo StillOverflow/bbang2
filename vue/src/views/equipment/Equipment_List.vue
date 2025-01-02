@@ -26,14 +26,8 @@
           </div>
           <div class="col-lg-10 d-flex align-items-center">
             <div v-for="(opt, idx) in equipmentData.selectOptions.IS_USE" :key="idx" class="form-check me-4">
-              <input
-                class="form-check-input radio-inline"
-                type="radio"
-                v-model="equipmentData.is_use"
-                :value="opt.comm_dtl_cd"
-                :id="'is_use_' + idx"
-                @change="searchEquipments"
-              />
+              <input class="form-check-input radio-inline" type="radio" v-model="equipmentData.is_use"
+                :value="opt.comm_dtl_cd" :id="'is_use_' + idx" @change="searchEquipments" />
               <label class="form-check-label" :for="'is_use_' + idx">
                 {{ opt.comm_dtl_nm }}
               </label>
@@ -48,14 +42,8 @@
           </div>
           <div class="col-lg-10 d-flex align-items-center">
             <div v-for="(opt, idx) in equipmentData.selectOptions.STATUS" :key="idx" class="form-check me-4">
-              <input
-                class="form-check-input radio-inline"
-                type="radio"
-                v-model="equipmentData.status"
-                :value="opt.comm_dtl_cd"
-                :id="'status_' + idx"
-                @change="searchEquipments"
-              />
+              <input class="form-check-input radio-inline" type="radio" v-model="equipmentData.status"
+                :value="opt.comm_dtl_cd" :id="'status_' + idx" @change="searchEquipments" />
               <label class="form-check-label" :for="'status_' + idx">
                 {{ opt.comm_dtl_nm }}
               </label>
@@ -86,7 +74,8 @@
       <!-- 조회 결과 -->
       <div class="card-body" style="position: relative; height: 600px">
         <ag-grid-vue style="width: 100%; height: 100%" class="ag-theme-alpine" :gridOptions="gridOptions"
-          @grid-ready="myGrid" :columnDefs="columnDefs" :rowData="rowData" :pagination="true"></ag-grid-vue>
+          @grid-ready="myGrid" :columnDefs="columnDefs" :rowData="rowData" :pagination="true"
+          overlayNoRowsTemplate="해당하는 설비가 없습니다."></ag-grid-vue>
       </div>
 
 
@@ -291,26 +280,33 @@ export default {
 </script>
 
 <style scoped lang="scss">
-
 /* 라디오 버튼과 라벨 수직 정렬 */
 .form-check-input {
-  vertical-align: middle; /* 라벨 텍스트와 버튼을 동일 높이에 배치 */
-  margin-top: 0; /* 버튼의 수직 위치 조정 */
-  margin-right: 0.5rem; /* 라디오 버튼과 라벨 사이 간격 */
+  vertical-align: middle;
+  /* 라벨 텍스트와 버튼을 동일 높이에 배치 */
+  margin-top: 0;
+  /* 버튼의 수직 위치 조정 */
+  margin-right: 0.5rem;
+  /* 라디오 버튼과 라벨 사이 간격 */
 }
 
 /* 라벨 텍스트 높이 맞추기 */
 .form-check-label {
-  line-height: 1; /* 라벨 텍스트의 높이를 라디오 버튼과 맞춤 */
-  margin-bottom: 0; /* 불필요한 아래 여백 제거 */
+  line-height: 1;
+  /* 라벨 텍스트의 높이를 라디오 버튼과 맞춤 */
+  margin-bottom: 0;
+  /* 불필요한 아래 여백 제거 */
   display: flex;
-  align-items: center; /* 라디오 버튼과 동일 높이에 위치 */
+  align-items: center;
+  /* 라디오 버튼과 동일 높이에 위치 */
 }
 
 /* 라디오 버튼 그룹의 전체 정렬 */
 .form-check {
-  display: flex; /* 플렉스 박스 사용 */
-  align-items: center; /* 라디오 버튼과 라벨 수직 정렬 */
+  display: flex;
+  /* 플렉스 박스 사용 */
+  align-items: center;
+  /* 라디오 버튼과 라벨 수직 정렬 */
 }
 
 //그리드 사용시 아래 스타일 임포트
