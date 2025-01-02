@@ -558,7 +558,7 @@ export default {
       });
     },
 //------------------------------드래그 실험-------------------------------------
-    cellValueMtlChanged(params)  {
+    cellValueMtlChanged(params)  { 
         const updatedMaterial = params.data;
 
         // 값이 숫자인지 확인하고 변환
@@ -570,10 +570,10 @@ export default {
 
         // 수정된 데이터 저장
         const saveIndex = this.updatedMaterials.findIndex(
-          (item) => item.proc_mat_flow_cd === updatedMaterial.proc_mat_flow_cd
+          (item) => item.proc_mat_flow_cd == updatedMaterial.proc_mat_flow_cd
         );
 
-        if (saveIndex !== -1) {
+        if (saveIndex != -1) { //이미 있다면 기존 데이터 업데이트, 없으면 새로운 데이터 추가
           this.updatedMaterials[saveIndex] = {
             mat_qty: updatedMaterial.mat_qty,
             proc_mat_flow_cd: updatedMaterial.proc_mat_flow_cd,
