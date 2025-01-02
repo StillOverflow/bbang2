@@ -17,8 +17,7 @@
       <div class="card-body">
         <div class="row">
           <!-- 이미지 -->
-          <div class="col-lg-2 col-md-2 col-sm-12 text-center">
-            <!-- 프록시를 문자열로 박아넣음 배포시 replace로 삭제하기 -->
+          <div class="col-lg-2 col-md-3 col-sm-12 text-center">
             <img :src="previewImage" alt="설비 이미지" class="mb-3 imgBSJ" name="selectedFile" width="230" height="230" />
             <input type="file" class="form-control" @change="onFileChange" />
           </div>
@@ -205,6 +204,18 @@ export default {
       this.isModal = !this.isModal;
     },
 
+
+    // LAST_INSP_DT 값 변환 함수
+    formatDate(date) {
+      const jsDate = new Date(date);
+      const year = jsDate.getFullYear();
+      const month = String(jsDate.getMonth() + 1).padStart(2, '0');
+      const day = String(jsDate.getDate()).padStart(2, '0');
+      const hours = String(jsDate.getHours()).padStart(2, '0');
+      const minutes = String(jsDate.getMinutes()).padStart(2, '0');
+      const seconds = String(jsDate.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    },
     // 파일 업로드 핸들러
     onFileChange(event) {
       const file = event.target.files[0]; // 업로드된 파일 객체
@@ -355,6 +366,13 @@ export default {
     async equipUpdate() {
       let formData = this.getInsertData();
 
+      // 날짜 필드 변환
+      if (formData.has('last_insp_dt')) {
+        const lastInspDt = formData.get('last_insp_dt');
+        if (lastInspDt) {
+          formData.set('last_insp_dt', this.formatDate(lastInspDt)); // 수정된 값 덮어쓰기
+        }
+      }
       try {
         let response = await axios.put(
           `/api/equip/${this.selectedEqp}`,

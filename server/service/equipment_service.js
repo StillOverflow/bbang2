@@ -3,9 +3,14 @@ const mariadb = require('../database/mapper.js');
 /*--------------설비-------------*/
 
 // 상태전체조회
-const findStatEq = async () => {
-  let list = await mariadb.query('eqStatList');
-  return list;
+const findStatEq = async (datas) => {
+  try {
+    let list = await mariadb.query('eqStatList', datas);
+    return list;
+  } catch (err) {
+    console.error('DB 쿼리 실패:', err);
+    throw err;
+  }
 };
 
 // 설비전체조회
@@ -53,10 +58,10 @@ const updateEq = async (eqInfo) => {
     const eqpCd = eqInfo.eqp_cd; // 설비 코드 추출
     delete eqInfo.eqp_cd; // eqp_cd는 WHERE절에 사용되므로 제거
 
-      // 현재 시간 추가 (MySQL 형식으로 변환)
-      const now = new Date();
-      eqInfo.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
-    
+    // 현재 시간 추가 (MySQL 형식으로 변환)
+    const now = new Date();
+    eqInfo.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
+
 
     // SQL 실행 (UPDATE ... SET ? WHERE eqp_cd = ?)
     let result = await mariadb.query('eqUpdate', [eqInfo, eqpCd]);
@@ -94,10 +99,10 @@ const updateInspEq = async (inspData) => {
     const inspLogCd = inspData.insp_log_cd; // 점검 코드 추출
     delete inspData.insp_log_cd; // WHERE 조건에 사용되므로 객체에서 제거
 
-      // 현재 시간 추가 (MySQL 형식으로 변환)
-      const now = new Date();
-      inspData.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
-    
+    // 현재 시간 추가 (MySQL 형식으로 변환)
+    const now = new Date();
+    inspData.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
+
 
     console.log('수정 요청 데이터:', inspData, 'insp_log_cd:', inspLogCd);
 
@@ -118,9 +123,14 @@ const updateInspEq = async (inspData) => {
 };
 
 //설비 점검 전체 조회
-const findInspEq = async () => {
-  let list = await mariadb.query('eqInspList');
-  return list;
+const findInspEq = async (datas) => {
+  try {
+    let list = await mariadb.query('eqInspList', datas);
+    return list;
+  } catch (err) {
+    console.error('설비 점검 DB 쿼리 실패:', err);
+    throw err;
+  }
 };
 
 //설비 점검 전체 조회(설비별 최근 1건씩만)
@@ -152,10 +162,10 @@ const updateDownEq = async (downData) => {
     const downLogCd = downData.downtime_cd; // 점검 코드 추출
     delete downData.downtime_cd; // WHERE 조건에 사용되므로 객체에서 제거
 
-      // 현재 시간 추가 (MySQL 형식으로 변환)
-      const now = new Date();
-      downData.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
-    
+    // 현재 시간 추가 (MySQL 형식으로 변환)
+    const now = new Date();
+    downData.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
+
 
     console.log('수정 요청 데이터:', downData, 'downtime_cd:', downLogCd);
 
@@ -264,5 +274,5 @@ module.exports = {
   insertRepairEq,
   updateRepairEq,
   findRepairEq,
-  findRepairEqOne
+  findRepairEqOne,
 };

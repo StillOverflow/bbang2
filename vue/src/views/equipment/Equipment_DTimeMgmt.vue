@@ -26,7 +26,8 @@
           <!-- 왼쪽 입력란 -->
           <div class="col-lg-5 col-md-5 col-sm-12">
             <div v-for="(field, index) in leftFields" :key="index" class="mb-2">
-              <template v-if="field.value == 'eqp_type' || field.value == 'downtime_reason' || field.value == 'status' ">
+              <template
+                v-if="field.value == 'eqp_type' || field.value == 'downtime_reason' || field.value == 'status'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <select class="form-select custom-width" v-model="equipmentData[field.value]"
                   :disabled="isFieldDisabled(field.value)">
@@ -134,37 +135,41 @@ export default {
         downtime_cd: '',
       },
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true , width: 120 },
-        { headerName: '설비 구분', field: 'eqp_type', sortable: true , width: 130, valueFormatter: (params) => {
-          const eqpTypeMap = {
-            R01: '배합기',
-            R02: '분할기',
-            R03: '발효기',
-            R04: '성형기',
-            R05: '오븐',
-            R06: '냉각기',
-            R07: '도포기',
-          }; // 코드와 이름 매핑
-          return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
-        }, },
-        { headerName: '설비명', field: 'eqp_nm', sortable: true , width: 130 },
-        { headerName: '모델명', field: 'model', sortable: true , width: 130 },
-        { headerName: '설비상태', field: 'status', sortable: true , width: 130, valueFormatter: (params) => {
+        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 120 },
+        {
+          headerName: '설비 구분', field: 'eqp_type', sortable: true, width: 130, valueFormatter: (params) => {
+            const eqpTypeMap = {
+              R01: '배합기',
+              R02: '분할기',
+              R03: '발효기',
+              R04: '성형기',
+              R05: '오븐',
+              R06: '냉각기',
+              R07: '도포기',
+            }; // 코드와 이름 매핑
+            return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
+          },
+        },
+        { headerName: '설비명', field: 'eqp_nm', sortable: true, width: 130 },
+        { headerName: '모델명', field: 'model', sortable: true, width: 130 },
+        {
+          headerName: '설비상태', field: 'status', sortable: true, width: 130, valueFormatter: (params) => {
             // 상태 코드에 따른 이름 변환
             const statusMap = {
               S01: '가동',
               S02: '비가동',
             };
             return statusMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값 반환
-          }, },
+          },
+        },
       ],
       equipData: [],
       leftFields: [
         { label: '비가동 시작 일시', value: 'start_time', type: 'datetime-local' },
-        { label: '설비 구분 *', value: 'eqp_type', type: 'text', selectOptions: []  },
+        { label: '설비 구분 *', value: 'eqp_type', type: 'text', selectOptions: [] },
         { label: '설비명 *', value: 'eqp_nm', type: 'text' },
         { label: '설비 상태', value: 'status', type: 'text', selectOptions: [] },
-        { label: '비가동 사유', value: 'downtime_reason', type: 'text', selectOptions: []  },
+        { label: '비가동 사유', value: 'downtime_reason', type: 'text', selectOptions: [] },
       ],
       rightFields: [
         { label: '비가동 종료 일시', value: 'end_time', type: 'datetime-local' },
@@ -215,7 +220,7 @@ export default {
         // 설비 데이터 가져오기
         await this.getEquipInfo(this.selectedEqp);
 
-            // 설비 상태 초기화
+        // 설비 상태 초기화
         if (!this.equipmentData.status) {
           this.equipmentData.status = '비가동'; // 기본값 설정
         }
@@ -306,34 +311,34 @@ export default {
     // 설비 단건 조회
     async getDownListOne(eqp_cd) {
 
-    try {
-    const result = await axios.get(`/api/equip/down/${eqp_cd}`);
-    console.log('Result data:', result.data);
-    if (result.data) {
-      this.equipmentData = {
-        ...this.equipmentData,
-        ...result.data,
-        downtime_cd: result.data.downtime_cd, // 덮어쓰지 않도록
-        start_time: this.formatDate(result.data.start_time),
-        end_time: this.formatDate(result.data.end_time),
-      };
+      try {
+        const result = await axios.get(`/api/equip/down/${eqp_cd}`);
+        console.log('Result data:', result.data);
+        if (result.data) {
+          this.equipmentData = {
+            ...this.equipmentData,
+            ...result.data,
+            downtime_cd: result.data.downtime_cd, // 덮어쓰지 않도록
+            start_time: this.formatDate(result.data.start_time),
+            end_time: this.formatDate(result.data.end_time),
+          };
 
-      
-      // 등록 모드 조건: downtime_cd가 없거나 end_time이 존재하는 경우
-      if (!result.data.downtime_cd || result.data.end_time) {
-        this.isEditMode = false;
-        this.resetForm(); // 등록 모드로 초기화
-        this.equipmentData.eqp_cd = eqp_cd; // 설비 코드 유지
-      } else {
-        // 수정 모드 조건: downtime_cd가 있고 end_time이 비어 있는 경우
-        this.isEditMode = true;
+
+          // 등록 모드 조건: downtime_cd가 없거나 end_time이 존재하는 경우
+          if (!result.data.downtime_cd || result.data.end_time) {
+            this.isEditMode = false;
+            this.resetForm(); // 등록 모드로 초기화
+            this.equipmentData.eqp_cd = eqp_cd; // 설비 코드 유지
+          } else {
+            // 수정 모드 조건: downtime_cd가 있고 end_time이 비어 있는 경우
+            this.isEditMode = true;
+          }
+
+        }
+      } catch (err) {
+        console.error('Error fetching inspection data:', err);
       }
-      
-    }
-  } catch (err) {
-    console.error('Error fetching inspection data:', err);
-  }
-},
+    },
 
     //등록
     async downInsert() {
@@ -382,7 +387,7 @@ export default {
 
       console.log('Updating data:', this.equipmentData); // 데이터 출력
 
-      
+
       try {
 
         // 세션에서 비가동 등록인 ID 가져오기
@@ -438,7 +443,7 @@ export default {
         ...resetFields, // 초기화된 데이터 병합
       };
 
-       // 선택된 설비 코드 초기화
+      // 선택된 설비 코드 초기화
       this.selectedEqp = this.equipmentData.eqp_cd;
       this.isEditMode = false; // 초기화 시 수정 모드도 해제
       this.previewImage = require('@/assets/img/blank_img.png'); // 이미지 초기화
@@ -458,9 +463,9 @@ export default {
       // 설비 코드가 선택되지 않았을 경우 모든 항목 비활성화
       if (!this.selectedEqp) return true;
 
-      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model','id'];
+      const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'id'];
 
-        // 수정 모드일 때 시작시간 비활성화
+      // 수정 모드일 때 시작시간 비활성화
       if (this.isEditMode && fieldName === 'start_time') {
         return true;
       }
@@ -493,7 +498,7 @@ export default {
         item: item.comm_dtl_cd,
         name: item.comm_dtl_nm,
       }));
-      
+
     });
 
     //설비상태구분
