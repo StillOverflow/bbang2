@@ -289,7 +289,6 @@ export default {
 
     //계획서 등록
     async planInsert() {
-      console.log(this.orderDtlData);
       let rowQty = this.orderDtlData.filter(row => !row.order_qty || row.order_qty <= 0);
       
       if (!this.START_DT || !this.END_DT) {
@@ -324,15 +323,25 @@ export default {
 
       let insertArr = [...insertPlan, insertPrd];
 
-      if(this.selectNo > 0){
-        let result = await axios.put(`/api/plan/${this.selectNo}`, insertArr)
+
+      if(this.isUpdated == true){
+        
+        if(this.planInfo.ACT_TYPE == '진행전'){
+          let result = await axios.put(`/api/plan/${this.selectNo}`, insertArr)
                                 .catch(err => console.log(err));
 
-        if(result.data == 'success'){
+          if(result.data == 'success'){
+            this.$swal({
+                icon: "success",
+                title: "수정에 성공 하였습니다.",
+            })    
+          }
+        }else{
           this.$swal({
-              icon: "success",
-              title: "수정에 성공 하였습니다.",
-          })    
+              icon: "error",
+              title: "수정불가",
+              text: "지시서가 등록된 계획서는 수정/삭제할 수 없습니다.",
+          });          
         }
       }else{
         let result = await axios.post('/api/plan', insertArr)

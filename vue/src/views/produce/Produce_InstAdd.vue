@@ -19,7 +19,7 @@
           </div>
 
         <p for="example-text-input" class="text-sm font-weight-bolder">작업일자</p>
-        <input class="form-control w-30" type="date" v-model="work_dt"/>
+        <input class="form-control w-30" type="date" v-model="WORK_DT"/>
       </div>
 
        <!--검색모달[S]-->
@@ -53,6 +53,7 @@
           <!--생산제품 목록-->
           <div class="col-md-6">
             <p class="text-uppercase text-lg font-weight-bolder">생산제품 목록</p>
+            <div class="bg-secondary-subtle p-2" style="--bs-bg-opacity: .5;">생산에서 제외할 제품은 체크박스를 해제해주세요.</div>
             <div class="table-responsive">
               <table class="table">
                 <thead class="table-secondary">
@@ -61,19 +62,21 @@
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 제품코드 </th>
                     <th class="text-center text-uppercase text-ser opacity-7"> 제품명 </th>
                     <th class="text-center text-uppercase text-ser opacity-7" width="20%"> 생산수량</th>
+                    <th class="text-center text-uppercase text-ser opacity-7"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <template v-if="planDtlCount >0">
-                    <tr :key="i" v-for="(Dtl, i) in planDtlData" @click="prdClicked(Dtl.prd_cd)" class="text-center planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
+                    <tr :key="i" v-for="(Dtl, i) in planDtlData" class="text-center align-middle planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
                       <td>
                         <div class="form-check">
-                          <input class="form-check-input" type="checkbox" v-model="prdArr" :value="Dtl" :id="'fl' + Dtl.prd_cd">
+                          <input class="form-check-input" :class="'sub_'+Dtl.prd_cd" type="checkbox" v-model="Dtl.prd_cd" :value="Dtl">
                         </div>
                       </td>
                       <td>{{ Dtl.prd_cd }}</td>
                       <td>{{ Dtl.prd_nm }}</td>
-                      <td>{{ Dtl.prod_plan_cd }}</td>
+                      <td>{{ Dtl.order_qty }}</td>
+                      <td><button @click="prdClicked(Dtl.prd_cd)" class="btn btn-sm btn-warning">SELECT</button></td>
                     </tr>
                   </template>
 
@@ -90,18 +93,13 @@
           <!--공정설정-->
           <div class="col-md-6">
 
-            <p class="text-uppercase text-lg font-weight-bolder">공정설정</p>
+            <p class="text-uppercase text-lg font-weight-bolder">공정설정</p><div class="bg-secondary-subtle p-2" style="--bs-bg-opacity: .5;">생산에서 제외할 공정은 체크박스를 해제해주세요.</div>
+            
             <div class="table-responsive">
               <table class="table">
                 <thead class="table-secondary">
                   <tr>
-                    <th class="text-center text-uppercase text-ser opacity-7" width="5%">
-                      <td>
-                        <div class="form-check col-4 col-md-2">
-                          <input class="form-check-input" type="checkbox" v-model="flowTotal" checked="true" @click="checkAll(this.prd_cd)"> 
-                        </div>
-                      </td>
-                    </th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="5%"></th>
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 공정코드 </th>
                     <th class="text-center text-uppercase text-ser opacity-7">공정명</th>
                     <th class="text-center text-uppercase text-ser opacity-7">공정설명</th>
@@ -109,12 +107,10 @@
                 </thead>   
                   <draggable :list="planFlowData" tag="tbody" @change="changeDrag" :animation="300">
                     <template v-if="planFlowCount >0">
-                      <tr  class="text-center"
-                        v-for="Flow in planFlowData"
-                        :key="Flow.PROC_FLOW_CD">
+                      <tr :key="i" v-for="(Flow, i) in planFlowData" class="text-center align-middle">
                         <td>
                           <div class="form-check col-4 col-md-2">
-                            <input class="form-check-input " :class="Flow.PRD_CD" type="checkbox" v-model="flowArr" :value="Flow" :id="'fl' + Flow.PROC_FLOW_CD" checked="true"> 
+                            <input class="form-check-input" :class="'sub_'+Flow.PROC_FLOW_CD" type="checkbox" v-model="Flow.PROC_FLOW_CD" :value="Flow" :id="'fl' + Flow.PROC_FLOW_CD"> 
                             <span id="'num' + Flow.PROC_FLOW_CD">{{Flow.PROC_SEQ}}</span>
                           </div>
                         </td>
@@ -134,8 +130,9 @@
           </div>
         </div>
         <div class="center mtp30">
-          <button class="btn btn-primary" @click="instInsert">SUBMIT</button>
-          <button class="btn btn-secondary mlp10" @click="resetForm">RESET</button>
+          <button class="btn mtp30" :class="isUpdated ? 'btn-success' : 'btn-primary'" @click="instInsert"> {{ isUpdated ? "UPDATE" : "SAVE" }}</button>
+          <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
+
         </div>
       </div>
     </div>
@@ -156,7 +153,15 @@ export default {
   },
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 관리' });
-    this.getPlanFlowList();
+
+    let selectNo = this.$route.query.inst_cd;
+    this.selectNo = selectNo;
+    
+    if(selectNo){
+        //수정
+        this.getInstInfo(selectNo);     
+        this.isUpdated = true;      
+    }
   },
   computed : {
       planDtlCount(){
@@ -217,17 +222,6 @@ export default {
   methods: {
     gridFit(params) { // 매개변수 속성으로 자동 접근하여 sizeColumnsToFit() 실행함. (가로스크롤 삭제)
       params.api.sizeColumnsToFit();
-
-      const paginationPanel = document.querySelector('.ag-paging-panel');
-      if(paginationPanel){
-        const button = document.createElement('button');
-        const input = document.createElement('input');
-        input.className = 'form-control w-20';
-        button.textContent = '검색';
-        button.className = 'btn btn-warning mbp0';
-        paginationPanel.insertBefore(button, paginationPanel.firstChild);
-        paginationPanel.insertBefore(input, paginationPanel.firstChild);
-      }
     },
     /*모달 [S]*/
     modalOpen() {
@@ -257,13 +251,40 @@ export default {
       let result = await axios.get(`/api/plan/${plan_cd}/dtl`)
                               .catch(err => console.log(err));                              
       this.planDtlData = result.data;
+      
+      if(!this.isUpdated){
+        this.prdArr = this.planDtlData;        
+      }else{
+        let upResult = await axios.get(`/api/inst/dtl/${this.selectNo}`)
+                              .catch(err => console.log(err));  
+        this.prdArr = upResult.data;
+
+        this.prdArr.forEach((obj) => {
+          const checkboxes = document.querySelector('.sub_'+obj.PRD_CD);
+          checkboxes.checked = true;
+        })
+      }
+
     },
 
     //계획서 제품 리스트 선택
     prdClicked(prd_cd) {
-      this.prd_cd = prd_cd;
-      this.getPlanFlowList(prd_cd); //공정 및 자재설정 리스트 노출
-      
+      if(this.prd_cd){
+        this.$swal({
+            icon: "question",
+            title: "변경 시 설정내용이 저장되지 않습니다. 변경하시겠습니까?",
+            text: "현 제품에 대한 설정을 저장 후에 변경해주세요.",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            this.prd_cd = prd_cd;
+            this.getPlanFlowList(prd_cd); //공정 및 자재설정 리스트 노출
+          }
+        });
+      }else{
+        this.prd_cd = prd_cd;
+        this.getPlanFlowList(prd_cd); //공정 및 자재설정 리스트 노출    
+      }
+
       //선택된 생산제품 색깔표기[S]
       const elements = document.querySelectorAll('.planDtl');
       for (var i = 0; i < elements.length; i++) {
@@ -271,14 +292,20 @@ export default {
       }
       document.getElementById(prd_cd+'_dtl').classList.add('table-warning');
       //선택된 생산제품 색깔표기[E]
-      
     },
 
-    checkAll(prd_cd){
-      const checkboxes = document.getElementsByClassName(prd_cd);
-      checkboxes.forEach((checkbox)=>{ 
-        checkbox.checked;
-      })
+    //지시서 조회
+    async getInstInfo(selectNo) {
+      let obj = {
+        INST_CD : selectNo,
+      }
+      let result = await axios.get('/api/inst', {params:obj})
+                              .catch(err => console.log(err));
+      this.instInfo = result.data[0];
+      this.plan_cd = this.instInfo.PROD_PLAN_CD;
+      this.WORK_DT = this.$comm.getMyDay(this.instInfo.WORK_DT);
+
+      this.getPlanDtlList(this.instInfo.PROD_PLAN_CD);
     },
 
     //제품별 공정 리스트
@@ -287,6 +314,24 @@ export default {
       let result = await axios.get(`/api/inst/${prd_cd}/flow`)
                               .catch(err => console.log(err));                              
       this.planFlowData = result.data;
+      
+      if(!this.isUpdated){
+        this.flowArr = this.planDtlData;        
+      }else{
+        let obj = {
+          INST_CD : this.selectNo,
+          PRD_CD : prd_cd
+        }
+        let upResult = await axios.get('/api/progress/result', {params:obj})
+                                .catch(err => console.log(err));
+        this.flowArr = upResult.data;
+        
+        this.flowArr.forEach((obj) => {
+          const checkboxes2 = document.querySelector('.sub_'+obj.PROC_FLOW_CD);
+          checkboxes2.checked = true;
+        })
+      }
+
     },
 
     //공정설정 리스트 드래그 시 이벤트 (공정 순서 재정렬)
@@ -333,7 +378,7 @@ export default {
       });
 
       let insertArr = [...insertInst, insertPrd, insertFlow];
-
+      
       let result = await axios.post('/api/inst', insertArr)
                  .catch(err => console.log(err));
 

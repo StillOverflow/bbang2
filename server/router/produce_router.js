@@ -136,4 +136,12 @@ router.get('/progress/equ/:no', async (req,res)=>{
   res.send(result);
 })
 
+ //생산공정 종료
+router.put('/progress/end/:no', async (req,res)=>{
+  let prodNo = req.params.no;
+  let info = req.body;
+  let result = await produceService.progressEnd(prodNo, info);
+  res.send(result);
+})
+
 module.exports = router;
