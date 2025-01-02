@@ -3,26 +3,28 @@
         <div class="row mb-1 d-flex justify-content-between">
 
           <div class="col-12 col-md-6 col-xl-3 row text-end p-xl-0">
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">생산번호</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">{{ isMatTest ? '발주' : '생산' }}번호</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control" :value="selectedTarget.refer_cd" disabled>
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">제품코드</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">{{ isMatTest ? '자재' : '제품' }}코드</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control" :value="selectedTarget.target_cd" disabled>
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">제품명</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 col-xl-4 mb-2" :style="t_overflow">{{ isMatTest ? '자재' : '제품' }}명</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
               <input type="text" class="form-control" :value="selectedTarget.target_nm" disabled>
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정코드</h6>
-            <div class="col-10 col-md-9 col-xl-8 mb-2">
+
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow" v-show="!isMatTest">공정코드</h6>
+            <div class="col-10 col-md-9 col-xl-8 mb-2" v-show="!isMatTest">
               <input type="text" class="form-control" :value="selectedTarget.proc_cd" disabled>
             </div>
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow">공정명</h6>
-            <div class="col-10 col-md-9 col-xl-8 mb-2">
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2" :style="t_overflow" v-show="!isMatTest">공정명</h6>
+            <div class="col-10 col-md-9 col-xl-8 mb-2" v-show="!isMatTest">
               <input type="text" class="form-control" :value="selectedTarget.proc_nm" disabled>
             </div>
+
           </div>
 
           <div class="col-12 col-md-6 col-xl-4 mb-2 g-0">
@@ -64,9 +66,9 @@
           </div>
 
           <div class="col-12 col-md-6 col-xl-2 row text-end g-xl-0">
-            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow">생산량</h6>
+            <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow">{{ isMatTest ? '입고' : '생산' }}량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2">
-              <input type="text" class="form-control text-end" :value="this.$comm.getCurrency(selectedTarget.total_qty)" disabled>
+              <input type="text" class="form-control text-end" v-model="total_qty" @change="checkNumberAlert('total')" :disabled="!isWaitList || !isMatTest">
             </div>
             <h6 class="col-2 col-md-3 col-xl-4 mb-2 pe-3" :style="t_overflow" v-show="samplingTests.length > 0">샘플량</h6>
             <div class="col-10 col-md-9 col-xl-8 mb-2" v-show="samplingTests.length > 0">
@@ -143,6 +145,7 @@
     name: 'QualityTestBox',
     props: {
         isWaitList: Boolean, // true: 검사대기 탭, false: 검사완료 탭 (읽기전용)
+        isMatTest: Boolean, // true: 자재검사, false: 공정/완제품검사
         selectedTarget: Object
     },
     data() {
@@ -178,6 +181,7 @@
         fullTests: [], // 선택한 대상의 검사항목 중 전수검사 유형
         members: [], // 품질부서의 사원들
         
+        total_qty: 0,
         test_qty: null,
         def_qty: 0,
         test_dt: null,
@@ -221,7 +225,7 @@
 
       // 합격량 자동계산
       pass_qty(){
-        return this.selectedTarget.total_qty - this.def_qty;
+        return this.total_qty - this.def_qty;
       }
     },
 
@@ -243,6 +247,7 @@
       // 목록에서 타겟 선택 시, 검사결과란 불러오기 전 모든 값 초기화
       reset(clicked){
         if(clicked.id){ // 검사완료목록에서는 값을 가지고 있음.
+          this.total_qty = clicked.total_qty;
           this.test_qty = clicked.test_qty;
           this.pass_qty = clicked.pass_qty;
 
@@ -257,11 +262,8 @@
           this.id = clicked.id;
           this.note = clicked.note;
           this.test_dt = this.$comm.getDatetimeMin(clicked.test_dt);
-
-        //   this.def_status = clicked.def_status;
-        //   this.complete_dt = this.$comm.getDatetimeMin(clicked.complete_dt);
-        //   this.complete_id = clicked.complete_id;
         } else { // 검사대기목록은 값이 없음.
+          this.total_qty = 0;
           this.test_qty = null;
           this.pass_qty = null;
           this.def_qty = 0;
@@ -279,12 +281,18 @@
         this.samplingTests = [];
         this.fullTests = [];
 
+        if(!this.isMatTest){ // 자재는 전체수량을 직접 입력해야 하지만, 공정/제품검사는 자동 입력됨.
+          this.total_qty = clicked.total_qty;
+        }
+
         // 검사항목 불러오기
         if(clicked.is_last == 1 || clicked.target_type == 'P03'){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
           this.getTests(clicked, 'P03');
           this.getTests(clicked, 'P02');
-        } else {
+        } else if(clicked.is_last == 0 || clicked.target_type == 'P02'){ // 공정별 검사일 때
           this.getTests(clicked, 'P02');
+        } else { // 자재 검사일 때 (is_last 컬럼이 없음)
+          this.getTests(clicked, 'P01');
         }
 
         // 검사완료목록일 경우 상세 측정결과값 가져오기
@@ -306,10 +314,10 @@
       async getTests(target, type){
         let query = null;
         
-        if(type == 'P03'){  
-          query = {cd: target.target_cd, type: type}; // P03: 완제품대상 검사항목
-        } else {
+        if(type == 'P02'){  
           query = {cd: target.proc_cd, type: type}; // P02: 공정대상 검사항목
+        } else {
+          query = {cd: target.target_cd, type: type}; // P01(자재대상), P03(완제품대상) 검사항목
         }
 
         let testLists = await axios.get('/api/quality/test/my', {params: query}) // 해당 품질기준의 검사항목 불러옴
@@ -320,7 +328,7 @@
         
           if(test.test_metd == 'O01'){ 
             this.samplingTests.push(test); // O01: 샘플링검사일 경우
-            if(this.isWaitList){ // 검사대기목록에서의 샘플량 기본값 자동 입력
+            if(this.isWaitList && !this.isMatTest){ // 공정/제품 검사대기목록에서의 샘플량 기본값 자동 입력
                 let testQty = target.total_qty * 0.01;
                 this.test_qty = testQty < 5 ? 5 : testQty; // 샘플량을 전체에서 1%로 자동 입력하되, 적어도 5개는 되어야 함.
             }
@@ -373,7 +381,7 @@
             } else {
               test.isPass = false;
               // 샘플링검사 한 개라도 부적합 시 전량 불량
-              this.def_qty = this.selectedTarget.total_qty;
+              this.def_qty = this.total_qty;
             }
           }
         } else if(testMetd == '샘플링'){ // 검사완료목록일 경우
@@ -396,6 +404,7 @@
         let val = null;
         if(target == 'def') val = !this.def_qty ? 0 : this.def_qty; // 입력값 null이면 0으로 취급
         else if(target == 'test') val = this.test_qty;
+        else if(target == 'total') val = this.total_qty;
 
         if(isNaN(val)){ // 숫자가 아닌 경우
           this.$swal(
@@ -407,12 +416,15 @@
         } else if(val < 0){
           val = val * -1; // 입력값이 음수면 양수로 변환
         }
-        if(val > this.selectedTarget.total_qty){ // 입력값이 생산량보다 많다면 최대값 적용
-          val = this.selectedTarget.total_qty;
+        if(target != 'total' && val > this.total_qty){ // (제품)입력값이 생산량보다 많다면 최대값 적용
+          val = this.total_qty;
+        } else if(target == 'total' && val > Number(this.selectedTarget.yet_qty)){ // (자재)입력값이 미입고량보다 많다면 최대값 적용
+          val = this.selectedTarget.yet_qty;
         }
 
         if(target == 'def') this.def_qty = Number(val);
         else if(target == 'test') this.test_qty = val < 5 ? 5 : Number(val); // 샘플량은 최소 5개 이상이어야 함.
+        else if(target == 'total') this.total_qty = Number(val);
       },
 
       // ------------ 불량 선택 모달 메소드 ------------
@@ -423,8 +435,8 @@
 
       async getModalList(){ // 불량목록 불러오기
         let params = {
-          type: 'P02', // 불량유형: 공정중
-          subType: this.selectedTarget.is_last == 1 ? 'P03' : null // 마지막 공정일 시 불량유형: 제품도 함께 조회
+          type: this.isMatTest ? 'P01' : 'P02', // 불량유형: 자재 or 공정중
+          subType: this.selectedTarget.is_last == 1 ? 'P03' : null // 제품의 마지막 공정일 시 불량유형: 제품도 함께 조회
         }; 
         
         let result = await axios.get('/api/quality/defect', {params: params})
@@ -469,7 +481,7 @@
         }
 
         let target = this.selectedTarget;
-        let isLast = target.is_last == 1; // 값이 1인 경우 boolean 타입 true로 담음.
+        let isLast = target.is_last == 1;
 
         // 유효성 검사
         if(this.def_qty > 0 && !this.def_cd){ // 불량양이 있는데 불량코드를 선택하지 않은 경우
@@ -497,11 +509,10 @@
         
         let headerObj = { // 헤더 등록용
           test_dt: this.test_dt.replace('T', ' '), // 날짜 DB형식으로 바꿈 
-          refer_cd: target.refer_cd, 
-          target_type: isLast ? 'P03' : 'P02', // 마지막 공정에서의 검사는 P03(완제품검사)으로 입력 
+          refer_cd: target.refer_cd,
           target_cd: target.target_cd, 
           proc_cd: target.proc_cd,
-          total_qty: target.total_qty, 
+          total_qty: this.total_qty, 
           test_qty: this.test_qty, 
           pass_qty: this.pass_qty, 
           def_qty: this.def_qty,
@@ -509,6 +520,12 @@
           def_cd: this.def_qty > 0 ? this.def_cd : null, // def_cd가 있더라도 불량양이 없으면 null 입력
           note: this.note
         };
+        
+        if(this.isMatTest){
+          headerObj.target_type = 'P01';
+        } else {
+          headerObj.target_type = isLast ? 'P03' : 'P02'; // 제품 마지막 공정에서의 검사는 P03(완제품검사)으로 입력 
+        }
 
         let result = await axios.post('/api/quality/rec', {header: headerObj, dtl: dtlArr})
                                 .catch(err => console.log(err));

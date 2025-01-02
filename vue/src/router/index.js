@@ -55,8 +55,9 @@ import MaterialsOutList from '../views/material/MaterialsOutList.vue';
 
 
 ////////////////////////////// 품질 //////////////////////////////
-import QualityStdAdd from '../views/quality/QualityStdAdd.vue';
-import QualityTest from '../views/quality/QualityTest.vue';
+import QualityStandard from '../views/quality/QualityStandard.vue';
+import QualityPrdTest from '../views/quality/QualityPrdTest.vue';
+import QualityMatTest from '../views/quality/QualityMatTest.vue';
 import QualityTestRecList from '../views/quality/QualityTestRecList.vue';
 import QualityDefManagement from '../views/quality/QualityDefManagement.vue';
 
@@ -383,15 +384,21 @@ const routes = [
   ////////////////////////////// 품질 //////////////////////////////
   {
     // 품질기준 관리
-    path: '/Quality_stdAdd',
-    name: 'QualityStdAdd',
-    component: QualityStdAdd,
+    path: '/Quality_standard',
+    name: 'QualityStandard',
+    component: QualityStandard,
   },
   {
-    // 품질검사
-    path: '/Quality_test',
-    name: 'QualityTest',
-    component: QualityTest,
+    // 제품 품질검사
+    path: '/Quality_prdTest',
+    name: 'QualityPrdTest',
+    component: QualityPrdTest,
+  },
+  {
+    // 자재 입고검사
+    path: '/Quality_matTest',
+    name: 'QualityMatTest',
+    component: QualityMatTest,
   },
   {
     // 품질검사결과 목록
@@ -405,12 +412,6 @@ const routes = [
     name: 'QualityDefManagement',
     component: QualityDefManagement,
   },
-
-
-
-
-
-
 
 
 

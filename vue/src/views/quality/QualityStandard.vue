@@ -67,7 +67,7 @@
   import SelectTarget from "../../components/quality/SelectTarget.vue";
 
   export default {
-    name: 'QualityStdAdd',
+    name: 'QualityStandard',
     data() {
       return {
         // 스타일 바인딩
@@ -131,6 +131,11 @@
     components: { 
         AgGridVue, // grid API
         SelectTarget
+    },
+
+    created(){ 
+      // 페이지 제목 저장
+      this.$store.dispatch('breadCrumb', {title: '품질기준 관리'});
     },
 
     methods: {
