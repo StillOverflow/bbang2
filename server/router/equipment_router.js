@@ -49,7 +49,7 @@ const upload = multer({
 /*--------------설비-------------*/
 
 // 설비 상태 조회
-router.get('/equip/stat', async (req, res) => {
+router.get('/equipList/stat', async (req, res) => {
   let eqStatList = await equipmentService.findStatEq();
   res.send(eqStatList);
 });
@@ -205,14 +205,14 @@ router.put('/equip/insp/:insp_log_cd', async (req, res) => {
   console.log('수신한 insp_log_cd:', inspLogCd);
   console.log('수정 요청 데이터:', req.body);
 
-    // insp_log_cd가 유효한지 확인
-    if (!inspLogCd || inspLogCd === 'null' || inspLogCd.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        message: '유효하지 않은 insp_log_cd입니다. 값을 확인하세요.',
-      });
-    }
-  
+  // insp_log_cd가 유효한지 확인
+  if (!inspLogCd || inspLogCd === 'null' || inspLogCd.trim() === '') {
+    return res.status(400).json({
+      success: false,
+      message: '유효하지 않은 insp_log_cd입니다. 값을 확인하세요.',
+    });
+  }
+
   try {
     // 수정할 데이터 구성
     const eqInspInfo = { ...req.body, insp_log_cd: inspLogCd };
@@ -305,14 +305,14 @@ router.put('/equip/down/:downtime_cd', async (req, res) => {
   console.log('수신한 downtime_cd:', downLogCd);
   console.log('수정 요청 데이터:', req.body);
 
-    // downtime_cd가가 유효한지 확인
-    if (!downLogCd || downLogCd === 'null' || downLogCd.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        message: '유효하지 않은 downtime_cd입니다. 값을 확인하세요.',
-      });
-    }
-  
+  // downtime_cd가가 유효한지 확인
+  if (!downLogCd || downLogCd === 'null' || downLogCd.trim() === '') {
+    return res.status(400).json({
+      success: false,
+      message: '유효하지 않은 downtime_cd입니다. 값을 확인하세요.',
+    });
+  }
+
   try {
     // 수정할 데이터 구성
     const eqDownInfo = { ...req.body, downtime_cd: downLogCd };
@@ -405,14 +405,14 @@ router.put('/equip/repair/:repair_cd', async (req, res) => {
   console.log('수신한 repair_cd:', repairLogCd);
   console.log('수정 요청 데이터:', req.body);
 
-    // repair_cd가가 유효한지 확인
-    if (!repairLogCd || repairLogCd === 'null' || repairLogCd.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        message: '유효하지 않은 repair_cd입니다. 값을 확인하세요.',
-      });
-    }
-  
+  // repair_cd가가 유효한지 확인
+  if (!repairLogCd || repairLogCd === 'null' || repairLogCd.trim() === '') {
+    return res.status(400).json({
+      success: false,
+      message: '유효하지 않은 repair_cd입니다. 값을 확인하세요.',
+    });
+  }
+
   try {
     // 수정할 데이터 구성
     const eqRepairInfo = { ...req.body, repair_cd: repairLogCd };

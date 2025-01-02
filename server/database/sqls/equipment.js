@@ -2,7 +2,22 @@
 
 /* -----------설비 관리------------*/
 //설비상태조회
-const eqStatList = `SELECT * FROM equipment`;
+const eqStatList = `SELECT 
+    fn_get_codename(e.eqp_type) as eqp_type, 
+    e.eqp_cd as eqp_cd,
+    p.proc_cd as proc_cd,
+    p.proc_nm as proc_nm,
+    e.eqp_nm as eqp_nm,
+    e.model as model,
+    e.last_insp_dt AS last_insp_dt,
+    fn_get_codename(e.status) as status,
+    fn_get_codename(e.is_use) as is_use
+FROM 
+    equipment e
+LEFT JOIN 
+    prod_result pr ON e.eqp_cd = pr.eqp_cd
+LEFT JOIN 
+    process p ON pr.proc_cd = p.proc_cd;`;
 
 //설비정보조회
 const eqAllList = `SELECT eqp_cd,
@@ -225,7 +240,7 @@ ORDER BY e.eqp_cd, i.start_time DESC
 limit 1
   `;
 
-  //설비 점검 조회(필터링 적용) //아직 조회페이지 전이라 검증 필요
+//설비 점검 조회(필터링 적용) //아직 조회페이지 전이라 검증 필요
 const eqInstListSearch = (searchObj) => {
   let query = ` SELECT  e.eqp_cd as eqp_cd,
                       fn_get_codename(e.eqp_type) as eqp_type,
@@ -367,7 +382,7 @@ limit 1
   `;
 
 
-  /* -----------설비 수리 관리------------*/
+/* -----------설비 수리 관리------------*/
 
 // 수리 등록 전 마지막 수리 코드 찾기 +1
 const getRepairCd = `
