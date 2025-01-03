@@ -160,6 +160,12 @@ router.delete('/sales/prdOutDelete/:del', async (req, res) => {
     let outDel = await salesService.deleteOutPrd(del);
     res.send(outDel);
 });
+//출고 제품 삭제시 상태 원복
+router.delete('/sales/prdOutDeleteStatus/:del', async (req, res) => {
+    let ocd = req.params.ocd;
+    let ocdSt = await salesService.statusDeleteOutPrd(ocd);
+    res.send(ocdSt);
+});
 //출고 제품 삭제시 제품수량 원복
 router.put('/sales/prdOutDeleteQty', async (req, res) => {
     let updateInfo = req.body;

@@ -282,6 +282,17 @@ const deleteOutPrd = async (no) => {
         return {"result" : "fail"};
     }
 };
+//출고 제품 삭제시 상태 원복
+const statusDeleteOutPrd = async (no) => {
+    let ocd = await mariadb.query('prdOutDeleteStatus', no);
+
+    if(ocd.affectedRows > 0){ 
+        return {"result" : "success"};
+    } else {
+        return {"result" : "fail"};
+    }
+
+};
 //출고 제품 삭제시 제품수량 원복
 const qtyDeleteOutPrd = async (values) => {
     
@@ -651,6 +662,7 @@ module.exports = {
     listDtlOutPrd,
     listLotDtlOutPrd,
     deleteOutPrd,
+    statusDeleteOutPrd,
     qtyDeleteOutPrd,
     deleteListOutPrd,
     updatePrdOut,
