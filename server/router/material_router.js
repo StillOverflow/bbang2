@@ -50,7 +50,7 @@ router.get("/material/produceInstruction", async (req, res) => {
 router.get("/material/out", async (req, res) => {
    console.log("router => ", req.query)
    let result = await materialService.getMaterialOutForProduction(req.query);
-
+   console.log("결과 -=> ", result)
    res.send(result);
 });
 

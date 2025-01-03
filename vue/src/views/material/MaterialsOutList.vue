@@ -14,8 +14,8 @@
                      
                      <div class="row">
                         <div style="margin-bottom: 65px" class="d-flex justify-content-left align-items-center" >
-                           <div style="width: 100%" class="text-left fw-bolder font_15px">작업일자</div>
-                           <div style="width: 100%" class="d-flex justify-content-left align-items-center text-left">
+                           <div style="width: 200%" class="text-left fw-bolder font_15px">작업일자</div>
+                           <div style="width: 80%" class="d-flex justify-content-left align-items-center text-left">
                               <div style="width: 45%">
                                  <input class="form-control" type="datetime-local" :max="endDt" v-model="startDt" @change="onChangeSearchDate"/>
                               </div>
@@ -124,7 +124,7 @@
                                           :key="index" 
                                           class="dropdown-item materialBtn font_15px" 
                                           :class="{ active: index === selectedIndex }" 
-                                          v-modal="item.mat_cd"
+                                          :data-matCode="item.mat_cd"
                                           @click="onClickMatNm(null, item.mat_cd, item.mat_nm)"
                                        >
                                           {{ item.mat_nm }}
@@ -180,7 +180,7 @@
                                        type="radio"
                                        :name="materialCategory"
                                        value=""
-                                       v-modal="selectedCategory"
+                                       v-model="selectedCategory"
                                        @change="radioMaterialChange"
                                        checked="checked"
                                     >
@@ -341,11 +341,9 @@
    // 생산중 이거나 완료된 지시서 조회 instructionsOptions
    const getProduceInstruction = async () => {
       try {
-         console.log("selectedStatus.value => ", selectedStatus.value)
          const result = await axios.get(`/api/material/produceInstruction`, { params : { 'startDt' : startDt.value, 'endDt' : endDt.value, 'status' : selectedStatus.value } });
          instructionsData.value = result.data || [];
-         
-         console.log("axios타고 난 후", instructionsData.value)
+
          if(result.data.length > 0) {
             instCode.value = result.data[0].inst_cd || "";
             getMaterialOutForProduction(instCode.value);
@@ -365,13 +363,14 @@
    }
 
    // 지시건에 대한 자재 출고 내역
-   const getMaterialOutForProduction = async () => {
+   const getMaterialOutForProduction = async (inst_cd) => {
       try {
-         console.log(selectedCategory.value);
-         console.log(selectedCategory.value);
-         const result = await axios.get('/api/material/out', { params : { 'inst_cd' : String(instCode.value).trim(), 'category' : selectedCategory.value || '', 'type' : selectedType.value || '',   } })
-
-         materialOutData.value = result.data || [];
+         const result = await axios.get('/api/material/out', { params : { 'inst_cd' : String(instCode.value).trim() || inst_cd, 'category' : selectedCategory.value, 'type' : selectedType.value, 'mat_nm' : keyword.value } } )
+         if(result.data.length > 0) {
+            materialOutData.value = result.data;
+         } else {
+            materialOutData.value = [];
+         }
       } catch (err) {
          materialOutData.value = [];
          
@@ -413,21 +412,23 @@
    // 드롭다운 박스에 버튼 클릭 시 input에 입력 & 모달창 자재 클릭시 검색창에 입력
    const onClickMatNm = (params, code, name, ) => {
       isHidden.value = true;       // 드롭다운 숨김
+
       if(params != null) {
          keyword.value = params.data.mat_nm;
-         console.log("code => ",code)
-         getMaterialOutForProduction(code);
          materialModalOpen(); // 자재조회 모달
       }
+
       if(code || name) {
          keyword.value = name;   // 자재명
       }
+
+      getMaterialOutForProduction();
    };
    
    // 지시서 row 클릭 시
    const onClickInstructionsRow = (params) => {
       instCode.value = params.data.inst_cd || '';
-      getMaterialOutForProduction(params.data.inst_cd);
+      getMaterialOutForProduction();
    } 
 
    // 아래, 위 방향키 및 엔터 이벤트 핸들러
@@ -471,11 +472,13 @@
             }
          break;
          
-         case "Enter" :
+         case "Enter" : {
             if (document.activeElement) {
                keyword.value = document.activeElement.innerText;
             }
-         break;
+            getMaterialOutForProduction();
+            break;
+         }
       }
    };
 
@@ -568,19 +571,22 @@
                const rowIndex = params.node.rowIndex;
                const instDtlCode = params.data.inst_dtl_cd;
 
-               if ( rowIndex > 0 && params.api.getDisplayedRowAtIndex(rowIndex - 1).data.inst_dtl_cd === instDtlCode ) {
+               if (
+                  rowIndex > 0 &&
+                  params.api.getDisplayedRowAtIndex(rowIndex - 1).data.inst_dtl_cd === instDtlCode
+               ) {
+                  console.log(`Skipping row ${rowIndex} for merge`);
                   return 0; // 병합 내부 셀
                }
 
                let span = 1;
-
                for (let i = rowIndex + 1; i <= params.api.getLastDisplayedRowIndex(); i++) {
                   const nextRowNode = params.api.getDisplayedRowAtIndex(i);
-                  
+
                   if (nextRowNode && nextRowNode.data.inst_dtl_cd === instDtlCode) {
-                     span++;
+                        span++;
                   } else {
-                     break;
+                        break;
                   }
                }
 
@@ -594,7 +600,7 @@
                   return params.value !== undefined;
                },
             },
-            //columnHoverHighlight : true
+            columnHoverHighlight : true
          },
          { 
             headerName: '공정 코드', 
@@ -669,9 +675,6 @@
          
       ],
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
-      onGridReady: (params) => {
-         params.api.sizeColumnsToFit(); // 그리드가 준비된 후 호출
-      },
    };
 
 </script>
@@ -693,7 +696,7 @@
       justify-content: center;
       align-items: center;
       text-align: center;
-      background-color: #fafafa;
+      background-color: #e4e4e4;
       border: 1px solid #BABFC7;
       border-collapse: collapse;
    }
