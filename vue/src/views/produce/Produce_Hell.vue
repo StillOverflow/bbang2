@@ -5,6 +5,7 @@
 }
 </style>
 <template>
+  
   <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
     <div class="card">      
       <div class="card-header ps-5 ps-md-4">
