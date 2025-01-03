@@ -122,22 +122,22 @@ export default {
 
       //모달 계획서 목록 
       orderDefs: [
-        { headerName: '주문서코드', field: 'order_cd', sortable: true, width: 110 },
-        { headerName: '거래처코드', field: 'act_cd', sortable: true, width: 110  },
-        { headerName: '거래처이름', field: 'act_nm', sortable: true, width: 150 },
-        { headerName: '담당자', field: 'name', sortable: true, width: 80},
-        { headerName: '제품종류', field: 'prd_cnt', sortable: true, width: 100},
-        { headerName: '총 주문건수', field: 'order_cnt', sortable: true, width: 110},
-        { headerName: '주문일자', field: 'order_dt', valueFormatter: this.$comm.dateFormatter, width: 110 }
+        { headerName: '주문서코드', field: 'order_cd', sortable: true, width: 110, cellStyle: {textAlign: "center"} },
+        { headerName: '거래처코드', field: 'act_cd', sortable: true, width: 110, cellStyle: {textAlign: "center"} },
+        { headerName: '거래처이름', field: 'act_nm', sortable: true, width: 150, cellStyle: {textAlign: "center"} },
+        { headerName: '담당자', field: 'name', sortable: true, width: 80, cellStyle: {textAlign: "center"}},
+        { headerName: '제품종류', field: 'prd_cnt', sortable: true, width: 100, cellStyle: {textAlign: "center"}},
+        { headerName: '총 주문건수', field: 'order_cnt', sortable: true, width: 110, cellStyle: {textAlign: "center"}},
+        { headerName: '주문일자', field: 'order_dt', valueFormatter: this.$comm.dateFormatter, width: 110, cellStyle: {textAlign: "center"} }
       ],
       orderData: [],
 
       //제품목록
       productDefs:[
-        { headerName: '제품코드', field: 'prd_cd', sortable: true, width:150 },
-        { headerName: '제품명', field: 'prd_nm', sortable: true },
-        { headerName: '금액', field: 'price', sortable: true, valueFormatter:this.$comm.currencyFormatter },
-        { headerName: '현재고', field: 'in_cnt', sortable: true, valueFormatter:this.$comm.currencyFormatter},
+        { headerName: '제품코드', field: 'prd_cd', sortable: true, width:150, cellStyle: {textAlign: "center"}},
+        { headerName: '제품명', field: 'prd_nm', sortable: true, cellStyle: {textAlign: "center"}},
+        { headerName: '금액', field: 'price', sortable: true, valueFormatter:this.$comm.currencyFormatter, cellStyle: {textAlign: "center"} },
+        { headerName: '현재고', field: 'in_cnt', sortable: true, valueFormatter:this.$comm.currencyFormatter, cellStyle: {textAlign: "center"}},
       ],
       productData:[],
       productApi: null,
@@ -145,8 +145,8 @@ export default {
 
       //주문서 제품목록
       orderDtlDefs: [
-        {headerName: '제품 코드', field: 'prd_cd', width:150},
-        {headerName: '제품 이름', field: 'prd_nm'},
+        {headerName: '제품 코드', field: 'prd_cd', width:150, cellStyle: {textAlign: "center"}},
+        {headerName: '제품 이름', field: 'prd_nm', cellStyle: {textAlign: "center"}},
         {
             headerName: '제품 수량', 
             field: 'order_qty', 
@@ -156,9 +156,10 @@ export default {
                 if (params.value == null || params.value === '') return '';
                 return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
             },
+            cellStyle: {textAlign: "center"},
             cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
         },
-        {headerName: '현 재고', field: 'in_cnt', valueFormatter:this.$comm.currencyFormatter}
+        {headerName: '현 재고', field: 'in_cnt', valueFormatter:this.$comm.currencyFormatter, cellStyle: {textAlign: "center"}}
       ],
       orderDtlData: [],
       orderDtlApi: null,

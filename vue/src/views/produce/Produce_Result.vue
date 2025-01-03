@@ -6,13 +6,9 @@
         <div class="row">
           <div class="col-3 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">지시서 코드</div>
           <div class="input-group w-30">
-            <input class="form-control" type="text" v-model="inst_cd" placeholder="생산지시서 코드를 검색해주세요" style="height: 41px;">
+            <input class="form-control" type="text" v-model="inst_cd" @click="modalOpen" placeholder="생산지시서 코드를 검색해주세요" style="height: 41px;">
             <button class="btn btn-warning mb-3" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
-          <select class="form-select w-50" aria-label="Default select example" v-model="prd_cd" style="height: 41px;" @change="getResultList">
-            <option selected>제품을 선택해주세요</option>
-            <option v-for="val in instDtlData" :value=month :key="val">{{ val.PRD_NM }}</option>
-          </select>
         </div>
 
         <!--생산지시서 검색모달[S]-->
@@ -52,7 +48,7 @@
       </div>
 
       <div class="card-header ps-5 ps-md-4">
-        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" 
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 500px;" 
         :columnDefs="resultDefs"
         :rowData="resultData" 
         :pagination="true" 
@@ -106,31 +102,70 @@ export default {
       ],
       instData: [],
 
-      resultDefs: [
-        { headerName: '순번', field: 'STEP', sortable: true, width: 120 },
-        { headerName: '지시서코드', field: 'INST_CD', sortable: true },
-        { headerName: '담당자', field: 'NAME'},
-        { headerName: '공정명', field: 'PROC_NM', sortable: true },
-        { headerName: '설비명', field: 'EQP_NM'},
-        { headerName: '계획량', field: 'TOTAL_QTY'},
-        { headerName: '지시량', field: 'PROD_QTY'},
-        { headerName: '불량양', field: 'DEF_QTY' },
-        { headerName: '불량코드', field: 'CREATE_DT'},
-        { headerName: '불량상세', field: 'CREATE_DT'},
-        { headerName: '공정시작시간', field: 'START_TIME'},
-        { headerName: '공정종료시간', field: 'END_TIME'},
-        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true }
+      resultDefs: [        
+        {
+          headerName: '제품명', field: "PRD_NM",
+          rowSpan: (params) => {
+               const rowIndex = params.node.rowIndex;
+               const prd_cd = params.data.PRD_CD;
+
+               if ( rowIndex > 0 && params.api.getDisplayedRowAtIndex(rowIndex - 1).data.PRD_CD === prd_cd ) {
+                  return 0; // 병합 내부 셀
+               }
+
+               let span = 1;
+
+               for (let i = rowIndex + 1; i <= params.api.getLastDisplayedRowIndex(); i++) {
+                  const nextRowNode = params.api.getDisplayedRowAtIndex(i);
+                  
+                  if (nextRowNode && nextRowNode.data.PRD_CD === prd_cd) {
+                     span++;
+                  } else {
+                     break;
+                  }
+               }
+               
+               return span;
+            },
+            cellClassRules: {
+               "cell-span": (params) => {
+                  if (!params) {
+                     return false;
+                  }
+                  return params.value !== undefined;
+               },
+            },
+         },        
+        { headerName: '순번', field: 'STEP', sortable: true, width: 120, cellStyle: {textAlign: "center"}},
+        { headerName: '공정명', field: 'PROC_NM', sortable: true, cellStyle: {textAlign: "center"}},
+        { headerName: '담당자', field: 'NAME', cellStyle: {textAlign: "center"}},
+        { headerName: '설비명', field: 'EQP_NM', cellStyle: {textAlign: "center"}},
+        { headerName: '계획량', field: 'TOTAL_QTY', cellStyle: {textAlign: "center"}},
+        { headerName: '지시량', field: 'PROD_QTY', cellStyle: {textAlign: "center"}},
+        { headerName: '불량양', field: 'DEF_QTY', cellStyle: {textAlign: "center"}},
+        { headerName: '불량코드', field: 'CREATE_DT', cellStyle: {textAlign: "center"}},
+        { headerName: '불량상세', field: 'CREATE_DT', cellStyle: {textAlign: "center"}},
+        { 
+          headerName: '공정시작시간', 
+          field: 'START_TIME', 
+          valueFormatter: (params) => this.$comm.getDatetimeMin(params.value)
+          , cellStyle: {textAlign: "center"}
+        },
+        { 
+          headerName: '공정종료시간', 
+          field: 'END_TIME', 
+          valueFormatter: (params) => this.$comm.getDatetimeMin(params.value)
+          , cellStyle: {textAlign: "center"}
+        },
+        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, cellStyle: {textAlign: "center"} }
       ],
       resultData: [],
       
       gridOptions: {
         pagination: true,
-        paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
+        suppressRowTransform: true,
         overlayNoRowsTemplate: '표시할 값이 없습니다.', // 표시할 행이 없을 때 적용할 메세지'
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
-        rowSelection: {
-          mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
-        }
       }
     };
   },
@@ -143,7 +178,7 @@ export default {
     modalClicked(params) {
       this.isModal = !this.isModal;
       this.inst_cd= params.data.INST_CD;      
-      this.getInstDtlList(); 
+      this.getResultList(); 
     },
     modalCloseFunc() {
       this.isModal = !this.isModal;
@@ -180,7 +215,6 @@ export default {
     async getResultList() {
       let obj = {
         INST_CD : this.inst_cd,
-        PRD_CD : this.prd_cd
       }
       let result = await axios.get('/api/progress/result', {params:obj})
                               .catch(err => console.log(err));
@@ -195,7 +229,7 @@ export default {
       selected = this.myApi.getSelectedNodes();
       const selectedData = selected.map(item => ({
         '순번': item.data.STEP,
-        '지시서코드': item.data.INST_CD,
+        '제품코드': item.data.PRD_CD,
         '담당자': item.data.NAME,
         '공정명': item.data.PROC_NM,
         '설비명': item.data.EQP_NM,
