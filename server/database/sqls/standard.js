@@ -81,6 +81,7 @@ FROM product;
 const procFlowByProd = `
 SELECT p.proc_cd,
        p.proc_nm,
+       fn_get_codename(p.eqp_type) AS eqp_type,
        pf.proc_seq,
        pf.proc_flow_cd
 FROM process_flow pf
@@ -92,7 +93,7 @@ ORDER BY pf.proc_seq
 const selectProcCd = `
 SELECT proc_cd,
        proc_nm,
-       eqp_type,
+       fn_get_codename(eqp_type) as eqp_type,
        duration
 FROM process;
 `;
@@ -361,7 +362,8 @@ const defectSelect = (datas)=>{
            def_nm,
            fn_get_codename(def_type) AS def_type,
            def_detail,
-           note
+           note,
+           create_dt
     FROM defect
     `;
 

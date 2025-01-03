@@ -32,7 +32,8 @@
             <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
             <div class="col-md-4 mt-5" style="height: auto">
                 <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newDefect">신규등록</button>
+                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newDefect"
+                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT2' )">신규등록</button>
                 </div>
                 <div class="d-flex justify-content-left  mb-2">
                     <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">불량코드 *</div>
@@ -76,8 +77,10 @@
             </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? defUpdate() : defInsert()" > submit </button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="deldefect"> delete </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? defUpdate() : defInsert()" 
+                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT2' )"> 저장 </button>
+                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delDefInfo"
+                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT2' )"> 삭제 </button>
                 </div>
             </div>
         </div>
@@ -115,7 +118,8 @@ export default {
                 def_nm : '',
                 def_type : '',
                 def_detail:'',
-                note:''
+                note:'',
+                create_dt:''
             },
             isUpdated : false,
             
@@ -177,6 +181,7 @@ export default {
             this.defInfo.def_detail = params.data.def_detail;
             this.defInfo.def_type = this.matchCode(this.selectedData.selectOptions.def_type ,params.data.def_type)
             this.defInfo.note = params.data.note;
+            this.defInfo.create_dt = this.$comm.getMyDay(params.data.create_dt);
             this.isUpdated = true;    
             
             this.copyDefInfo = {...this.defInfo}
@@ -249,7 +254,23 @@ export default {
                     
                 });
         },
-        async delDefInfo(){           
+        async delDefInfo(){   
+            const currentTime = new Date();
+            const createDate = new Date(this.defInfo.create_dt);
+            const timeDifference = (currentTime - createDate) / (24 *1000 * 60 * 60); 
+            console.log(currentTime);
+            console.log(createDate);
+            console.log(timeDifference);
+            // 1시간 이내인지 확인
+            if (timeDifference > 1) {
+                this.$swal({
+                    icon: "error",
+                    title: "삭제 불가",
+                    text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
+                });
+                return; 
+            }
+            
                 this.$swal({
                     title: "정말 삭제하시겠습니까??",
                     text: "",

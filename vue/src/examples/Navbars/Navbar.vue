@@ -68,7 +68,7 @@ const closeMenu = () => {
               class="px-0 nav-link font-weight-bold text-white"
               >
                 <i class="fa fa-user" :class="isRTL ? 'ms-sm-2' : 'me-sm-2'"></i>
-                <span class="d-sm-inline d-none">LogOut</span>
+                <span class="d-sm-inline d-none">개쩌는{{this.$session.get('user_nm')}}님</span>
               </button>
             </template>
             <template v-else>

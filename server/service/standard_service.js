@@ -436,9 +436,9 @@ const deleteDefect = async(defCd)=>{
 
 //-------------------------------------사원관리------------------------------------------------
 //비밀번호 자동생성
-const generatePassword = () => {
-  return Math.random().toString(36).slice(2); // 6자리 난수 생성
-};
+// const generatePassword = () => {
+//   return Math.random().toString(36).slice(2); // 6자리 난수 생성
+// };
 
 //사원등록
 const insertMember = async(memInfo)=>{
@@ -452,7 +452,7 @@ const insertMember = async(memInfo)=>{
   memInfo.id = new_id;
 
   //비밀번호생성
-  memInfo.password = generatePassword();
+  memInfo.password = memInfo.birth.replace(/-/g,"");
 
   let result = await mariadb.query('memInsert', memInfo);
   if(result.affectedRows >0){
