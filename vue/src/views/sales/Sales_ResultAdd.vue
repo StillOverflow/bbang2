@@ -186,11 +186,12 @@ export default {
 
             POLDefs: [
 
-                {headerName: '제품 코드', field: 'prd_cd'},
-                {headerName: '제품 이름', field: 'prd_nm'},
+                {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
                 {
                     headerName: '제품 출고 수량', 
-                    field: 'prd_out_qty',
+                    field: 'prd_out_qty', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -198,7 +199,8 @@ export default {
                 },
                 {
                     headerName: 'LOT선택' ,
-                    field: 'lotlist',
+                    field: 'lotlist', 
+                    cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'SEARCH';
@@ -224,13 +226,14 @@ export default {
             POLData: [ ],
 
             returnLotDefs: [
-                {headerName: '출고상세코드', field: 'prd_out_dtl_cd'},
-                {headerName: 'LOT', field: 'prd_lot_cd'},
-                {headerName: '제품 코드', field: 'prd_cd'},
-                {headerName: '제품 이름', field: 'prd_nm'},
+                {headerName: '출고상세코드', field: 'prd_out_dtl_cd', cellStyle: { textAlign: "center" }},
+                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
                 {
                     headerName: '출고 수량', 
-                    field: 'prd_out_qty',
+                    field: 'prd_out_qty', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -246,13 +249,14 @@ export default {
             },
 
             prdRTDefs: [
-                {headerName: '반품상세코드', field: 'prd_return_dtl_cd', hide: true},
-                {headerName: '출고상세코드', field: 'prd_out_dtl_cd', hide: true},
-                {headerName: '제품코드', field: 'prd_cd'},
-                {headerName: 'LOT', field: 'prd_lot_cd'},
+                {headerName: '반품상세코드', field: 'prd_return_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
+                {headerName: '출고상세코드', field: 'prd_out_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
+                {headerName: '제품코드', field: 'prd_cd', cellStyle: { textAlign: "center" }},
+                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }},
                 {
                     headerName: '출고 수량', 
-                    field: 'prd_out_qty',
+                    field: 'prd_out_qty', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -262,6 +266,7 @@ export default {
                     headerName: '반품 수량', 
                     field: 'prd_return_qty', 
                     editable: true, 
+                    cellStyle: { textAlign: "center" }, 
                     cellDataType: 'number',
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
@@ -269,10 +274,11 @@ export default {
                     },
                     cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
                 },
-                {headerName: '반품사유', field: 'note', editable: true},
+                {headerName: '반품사유', field: 'note', cellStyle: { textAlign: "center" }, editable: true},
                 {
                     headerName: '삭제' ,
-                    field: 'delete',
+                    field: 'delete', 
+                    cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
                         button.innerText = 'DELETE';
@@ -298,17 +304,17 @@ export default {
             prdRTData: [],
 
             prdOutDefs: [
-                {headerName: '출고 코드', field: 'prd_out_cd'},
-                {headerName: '거래처 코드', field: 'act_cd'},
-                {headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter' },
-                {headerName: '출고 담당자', field: 'name', filter: 'agTextColumnFilter'},
-                {headerName: '출고 일자', field: 'prd_out_dt', valueFormatter: this.$comm.dateFormatter},
+                {headerName: '출고 코드', field: 'prd_out_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '거래처 코드', field: 'act_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '거래처 명', field: 'act_nm', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter' },
+                {headerName: '출고 담당자', field: 'name', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter'},
+                {headerName: '출고 일자', field: 'prd_out_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
             ],
             prdOutData: [],
             memDefs: [
-                {headerName: '담당자 ID', field: 'ID'},
-                {headerName: '담당자 명', field: 'name', filter: 'agTextColumnFilter'},
-                {headerName: '부서', field: 'dpt_nm', filter: 'agTextColumnFilter'},
+                {headerName: '담당자 ID', field: 'ID', cellStyle: { textAlign: "center" }},
+                {headerName: '담당자 명', field: 'name', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter'},
+                {headerName: '부서', field: 'dpt_nm', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter'},
             ],
             memData: [],
             
@@ -593,8 +599,7 @@ export default {
             }).then(async(result) => {
                 if (result.isConfirmed) {
                     let result2 = await axios.delete(`/api/sales/returnDelete/${this.selectNo}`)
-                                            .catch(err => console.log("deleteAxios에러",err));
-
+                                             .catch(err => console.log("deleteAxios에러",err));
                     if(result2.data.result == 'success'){
                         this.resetForm(); // 초기화
                         
@@ -604,7 +609,7 @@ export default {
                         icon: "success"
                         }).then(result =>{
                             if(result){
-                                this.$router.push({name:'sales_ResultList'}) //OK누르면 목록으로 이동
+                                this.$router.push({name:'Sales_ResultList'}) //OK누르면 목록으로 이동
                             }
                         })
                     }                        

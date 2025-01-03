@@ -193,13 +193,14 @@ export default {
             order_date: '',
             
             columnDefs: [
-                {headerName: '주문디테일코드', field: 'order_dtl_cd', hide: true},
-                {headerName: '제품 코드', field: 'prd_cd'},
-                {headerName: '제품 이름', field: 'prd_nm'},
+                {headerName: '주문디테일코드', field: 'order_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
+                {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
                 {
                     headerName: '주문 수량', 
                     field: 'order_qty', 
                     editable: true, 
+                    cellStyle: { textAlign: "center" }, 
                     cellDataType: 'number',
                     // valueFormatter: (params) => {
                     //     if (params.value == null || params.value === '') return '';
@@ -207,10 +208,11 @@ export default {
                     // },
                     cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
                 },
-                {headerName: '비고', field: 'note', editable: true},
+                {headerName: '비고', field: 'note', editable: true, cellStyle: { textAlign: "center" }},
                 {
                     headerName: '삭제' ,
-                    field: 'delete',
+                    field: 'delete', 
+                    cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         
                         const button = document.createElement('button');
@@ -238,24 +240,25 @@ export default {
             ],
             rowData: [ ],
             accDefs: [
-                {headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter' },
-                {headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter' },
-                {headerName: '구분', field: 'act_type', filter: 'agTextColumnFilter' },
+                {headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" } },
+                {headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" } },
+                {headerName: '구분', field: 'act_type', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" } },
             ],
             accData: [],
             memDefs: [
-                {headerName: '담당자 ID', field: 'ID', filter: 'agTextColumnFilter'},
-                {headerName: '담당자 명', field: 'name', filter: 'agTextColumnFilter'},
-                {headerName: '부서', field: 'dpt_nm', filter: 'agTextColumnFilter'},
+                {headerName: '담당자 ID', field: 'ID', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" }},
+                {headerName: '담당자 명', field: 'name', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" }},
+                {headerName: '부서', field: 'dpt_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" }},
             ],
             memData: [],
             proDefs: [
-                {headerName: '제품 코드', field: 'prd_cd', filter: 'agTextColumnFilter'},
-                {headerName: '제품 이름', field: 'prd_nm', filter: 'agTextColumnFilter'},
+                {headerName: '제품 코드', field: 'prd_cd', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" }},
+                {headerName: '제품 이름', field: 'prd_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" }},
                 {
                     headerName: '제품 수량', 
                     field: 'stock', 
-                    filter: 'agTextColumnFilter',
+                    filter: 'agTextColumnFilter', 
+                    cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
