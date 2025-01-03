@@ -68,6 +68,8 @@ delete from bom
 where prd_cd = ?
 and mat_cd = ?
 `;
+
+//bom자재 업데이트
 //--------------공정흐름도-----------------
 //선택할 제품조회
 const selectPrd = `

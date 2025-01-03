@@ -424,6 +424,7 @@ export default {
           proc_seq: procSeq,
           proc_cd: dup.proc_cd,
           proc_nm: dup.proc_nm,
+          eqp_type:dup.eqp_type
         };
          //그리드반영 
         this.prowFlowApi.applyTransaction({
@@ -435,6 +436,7 @@ export default {
           prd_cd: this.selectProData,
           proc_cd: saveBom.proc_cd,
           proc_seq: saveBom.proc_seq,
+          eqp_type : saveBom.eqp_type
         };
         this.saveModal.push(saveRealModal);
       }
