@@ -187,8 +187,13 @@ const updateDownEq = async (downData) => {
 
 //설비 비가동 전체 조회
 const findDownEq = async (datas) => {
-  let list = await mariadb.query('eqDownListSearch', datas);
-  return list[0];
+  try {
+    let list = await mariadb.query('eqDownListSearch', datas);
+    return list;
+  } catch (err) {
+    console.error('설비 비가동 DB 쿼리 실패:', err);
+    throw err;
+  }
 };
 
 

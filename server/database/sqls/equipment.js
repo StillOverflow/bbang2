@@ -444,8 +444,8 @@ limit 1
 
 
 //설비 비가동 조회(필터링 적용) 
-const eqDownListSearch = (searchObj) => {
-  let query = ` SELECT  e.eqp_cd as eqp_cd,
+const eqDownListSearch = (datas) => {
+  let sql = ` SELECT  e.eqp_cd as eqp_cd,
                         fn_get_codename(e.eqp_type) as eqp_type,
                         e.eqp_nm as eqp_nm,
                         e.insp_cycle as insp_cycle,
@@ -455,7 +455,7 @@ const eqDownListSearch = (searchObj) => {
                         fn_get_codename(e.status) as status,
                         e.last_insp_dt as last_insp_dt, 
                         d.start_time as start_time,
-                        d.downtime_reason as downtime_reason,
+                        fn_get_codename(d.downtime_reason) as downtime_reason,
                         d.note as note,
                         d.end_time as end_time,
                         d.id as id,
@@ -484,7 +484,7 @@ FROM equipment e
   //설비구분
   if (datas.eqp_type) queryArr.push(`e.eqp_type = UPPER('${datas.eqp_type}')`);
   //점검사유
-  if (datas.downtime_reason) queryArr.push(`insp_reason = UPPER('${datas.downtime_reason}')`);
+  if (datas.downtime_reason) queryArr.push(`downtime_reason = UPPER('${datas.downtime_reason}')`);
   //설비코드
   if (datas.eqp_cd) queryArr.push(`e.eqp_cd = UPPER('${datas.eqp_cd}')`);
 

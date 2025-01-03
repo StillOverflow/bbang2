@@ -162,14 +162,14 @@ export default {
 
       equipmentData: {
         eqp_type: '', // 설비구분
-        downtime_reason: '', // 점검사유
+        downtime_reason: '', // 비가동사유
         eqp_nm: '', // 설비명
         start_time: '',
         end_time: '',
 
         selectOptions: {
           EQP_TYPE: [], // 설비구분 공통코드
-          DOWNTIME_REASON: [], // 점검사유 공통코드
+          DOWNTIME_REASON: [], // 비가동사유 공통코드
         },
       },
       rowData: [], // ag-grid의 데이터
@@ -177,7 +177,7 @@ export default {
         { field: 'eqp_cd', headerName: '설비코드', sortable: true },
         { field: 'eqp_type', headerName: '설비구분', sortable: true },
         { field: 'eqp_nm', headerName: '설비명', sortable: true },
-        { field: 'status', headerName: '상태', sortable: true },
+        { field: 'status', headerName: '설비상태', sortable: true },
         { field: 'downtime_reason', headerName: '비가동사유', sortable: true },
         { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter },
         { field: 'note', headerName: '비고', sortable: true },
@@ -330,7 +330,7 @@ export default {
         }
         this.rowData = result.data;
       } catch (error) {
-        console.error('설비 점검 데이터 조회 실패:', error);
+        console.error('설비 비가동 데이터 조회 실패:', error);
       }
     },
     // 조회 버튼 클릭 시 실행
@@ -344,8 +344,8 @@ export default {
       this.equipmentData.eqp_type = null; // "전체" 선택
       this.equipmentData.downtime_reason = null;  // "전체" 선택
       this.equipmentData.eqp_nm = ''; // 설비명 초기화
-      this.start_datetime = ''; // 점검 시작 기간 초기화
-      this.end_datetime = ''; // 점검 종료 기간 초기화
+      this.start_datetime = ''; // 비가동 시작 기간 초기화
+      this.end_datetime = ''; // 비가동 종료 기간 초기화
       this.fetchFilteredEquip();         // 초기화 후 데이터 조회
     },
     //엑셀 함수
