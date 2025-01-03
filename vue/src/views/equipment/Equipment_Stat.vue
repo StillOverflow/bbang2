@@ -122,9 +122,11 @@ export default {
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
 
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+        /*
         rowSelection: {
           mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
         }
+          */
       }
 
     };
@@ -186,8 +188,6 @@ export default {
           status: this.equipmentData.status || null,
         };
         const result = await axios.get('/api/equipList/stat', { params: obj });
-
-        console.log('API 요청 파라미터:', obj);
 
         if (result.data) {
           //배열데이터 처리

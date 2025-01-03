@@ -1,4 +1,4 @@
-<!-- 설비 점검 조회 -->
+<!-- 설비 비가동 조회 -->
 <template>
   <div class="py-4 container-fluid">
     <div class="card">
@@ -8,7 +8,7 @@
         <!-- 일자별 검색 -->
         <div class="row mt-2 mb-4" style="padding-left: 3rem;">
           <div class="col col-lg-2 text-start fw-bolder w-10">
-            점검 기간
+            비가동 기간
           </div>
           <div class="col col-lg-2">
             <input class="form-control" type="date" v-model="start_datetime" :max="this.end_datetime"
@@ -21,7 +21,7 @@
           </div>
         </div>
 
-        <!-- 설비코드 검색 -->
+        <!-- 설비코드 검색-->
         <div class="row mb-4" style="padding-left: 3rem;">
           <div class="col col-lg-2 text-start fw-bolder w-10">
             설비코드
@@ -60,13 +60,14 @@
             </select>
           </div>
 
-          <!-- 점검사유 -->
+          <!-- 비가동사유 -->
           <div class="col col-lg-2 text-start fw-bolder w-10">
-            점검사유
+            비가동사유
           </div>
           <div class="col col-lg-3">
-            <select class="form-select selectBSJ" v-model="equipmentData.insp_reason" @change="searchEquipments">
-              <option v-for="(opt, idx) in equipmentData.selectOptions.INSP_REASON" :key="idx" :value="opt.comm_dtl_cd">
+            <select class="form-select selectBSJ" v-model="equipmentData.downtime_reason" @change="searchEquipments">
+              <option v-for="(opt, idx) in equipmentData.selectOptions.DOWNTIME_REASON" :key="idx"
+                :value="opt.comm_dtl_cd">
                 {{ opt.comm_dtl_nm }}
               </option>
             </select>
@@ -133,7 +134,7 @@ import Layout from '../components/modalLayout.vue';
 
 
 export default {
-  name: 'EquipmentInspList',
+  name: 'EquipmentDownList',
   data() {
     return {
       isModal: false,
@@ -175,14 +176,14 @@ export default {
 
       equipmentData: {
         eqp_type: '', // 설비구분
-        insp_reason: '', // 점검사유
+        downtime_reason: '', // 비가동사유
         eqp_nm: '', // 설비명
         start_time: '',
         end_time: '',
 
         selectOptions: {
           EQP_TYPE: [], // 설비구분 공통코드
-          INSP_REASON: [], // 점검사유 공통코드
+          DOWNTIME_REASON: [], // 비가동사유 공통코드
         },
       },
       rowData: [], // ag-grid의 데이터
@@ -190,21 +191,20 @@ export default {
         { field: 'eqp_cd', headerName: '설비코드', sortable: true },
         { field: 'eqp_type', headerName: '설비구분', sortable: true },
         { field: 'eqp_nm', headerName: '설비명', sortable: true },
-        { field: 'insp_cycle', headerName: '점검주기(일)', sortable: true },
+        { field: 'status', headerName: '설비상태', sortable: true },
+        { field: 'downtime_reason', headerName: '비가동사유', sortable: true },
         { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter },
-        { field: 'insp_reason', headerName: '점검사유', sortable: true },
-        { field: 'insp_result', headerName: '점검판정', sortable: true },
-        { field: 'insp_action', headerName: '조치사항', sortable: true },
-        { field: 'id', headerName: '점검담당자 ID', sortable: true },
+        { field: 'note', headerName: '비고', sortable: true },
+        { field: 'id', headerName: '등록인 ID', sortable: true },
         {
           field: 'start_time',
-          headerName: '점검시작일시',
+          headerName: '비가동시작일시',
           sortable: true,
           valueFormatter: (params) => this.formatDateTime(params.value), width: 250
         },
         {
           field: 'end_time',
-          headerName: '점검종료일시',
+          headerName: '비가동종료일시',
           sortable: true,
           valueFormatter: (params) => this.formatDateTime(params.value), width: 250
         },
@@ -230,7 +230,7 @@ export default {
   },
   created() {
     // 페이지 제목 저장
-    this.$store.dispatch('breadCrumb', { title: '설비 점검 조회' });
+    this.$store.dispatch('breadCrumb', { title: '설비 비가동 조회' });
     // 공통코드 및 초기 데이터 가져오기
     this.fetchCommonCodes();
     this.fetchFilteredEquip();
@@ -265,8 +265,6 @@ export default {
       this.selectedEqp = params.data.eqp_cd;
       this.isModal = false;
 
-      console.log('선택된 설비 코드:', this.selectedEqp); // 선택된 코드 확인
-
       // 선택된 설비 코드로 필터링
       this.fetchFilteredEquip(this.start_datetime, this.end_datetime, this.selectedEqp);
     },
@@ -294,21 +292,21 @@ export default {
       try {
 
         const eqpTypeResponse = await axios.get('/api/comm/codeList/EQ');
-        const inspReasonResponse = await axios.get('/api/comm/codeList/EX');
+        const downReasonResponse = await axios.get('/api/comm/codeList/EC');
 
         this.equipmentData.selectOptions.EQP_TYPE = [
           { comm_dtl_cd: null, comm_dtl_nm: '전체' }, // "전체" 추가
           ...(eqpTypeResponse.data || []),
         ];
-        this.equipmentData.selectOptions.INSP_REASON = [
+        this.equipmentData.selectOptions.DOWNTIME_REASON = [
           { comm_dtl_cd: null, comm_dtl_nm: '전체' }, // "전체" 추가
-          ...(inspReasonResponse.data || []),
+          ...(downReasonResponse.data || []),
         ];
 
 
         // 기본값 설정
         this.equipmentData.eqp_type = null; // "전체"
-        this.equipmentData.insp_reason = null;  // "전체"
+        this.equipmentData.downtime_reason = null;  // "전체"
 
       } catch (error) {
         console.error('공통코드 가져오기 실패:', error);
@@ -319,15 +317,13 @@ export default {
       try {
         const obj = {
           eqp_type: this.equipmentData.eqp_type || null,
-          insp_reason: this.equipmentData.insp_reason || null,
+          downtime_reason: this.equipmentData.downtime_reason || null,
           eqp_nm: this.equipmentData.eqp_nm ? `%${this.equipmentData.eqp_nm}%` : null, // 설비명 없으면 null
           start_time: start || null, // 시작 날짜 추가
           end_time: end || null,    // 종료 날짜 추가
           eqp_cd: selectedEqp || null, // 설비코드 추가
         };
-        const result = await axios.get('/api/equipList/insp', { params: obj });
-
-        console.log('API 요청 파라미터:', obj);
+        const result = await axios.get('/api/equipList/down', { params: obj });
 
         if (result.data) {
           //배열데이터 처리
@@ -346,22 +342,21 @@ export default {
         }
         this.rowData = result.data;
       } catch (error) {
-        console.error('설비 점검 데이터 조회 실패:', error);
+        console.error('설비 비가동 데이터 조회 실패:', error);
       }
     },
     // 조회 버튼 클릭 시 실행
     searchEquipments: debounce(function () {
-      console.log("startDT => ", this.start_datetime);
       this.fetchFilteredEquip(this.start_datetime, this.end_datetime, this.selectedEqp);
     }, 300), // 300ms 딜레이 설정
 
     resetBtn() {
       this.selectedEqp = ''; // 설비 코드 입력란 초기화
       this.equipmentData.eqp_type = null; // "전체" 선택
-      this.equipmentData.insp_reason = null;  // "전체" 선택
+      this.equipmentData.downtime_reason = null;  // "전체" 선택
       this.equipmentData.eqp_nm = ''; // 설비명 초기화
-      this.start_datetime = ''; // 점검 시작 기간 초기화
-      this.end_datetime = ''; // 점검 종료 기간 초기화
+      this.start_datetime = ''; // 비가동 시작 기간 초기화
+      this.end_datetime = ''; // 비가동 종료 기간 초기화
       this.fetchFilteredEquip();         // 초기화 후 데이터 조회
     },
     //엑셀 함수
@@ -381,14 +376,13 @@ export default {
             '설비코드': item?.eqp_cd,
             '설비구분': item?.eqp_type,
             '설비명': item?.eqp_nm,
-            '점검주기(일)': item?.insp_cycle,
+            '설비상태': item?.status,
+            '비가동사유': item?.downtime_reason,
             '최종점검일': item?.last_insp_dt,
-            '점검사유': item?.insp_reason,
-            '점검판정': item?.insp_result,
-            '조치사항': item?.insp_action,
-            '점검담당자ID': item?.id,
-            '점검시작일시': item?.start_time,
-            '점검종료일시': item?.end_time,
+            '비고': item?.note,
+            '등록인ID': item?.id,
+            '비가동시작일시': item?.start_time,
+            '비가동종료일시': item?.end_time,
           }));
         } else {
           // 선택된 데이터가 없으면 전체 데이터를 사용
@@ -396,14 +390,13 @@ export default {
             '설비코드': item?.eqp_cd,
             '설비구분': item?.eqp_type,
             '설비명': item?.eqp_nm,
-            '점검주기(일)': item?.insp_cycle,
+            '설비상태': item?.status,
+            '비가동사유': item?.downtime_reason,
             '최종점검일': item?.last_insp_dt,
-            '점검사유': item?.insp_reason,
-            '점검판정': item?.insp_result,
-            '조치사항': item?.insp_action,
-            '점검담당자ID': item?.id,
-            '점검시작일시': item?.start_time,
-            '점검종료일시': item?.end_time,
+            '비고': item?.note,
+            '등록인ID': item?.id,
+            '비가동시작일시': item?.start_time,
+            '비가동종료일시': item?.end_time,
           }));
         }
 
@@ -419,8 +412,8 @@ export default {
         // 엑셀 파일 생성 및 다운로드
         const workBook = XLSX.utils.book_new();
         const workSheet = XLSX.utils.json_to_sheet(selectedData);
-        XLSX.utils.book_append_sheet(workBook, workSheet, '설비점검조회');
-        XLSX.writeFile(workBook, `설비점검조회_${today}.xlsx`);
+        XLSX.utils.book_append_sheet(workBook, workSheet, '설비비가동조회');
+        XLSX.writeFile(workBook, `설비비가동조회_${today}.xlsx`);
       } catch (error) {
         console.error('엑셀 다운로드 실패:', error);
         this.$swal({

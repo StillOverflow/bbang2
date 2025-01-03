@@ -66,7 +66,7 @@
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
                   :min="equipmentData.start_time || currentDateTime" :readonly="!selectedEqp"
-                  :disabled="isFieldDisabled(field.value)" @change="validateEndTime" />
+                  :disabled="isFieldDisabled(field.value)" @change="validateEnDown" />
               </template>
             </div>
           </div>
@@ -159,6 +159,9 @@ export default {
               R05: '오븐',
               R06: '냉각기',
               R07: '도포기',
+              R08: '커팅기',
+              R09: '포장기',
+              R10: '세척기',
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
@@ -269,7 +272,7 @@ export default {
     },
 
     // 종료시간 유효성 검사
-    validateEndTime() {
+    validateEnDown() {
 
       if (this.equipmentData.end_time < this.equipmentData.start_time) {
         Swal.fire({
@@ -436,7 +439,7 @@ export default {
         Swal.fire({
           icon: 'error',
           title: '수정 실패',
-          text: '점검 데이터 수정 중 오류가 발생했습니다.',
+          text: '점검 데이터 수정 중  오류가 발생했습니다.',
         });
       }
     },

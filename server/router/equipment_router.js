@@ -260,7 +260,7 @@ router.put('/equip/insp/:insp_log_cd', async (req, res) => {
 router.get('/equipList/insp', async (req, res) => {
   try {
     let searchList = req.query;
-    console.log("router query => ", req.query)
+    console.log("router query => ", searchList)
     let result = await equipmentService.findInspEq(searchList);
     res.send(result);
   } catch (err) {
@@ -363,18 +363,32 @@ router.put('/equip/down/:downtime_cd', async (req, res) => {
 });
 
 
-//점검전체조회
+//비가동전체조회
 router.get('/equip/down', async (req, res) => {
   let eqDownList = await equipmentService.findDownEq();
   res.send(eqDownList);
 });
 
-//점검단건조회
+//비가동단건조회
 router.get('/equip/down/:no', async (req, res) => {
   let eqpCd = req.params.no;
   let info = await equipmentService.findDownEqOne(eqpCd);
   res.send(info);
 });
+
+//비가동전체조회(필터링)
+router.get('/equipList/down', async (req, res) => {
+  try {
+    let searchList = req.query;
+    console.log("받은 쿼리 파라미터 => ", searchList)
+    let result = await equipmentService.findDownEq(searchList);
+    res.send(result);
+  } catch (err) {
+    console.error('필터링된 비가동 조회 실패:', err);
+    res.status(500).json({ error: '필터링된 비가동 조회 실패' });
+  }
+});
+
 
 
 /*--------------설비 수리-------------*/
@@ -474,6 +488,20 @@ router.get('/equip/repair/:no', async (req, res) => {
   let eqpCd = req.params.no;
   let info = await equipmentService.findRepairEqOne(eqpCd);
   res.send(info);
+});
+
+
+//수리전체조회(필터링)
+router.get('/equipList/repair', async (req, res) => {
+  try {
+    let searchList = req.query;
+    console.log("받은 쿼리 파라미터 => ", searchList)
+    let result = await equipmentService.findRepairEq(searchList);
+    res.send(result);
+  } catch (err) {
+    console.error('필터링된 수리 조회 실패:', err);
+    res.status(500).json({ error: '필터링된 수리 조회 실패' });
+  }
 });
 
 

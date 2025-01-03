@@ -121,9 +121,11 @@ export default {
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
 
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+        /*
         rowSelection: {
           mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
         }
+          */
       }
 
     };

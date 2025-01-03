@@ -38,8 +38,8 @@ import Equipment_InspMgmt from '../views/equipment/Equipment_InspMgmt.vue';
 import Equipment_InspList from '../views/equipment/Equipment_InspList.vue';
 import Equipment_RepairMgmt from '../views/equipment/Equipment_RepairMgmt.vue';
 import Equipment_RepairList from '../views/equipment/Equipment_RepairList.vue';
-import Equipment_DTimeMgmt from '../views/equipment/Equipment_DTimeMgmt.vue';
-import Equipment_DTimeList from '../views/equipment/Equipment_DTimeList.vue';
+import Equipment_DownMgmt from '../views/equipment/Equipment_DownMgmt.vue';
+import Equipment_DownList from '../views/equipment/Equipment_DownList.vue';
 
 
 
@@ -260,6 +260,7 @@ const routes = [
     path: '/equipment',
     name: 'equipment',
     component: Equipment,
+
   },
   {
     //설비관리
@@ -305,15 +306,15 @@ const routes = [
   },
   {
     //설비 비가동 관리
-    path: '/Equipment_DTimeMgmt',
-    name: 'Equipment_DTimeMgmt',
-    component: Equipment_DTimeMgmt,
+    path: '/Equipment_DownMgmt',
+    name: 'Equipment_DownMgmt',
+    component: Equipment_DownMgmt,
   },
   {
     //설비 비가동 조회
-    path: '/Equipment_DTimeList',
-    name: 'Equipment_DTimeList',
-    component: Equipment_DTimeList,
+    path: '/Equipment_DownList',
+    name: 'Equipment_DownList',
+    component: Equipment_DownList,
   },
 
 
