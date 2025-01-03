@@ -200,10 +200,9 @@ export default {
       gridOptions: {
         pagination: true,
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
-
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
         rowSelection: {
-          mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
+          mode: 'single', // 하나만 선택하게 할 때는 singleRow
         }
       }
 
@@ -222,54 +221,42 @@ export default {
   },
   methods: {
 
-
     /*모달 [S]*/
     modalOpen() {
       this.isModal = !this.isModal;
 
       if (this.isModal) {
-        this.getEquipInfo(this.equipmentData.eqp_type);
+        this.fetchEquipData(); // 설비 정보 가져오기
       }
     },
+
+    // 설비 정보 가져오기
+    async fetchEquipData() {
+      try {
+        const response = await axios.get('/api/equip'); // API 호출
+        this.equipData = response.data; // 데이터 저장
+      } catch (error) {
+        console.error('설비 정보 가져오기 실패:', error);
+      }
+    },
+    /*
+        modalCloseFunc() {
+          this.isModal = !this.isModal;
+        },
+    */
+
     modalClicked(params) {
-      this.getEquipInfo(params.data.eqp_cd);
       this.selectedEqp = params.data.eqp_cd;
-      this.isModal = !this.isModal;
+      this.isModal = false;
+
+      console.log('선택된 설비 코드:', this.selectedEqp); // 선택된 코드 확인
+
+      // 선택된 설비 코드로 필터링
+      this.fetchFilteredEquip(this.start_datetime, this.end_datetime, this.selectedEqp);
     },
 
-    //주문서 리스트
-    async getOrderList() {
-      let result = await axios.get('/api/sales')
-        .catch(err => console.log(err));
-      this.orderData = result.data;
-    },
-
-    modalCloseFunc() {
-      this.isModal = !this.isModal;
-    },
     /*모달 [E]*/
 
-
-    // 설비 단건 조회
-    async getEquipInfo(eqp_cd) {
-      let result = await axios
-        .get(`api/equip/${eqp_cd}`)
-        .catch((err) => console.log(err));
-
-      if (result.data) {
-        // 날짜 필드 스플릿
-        if (result.data.pur_dt) {
-          result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
-        }
-        this.equipmentData = result.data;
-
-
-        // 이미지 경로 처리
-        this.previewImage = result.data.img_path
-          ? `/api/${result.data.img_path}`
-          : require('@/assets/img/blank_img.png');
-      }
-    },
 
     myGrid(params) { // 매개변수 속성으로 자동 접근
       params.api.sizeColumnsToFit(); // 가로스크롤 삭제
@@ -312,7 +299,7 @@ export default {
       }
     },
     // 필터링된 설비 데이터 가져오기
-    async fetchFilteredEquip(start, end) {
+    async fetchFilteredEquip(start, end, selectedEqp) {
       try {
         const obj = {
           eqp_type: this.equipmentData.eqp_type || null,
@@ -320,6 +307,7 @@ export default {
           eqp_nm: this.equipmentData.eqp_nm ? `%${this.equipmentData.eqp_nm}%` : null, // 설비명 없으면 null
           start_time: start || null, // 시작 날짜 추가
           end_time: end || null,    // 종료 날짜 추가
+          eqp_cd: selectedEqp || null, // 설비코드 추가
         };
         const result = await axios.get('/api/equipList/insp', { params: obj });
 
@@ -348,7 +336,7 @@ export default {
     // 조회 버튼 클릭 시 실행
     searchEquipments: debounce(function () {
       console.log("startDT => ", this.start_datetime);
-      this.fetchFilteredEquip(this.start_datetime, this.end_datetime);
+      this.fetchFilteredEquip(this.start_datetime, this.end_datetime, this.selectedEqp);
     }, 300), // 300ms 딜레이 설정
 
     resetBtn() {

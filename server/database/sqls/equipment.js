@@ -219,6 +219,8 @@ const eqInspList = (datas) => {
   if (datas.eqp_type) queryArr.push(`e.eqp_type = UPPER('${datas.eqp_type}')`);
   //점검사유
   if (datas.insp_reason) queryArr.push(`insp_reason = UPPER('${datas.insp_reason}')`);
+  //설비코드
+  if (datas.eqp_cd) queryArr.push(`e.eqp_cd = UPPER('${datas.eqp_cd}')`);
 
 
   // WHERE 절 조립

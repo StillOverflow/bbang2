@@ -260,7 +260,7 @@ router.put('/equip/insp/:insp_log_cd', async (req, res) => {
 router.get('/equipList/insp', async (req, res) => {
   try {
     let searchList = req.query;
-    console.log("router query => ", req.query)
+    console.log("router query => ", searchList)
     let result = await equipmentService.findInspEq(searchList);
     res.send(result);
   } catch (err) {
