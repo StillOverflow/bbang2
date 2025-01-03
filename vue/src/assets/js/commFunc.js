@@ -55,6 +55,24 @@ export default {
     return strDate.replace(',', ''); // 쉼표 제거 (2024-12-12 12:00)
   },
 
+    // 날짜+시간 포맷 변환 일반 (시/분/초까지) (데이터타입 DATETIME)
+  getDatetimeMinSec(value){
+    if(!value) return null; // null이면 null 그대로 리턴
+
+    let newDate = new Date(value);
+    // 2024-12-12T03:00:00.000Z => 2024-12-12, 12:00로 변환
+    let strDate = newDate.toLocaleDateString('en-CA', { // en-CA => 국가별 날짜형식(0000-00-00)
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+      hour: 'numeric',
+      hour12: false, // 24시간
+      minute: 'numeric',
+      second: 'numeric'
+    });
+    return strDate.replace(',', ''); // 쉼표 제거 (2024-12-12 12:00)
+  },
+
 
   
 

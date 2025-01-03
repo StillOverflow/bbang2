@@ -82,8 +82,8 @@ const planUpdate = async (no, values) => {
       await mariadb.commit();
       return 'success';
     } else {
-        await mariadb.rollback();
-        return 'fail';
+      await mariadb.rollback();
+      return 'fail';
     }
   });
   return result;
@@ -132,7 +132,6 @@ const instInsert = async (values) => {
       // 헤더 시퀀스 nextval 얻기
       let seq_res = await mariadb.transQuery('instSeq');
       let mySeq = seq_res[0].seq;
-      console.log(mySeq);
               
       // 헤더 삽입
       values[0]["inst_cd"] = mySeq;      
@@ -164,6 +163,8 @@ const instInsert = async (values) => {
           i++;
         }
       }
+
+      let plan_res = await mariadb.transQuery('planUpdate', [{STATUS:'Z02'}, values]); //계획서 상태 수정
       
       if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && flow_res.affectedRows > 0 && i > 0){ // 모두 성공했는지 판단
         await mariadb.commit();
@@ -180,7 +181,7 @@ const instInsert = async (values) => {
 const deleteInst = async (values)=>{
   let del_res = await mariadb.query('instDelete', values);
 
-  if(del_res.affectedRows > 0){ // 모두 성공했는지 판단
+  if(del_res.affectedRows > 0 && header_res.affectedRows > 9){ // 모두 성공했는지 판단
     await mariadb.commit();
     return 'success';
   } else {
@@ -238,6 +239,7 @@ const progressStart = async (no, updateInfo)=>{
   let resultArr = [];
 
   let datas = [updateInfo[0], no];
+  
   let list = await mariadb.query('processStart', datas);
 
   /* 자재 lot별 출고등록[S] */
@@ -280,15 +282,34 @@ const progressStart = async (no, updateInfo)=>{
     /* 자재 lot별 출고등록[E] */    
   }
 
-  if(!resultArr.includes('fail') && list.affectedRows > 0){    
-    return 'success';
+  if(!resultArr.includes('fail') && list.affectedRows > 0){        
     await mariadb.commit();
-  }else{
-    return 'fail';
+    return 'success';
+  }else{    
     await mariadb.rollback();
+    return 'fail';
   }  
 
 }; 
+
+ //공정시작 시 계획서/지시서 상태변경
+ const statusChange = async (no, datas) => { 
+
+  let obj = {
+    STATUS : datas.STATUS,
+    no : no
+  }
+  
+  let result = await mariadb.query('statusChage', obj);
+
+  if(result.affectedRows > 0){        
+    await mariadb.commit();
+    return 'success';
+  }else{    
+    await mariadb.rollback();
+    return 'fail';
+  }  
+ }
 
 const progressEnd = async (no, updateInfo)=>{ 
   let result = await mariadb.transQuery('processStart', [updateInfo, no]); //자재 lot SELECT
@@ -320,5 +341,6 @@ module.exports = {
   instMatUpdate,
   progressStart,
   progressEnd,
-  findResultNo
+  findResultNo,
+  statusChange
 };

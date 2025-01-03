@@ -29,6 +29,10 @@
             <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
           </template>
           <template v-slot:default>
+            <div class="alert alert-light alert-dismissible fade show">
+              <strong>진행정인 생산계획서가 조회됩니다.</strong>
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
             <ag-grid-vue class="ag-theme-alpine" 
             style="width: 100%; height: 400px;" 
             :columnDefs="planDefs"
@@ -192,11 +196,11 @@ export default {
 
       /* 모달 계획서 목록 */
       planDefs: [
-        { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 120 },
-        { headerName: '생산시작일', field: 'START_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
-        { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150 },
-        { headerName: '제품수량', field: 'DTL_QTY', sortable: true, width: 100},
-        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
+        { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 120, cellStyle: {textAlign: "center"} },
+        { headerName: '생산시작일', field: 'START_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150, cellStyle: {textAlign: "center"} },
+        { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150, cellStyle: {textAlign: "center"} },
+        { headerName: '제품수량', field: 'DTL_QTY', sortable: true, width: 100, cellStyle: {textAlign: "center"}},
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150, cellStyle: {textAlign: "center"} },
       ],
       planData: [],
 
@@ -249,7 +253,10 @@ export default {
 
     //계획서 리스트
     async getPlanList() {
-      let result = await axios.get(`/api/plan`)
+      let obj = {
+        STATUS : 'Z01'
+      }
+      let result = await axios.get(`/api/plan`, {params:obj})
                               .catch(err => console.log(err));
       this.planData = result.data;
     },

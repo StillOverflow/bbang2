@@ -67,11 +67,11 @@ export default {
       selected_list:'',
 
       instDefs: [
-        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
-        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true },
-        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true },
-        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter },
-        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter },
+        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120, cellStyle: {textAlign: "center"}},
+        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true, cellStyle: {textAlign: "center"}},
+        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, cellStyle: {textAlign: "center"} },
+        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: {textAlign: "center"} },
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, cellStyle: {textAlign: "center"} },
         {
           headerName: '상세' ,
           field: 'detailed',

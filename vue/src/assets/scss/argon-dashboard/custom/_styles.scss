@@ -112,3 +112,14 @@
 .progress-bx { 
   border: solid 2px #edf0f3;
 }
+
+.cell-span {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  background-color: #f9f9f9;
+  border: 1px solid #dfdfdf;
+  border-collapse: collapse;
+  border-top: none;
+}

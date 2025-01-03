@@ -61,7 +61,7 @@ export default {
         <li class="nav-item head" id="Sales" @click="showList('Sales')">
           <a class="nav-link" :class="urlCompare('Sales') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-scroll text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">영업</span>
           </a>
@@ -133,7 +133,7 @@ export default {
         <li class="nav-item head" id="Produce" @click="showList('Produce')">
           <a class="nav-link" :class="urlCompare('Produce') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-desktop text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">생산</span>
           </a>
@@ -146,7 +146,7 @@ export default {
           </li>
           <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Produce_PlanAdd" :class="getRoute() === 'Produce_PlanAdd' ? 'active' : ''"
-              :navText="'생산계획서 관리'">
+              :navText="'생산계획서 등록'">
             </sidenav-item>
           </li>
           <li class="nav-item">
@@ -156,7 +156,7 @@ export default {
           </li>
           <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Produce_InstAdd" :class="getRoute() === 'Produce_InstAdd' ? 'active' : ''"
-              :navText="'생산지시서 관리'">
+              :navText="'생산지시서 등록'">
             </sidenav-item>
           </li>
           <li class="nav-item">
@@ -200,7 +200,7 @@ export default {
         <li class="nav-item head" id="Material" @click="showList('Material')">
           <a class="nav-link" :class="urlCompare('Material') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-cart-shopping text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">자재</span>
           </a>
@@ -303,12 +303,11 @@ export default {
 
 
 
-
         <!-- 설비  -->
         <li class="nav-item head" id="Equipment" @click="showList('Equipment')">
           <a class="nav-link" :class="urlCompare('Equipment') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-wrench text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">설비</span>
           </a>
@@ -396,14 +395,11 @@ export default {
 
 
 
-
-
-
         <!-- 품질  -->
         <li class="nav-item head" id="Quality" @click="showList('Quality')">
           <a class="nav-link" :class="urlCompare('Quality') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-vial-circle-check text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">품질</span>
           </a>
@@ -498,7 +494,7 @@ export default {
         <li class="nav-item head" id="Standard" @click="showList('Standard')" >
           <a class="nav-link" :class="urlCompare('Standard') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-gear text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">기준정보관리</span>
           </a>
@@ -571,6 +567,7 @@ export default {
           </sidenav-item>
         </li>
 
+        <!--
         <li class="nav-item">
           <sidenav-item to="/virtual-reality" :class="getRoute() === 'virtual-reality' ? 'active' : ''"
             :navText="isRTL ? 'الواقع الافتراضي' : 'Virtual Reality'">
@@ -624,7 +621,7 @@ export default {
               <i class="ni ni-collection text-info text-sm opacity-10"></i>
             </template>
           </sidenav-item>
-        </li>
+        </li>-->
       </ul>
     </div>
 
@@ -650,6 +647,3 @@ export default {
     </div>
   </div>
 </template>
-<script>
-
-</script>
