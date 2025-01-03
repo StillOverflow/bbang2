@@ -217,13 +217,18 @@ export default {
     //엑셀 함수
     excelDownload() {
       try {
-        // 현재 날짜 생성
+        // 현재 날짜 생성(엑셀 파일명 용도)
         var today = new Date();
-        today = this.$comm.dateFormatter(today);
+        today = this.$comm.getMyDay(today);
 
         // 선택된 데이터 가져오기
         let selectedNodes = this.myApi.getSelectedNodes(); // 선택된 행 데이터 가져오기
         let selectedData;
+
+        // 날짜 포맷 함수 (YYYY-MM-DD)
+        const formatDate = (date) => {
+          return date ? this.$comm.getMyDay(new Date(date)) : ''; 
+        };
 
         if (selectedNodes.length > 0) {
           // 선택된 데이터가 있을 경우
@@ -234,7 +239,7 @@ export default {
             '모델': item?.model,
             '공정코드': item?.proc_cd,
             '공정명': item?.proc_nm,
-            '최종점검일': item?.last_insp_dt,
+            '최종점검일': formatDate(item?.last_insp_dt),
             '담당자 ID': item?.id,
             '설비상태': item?.status,
             '사용유무': item?.is_use,
@@ -248,7 +253,7 @@ export default {
             '모델': item?.model,
             '공정코드': item?.proc_cd,
             '공정명': item?.proc_nm,
-            '최종점검일': item?.last_insp_dt,
+            '최종점검일': formatDate(item?.last_insp_dt),
             '담당자 ID': item?.id,
             '설비상태': item?.status,
             '사용유무': item?.is_use,
@@ -267,6 +272,37 @@ export default {
         // 엑셀 파일 생성 및 다운로드
         const workBook = XLSX.utils.book_new();
         const workSheet = XLSX.utils.json_to_sheet(selectedData);
+
+          // 열 너비 자동 조정 (문자 유형에 따라 여유 공간 조정)
+          const colWidths = Object.keys(selectedData[0]).map(key => {
+          // 최대 길이 계산 (셀의 실제 길이에 약간의 보정값 추가)
+          const maxLength = Math.max(
+            ...selectedData.map(row => {
+              const cellValue = row[key] ? row[key].toString() : '';
+              const koreanCharCount = (cellValue.match(/[\u3131-\uD79D]/g) || []).length;
+              const englishCharCount = (cellValue.match(/[a-zA-Z]/g) || []).length;
+              const numberCharCount = (cellValue.match(/[0-9]/g) || []).length;
+              const otherCharCount = cellValue.length - koreanCharCount - englishCharCount - numberCharCount;
+
+              // 문자 유형별 폭 계산
+              return (
+                koreanCharCount * 2 + // 한글은 2배 길이
+                englishCharCount * 1 + // 영문자는 1배 길이
+                numberCharCount * 0.75 + // 숫자는 0.75배 길이
+                otherCharCount * 1 // 기타 문자는 기본 길이
+              );
+            }),
+            key.length // 컬럼 헤더 길이 포함
+          );
+
+          // 문자 유형별 여유 공간 추가
+          const padding = maxLength > 15 ? 2 : maxLength > 10 ? 3 : 4; // 길이에 따라 동적 여유 공간
+          return { wch: Math.ceil(maxLength + padding) }; // 열 너비 설정
+        });
+
+        workSheet['!cols'] = colWidths; // 계산된 열 너비 적용
+
+
         XLSX.utils.book_append_sheet(workBook, workSheet, '설비상태조회');
         XLSX.writeFile(workBook, `설비상태조회_${today}.xlsx`);
       } catch (error) {
