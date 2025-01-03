@@ -46,8 +46,14 @@
             <!-- 자재 목록 -->
             <h4 class="d-flex justify-content-start">공정흐름도</h4>
             <div class="mb-3 d-flex justify-content-end" >
-              <button class="btn btn-outline-primary mb-0 ms-2"  @click="modalOpen"> 공정추가 </button>
-              <button class="btn btn-outline-danger mb-0 ms-2"  @click="deleteProc">  삭제 </button>
+              <button class="btn btn-outline-primary mb-0 ms-2"  @click="modalOpen"
+              v-if="this.$session.get('user_ps') == 'H01'"> 공정추가 </button>
+              <button class="btn btn-outline-primary mb-0 ms-2" 
+              v-else style="visibility:hidden;"> 공간 </button>
+
+              <button class="btn btn-outline-danger mb-0 ms-2"  @click="deleteProc"
+              v-if="this.$session.get('user_ps') == 'H01'">  삭제 </button>
+
             </div>
             <div class="col-13 text-end"></div>
 
@@ -70,10 +76,16 @@
             <div class="col-13 text-end">
               <!-- <h4 class="mt-4 mb-3">BOM 정보</h4> -->
               <label class="d-flex justify-content-start fs-4">공정별자재</label>
-              <button class="btn btn-outline-primary mt-2 mb-2 ms-2" @click="bommodalOpen">
+              <button class="btn btn-outline-primary mt-2 mb-2 ms-2" @click="bommodalOpen"
+              v-if="this.$session.get('user_ps') == 'H01'">
                 자재추가
               </button>
-              <button class="btn btn-outline-danger mt-2 mb-2 ms-2" @click="deleteProcMtl">
+              <button class="btn btn-outline-primary mt-2 mb-2 ms-2" @click="bommodalOpen"
+              v-else style="visibility: hidden;">
+                공간
+              </button>
+              <button class="btn btn-outline-danger mt-2 mb-2 ms-2" @click="deleteProcMtl"
+              v-if="this.$session.get('user_ps') == 'H01'">
                 삭제
               </button>
             </div>
@@ -97,7 +109,6 @@
               <template v-slot:header>
                   <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
                   <h5 class="modal-title">공정코드 검색</h5>
-                  <input type="text" oninput="onQuickFilterChanged()" v-model="quickFilter" placeholder="quick filter..." />
                   <button type="button" aria-label="Close" class="close" @click="modalOpen"> × </button>
               </template>
               <template v-slot:default>
@@ -144,7 +155,9 @@
               </template>
             </Layout>
               <div class="text-center">
-                <button type="button" class="btn btn-success mt-3 saveBtn " @click="save" :disabled="isdisabled"> 저장 </button>
+                <button type="button" class="btn btn-success mt-3 saveBtn " @click="save" 
+                v-bind:disabled="this.saveModal.length == 0 && this.deleteModal.length == 0 && this.saveProwMtlData.length== 0 && this.deleteProwMtlData.length ==0"
+                v-if="this.$session.get('user_ps') == 'H01'"> 저장 </button>
                 <button type="button" class="btn btn-secondary ms-2 mt-3 saveBtn" @click="reset">
                         초기화
                 </button>
@@ -213,6 +226,7 @@ export default {
         },
         { headerName: "공정코드", field: "proc_cd", sortale: true },
         { headerName: "공정명", field: "proc_nm", sortale: true },
+        { headerName: "설비구분", field: "eqp_type", sortale: true}
       ],
       procFlowData: [],
 
@@ -240,6 +254,7 @@ export default {
       modalDefs: [
         { headerName: "공정코드", field: "proc_cd", sortable: true },
         { headerName: "공정명", field: "proc_nm", sortable: true, filter: true ,floatingFilter: true },
+        { headerName: "설비구분", field: "eqp_type", sortale: true}
       ],
       modalData: [],
       //저장 버튼 누르기전 담아둘 장소
@@ -258,9 +273,6 @@ export default {
   },
 
   methods: {
-    onQuickFilterChanged() {
-    this.modalApi.setQuickFilter(this.quickFilter);
-    },
     //----------------------------------------------------
     //카테고리 불러오기
     async getCategory() {
@@ -274,11 +286,9 @@ export default {
       let obj = {
         category : this.selected_radio,
       }
-      console.log(obj);
       let result = await axios.get('/api/comm/product', {params:obj})
                               .catch(err => console.log(err));
       this.productData = result.data;
-      console.log(result.data)
     },
     //모달esc
     modalCloseFunc(e){
@@ -354,8 +364,6 @@ export default {
       mat_cd: bom.mat_cd,
       usage: parseFloat(bom.usage) || 0, // 고정된 BOM 양
     }));
-
-    console.log("고정된 BOM 데이터:", this.bomFixedData);
   },
     //공정별 자재
     async bringMtlData(procCd) {
@@ -459,6 +467,7 @@ export default {
               title: " 존재하는 자재가 있습니다.",
               text: "다시 선택해주세요",
             });
+            this.bomModal =!this.bomModal
         return;
         };
       
@@ -469,6 +478,7 @@ export default {
         title: "이미 추가하려는 자재입니다.",
         text: "저장되지 않은 자재 중복입니다. 다시 선택해주세요.",
       });
+      this.bomModal =!this.bomModal
       return; // 중복 발견 시 추가 작업 중단
     } 
       //------------------------------------
@@ -487,11 +497,10 @@ export default {
           title: "BOM 사용량 초과",
           text: `현재 사용량: ${currentUsage}, 추가 예정: ${material.usage || 0}, BOM 한도: ${maxUsageForMaterial}`,
         });
-        this.bomModal = !this.bomModal;
+        this.bomModal =!this.bomModal
         return; // 추가 작업 중단
       }
 
-      console.log("자재 추가 가능: 사용량 초과 없음");
       //-----------------------------------
 
         //그리드에 추가
@@ -527,10 +536,8 @@ export default {
     try {
       const response = await axios.get(`/api/standard/proc_flow_mtl_usage/${matCd}/${this.selectProData}`);
       const totalUsage = response.data.reduce((sum, item) => sum + (parseFloat(item.mat_qty) || 0), 0);
-      console.log(`현재 자재(${matCd}) 총 사용량:`, totalUsage);
       return totalUsage;
     } catch (error) {
-      console.error("현재 사용량 계산 오류:", error);
       return 0;
     }
   },
@@ -584,8 +591,6 @@ export default {
             proc_mat_flow_cd: updatedMaterial.proc_mat_flow_cd,
           });
         }
-
-      console.log("수정된 값:", this.updatedMaterials);
     },
     //저장
     async save() {
@@ -596,22 +601,21 @@ export default {
       }));
 
       if (updatedMaterials.length > 0) {
-        console.log("전송 데이터:", this.updatedMaterials); // 전송 전 확인
-        const response = await axios.put('/api/standard/updateFlowMatUsage', updatedMaterials);
+        await axios.put('/api/standard/updateFlowMatUsage', updatedMaterials);
 
-        if (response.data == 'success') {
-          this.$swal({
-            icon: "success",
-            title: "저장 성공",
-            text: "자재 사용량 및 공정 데이터가 성공적으로 저장되었습니다!",
-          });
-        } else {
-          this.$swal({
-            icon: "error",
-            title: "저장 실패",
-            text: "자재 사용량 업데이트 중 문제가 발생했습니다.",
-          });
-        }
+        // if (response.data == 'success') {
+        //   this.$swal({
+        //     icon: "success",
+        //     title: "저장 성공",
+        //     text: "자재 사용량 및 공정 데이터가 성공적으로 저장되었습니다!",
+        //   });
+        // } else {
+        //   this.$swal({
+        //     icon: "error",
+        //     title: "저장 실패",
+        //     text: "자재 사용량 업데이트 중 문제가 발생했습니다.",
+        //   });
+        // }
       }
 
       //드래그-----------------------------
@@ -623,7 +627,6 @@ export default {
           }));
 
           await axios.put(`/api/standard/updateFlowSeq`, updatedProcFlow);
-          console.log("저장완", updatedProcFlow);
         } catch (error) {
           console.error("공정 흐름 순서 업데이트 실패:", error);
         }
@@ -695,6 +698,7 @@ export default {
         text: "데이터가 성공적으로 저장되었습니다!",
       });
       this.isdisabled = false;
+      this.bringBomData(this.selectProData);
       this.saveModal = [];
       this.deleteModal = [];
       this.saveProwMtlData = [];
@@ -720,28 +724,6 @@ export default {
       });
     },
   },
-  watch:{//얘가있으면안됨 왜지
-    procFlowData: {
-    deep: true,
-    handler(newVal) {
-      console.log("procFlowData 변경 감지됨:", newVal);
-      this.isdisabled = false; // 데이터 변경 시 상태를 false 설정
-    },
-  },
-  // procFlowMtlData 변경 감지
-  procFlowMtlData: {
-    deep: true,
-    handler() {
-      this.isdisabled = false;
-    },
-  },
-  // 기타 변경 상태 감지 필요 시 추가
-  saveModal: {
-    deep: true,
-    handler() {
-      this.isdisabled = false;
-    },
-  },
-  }
+
 };
 </script>

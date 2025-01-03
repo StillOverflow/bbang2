@@ -7,9 +7,7 @@
           <div class="col-md-6" style="height: auto">
             <h4 class="mb-3 text-center">제품 목록</h4>
             <div
-              class="d-flex justify-content-left align-items-center mb-2"
-              style="width: 100%"
-            >
+              class="d-flex justify-content-left align-items-center mb-2" style="width: 100%">
               <div style="width: 15%">
                 <label class="me-2 align-self-center">제품명</label>
               </div>
@@ -83,11 +81,21 @@
             <div class="col-13 text-end">
               <!-- <h4 class="mt-4 mb-3">BOM 정보</h4> -->
               <label class="align-self-center me-9 fs-5">BOM 정보</label>
-              <button class="btn btn-outline-primary mt-2 mb-2 ms-2"  @click="InsertBomData">
+              <button class="btn btn-outline-primary mt-2 mb-2 ms-2"  @click="InsertBomData"
+              v-if="this.$session.get('user_ps') == 'H01'">
                 자재 추가
               </button>
-              <button class="btn btn-outline-danger mt-2 mb-2 ms-2" @click="deleteBom">
+              <button class="btn btn-outline-primary mt-2 mb-2 ms-2"
+              v-else style="visibility: hidden;">
+                공간
+              </button>
+              <button class="btn btn-outline-danger mt-2 mb-2 ms-2" @click="deleteBom"
+              v-if="this.$session.get('user_ps') == 'H01'">
                 삭제
+              </button>
+              <button class="btn btn-outline-primary mt-2 mb-2 ms-2"
+              v-else style="visibility: hidden;">
+                공간
               </button>
             </div>
             <!-- BOM 테이블 ag-grid -->
@@ -106,7 +114,8 @@
               <div class="text-center">
                 <button
                   type="button" class="btn btn-success mt-3 saveBtn " @click="save"
-                  v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0">
+                  v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0"
+                  v-if="this.$session.get('user_ps') == 'H01'">
                   저장
                 </button>
                 <button type="button" class="btn btn-secondary ms-2 mt-3 saveBtn" @click="reset">

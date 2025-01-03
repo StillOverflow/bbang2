@@ -48,6 +48,7 @@ const accountSelect = (datas) => {
         act_tel,
         business_no,
         LOCATION as location,
+        create_dt,
         note
   FROM ACCOUNT
   `;

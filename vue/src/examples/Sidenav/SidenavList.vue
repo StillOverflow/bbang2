@@ -495,7 +495,7 @@ export default {
 
 
         <!-- 기준관리  -->
-        <li class="nav-item head" id="Standard" @click="showList('Standard')" v-if="this.$session.get('user_ps') == 'H01'">
+        <li class="nav-item head" id="Standard" @click="showList('Standard')" >
           <a class="nav-link" :class="urlCompare('Standard') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
               <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
@@ -504,7 +504,7 @@ export default {
           </a>
         </li>
         <ul class="navbar-nav detail Standard_list" :class="urlCompare('Standard') == true ? '' : 'dnone'">
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Standard_memberManage" :class="getRoute() === 'Standard_memberManage' ? 'active' : ''"
               :navText="'사원관리'">
             </sidenav-item>
