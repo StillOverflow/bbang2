@@ -231,7 +231,7 @@ const testWaitPrdList = `
                            WHERE  prd_cd = r.prd_cd) THEN 1
                                                    ELSE 0 END is_last, -- 마지막 공정인지 여부
          end_time -- 공정 완료시점 시간
-  FROM   test_prod_result r
+  FROM   prod_result r
   WHERE  STATUS = 'Z03'
   AND    que_status = 'A02'
 `;
@@ -324,7 +324,7 @@ const testRecDtlInsert = (values) => { // 배열 형식으로 받아야 함.
 
 // 검사결과 등록 시 해당 생산실적 내역의 검사상태 Y로 변경
 const prodResultUpdate = `
-  UPDATE test_prod_result
+  UPDATE prod_result
   SET    que_status = 'A01',
          def_qty = ?,
          pass_qty = ?
