@@ -309,10 +309,12 @@
       try {
          const response = await axios.get('/api/material/planList');
          prodPlanListData.value = response.data || [];
-         prodPlanCode.value = response.data[0].prod_plan_cd;
 
-         if(prodPlanListData.value.length > 0) {
-            planToMaterialStkStock(prodPlanListData.value[0].prod_plan_cd);
+         if (prodPlanListData.value.length > 0) {
+            prodPlanCode.value = prodPlanListData.value[0].prod_plan_cd;
+            planToMaterialStkStock(prodPlanListData.value[0].prod_plan_cd); // 데이터 로드
+         } else {
+            prodPlanCode.value = ''; // 데이터가 없을 경우 초기화
          }
          
       } catch (err) {
@@ -391,7 +393,7 @@
             headerName: '단위', 
             field: 'unit', 
             sortable: true, 
-            cellClass: "text-center",
+            cellClass: "text-right",
          },
          { 
             headerName: "발주 수량", 
@@ -401,7 +403,7 @@
             cellRenderer: (params) => {
                // 값이 있으면 입력값 표시 없으면 Double Click 표시
                if (!params.value) {
-                  return `<span style="color: #c1c1c1; text-align: left; !important;">Double Click!</span>`;
+                  return `<span style="color: #c1c1c1; text-align: right; !important;">Double Click!</span>`;
                }
                return `<span style="color: #000;">${params.value.toLocaleString()}</span>`;
             },
