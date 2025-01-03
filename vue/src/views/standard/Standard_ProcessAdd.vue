@@ -32,7 +32,8 @@
             <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
             <div class="col-md-4 mt-5" style="height: auto">
                 <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProcess">신규등록</button>
+                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProcess"
+                    v-if="this.$session.get('user_ps') == 'H01'">신규등록</button>
                 </div>
                 <div class="d-flex justify-content-left mb-2">
                     <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정코드 *</div>
@@ -75,8 +76,10 @@
             </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? procUpdate() : procInsert()"> submit </button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delProcess"> delete </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? procUpdate() : procInsert()"
+                    v-if="this.$session.get('user_ps') == 'H01'"> 저장 </button>
+                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delProcess"
+                    v-if="this.$session.get('user_ps') == 'H01'"> 삭제 </button>
                 </div>
             </div>
         </div>
@@ -115,6 +118,7 @@ export default {
                 eqp_type : '',
                 duration:'',
                 note:'',
+                create_dt:''
 
             },
             isUpdated : false,
@@ -180,7 +184,7 @@ export default {
             this.procInfo.duration = params.data.duration;
             this.procInfo.eqp_type = this.matchCode(this.selectedData.selectOptions.eqp_type ,params.data.eqp_type)
             this.procInfo.note = params.data.note;
-            //this.procInfo.create_dt = params.data.create_dt;
+            this.procInfo.create_dt = this.$comm.getMyDay(params.data.create_dt);
             this.isUpdated = true;
             this.prefix='';         
 
@@ -256,7 +260,21 @@ export default {
                 });
         },
         async delProcess(){  
-            
+            const currentTime = new Date();
+            const createDate = new Date(this.procInfo.create_dt);
+            const timeDifference = (currentTime - createDate) / (24 *1000 * 60 * 60); 
+            console.log(currentTime);
+            console.log(createDate);
+            console.log(timeDifference);
+            // 1시간 이내인지 확인
+            if (timeDifference > 1) {
+                this.$swal({
+                    icon: "error",
+                    title: "삭제 불가",
+                    text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
+                });
+                return; 
+            }
     
                  // 조건 만족하지 않을 경우 작업 중단         
                 this.$swal({

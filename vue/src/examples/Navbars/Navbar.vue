@@ -50,16 +50,6 @@ const closeMenu = () => {
           class="pe-md-3 d-flex align-items-center"
           :class="isRTL ? 'me-md-auto' : 'ms-md-auto'"
         >
-          <div class="input-group">
-            <span class="input-group-text text-body">
-              <i class="fas fa-search" aria-hidden="true"></i>
-            </span>
-            <input
-              type="text"
-              class="form-control"
-              :placeholder="isRTL ? 'أكتب هنا...' : 'Type here...'"
-            />
-          </div>
         </div>
         <ul class="navbar-nav justify-content-end">
           <li class="nav-item d-flex align-items-center">
@@ -68,7 +58,7 @@ const closeMenu = () => {
               class="px-0 nav-link font-weight-bold text-white"
               >
                 <i class="fa fa-user" :class="isRTL ? 'ms-sm-2' : 'me-sm-2'"></i>
-                <span class="d-sm-inline d-none">LogOut</span>
+                <span class="d-sm-inline d-none">개쩌는{{this.$session.get('user_nm')}}님</span>
               </button>
             </template>
             <template v-else>

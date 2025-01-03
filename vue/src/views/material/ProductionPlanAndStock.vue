@@ -88,7 +88,7 @@
 
    // Router 사용
    const router = useRouter()
-
+   
    // 날짜 검색 선언
    let startDt = shallowRef('');
    let endDt = shallowRef('');
@@ -220,42 +220,40 @@
       planToMaterialStkStock(params.data.prod_plan_cd);
    };
 
-   // SUBMIT 버튼 클릭 시
    const orderFormClickFunc = () => {
-      // 그리드에 전체선택된 값을 가져옴
+      // 그리드에서 선택된 행 데이터 가져오기
       const materials = materialGrid.value.getSelectedRows();
-      if (materials.length > 0) {
+      
+      materials.forEach((data) => {
+         if(!data.mat_qty) {
+            Swal.fire({
+            icon: 'warning',
+            title: '발주 수량을 입력하세요.',
+         });
+         }
+      });
+
+      if(materials.mat_qty < 0) {
+         Swal.fire({
+            icon: 'warning',
+            title: '발주 수량을 확인하세요.',
+         });
+      }
+
+      if (materials.length > 0) {         
+         // Vuex에 데이터 커밋
          store.commit("materialStore/setMaterial", materials);
-         router.replace({ name:'MaterialsOrderManage' })
+
+         // 페이지 이동
+         router.replace({ name: 'MaterialsOrderManage' });
       } else {
+         // 선택된 데이터가 없을 때 경고
          Swal.fire({
             icon: 'warning',
             title: '선택된 데이터가 없습니다.',
          });
       }
    };
-
-   const cellEditingStoppedEvent = (params) => {
-      if(!params.newValue) return; // 값이 없을 때 편집이 종료되면 return;
-      
-      // 발주 수량 값이 숫자인지 확인
-      const newValue = parseInt(params.newValue, 10);
-      if (isNaN(newValue) || newValue < 0) {
-         Swal.fire({
-            icon: "warning",
-            title: "유효하지 않은 값",
-            text: "발주 수량은 0 이상의 숫자여야 합니다.",
-         });
-
-         // 문자이거나 음수이면 그 전 데이터 값으로 세팅
-         params.node.setDataValue("mat_qty", params.oldValue);
-         return;
-      }
-
-      // 입력값으로 세팅
-      params.node.setDataValue("mat_qty", params.newValue);
-      
-   }
    
 //! ------------------------------ 미지시 계획서 조회 그리드 ------------------------------
    // 그리드 컬럼명
@@ -400,18 +398,22 @@
             field: "mat_qty", 
             editable: true,   // 편집 가능
             cellClass: "text-right",
-            cellRenderer: (params) => {
-               // 값이 있으면 입력값 표시 없으면 Double Click 표시
-               if (!params.value) {
-                  return `<span style="color: #c1c1c1; text-align: right; !important;">Double Click!</span>`;
+            valueFormatter: params => params.data.number, // 숫자타입으로 포맷 지정
+            valueSetter: (params) => { // 입력한 값 그리드 값에 세팅하기
+               const newValue = parseInt(params.newValue, 10);
+               if (isNaN(newValue) || newValue < 0) {
+                  return false; // 유효하지 않은 값
                }
-               return `<span style="color: #000;">${params.value.toLocaleString()}</span>`;
+               params.data.mat_qty = newValue; // 데이터 업데이트
+               return true; // 변경 성공
             },
-            valueSetter: (params) => {
-               const numberFormat = parseInt(params.newValue, 10); // 10진수 정수로 변환하여 숫자로 저장
-               
-               params.data.mat_qty = numberFormat;
-               return true; // 값 변경 성공
+            cellRenderer: (params) => {
+               // 값이 없으면 'Double Click!' 표시
+               if (!params.value) {
+                  return `<span style="color: #c1c1c1; text-align: right;">Double Click!</span>`;
+               }
+               // 값이 있으면 숫자 표시
+               return `<span style="color: #000;">${Number(params.value)}</span>`;
             },
          },
       ],

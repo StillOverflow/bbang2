@@ -32,7 +32,8 @@
             <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
             <div class="col-md-4 mt-5" style="height: auto">
                 <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProduct">신규등록</button>
+                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProduct"
+                    v-if="this.$session.get('user_ps') == 'H01'">신규등록</button>
                 </div>
                 <div class="d-flex justify-content-left = mb-2">
                     <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">제품코드</div>
@@ -102,8 +103,10 @@
             </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? prdUpdate() : prdInsert()" :disabled="isDisabled"> submit </button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delProduct"> delete </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? prdUpdate() : prdInsert()" 
+                    v-if="this.$session.get('user_ps') == 'H01'"> 저장 </button>
+                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delProduct"
+                    v-if="this.$session.get('user_ps') == 'H01'"> 삭제 </button>
                 </div>
             </div>
         </div>
@@ -145,7 +148,8 @@ export default {
                 unit : '',
                 safe_stk : '',
                 exp_range:'',
-                note:''
+                note:'',
+                create_dt:''
             },
             isUpdated : false,
             
@@ -223,6 +227,7 @@ export default {
             this.prdInfo.safe_stk = params.data.safe_stk;
             this.prdInfo.note = params.data.note;
             this.prdInfo.exp_range = params.data.exp_range;
+            this.prdInfo.create_dt = this.$comm.getMyDay(params.data.create_dt);
             this.isUpdated = true;  
             
             this.copyPrdInfo = {...this.prdInfo};
@@ -288,7 +293,23 @@ export default {
                     
                 });
         },
-        async delProduct(){           
+        async delProduct(){   
+            const currentTime = new Date();
+            const createDate = new Date(this.prdInfo.create_dt);
+            const timeDifference = (currentTime - createDate) / (24 *1000 * 60 * 60); 
+            console.log(currentTime);
+            console.log(createDate);
+            console.log(timeDifference);
+            // 1시간 이내인지 확인
+            if (timeDifference > 1) {
+                this.$swal({
+                    icon: "error",
+                    title: "삭제 불가",
+                    text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
+                });
+                return; 
+            }
+            
                 this.$swal({
                     title: "정말 삭제하시겠습니까??",
                     text: "",
@@ -315,19 +336,7 @@ export default {
         }
     },
     
-    watch : {
-        prdInfo : {
-            deep: true,
-            handler(newVal, oldVal) {
-                console.log("oldVal => ", oldVal);
-                if(newVal){
-                    this.isDisabled = false;
-                }
-                
-            },
-            
-        }
-    },
+
 
 }
 </script>

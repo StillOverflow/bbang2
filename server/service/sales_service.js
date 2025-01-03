@@ -234,13 +234,13 @@ const insertPrdOut = async (values) => {
     let prdOutDtl = await mariadb.query('productOutDtlInsert', [seq, values[1]]); 
 
     //등록할 때 출고된 만큼 제품수량 감속하게 업데이트
-    let i = 0;      //sql.js(sales.js)에서 쿼리를 반복 시켰는데 쿼리구문은 하나만 있어야 해서 서비스에서 진행(insert는 valuesf를 반복시키는거라 쿼리는 하나임)
-    for (const obj of values[2]){                                                                   //forEach는 async,await을 쓸수가 없다 그래서 for of문 사용 
-        let prdOutQty = await mariadb.query('productOutQty', [obj.prd_out_qty, obj.prd_lot_cd]);    // 수정이 되었을때 1이 되므로 0보다 클때 i를 한개씩 더함
-        if(prdOutQty.affectedRows > 0){                                                             //배열의 길이와 i의 길이를 비교해서 업데이트가 다 되었는지 확인
-            i++;
-        }
-    }
+    // let i = 0;      //sql.js(sales.js)에서 쿼리를 반복 시켰는데 쿼리구문은 하나만 있어야 해서 서비스에서 진행(insert는 valuesf를 반복시키는거라 쿼리는 하나임)
+    // for (const obj of values[2]){                                                                   //forEach는 async,await을 쓸수가 없다 그래서 for of문 사용 
+    //     let prdOutQty = await mariadb.query('productOutQty', [obj.prd_out_qty, obj.prd_lot_cd]);    // 수정이 되었을때 1이 되므로 0보다 클때 i를 한개씩 더함
+    //     if(prdOutQty.affectedRows > 0){                                                             //배열의 길이와 i의 길이를 비교해서 업데이트가 다 되었는지 확인
+    //         i++;
+    //     }
+    // }
 
     //출고등록시 주문서 상태변환
     let orderStautsPrdOut = await mariadb.query('orderStautsPrdOut', samples.order_cd);
@@ -248,7 +248,7 @@ const insertPrdOut = async (values) => {
     
     if(prdOut.affectedRows > 0 && 
        prdOutDtl.affectedRows > 0 && 
-       values[2].length  == i &&
+       //values[2].length  == i &&
        orderStautsPrdOut.affectedRows > 0) {
 
         mariadb.commit();
@@ -310,6 +310,86 @@ const deleteListOutPrd = async (no) => {
     }
 };
 
+//출고 제품 수정(업데이트, 등록 한번에 하기)
+const updatePrdOut = async (updateInfo) => {
+    let resultArr = [];
+    for (const val of updateInfo){  
+
+        if(val.prd_out_dtl_cd){ //수정될 행
+            let obj = {
+                prd_out_qty : val.prd_out_qty,
+                note : val.note
+            }
+            let updateRes = await mariadb.query('prdOutUpdate', [obj, val.prd_out_dtl_cd]);
+
+            if(updateRes.affectedRows > 0){
+                resultArr.push("succeess");
+            }else{
+                resultArr.push("fail");
+            }            
+        }else{ //추가될 행
+            let obj = {
+                prd_out_cd: val.prd_out_cd,
+                order_dtl_cd: val.order_dtl_cd, 
+                prd_cd : val.prd_cd,
+                prd_out_qty: val.prd_out_qty,
+                prd_lot_cd: val.prd_lot_cd,
+                note: val.note
+            }
+            let insertRes = await mariadb.query('prdOutUpdateInsert', [obj]); 
+
+            if(insertRes.affectedRows > 0){
+                resultArr.push("succeess");
+            }else{
+                resultArr.push("fail");
+            }
+        }
+    }
+    if(resultArr.includes("fail")){ // 모두 성공했는지 판단
+        mariadb.rollback();
+        return {"result" : "fail"};       
+    } else {
+        mariadb.commit();
+        return {"result" : "success"};        
+    }
+};
+
+//출고완료시 업데이트
+const updatePrdOutEnd = async (updateInfo) => {
+    let resultArr = [];
+    for (const val of updateInfo){
+
+        let updateRes = await mariadb.query('productOutEndQty', [val.prd_out_qty , val.prd_lot_cd]);
+        
+        if(updateRes.affectedRows > 0){
+            resultArr.push("succeess");
+        }else{
+            resultArr.push("fail");
+        } 
+
+        let statusRes = await mariadb.query('orderStautsPrdOutEnd', val.order_cd);
+
+        if(statusRes.affectedRows > 0){
+            resultArr.push("succeess");
+        }else{
+            resultArr.push("fail");
+        }
+    }
+
+    if(resultArr.includes("fail")){ // 모두 성공했는지 판단
+        mariadb.rollback();
+        return {"result" : "fail"};       
+    } else {
+        mariadb.commit();
+        return {"result" : "success"};        
+    }
+};
+//출고 완료 확인
+const endOutPrd = async (no) => {
+    let list = await mariadb.query('prdOutEnd', no);
+    console.log("출고서비스 ",list)
+    return list;
+}
 
 /* ----------------------------------------------------제품 반품--------------------------------------------------------- */
 
@@ -573,7 +653,10 @@ module.exports = {
     deleteOutPrd,
     qtyDeleteOutPrd,
     deleteListOutPrd,
-    
+    updatePrdOut,
+    updatePrdOutEnd,
+    endOutPrd,
+
     //제품반품
     listReturn,
     searchReturn,

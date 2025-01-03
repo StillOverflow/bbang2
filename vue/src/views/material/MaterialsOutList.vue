@@ -17,11 +17,11 @@
                            <div style="width: 100%" class="text-left fw-bolder font_15px">작업일자</div>
                            <div style="width: 100%" class="d-flex justify-content-left align-items-center text-left">
                               <div style="width: 45%">
-                                 <input class="form-control" type="date" :max="endDt" v-model="startDt" @change="onChangeSearchDate"/>
+                                 <input class="form-control" type="datetime-local" :max="endDt" v-model="startDt" @change="onChangeSearchDate"/>
                               </div>
                               <div style="width: 10%" class="text-center fw-bolder">~</div>
                               <div style="width: 45%">
-                                 <input class="form-control" type="date" :min="startDt" v-model="endDt" @change="onChangeSearchDate"/>
+                                 <input class="form-control" type="datetime-local" :min="startDt" v-model="endDt" @change="onChangeSearchDate"/>
                               </div>
                            </div>
                         </div>
@@ -34,7 +34,7 @@
                                        class="form-check-input text-left"
                                        type="radio"
                                        name="produceStatus"
-                                       value="statusAll"
+                                       value=""
                                        v-model="selectedStatus"
                                        @change="radioStatusChange($event)"
                                        checked="checked"
@@ -70,10 +70,11 @@
                      />
                   </div>
                   <div class="col-1">
-                     <button class="btn btn-secondary">RESET</button>
+                     <button class="btn btn-secondary" @click="resetBtnFunc">RESET</button>
                   </div>
+
                   <!-- //! 자재 출고 내역 조회 Layout -->
-                  <div class="col-8" @keydown="keyEventHandler($event)">
+                  <div class="col-8">
                      <Layout :modalCheck="isMatModal">
                         <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
                            <h5 class="modal-title">자재 조회</h5>
@@ -123,6 +124,7 @@
                                           :key="index" 
                                           class="dropdown-item materialBtn font_15px" 
                                           :class="{ active: index === selectedIndex }" 
+                                          v-modal="item.mat_cd"
                                           @click="onClickMatNm(null, item.mat_cd, item.mat_nm)"
                                        >
                                           {{ item.mat_nm }}
@@ -143,9 +145,10 @@
                                     <input 
                                        class="form-check-input text-left"
                                        type="radio"
-                                       :id="typeAll"
                                        :name="materialType"
-                                       :isRadioChecked="isTypeChecked"
+                                       value=""
+                                       v-model="selectedType"
+                                       @change="radioMaterialChange"
                                        checked="checked"
                                     />
                                     <label class="form-check-label m-0 text-start font_13px">전체</label>
@@ -154,10 +157,10 @@
                                     <input 
                                        class="form-check-input text-left" 
                                        type="radio" 
-                                       :id="'type' + data.comm_dtl_cd" 
                                        :name="materialType"
-                                       :value="data.comm_dtl_cd" 
+                                       :value="data.comm_dtl_cd"                                        
                                        v-model="selectedType"
+                                       @change="radioMaterialChange"
                                     />
                                     <label class="form-check-label m-0 text-start font_13px" :for="'radio' + data.comm_dtl_cd">
                                        {{ data.comm_dtl_nm }}
@@ -175,8 +178,10 @@
                                     <input 
                                        class="form-check-input text-left" 
                                        type="radio"
-                                       :id="categoryAll"
                                        :name="materialCategory"
+                                       value=""
+                                       v-modal="selectedCategory"
+                                       @change="radioMaterialChange"
                                        checked="checked"
                                     >
                                     <label class="form-check-label text-start font_13px m-0">전체</label>
@@ -185,11 +190,10 @@
                                     <input 
                                        class="form-check-input text-left" 
                                        type="radio" 
-                                       :id="'category' + data.comm_dtl_cd" 
                                        :name="materialCategory"
                                        :value="data.comm_dtl_cd" 
-                                       v-model="selectedCategory" 
-                                       :isRadioChecked="isCategoryChecked"
+                                       v-model="selectedCategory"                                        
+                                       @change="radioMaterialChange"
                                     >
                                     <label class="form-check-label text-start m-0 font_13px" :for="'radioCategory' + data.comm_dtl_cd">
                                        {{ data.comm_dtl_nm }}
@@ -241,11 +245,13 @@
 
    let isHidden = ref(true);                // 드롭다운 표시 여부 (true: 숨김, false: 표시)
    let isMatModal = ref(false);             // 모달 표시 여부 (true : 표시, false : 숨김)
-   let isCategoryChecked = ref(false);      // 카테고리 체크여부()
-   let isTypeChecked = ref(false);          // 자재구분 체크여부()
 
-   let instCode = ref('');
+   let instCode = ref('');                  // 지시서 코드 저장
    
+   let selectedType = ref('');              // 선택된 자재 구분
+   let selectedCategory = ref('');          // 선택된 카테고리
+   let selectedStatus = ref('');            // 선태된 진행상태
+
    const instructionsData = shallowRef([]);// 생산중 이거나 생산 완료된 지시서
    const materialOutData = shallowRef([]); // 출고 내역
 //! ---------------------------------------- Vue Hook ----------------------------------------
@@ -300,6 +306,7 @@
       }
    }
 
+   // 진행상태 조회
    const getStatus = async () => {
       try {
          const result = await axios.get('/api/comm/codeList/PS');
@@ -318,7 +325,7 @@
    // 자재 목록 조회
    const getMaterial = async (keyword) => {
       try {
-         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : String(keyword).trim() } });
+         const result = await axios.get('/api/comm/material', { params : { 'mat_nm' : String(keyword).trim(), } });
          materialArr.value = result.data || [];
       } catch (err) {
          materialArr.value = [];
@@ -332,13 +339,10 @@
    };
 
    // 생산중 이거나 완료된 지시서 조회 instructionsOptions
-   const getProduceInstruction = async (searchObj = {}) => {
+   const getProduceInstruction = async () => {
       try {
-         let startDt = searchObj.startDt || '';
-         let endDt = searchObj.endDt || '';
-         let status = searchObj.status || '';
-         console.log(status)
-         const result = await axios.get(`/api/material/produceInstruction`, { params : { 'startDt' : startDt, 'endDt' : endDt, 'status' : status } });
+         console.log("selectedStatus.value => ", selectedStatus.value)
+         const result = await axios.get(`/api/material/produceInstruction`, { params : { 'startDt' : startDt.value, 'endDt' : endDt.value, 'status' : selectedStatus.value } });
          instructionsData.value = result.data || [];
          
          console.log("axios타고 난 후", instructionsData.value)
@@ -361,9 +365,11 @@
    }
 
    // 지시건에 대한 자재 출고 내역
-   const getMaterialOutForProduction = async (inst_cd) => {
+   const getMaterialOutForProduction = async () => {
       try {
-         const result = await axios.get('/api/material/out', { params : { inst_cd : String(inst_cd).trim() } })
+         console.log(selectedCategory.value);
+         console.log(selectedCategory.value);
+         const result = await axios.get('/api/material/out', { params : { 'inst_cd' : String(instCode.value).trim(), 'category' : selectedCategory.value || '', 'type' : selectedType.value || '',   } })
 
          materialOutData.value = result.data || [];
       } catch (err) {
@@ -391,26 +397,26 @@
    // 날짜 검색
    const onChangeSearchDate = () => {
       if(startDt.value != '' && endDt.value != '') {
-         let dateObj = {'startDt' : startDt.value, 'endDt' : endDt.value}
-         getProduceInstruction(dateObj);
-         
-         startDt.value = '';
-         endDt.value = '';
+         getProduceInstruction();
       };
    }
 
    // radio Change 생산지시 상태
-   const radioStatusChange = (event) => {
-      let data = event.target.value;
-      let conditionObj = { 'status' : data };
-      getProduceInstruction(conditionObj);
-   }
+   const radioStatusChange = () => {
+      getProduceInstruction();
+   };
+   // radio Change 자재 재고조회
+   const radioMaterialChange = () => {
+      getMaterialOutForProduction();
+   };
 
    // 드롭다운 박스에 버튼 클릭 시 input에 입력 & 모달창 자재 클릭시 검색창에 입력
    const onClickMatNm = (params, code, name, ) => {
       isHidden.value = true;       // 드롭다운 숨김
       if(params != null) {
          keyword.value = params.data.mat_nm;
+         console.log("code => ",code)
+         getMaterialOutForProduction(code);
          materialModalOpen(); // 자재조회 모달
       }
       if(code || name) {
@@ -418,13 +424,14 @@
       }
    };
    
+   // 지시서 row 클릭 시
    const onClickInstructionsRow = (params) => {
       instCode.value = params.data.inst_cd || '';
       getMaterialOutForProduction(params.data.inst_cd);
    } 
 
    // 아래, 위 방향키 및 엔터 이벤트 핸들러
-   let selectedIndex = ref(-1);
+   let selectedIndex = ref( -1 );
    const keyEventHandler = (event) => {
       let elementBtns = document.querySelectorAll(".materialBtn");
       if(isHidden.value && !isMatModal.value) return;
@@ -470,6 +477,10 @@
             }
          break;
       }
+   };
+
+   const resetBtnFunc = () => {
+
    }
 
 //! ---------------------------------------- Ag Grid ----------------------------------------

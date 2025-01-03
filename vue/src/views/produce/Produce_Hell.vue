@@ -506,6 +506,7 @@ export default {
         return;
       }else{
         if(mode == "start"){
+          
           if(this.resultAble == false){
             this.$swal({
               title: "이미 진행중인 공정입니다.",
@@ -552,12 +553,15 @@ export default {
 
                 if(result.data == 'success'){
                   this.resultAble = false;
-                  this.resultInfo.START_TIME = obj.START_TIME;
+                  this.resultInfo.START_TIME = this.$comm.getDatetimeMin(obj.START_TIME);
                   this.getResultInfo(this.resultInfo.PROD_RESULT_CD);
+                  await axios.put(`/api/progress/status/${this.resultInfo.INST_CD}`, {STATUS:'Z02'})
+                             .catch(err => console.log(err));
                 }              
               }
             })
           }
+          
         }else{
           if(this.resultInfo.STATUS == 'Z03'){
             this.$swal({
@@ -584,7 +588,7 @@ export default {
                                       .catch(err => console.log(err));
 
                 if(result.data == 'success'){
-                  this.resultInfo.END_TIME = obj.END_TIME;
+                  this.resultInfo.END_TIME = this.$comm.getDatetimeMin(obj.END_TIME);
                   this.resultInfo.STATUS = 'Z03';
                   this.getResultInfo(this.resultInfo.PROD_RESULT_CD);
                 }

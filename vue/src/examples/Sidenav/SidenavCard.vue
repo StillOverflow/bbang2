@@ -1,10 +1,12 @@
 <script setup>
+/*
 import { computed } from "vue";
 import { useStore } from "vuex";
 const store = useStore();
 
 const isRTL = computed(() => store.state.isRTL);
 const layout = computed(() => store.state.layout);
+*/
 defineProps({
   card: {
     type: Object,
@@ -20,6 +22,7 @@ defineProps({
   },
 });
 </script>
+<!--
 <template>
   <div
     v-show="layout !== 'landing'"
@@ -81,3 +84,4 @@ defineProps({
     </a>
   </div>
 </template>
+-->

@@ -144,4 +144,12 @@ router.put('/progress/end/:no', async (req,res)=>{
   res.send(result);
 })
 
+ //공정시작 시 계획서/지시서 상태변경
+ router.put('/progress/status/:no', async (req,res)=>{
+  let prodNo = req.params.no;
+  let info = req.body;
+  let result = await produceService.statusChange(prodNo, info);
+  res.send(result);
+})
+
 module.exports = router;

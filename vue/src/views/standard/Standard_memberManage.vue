@@ -19,7 +19,7 @@
               <!-- 사원 테이블 ag-gird -->
               <ag-grid-vue
                 class="ag-theme-alpine"
-                style="width: 900px; height: 600px"
+                style="width: 900px; height: 660px"
                 :columnDefs="memberDefs"
                 :rowData="memberData"
                 :pagination="true"
@@ -88,7 +88,7 @@
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">연락처</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="memInfo.phone" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;" @input="autoSeparate"  maxlength="13" />
+                    style="height: 41px;" @input="autoSeparate"  maxlength="13" placeholder="000-0000-0000"/>
                 </div>
             </div>
 
@@ -145,8 +145,8 @@
                 </div>
             </div>
             </div> 
-                <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? memUpdate() : memInsert()"> submit </button>
+                <div class="text-center" v-if="this.$session.get('user_ps') == 'H01'">
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? memUpdate() : memInsert()"> 저장 </button>
                 </div>
             </div>
         </div>

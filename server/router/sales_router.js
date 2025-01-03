@@ -173,6 +173,27 @@ router.delete('/sales/prdOutListDelete/:del', async (req, res) => {
     res.send(outDtlDel);
 });
 
+//출고 제품 수정(업데이트,등록 한번에 하기)
+router.put('/sales/prdOutUpdates', async (req, res) => {
+    let updateInfo = req.body;
+    let result = await salesService.updatePrdOut(updateInfo);
+    res.send(result);
+});
+
+//출고완료시 업데이트
+router.put('/sales/prdOutEndUpdates', async (req, res) => {
+    let updateInfo = req.body;
+    let result = await salesService.updatePrdOutEnd(updateInfo);
+    res.send(result);
+});
+//출고 완료 확인
+router.get('/sales/prdOutEndStatus/:no', async (req, res) => {
+    let odc = req.params.no;
+    console.log("출고라우터",odc)
+    let info = await salesService.endOutPrd(odc);
+    res.send(info); 
+});
+
 
 /* ---------------------------------반품제품--------------------------------------- */
 

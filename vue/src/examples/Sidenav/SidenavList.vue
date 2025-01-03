@@ -61,7 +61,7 @@ export default {
         <li class="nav-item head" id="Sales" @click="showList('Sales')">
           <a class="nav-link" :class="urlCompare('Sales') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-scroll text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">영업</span>
           </a>
@@ -133,7 +133,7 @@ export default {
         <li class="nav-item head" id="Produce" @click="showList('Produce')">
           <a class="nav-link" :class="urlCompare('Produce') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-desktop text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">생산</span>
           </a>
@@ -146,7 +146,7 @@ export default {
           </li>
           <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Produce_PlanAdd" :class="getRoute() === 'Produce_PlanAdd' ? 'active' : ''"
-              :navText="'생산계획서 관리'">
+              :navText="'생산계획서 등록'">
             </sidenav-item>
           </li>
           <li class="nav-item">
@@ -156,7 +156,7 @@ export default {
           </li>
           <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Produce_InstAdd" :class="getRoute() === 'Produce_InstAdd' ? 'active' : ''"
-              :navText="'생산지시서 관리'">
+              :navText="'생산지시서 등록'">
             </sidenav-item>
           </li>
           <li class="nav-item">
@@ -200,63 +200,64 @@ export default {
         <li class="nav-item head" id="Material" @click="showList('Material')">
           <a class="nav-link" :class="urlCompare('Material') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-cart-shopping text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">자재</span>
           </a>
         </li>
         <ul class="navbar-nav detail Material_list" :class="urlCompare('materials') == true ? '' : 'dnone'">
+          
           <li class="nav-item">
-            <sidenav-item to="/Material_list6" :class="getRoute() === 'Material_list6' ? 'active' : ''"
-              :navText="'제품 입고 조회'">
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item to="/Material_list3" :class="getRoute() === 'Material_list3' ? 'active' : ''"
-              :navText="'제품 입고 관리'">
-            </sidenav-item>
-          </li>
-
-          <li class="nav-item">
-            <sidenav-item to="/materials/order/list" :class="getRoute() === 'MaterialsOrderList' ? 'active' : ''"
-              :navText="'자재 발주 조회'">
+            <sidenav-item to="/materials/order/list"
+              :class="getRoute() === 'MaterialsOrderList' ? 'active' : ''"
+              :navText="'자재 발주서 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
             <sidenav-item to="/materials/planStock/list"
-              :class="getRoute() === 'MaterialsPlanStockList' ? 'active' : ''" :navText="'미지시 계획서 자재 조회'">
+              :class="getRoute() === 'MaterialsPlanStockList' ? 'active' : ''"
+              :navText="'미지시 계획서 자재 재고 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/materials/order/manage" :class="getRoute() === 'MaterialsOrderManage' ? 'active' : ''"
-              :navText="'자재 발주 관리'">
+            <sidenav-item to="/materials/order/manage" 
+              :class="getRoute() === 'MaterialsOrderManage' ? 'active' : ''"
+              :navText="'자재 발주서 관리'">
             </sidenav-item>
           </li>
+          
           <li class="nav-item">
-            <sidenav-item to="/Material_list12" :class="getRoute() === 'Material_list12' ? 'active' : ''"
+            <sidenav-item to="/materials/in/list" 
+              :class="getRoute() === 'MaterialsInList' ? 'active' : ''"
               :navText="'자재 입고 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Material_list2" :class="getRoute() === 'Material_list2' ? 'active' : ''"
+            <sidenav-item to="/materials/in/manage" 
+              :class="getRoute() === 'MaterialsInManage' ? 'active' : ''"
               :navText="'자재 입고 관리'">
             </sidenav-item>
           </li>
+
           <li class="nav-item">
-            <sidenav-item to="/Material_list8" :class="getRoute() === 'Material_list8' ? 'active' : ''"
+            <sidenav-item to="/materials/stock/list" 
+              :class="getRoute() === 'MaterialsStockList' ? 'active' : ''"
               :navText="'자재 재고 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Material_list9" :class="getRoute() === 'Material_list9' ? 'active' : ''"
+            <sidenav-item to="/materials/lotStock/list" 
+              :class="getRoute() === 'MaterialsLotStockList' ? 'active' : ''"
               :navText="'자재 LOT별 재고 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/materials/out/list" :class="getRoute() === 'MaterialsOutList' ? 'active' : ''"
+            <sidenav-item to="/materials/out/list" 
+              :class="getRoute() === 'MaterialsOutList' ? 'active' : ''"
               :navText="'자재 출고 조회'">
             </sidenav-item>
           </li>
+<!--           
           <li class="nav-item">
             <sidenav-item to="/Material_list7" :class="getRoute() === 'Material_list7' ? 'active' : ''"
               :navText="'자재 재고 조정'">
@@ -271,9 +272,8 @@ export default {
             <sidenav-item to="/Material_list4" :class="getRoute() === 'Material_list4' ? 'active' : ''"
               :navText="'자재 반품 관리'">
             </sidenav-item>
-          </li>
+          </li> -->
         </ul>
-
 
 
 
@@ -308,7 +308,7 @@ export default {
         <li class="nav-item head" id="Equipment" @click="showList('Equipment')">
           <a class="nav-link" :class="urlCompare('Equipment') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-wrench text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">설비</span>
           </a>
@@ -396,14 +396,11 @@ export default {
 
 
 
-
-
-
         <!-- 품질  -->
         <li class="nav-item head" id="Quality" @click="showList('Quality')">
           <a class="nav-link" :class="urlCompare('Quality') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-vial-circle-check text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">품질</span>
           </a>
@@ -499,13 +496,13 @@ export default {
           v-if="this.$session.get('user_ps') == 'H01'">
           <a class="nav-link" :class="urlCompare('Standard') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-gear text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">기준정보관리</span>
           </a>
         </li>
         <ul class="navbar-nav detail Standard_list" :class="urlCompare('Standard') == true ? '' : 'dnone'">
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Standard_memberManage" :class="getRoute() === 'Standard_memberManage' ? 'active' : ''"
               :navText="'사원관리'">
             </sidenav-item>
@@ -572,6 +569,7 @@ export default {
           </sidenav-item>
         </li>
 
+        <!--
         <li class="nav-item">
           <sidenav-item to="/virtual-reality" :class="getRoute() === 'virtual-reality' ? 'active' : ''"
             :navText="isRTL ? 'الواقع الافتراضي' : 'Virtual Reality'">
@@ -625,7 +623,7 @@ export default {
               <i class="ni ni-collection text-info text-sm opacity-10"></i>
             </template>
           </sidenav-item>
-        </li>
+        </li>-->
       </ul>
     </div>
 
@@ -651,6 +649,3 @@ export default {
     </div>
   </div>
 </template>
-<script>
-
-</script>

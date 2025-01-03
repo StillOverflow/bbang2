@@ -32,7 +32,8 @@
             <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
             <div class="col-md-4 mt-5" style="height: auto">
                 <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newMaterial">신규등록</button>
+                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newMaterial"
+                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT5' )">신규등록</button>
                 </div>
                 <div class="d-flex justify-content-left mb-2">
                     <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재코드</div>
@@ -107,8 +108,10 @@
             </div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? matUpdate() : matInsert()"> submit </button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delMaterial"> delete </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? matUpdate() : matInsert()"
+                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT5' )"> 저장 </button>
+                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delMaterial"
+                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT5' )"> 삭제 </button>
                 </div>
             </div>
         </div>

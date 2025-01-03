@@ -28,12 +28,15 @@
                 @rowClicked="actClicked">
               </ag-grid-vue>
             </div>
-            
-            <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
+            <div class="col-1 col-xl-1 d-flex flex-column align-items-center ">
+                    <button type="button" class="btn btn-secondary mb-0 ms-4  mt-5" @click="newAccount"
+                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )">신규등록</button>              
+            </div>
+            <!-- <div class="col-1 col-xl-1 d-flex flex-column align-items-center ">
+                    <button type="button" class="btn btn-secondary mb-0 ms-4  mt-5 saveBtn" @click="newAccount"
+                    style="visibility: hidden;">신규등록</button>              
+            </div> -->
             <div class="col-md-4 mt-5" style="height: auto">
-                <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newAccount">신규등록</button>
-                </div>
                 <div class="d-flex justify-content-left mb-2">
                     <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처코드 *</div>
                     <div class="input-group mb-3 w-25">
@@ -86,8 +89,26 @@
             <div class="d-flex justify-content-left  mb-2">
                 <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">소재지</div>
                 <div class="input-group mb-3 w-50">
-                    <input type="text" class="form-control" v-model="actInfo.location" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
+                    <!-- <input type="text" class="form-control" v-model="actInfo.location" aria-label="Recipient's username" aria-describedby="button-addon2" 
+                    style="height: 41px;"  /> -->
+                    <select class="form-select custon-width" v-model="actInfo.location">
+                        <option value="서울">서울</option>  
+                        <option value="인천">인천</option>
+                        <option value="대전">대전</option>    
+                        <option value="광주">광주</option>                  
+		                <option value="대구">대구</option>
+                        <option value="울산">울산</option>
+                        <option value="부산">부산</option>
+                        <option value="경기도">경기도</option>
+                        <option value="강원도">강원도</option>
+                        <option value="충남">충남</option>
+                        <option value="충북">충북</option>
+                        <option value="경북">경북</option>
+                        <option value="경남">경남</option>
+                        <option value="전북">전북</option>
+                        <option value="전남">전남</option>
+                        <option value="제주">제주</option>
+                    </select>
                 </div>
             </div>
             <div class="d-flex justify-content-left  mb-2">    
@@ -116,10 +137,13 @@
                         <textarea cols="30" rows="6" type="text" class="form-control h-25" v-model="actInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />                
             </div>
+            <div class="col-1 col-xl-1 d-flex justify-content-between  flex-column align-items-center "></div>
             </div> 
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? actUpdate() : actInsert()"> submit </button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delAccount"> delete </button>
+                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? actUpdate() : actInsert()"
+                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"> 저장 </button>
+                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delAccount"
+                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"> 삭제 </button>
                 </div>
             </div>
         </div>
@@ -163,7 +187,8 @@ export default {
                 act_tel:'',
                 location:'',
                 act_addr:'',
-                note:''
+                note:'',
+                create_dt:''
             },
             isUpdated : false,
             
@@ -296,6 +321,7 @@ export default {
             this.actInfo.act_addr = params.data.act_addr;
             this.actInfo.act_type = this.matchCode(this.selectedData.selectOptions.act_type ,params.data.act_type)
             this.actInfo.note = params.data.note;
+            this.actInfo.create_dt = this.$comm.getMyDay(params.data.create_dt);
             this.isUpdated = true;       
             
             this.copyActInfo = {...this.actInfo};
@@ -385,7 +411,23 @@ export default {
                     
                 });
         },
-        async delAccount(){           
+        async delAccount(){       
+            const currentTime = new Date();
+            const createDate = new Date(this.actInfo.create_dt);
+            const timeDifference = (currentTime - createDate) / (24 *1000 * 60 * 60); 
+            console.log(currentTime);
+            console.log(createDate);
+            console.log(timeDifference);
+            // 1시간 이내인지 확인
+            if (timeDifference > 1) {
+                this.$swal({
+                    icon: "error",
+                    title: "삭제 불가",
+                    text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
+                });
+                return; 
+            }
+            
                 this.$swal({
                     title: "정말 삭제하시겠습니까??",
                     text: "",

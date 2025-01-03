@@ -1,4 +1,4 @@
-/* -----------생산계획서------------*/
+/* -------------------------------생산계획서----------------------------*/
 
 //계획서 전체조회
 const planSelect = (datas) => {
@@ -24,11 +24,11 @@ const planSelect = (datas) => {
   if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
   
 
-  if (searchOrder.length > 0) {
+  if (searchOrder.length > 0) { //조건이 있으면
     query += ` WHERE ` + searchOrder.join(' AND ');
   }
 
-  return query; // 합체한 쿼리 전체
+  return query; // 쿼리 통합
 };
 
 
@@ -52,8 +52,9 @@ WHERE PROD_PLAN_CD LIKE "%"?"%"`;
 //계획서 다중 삭제
 const planDelete = (datas) => {
 
+  //계획서 헤더/디테일 동시삭제
   let sql =
-      `DELETE PROD_PLAN, PROD_PLAN_DTL FROM PROD_PLAN PROD_PLAN join PROD_PLAN_DTL PROD_PLAN_DTL
+      `DELETE PROD_PLAN, PROD_PLAN_DTL FROM PROD_PLAN PROD_PLAN right join PROD_PLAN_DTL PROD_PLAN_DTL
         ON PROD_PLAN.PROD_PLAN_CD=PROD_PLAN_DTL.PROD_PLAN_CD
         WHERE STATUS='Z01' and PROD_PLAN_DTL.PROD_PLAN_CD IN `;
 
@@ -66,7 +67,7 @@ const planDelete = (datas) => {
 }
 
 
-/* 계획서 등록[S] */
+/* 계획서 등록 [S] */
 
 // 시퀀스 조회
 const planSeq = `
@@ -102,13 +103,14 @@ const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
   return sql;
 };
 
-// 헤더 수정
+/* 계획서 등록[E] */
+
+
+//계획서 헤더 수정
 const planUpdate = `
   UPDATE PROD_PLAN SET ?
   WHERE PROD_PLAN_CD = ?
 `;
-/* 계획서 등록[E] */
-
 
 //계획서 제품조회
 const planDtlList =
@@ -132,7 +134,7 @@ FROM
 WHERE PROD_PLAN_CD = ? `;
 
 
-/* -----------생산지시서------------*/
+/* -------------------------------생산지시서----------------------------*/
 
 //지시서 전체조회
 const instList = (datas) => {
@@ -150,7 +152,6 @@ const instList = (datas) => {
   // 거래처조회 조건
   if (datas.PROD_PLAN_CD) searchOrder.push(`INST_CD = UPPER('${datas.INST_CD}')`);
   if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
-  
 
   if (searchOrder.length > 0) {
     query += ` WHERE ` + searchOrder.join(' AND ');
@@ -158,7 +159,6 @@ const instList = (datas) => {
   
   return query; // 합체한 쿼리 전체
 };
-
 
 //지시서 단건조회
 const instInfo =
@@ -168,12 +168,13 @@ WHERE INST_CD = ?`;
 //지시서 다중 삭제
 const instDelete = (datas) => {
 
+  //공정실적, 사용자재, 지시서 헤더/디테일 동시삭제
   let sql =
       `DELETE PROD_INST, prod_inst_dtl, prod_result, proc_mat FROM 
-		  PROD_INST prod_inst join prod_inst_dtl prod_inst_dtl ON prod_inst.INST_CD=prod_inst_dtl.INST_CD
-		  							 JOIN prod_result prod_result ON prod_inst.INST_CD=prod_result.INST_CD
-									 JOIN proc_mat proc_mat ON prod_inst.INST_CD=proc_mat.INST_CD;
-        WHERE prod_inst_dtl.INST_CD IN `;
+		  PROD_INST prod_inst JOIN prod_inst_dtl prod_inst_dtl ON prod_inst.INST_CD=prod_inst_dtl.INST_CD
+		  							      JOIN prod_result prod_result ON prod_inst.INST_CD=prod_result.INST_CD
+									        JOIN proc_mat proc_mat ON prod_inst.INST_CD=proc_mat.INST_CD;
+        WHERE STATUS='Z01' and prod_inst_dtl.INST_CD IN `;
 
   let delArr = [];
   delArr.push(Object.values(datas));
@@ -301,15 +302,16 @@ SELECT
 /* 지시서 등록[E] */
 
 
-/*------------생산공정-------------*/
+/* -------------------------------생산실적관리----------------------------*/
 
-//지시서 단건조회
+//실적테이블 단건조회
 const resultInfo = (datas) => {
 let sql = 
 `SELECT *,
   (SELECT TOTAL_QTY FROM prod_inst_dtl where INST_CD=pr.INST_CD and PRD_CD=pr.PRD_CD) AS TOTAL_QTY,
   (SELECT EQP_NM FROM equipment where EQP_CD=pr.EQP_CD) AS EQP_NM ,
   (SELECT EQP_TYPE FROM process where proc_cd=pr.proc_cd) AS EQP_TYPE,
+  (SELECT PRD_NM FROM product WHERE PRD_CD=pr.PRD_CD) PRD_NM,
   (SELECT PROC_NM FROM process where proc_cd=pr.proc_cd) AS PROC_NM,
   IFNULL((SELECT STATUS FROM prod_result WHERE inst_cd=pr.INST_CD AND prd_cd=pr.PRD_CD AND step=(pr.step-1)),0) AS LAST_STATUS,
   IFNULL((SELECT QUE_STATUS FROM prod_result WHERE inst_cd=pr.INST_CD AND prd_cd=pr.PRD_CD AND step=(pr.step-1)),0) AS LAST_QUE_STATUS,
@@ -329,12 +331,12 @@ FROM
     sql += ` WHERE ` + searchOrder.join(' AND ');
   }
 
-  sql += ` order by STEP asc`;
+  sql += ` order BY prd_cd, step asc`;
 
   return sql; // 합체한 쿼리 전체
 }
 
-//지시서에 커스텀된 제품별 공정 조회
+//커스텀된 공정흐름 조회
 const instCusFlow = (datas) => {
   let sql = 
   `SELECT 
@@ -355,7 +357,7 @@ const instCusFlow = (datas) => {
   
   const queryArr = [];
 
-  // 거래처조회 조건
+  // 조회 조건
   if (datas.INST_CD) queryArr.push(`INST_CD = UPPER('${datas.INST_CD}')`);
   if (datas.PRD_CD) queryArr.push(`PRD_CD = UPPER('${datas.PRD_CD}')`);
   
@@ -369,7 +371,7 @@ const instCusFlow = (datas) => {
 }
 
 
-//공정별 설비 조회
+//커스텀된 공정흐름별 설비목록 조회
 const instCusEqu = 
 `
 SELECT 
@@ -381,7 +383,7 @@ SELECT
 FROM equipment WHERE eqp_type = ?
 `;
 
-//제품 공정별 자재 조회
+//커스텀된 공정흐름별 자재목록 조회
 const instProcMtList =
 `SELECT 
     INST_MAT_CD,
@@ -395,7 +397,7 @@ FROM
 where pf.PROC_FLOW_CD = ?  
 `;
 
-//제품 공정별 자재 사용량 등록
+//커스텀된 공정흐름별 자재사용량 등록
 const instMatUpdate =
 `UPDATE proc_mat 
 SET MAT_USE_QTY=? 
@@ -406,6 +408,9 @@ const processStart =
 `UPDATE prod_result 
 SET ? 
 WHERE PROD_RESULT_CD = ? `;
+
+
+/* 자재출고 [S] */
 
 //자재 lot 조회
 const matLotSearch =
@@ -437,13 +442,25 @@ const matLotInsert = (values) => { // 배열 형식으로 받아야 함.
   return sql;
 };
 
-
 //자재수량 변경
 const matLotUpdate = 
 `UPDATE material_in 
 SET MAT_STOCK = MAT_STOCK - ? 
 WHERE MAT_LOT_CD = ? `;
 
+/* 자재출고 [E] */
+
+
+ //공정시작 시 계획서/지시서 상태변경
+ const statusChage = (values) => {
+let sql = `
+  UPDATE 
+    prod_inst a INNER JOIN prod_plan b ON a.PROD_PLAN_CD=b.PROD_PLAN_CD
+    SET a.STATUS='${values.STATUS}', b.STATUS='${values.STATUS}'
+    WHERE INST_CD = '${values.no}'
+`;
+return sql;
+ }
 
 module.exports = {
     planSelect,
@@ -476,5 +493,6 @@ module.exports = {
     resultInfo,
     matLotSearch,
     matLotInsert,
-    matLotUpdate
+    matLotUpdate,
+    statusChage
 }

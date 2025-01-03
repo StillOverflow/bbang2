@@ -10,7 +10,8 @@ router.get('/comm/codeList/:cd', async (req, resp) => {
 
 // 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회) => queryString 방식 ~~
 router.get('/comm/member', async (req, resp) => {
-  let result = await commonService.findMemList(req.query.dpt_cd); // dpt_cd(부서코드) 있으면 넘겨줄 것
+  let result = await commonService.findMemList(req.query); // dpt_cd(부서코드) 있으면 넘겨줄 것
+
   resp.send(result);
 });
 
@@ -18,7 +19,6 @@ router.get('/comm/member', async (req, resp) => {
 // /comm/account?act_cd=A01&act_nm=가나다
 router.get('/comm/account', async (req, resp) => {
   let datas = req.query; // { }
-  console.log("account => ", datas);
   let result = await commonService.accountSelect(datas);
   
   resp.send(result);
@@ -26,9 +26,7 @@ router.get('/comm/account', async (req, resp) => {
 
 //! 자재 조회 => queryString 방식 ~~
 router.get('/comm/material', async (req, resp) => {
-  console.log(req.query)
   let datas = req.query; // { }
-  console.log("material => ", datas);
   let result = await commonService.materialSelect(datas);
   
   resp.send(result);
@@ -37,7 +35,6 @@ router.get('/comm/material', async (req, resp) => {
 //! 상품 조회 => queryString 방식 ~~
 router.get('/comm/product', async (req, resp) => {
   let datas = req.query; // { }
-  console.log("material => ", datas);
   let result = await commonService.productSelect(datas);
   
   resp.send(result);

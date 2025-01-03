@@ -80,12 +80,12 @@ export default {
       selected_list:'',
       
       planDefs: [
-        { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 100 },
-        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, width: 100 },
-        { headerName: '생산시작일', field: 'START_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120  },
-        { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120 },
-        { headerName: '제품수량', field: 'DTL_QTY', sortable: true, width: 100},
-        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 100 },
+        { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 100,cellStyle: {textAlign: "center"} },
+        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, width: 100, cellStyle: {textAlign: "center"}},
+        { headerName: '생산시작일', field: 'START_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120, cellStyle: {textAlign: "center"}},
+        { headerName: '생산종료일', field: 'END_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 120, cellStyle: {textAlign: "center"}},
+        { headerName: '제품수량', field: 'DTL_QTY', sortable: true, width: 100, cellStyle: {textAlign: "center"}},
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 100, cellStyle: {textAlign: "center"}},
         {
           headerName: '상세' ,
           field: 'detailed',

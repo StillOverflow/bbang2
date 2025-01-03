@@ -23,7 +23,6 @@
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
-                  <button type="button" class="btn btn-success m-1" @click="accountModalOpen">Save</button>
                   <button type="button" class="btn btn-secondary m-1" @click="accountModalOpen">Cancel</button>
                </div>
             </template>
@@ -47,7 +46,6 @@
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
-                  <button type="button" class="btn btn-success m-1" @click="materialModalOpen">Save</button>
                   <button type="button" class="btn btn-secondary m-1" @click="orderModalOpen">Cancel</button>
                </div>
             </template>
@@ -61,7 +59,7 @@
             <template v-slot:default>
                <ag-grid-vue
                   class="ag-theme-alpine"
-                  style="width: 100%; height: 300px; margin: auto;"
+                  style="width: 100%; height: 500px; margin: auto;"
                   :rowData="materialModalData"
                   :pagination="true"
                   :gridOptions="materialModalGridOptions"
@@ -71,7 +69,6 @@
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
-                  
                   <button type="button" class="btn btn-secondary m-1" @click="materialModalOpen">Cancel</button>
                </div>
             </template>
@@ -95,7 +92,6 @@
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
-                  <button type="button" class="btn btn-success m-1" @click="memberModalOpen">Save</button>
                   <button type="button" class="btn btn-secondary m-1" @click="memberModalOpen">Cancel</button>
                </div>
             </template>
@@ -134,11 +130,12 @@
                            @cellEditingStopped="cellEditingStoppedEvent"
                            @grid-ready="orderFormGrid"
                            @first-data-rendered="orderFormGridRendered"
+                           @grid-size-changed="onGridSizeChanged"
                         />
                      </div>
                   </div>
                   <div class="text-center mtp30">
-                     <button class="btn btn-primary">SAVE</button>
+                     <button class="btn btn-primary" @click="orderInsertFunc">SAVE</button>
                      <button class="btn btn-secondary mlp10" @click="resetFunc">RESET</button>
                   </div>
                </div>
@@ -160,7 +157,8 @@
 
    import Layout from '../components/modalLayout.vue';   // modal Layout 불러오기
    import CustomDropdownEditor from '../components/CustomDropdownEditor.vue';
-   import AccountDropdownEditor from '../components/AccountDropdownEditor.vue'; 
+   import AccountDropdownEditor from '../components/AccountDropdownEditor.vue';
+   import MemberDropdownEditor from '../components/MemberDropdownEditor.vue';  
 
    const store = useStore();  // vuex
    const instance = getCurrentInstance(); // Vue 인스턴스 가져오기
@@ -172,11 +170,11 @@
    let isMatModal = ref(false);              // 자재 검색 모달 열림여부
    let isMemberModal = ref(false);           // 자재 담당자 검색
 
-   const accountModalGrid = ref(null);       // 거래처 모달 그리드 참조
-   const orderModalGrid = ref(null);         // 주문서 조회 모달
-   const orderFormGrid = ref(null);          // 주문서 등록 그리드
-   const materialGrid = ref(null);           // 자재 조회 그리드
-   const memberModalGrid = ref(null);        // 사원조회 그리드
+   let accountModalGridRendered = ref(null);       // 거래처 모달 그리드 참조
+   let orderModalGridRendered = ref(null);         // 주문서 조회 모달
+   let orderFormGridRendered = ref(null);          // 주문서 등록 그리드
+   let materialGridRendered = ref(null);           // 자재 조회 그리드
+   let memberModalGridRendered = ref(null);        // 사원조회 그리드
 
    const accountModalData = shallowRef([]);  // 거래처 모달 데이터
    const orderModalData = shallowRef([]);    // 발주서 내역 조회 모달 데이터
@@ -184,30 +182,52 @@
    const materialModalData = ref([]);        // 자재 모달 데이터
    const memberModalData = ref([]);        // 자재 모달 데이터
 
+   let vuexData = ref([]);
+
 //! ----------------------------------------- Vue Hook -----------------------------------------
    onBeforeMount(() => {
       store.dispatch('breadCrumb', { title: '자재 발주서 관리' }); // 페이지 제목 설정
       getAccountList(); // 거래처 리스트
-      orderFormData.value = store.getters["materialStore/getMaterials"]; // vuex정보 불러오기
+      vuexData.value = store.getters["materialStore/getMaterials"];
 
-      const userNm = instance?.proxy.$session.get('user_nm'); // 현재 세션값 불러오깅~~
-      console.log(userNm);
+      getVueDataSetOrderFormData();
    });
+
+       // Vuex 데이터를 가져와 풀어서 orderFormData에 직접 할당
+   const getVueDataSetOrderFormData = () => {
+      let vuexData = store.getters["materialStore/getMaterials"]; // Vuex 데이터 가져오기
+      if (!vuexData) {
+         return;
+      };
+
+      // orderFormData.value를 Vuex 데이터로 매핑
+      orderFormData.value = vuexData.map((data) => {
+         console.log("Mapping data => ", data);
+
+         // 필요한 필드만 추출
+         return {
+            mat_cd: data.mat_cd || "", // 기본값 처리
+            mat_nm: data.mat_nm || "",
+            mat_qty: data.mat_qty || 0, // 숫자 기본값
+            unit: data.unit || "",
+         };
+      });
+   };
 
 //! ----------------------------------------- Vue Method -----------------------------------------
-   watch(accountModalGrid, (newValue) => {
+   watch(accountModalGridRendered, (newValue) => {
       if (newValue && newValue.api) {
          newValue.api.sizeColumnsToFit();
       }
    });
 
-   watch(orderModalGrid, (newValue) => {
+   watch(orderModalGridRendered, (newValue) => {
       if (newValue && newValue.api) {
          newValue.api.sizeColumnsToFit();
       }
    });
 
-   watch(orderModalGrid, (newValue) => {
+   watch(orderModalGridRendered, (newValue) => {
       if (newValue && newValue.api) {
          newValue.api.sizeColumnsToFit();
       }
@@ -225,7 +245,40 @@
       let result = year + '-' + month + '-' + day;
       return result;
    }
+   
+   const orderFormGrid = (params) => {
+      orderFormGridRendered.value = params.api; // API 객체 저장
+      
+      params.api.sizeColumnsToFit();
+   };
 
+   const memberModalGrid = (params) => {
+      memberModalGridRendered.value = params.api; // API 객체 저장
+
+      params.api.sizeColumnsToFit();
+   };
+
+   const materialGrid = (params) =>{
+      materialGridRendered.value = params.api; // API 객체 저장
+
+      params.api.sizeColumnsToFit();
+   };
+
+   const orderModalGrid = (params) =>{
+      orderModalGridRendered.value = params.api; // API 객체 저장
+
+      params.api.sizeColumnsToFit(); // 열 크기 조정
+   };
+
+   const accountModalGrid = (params) =>{
+      accountModalGridRendered.value = params.api; // API 객체 저장
+
+      params.api.sizeColumnsToFit();
+   };
+
+   const onGridSizeChanged = (params) => {
+      params.api.sizeColumnsToFit
+   }
 //! ----------------------------------------- Click Event -----------------------------------------   
    // 행 추가
    const addRow = () => {
@@ -235,7 +288,7 @@
          newObj[data.field] = '';   // 필드 초기화
       });
 
-      orderFormGridRendered.api.applyTransaction( { add : [newObj] } );
+      orderFormGridRendered.value.applyTransaction( { add : [newObj] } );
    };
 
    // 행 삭제
@@ -252,7 +305,7 @@
       const selRows = orderFormGrid.value.getSelectedRows();
 
       if(selRows.length > 0 ) {
-         orderFormGrid.value.applyTransaction( { remove : selRows } );
+         orderFormGridRendered.value.applyTransaction( { remove : selRows } );
       } else {
          Swal.fire({
             icon: "warning",
@@ -260,6 +313,13 @@
          });
       }
    };
+
+   const orderInsertFunc = () => {
+      let rowData = [];
+      orderFormGridRendered.value.forEachNode(node => rowData.push(node.data));
+      
+      return rowData;
+   }
 
    // 그리드 데이터 초기화
    const resetFunc = () => {
@@ -329,11 +389,10 @@
       }
    };
 
-   const getMember = async () => {
+   const getMember = async (keyword) => {
       try {
-         const result = await axios.get(`/comm/member/DPT5`)
+         const result = await axios.get(`/api/comm/member`, { params : {'dpt_cd' : 'DPT5', 'name' : String(keyword).trim() } })
          memberModalData.value = result.data || [];
-         console.log("adf -> ",memberModalData.value)
       } catch (err) {
          memberModalData.value = [];
          
@@ -351,8 +410,8 @@
       isAccountModal.value = !isAccountModal.value;
       getAccountList(keyword);   // 거래처 리스트 
 
-      if (accountModalGrid.value) {
-         accountModalGrid.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
+      if (accountModalGridRendered.value) {
+         accountModalGridRendered.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
       }
    };
 
@@ -361,8 +420,8 @@
       isOrderModal.value = !isOrderModal.value;
       getOrderList();   // 주문서 리스트
 
-      if (orderModalGrid.value) {
-         orderModalGrid.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
+      if (orderModalGridRendered.value) {
+         orderModalGridRendered.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
       }
    };
 
@@ -372,18 +431,18 @@
       
       getMaterial(keyword);   // 자재 리스트
 
-      if (materialGrid.value) {
-         materialGrid.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
+      if (materialGridRendered.value) {
+         materialGridRendered.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
       }
    };
 
-   const isMemberModalOpen = (keyword) => {
+   const memberModalOpen = (keyword) => {
       isMemberModal.value = !isMemberModal.value;
 
       getMember(keyword);
 
-      if (memberModalGrid.value) {
-         memberModalGrid.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
+      if (memberModalGridRendered.value) {
+         memberModalGridRendered.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
       }
    }
 
@@ -398,6 +457,9 @@
          }
          if(isMatModal.value) {
             isMatModal.value = !isMatModal.value
+         }
+         if(isMemberModal.value) {
+            isMemberModal.value = !isMemberModal.value
          }
       }
    }
@@ -418,19 +480,26 @@
    const cellEditingStoppedEvent = (params) => {
       if(!params.newValue) return; // 값이 없을 때 편집이 종료되면 return;
       
+      // 커스텀한 셀 편집기에서 값 가져와서 셀에 뿌려주기
       if(params.colDef.field == 'mat_nm' && params.newValue.matCode != null) {
          params.node.setDataValue("mat_cd", params.newValue.matCode);
          params.node.setDataValue("mat_nm", params.newValue.matName);
          params.node.setDataValue("unit", params.newValue.matUnit);
       }
 
+      // 커스텀한 셀 편집기에서 거래처 정보 가져와서 셀에 뿌려주기
       if(params.colDef.field == 'act_nm' && params.newValue.actCode != null) {
-         let actValue = params.newValue;
-         
-         params.node.setDataValue("act_cd", actValue.actCode);
-         params.node.setDataValue("act_nm", actValue.actName);
+         params.node.setDataValue("act_cd", params.newValue.actCode);
+         params.node.setDataValue("act_nm", params.newValue.actName);
       }
 
+      // 커스텀한 셀 편집기에서 값 가져와서 셀에 뿌려주기
+      if(params.colDef.field == 'id' && params.newValue.name != null) {
+         
+         params.node.setDataValue("id", params.newValue.name);
+      }
+
+      // 모달 -> 자재 코드, 자재명을 편집이 종료되는 시점에 셀에 뿌려주기
       if(matObj.value && matObj.value.mat_cd && matObj.value.mat_nm) {
          params.node.setDataValue("mat_cd", matObj.value.mat_cd);
          params.node.setDataValue("mat_nm", matObj.value.mat_nm);
@@ -438,27 +507,19 @@
          matObj.value = {};
       }
 
+      // 모달 -> 거래처 코드, 거래처명을 편집이 종료되는 시점에 셀에 뿌려주기
       if(actObj.value && actObj.value.act_cd && actObj.value.act_nm) {
          params.node.setDataValue("act_cd", actObj.value.act_cd);
          params.node.setDataValue("act_nm", actObj.value.act_nm);
          actObj.value = {};
       }
+      
+      // 모달 -> 사원 정보를 편집이 종료되는 시점에 셀에 뿌려주기
+      if(member_name.value) {
+         params.node.setDataValue("id", member_name.value);
+      }
    }
-   const orderFormGridRendered = (params) =>{
-      params.api.sizeColumnsToFit();
-   };
-   const memberModalGridRendered = (params) =>{
-      params.api.sizeColumnsToFit();
-   };
-   const materialGridRendered = (params) =>{
-      params.api.sizeColumnsToFit();
-   };
-   const orderModalGridRendered = (params) =>{
-      params.api.sizeColumnsToFit(); // 열 크기 조정
-   };
-   const accountModalGridRendered = (params) =>{
-      params.api.sizeColumnsToFit();
-   };
+   
 // ^ ----------------------------------- 그리드 데이터 정의 및 바인딩 -----------------------------------
    // 주문서 그리드 option
    const orderModalGridOptions = {
@@ -503,7 +564,7 @@
          }
 
          actObj.value = { 'act_cd' : event.data.act_cd, 'act_nm' : event.data.act_nm };
-         orderFormGrid.value.stopEditing();  // 편집 종료
+         orderFormGridRendered.value.stopEditing();  // 편집 종료
          accountModalOpen();  // 거래처 조회 모달
       },
 
@@ -548,72 +609,54 @@
          }
 
          matObj.value = { 'mat_cd' : event.data.mat_cd, 'mat_nm' : event.data.mat_nm, 'unit' : event.data.unit };
-         orderFormGrid.value.stopEditing();  // 편집 종료
+         orderFormGridRendered.value.stopEditing();  // 편집 종료
          materialModalOpen(); // 자재조회 모달
       }
+   }
+
+   // member 모달에 row클릭 시 
+   let member_name = ref('')
+   const memberModalRowClick = (event) => {
+      member_name.value = event.data.name;
+      memberModalGridRendered.value.stopEditing();  // 편집 종료
+      memberModalOpen(); // 자재조회 모달
    }
 
    const memberModalGridOptions = {
       columnDefs : [
          { 
             headerName: '사원코드', 
-            field: 'mat_order_cd', 
+            field: 'mem_cd', 
             sortable: true,
             editable: false,  // 편집 비활성화
             cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자동 입력</span>`;
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">사원코드</span>`;
             },
          },
          { 
             headerName: '사원명', 
-            field: 'mat_cd', 
+            field: 'name', 
             sortable: true, 
-            editable: false,  // 편집 비활성화
             cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자동 입력</span>`;
-            },
-         },
-         {
-            headerName: '부서코드',
-            field: 'mat_nm',
-            editable: true,   // 편집 가능
-            cellClass: "text-center",
-            cellEditor : CustomDropdownEditor,  // 커스텀 드롭다운 셀 에디터
-            cellRenderer: (params) => {
-               // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">자재명 입력</span>`;
-            },
-            cellEditorParams: {
-               isModal: {
-                  openModal: materialModalOpen, // 컴포넌트로 함수 전달
-               },
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">사원이름</span>`;
             },
          },
          { 
             headerName: '부서명', 
-            field: 'mat_qty', 
+            field: 'dpt_cd', 
             sortable: true, 
-            cellClass: "text-right",
-            editable: true, // 편집 가능
-            cellDataType: "number", // 숫자 데이터 타입
-            cellEditorParams: {
-               min: 0,     // 최소값
-            },
+            cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               if (params.value == '') {
-                  return params.value ? params.value : `<span style="color: #cacaca; text-align: right; font-size: 11px">숫자를 입력하세요</span>`;
-               } else {
-                  return params.value.toLocaleString()
-               }
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">부서명</span>`;
             },
          },
-         
       ],
+      onRowClicked: memberModalRowClick,
    }
    
    let clickedGrid = ref(null);
@@ -681,7 +724,7 @@
                if (params.value == '') {
                   return params.value ? params.value : `<span style="color: #cacaca; text-align: right; font-size: 11px">숫자를 입력하세요</span>`;
                } else {
-                  return params.value.toLocaleString()
+                  return params.value;
                }
             },
          },
@@ -716,7 +759,7 @@
             cellEditor : AccountDropdownEditor,  // 커스텀 드롭다운 셀 에디터
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">거래처명 입력</span>`;
+               return params.value ?  `<span style="color: #000; font-size: 12px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">거래처명 입력</span>`;
             },
             cellEditorParams: {
                isModal: {
@@ -730,14 +773,14 @@
             sortable: true,
             cellClass: "text-center",
             editable: true,   // 편집 가능
-            cellEditor : AccountDropdownEditor,  // 커스텀 드롭다운 셀 에디터
-            cellRenderer: (params) => {
+            cellEditor : MemberDropdownEditor,  // 커스텀 드롭다운 셀 에디터
+            cellRenderer: () => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">거래처명 입력</span>`;
+               return instance.proxy.$session.get('user_nm');
             },
             cellEditorParams: {
                isModal: {
-                  openModal: isMemberModalOpen, // 컴포넌트로 함수 전달
+                  openModal: memberModalOpen, // 컴포넌트로 함수 전달
                },
             },
          },
@@ -773,6 +816,11 @@
                return span; // DOM 노드 반환
             },
          },
+         {
+            headerName: '삭제', 
+            editType: 'fullRow',
+            cellClass: "text-center",
+         }
       ],
       onRowClicked: orderFormRowClick,
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
