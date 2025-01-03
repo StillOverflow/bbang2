@@ -207,7 +207,7 @@
           { headerName: '검사명', field: 'test_nm', maxWidth: 140 },
           { headerName: '검사방식', field: 'test_metd_nm', maxWidth: 100 },
           { headerName: '적용대상', field: 'target_type_nm', maxWidth: 100 },
-          { headerName: '검사내용', field: 'test_dtl', cellClass: 'text-overflow' },
+          { headerName: '검사내용', field: 'test_dtl' },
           { headerName: '사용', field: 'status_nm', maxWidth: 70 },
           { headerName: '노출', field: 'use_status_nm', maxWidth: 70 },
           { headerName: '등록일', field: 'create_dt', valueFormatter: this.$comm.dateFormatter, maxWidth: 100 },
@@ -218,6 +218,9 @@
         colApi: null,
 
         gridOptions: {
+          defaultColDef: {
+            cellClass: 'text-overflow'
+          },
           pagination: true,
           paginationAutoPageSize: true,
           overlayNoRowsTemplate: '표시할 항목이 없습니다.', // 표시할 행이 없을 때 적용할 메세지
