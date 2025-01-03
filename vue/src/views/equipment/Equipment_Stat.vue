@@ -153,9 +153,12 @@ export default {
     async fetchCommonCodes() {
       try {
 
-        const eqpTypeResponse = await axios.get('/api/comm/codeList/EQ');
-        const isUseResponse = await axios.get('/api/comm/codeList/EU');
-        const statusResponse = await axios.get('/api/comm/codeList/ES');
+        // 비동기적으로 데이터 가져오기
+        const [eqpTypeResponse, isUseResponse, statusResponse] = await Promise.all([
+          axios.get('/api/comm/codeList/EQ'),
+          axios.get('/api/comm/codeList/EU'),
+          axios.get('/api/comm/codeList/ES'),
+        ]);
 
         this.equipmentData.selectOptions.EQP_TYPE = [
           { comm_dtl_cd: null, comm_dtl_nm: '전체' }, // "전체" 추가
