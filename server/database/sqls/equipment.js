@@ -374,7 +374,7 @@ const eqDownList = ` SELECT
   e.model as model,
   d.start_time as start_time,
   d.end_time as end_time,
-  fn_get_codename(d.status) as status,
+  fn_get_codename(e.status) as status,
   fn_get_codename(d.downtime_reason) as downtime_reason,
   d.id as id,
   d.create_dt as create_dt,
@@ -395,7 +395,7 @@ const eqDownListOne = `SELECT
   e.model as model,
   d.start_time as start_time,
   d.end_time as end_time,
-  fn_get_codename(d.status) as status,
+  fn_get_codename(e.status) as status,
   fn_get_codename(d.downtime_reason) as downtime_reason,
   d.id as id,
   d.create_dt as create_dt,
@@ -421,7 +421,7 @@ const eqDownInfo = `SELECT
   e.model as model,
   d.start_time as start_time,
   d.end_time as end_time,
-  d.status as status,
+  e.status as status,
   d.downtime_reason as downtime_reason,
   d.id as id,
   d.create_dt as create_dt,
@@ -494,7 +494,7 @@ FROM equipment e
     sql += ` WHERE ` + queryArr.join(' AND ');
   }
 
-  sql += ` order by eqp_cd asc, last_insp_dt desc`; // 정렬
+  sql += ` order by eqp_cd asc, d.start_time desc`; // 정렬
 
   console.log('Generated SQL:', sql); // SQL 쿼리 출력
 

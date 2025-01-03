@@ -317,8 +317,8 @@ export default {
             ...this.equipmentData,
             ...result.data,
             repair_cd: result.data.repair_cd || this.equipmentData.repair_cd, // repair_cd 업데이트
-            start_time: this.formatDate(result.data.start_time),
-            end_time: this.formatDate(result.data.end_time),
+            start_time: result.data.start_time ? this.formatDate(result.data.start_time) : this.equipmentData.start_time,
+            end_time: result.data.end_time ? this.formatDate(result.data.end_time) : this.equipmentData.end_time,
           };
 
 
@@ -387,7 +387,6 @@ export default {
 
       console.log('Updating data:', this.equipmentData); // 데이터 출력
 
-
       try {
 
         // 세션에서 비가동 등록인 ID 가져오기
@@ -401,7 +400,7 @@ export default {
 
         const obj = {
           eqp_cd: this.equipmentData.eqp_cd,
-          star_time: this.equipmentData.star_time ? this.formatDate(this.equipmentData.star_time) : null,
+          start_time: this.equipmentData.start_time ? this.formatDate(this.equipmentData.start_time) : null,
           end_time: this.equipmentData.end_time ? this.formatDate(this.equipmentData.end_time) : null,
           repair_cd: this.equipmentData.repair_cd, // 수정 요청에 필요한 repair_cd 추가
           repair_reason: this.equipmentData.repair_reason || '',
@@ -433,6 +432,7 @@ export default {
 
     resetForm() {
       const resetFields = {
+        start_time: '',
         end_time: '',
         repair_reason: '',
         repair_parts: '',

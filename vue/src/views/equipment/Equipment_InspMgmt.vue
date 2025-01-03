@@ -436,7 +436,7 @@ export default {
         Swal.fire({
           icon: 'error',
           title: '수정 실패',
-          text: '점검 데이터 수정 중 오류가 발생했습니다.',
+          text: '점검 데이터 수정 중  오류가 발생했습니다.',
         });
       }
     },

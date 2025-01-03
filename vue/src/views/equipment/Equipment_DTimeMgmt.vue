@@ -322,7 +322,7 @@ export default {
           this.equipmentData = {
             ...this.equipmentData,
             ...result.data,
-            downtime_cd: result.data.downtime_cd || this.equipmentData.downtime_cd, // downtime_cd 업데이트
+            downtime_cd: result.data.downtime_cd || this.equipmentData.downtime_cd, // downtime_cd 유지
             start_time: this.formatDate(result.data.start_time),
             end_time: this.formatDate(result.data.end_time),
           };
@@ -331,7 +331,7 @@ export default {
           // 등록 모드 조건: downtime_cd가 없거나 end_time이 존재하는 경우
           if (!result.data.downtime_cd || result.data.end_time) {
             this.isEditMode = false;
-            this.resetForm(); // 등록 모드로 초기화
+            this.resetForm(false); // 등록 모드로 초기화
             this.equipmentData.eqp_cd = eqp_cd; // 설비 코드 유지
           } else {
             // 수정 모드 조건: downtime_cd가 있고 end_time이 비어 있는 경우
@@ -441,7 +441,7 @@ export default {
       }
     },
 
-    resetForm() {
+    resetForm(clearDowntimeCd = true) {
       const resetFields = {
         start_time: '',
         end_time: '',
@@ -452,6 +452,7 @@ export default {
         eqp_nm: '',
         id: '',
         status: 'S02', // 초기화 시 기본값 설정
+        downtime_cd: clearDowntimeCd ? '' : this.equipmentData.downtime_cd, // downtime_cd 초기화 여부 설정
       };
 
       this.equipmentData = {
