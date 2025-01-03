@@ -57,7 +57,7 @@
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
                   :min="equipmentData.start_time || currentDateTime" :readonly="!selectedEqp"
-                  :disabled="isFieldDisabled(field.value)" @change="validateEndTime" />
+                  :disabled="isFieldDisabled(field.value)" @change="validateEnDown" />
               </template>
             </div>
           </div>
@@ -214,8 +214,6 @@ export default {
 
     async modalClicked(params) {
 
-      console.log('Row Data:', params.data);
-
       this.selectedEqp = params.data.eqp_cd;
 
       try {
@@ -228,12 +226,9 @@ export default {
 
         // 세션에서 비가동 등록인 ID 가져오기
         const sessionId = this.$session.get('user_id');
-        console.log('모달 클릭 시 가져온 세션 ID:', sessionId);
 
         // 항상 세션 ID로 덮어쓰기
         this.equipmentData.id = sessionId;
-
-        console.log('Updated equipmentData:', this.equipmentData);
 
         // 이미지 처리
         this.previewImage = this.equipmentData.img_path
@@ -262,7 +257,7 @@ export default {
     },
 
     // 종료시간 유효성 검사
-    validateEndTime() {
+    validateEnDown() {
 
       if (this.equipmentData.end_time < this.equipmentData.start_time) {
         Swal.fire({
@@ -314,7 +309,7 @@ export default {
 
       try {
         const result = await axios.get(`/api/equip/repair/${eqp_cd}`);
-        console.log('Result data:', result.data);
+
         if (result.data) {
           this.equipmentData = {
             ...this.equipmentData,
@@ -348,7 +343,6 @@ export default {
 
         // 세션에서 비가동 등록인 ID 가져오기
         const sessionId = this.$session.get('user_id');
-        console.log('등록 시 가져온 세션 ID:', sessionId);
 
         this.equipmentData.id = sessionId; // 기존 값을 무시하고 세션 ID로 덮어쓰기
 
@@ -388,13 +382,10 @@ export default {
     },
     async repairUpdate() {
 
-      console.log('Updating data:', this.equipmentData); // 데이터 출력
-
       try {
 
         // 세션에서 비가동 등록인 ID 가져오기
         const sessionId = this.$session.get('user_id');
-        console.log('수정 시 가져온 세션 ID:', sessionId);
 
         // 기존 ID가 없을 경우에만 세션 ID를 설정
         if (!this.equipmentData.id && sessionId) {
@@ -412,8 +403,6 @@ export default {
           repair_act: this.equipmentData.repair_act || '',
           id: this.equipmentData.id,
         };
-
-        console.log('보낼 데이터:', obj);
 
         const result = await axios.put(`/api/equip/repair/${this.equipmentData.repair_cd}`, obj);
 

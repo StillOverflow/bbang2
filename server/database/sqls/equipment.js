@@ -230,8 +230,6 @@ const eqInspList = (datas) => {
 
   sql += ` order by eqp_cd asc, last_insp_dt desc`; // 정렬
 
-  console.log('Generated SQL:', sql); // SQL 쿼리 출력
-
   return sql;
 
 }

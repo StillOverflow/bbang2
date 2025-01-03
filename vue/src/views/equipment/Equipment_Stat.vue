@@ -189,8 +189,6 @@ export default {
         };
         const result = await axios.get('/api/equipList/stat', { params: obj });
 
-        console.log('API 요청 파라미터:', obj);
-
         if (result.data) {
           //배열데이터 처리
           this.rowData = result.data.map((item) => ({

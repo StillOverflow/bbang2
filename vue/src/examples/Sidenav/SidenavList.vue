@@ -350,12 +350,12 @@ export default {
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Equipment_DTimeList" :class="getRoute() === 'Equipment_DTimeList' ? 'active' : ''"
+            <sidenav-item to="/Equipment_DownList" :class="getRoute() === 'Equipment_DownList' ? 'active' : ''"
               :navText="'설비 비가동 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Equipment_DTimeMgmt" :class="getRoute() === 'Equipment_DTimeMgmt' ? 'active' : ''"
+            <sidenav-item to="/Equipment_DownMgmt" :class="getRoute() === 'Equipment_DownMgmt' ? 'active' : ''"
               :navText="'설비 비가동 관리'">
             </sidenav-item>
           </li>
@@ -495,7 +495,8 @@ export default {
 
 
         <!-- 기준관리  -->
-        <li class="nav-item head" id="Standard" @click="showList('Standard')" v-if="this.$session.get('user_ps') == 'H01'">
+        <li class="nav-item head" id="Standard" @click="showList('Standard')"
+          v-if="this.$session.get('user_ps') == 'H01'">
           <a class="nav-link" :class="urlCompare('Standard') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
               <i class="ni ni-tv-2 text-primary text-sm opacity-10"></i>
@@ -515,13 +516,13 @@ export default {
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item
-              to="/Standard_MtlAdd" :class="getRoute() === 'Standard_MtlAdd' ? 'active' : ''" :navText="'자재관리'"
-            >
+            <sidenav-item to="/Standard_MtlAdd" :class="getRoute() === 'Standard_MtlAdd' ? 'active' : ''"
+              :navText="'자재관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/Standard_ProductAdd" :class="getRoute() === 'Standard_ProductAdd' ? 'active' : ''" :navText="'제품관리'">
+            <sidenav-item to="/Standard_ProductAdd" :class="getRoute() === 'Standard_ProductAdd' ? 'active' : ''"
+              :navText="'제품관리'">
             </sidenav-item>
           </li>
           <li class="nav-item">
