@@ -21,7 +21,7 @@
           </div>
         </div>
 
-        <!-- 설비코드 검색 아직모달반영안함-->
+        <!-- 설비코드 검색 -->
         <div class="row mb-4" style="padding-left: 3rem;">
           <div class="col col-lg-2 text-start fw-bolder w-10">
             설비코드

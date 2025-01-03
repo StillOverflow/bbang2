@@ -185,13 +185,14 @@ const updateDownEq = async (downData) => {
   }
 };
 
-//설비 점검 전체 조회
-const findDownEq = async () => {
-  let list = await mariadb.query('eqDownList');
-  return list;
+//설비 비가동 전체 조회
+const findDownEq = async (datas) => {
+  let list = await mariadb.query('eqDownListSearch', datas);
+  return list[0];
 };
 
-//설비 점검 전체 조회(설비별 최근 1건씩만)
+
+//설비 비가동 전체 조회(설비별 최근 1건씩만)
 const findDownEqOne = async (eqp_cd) => {
   let list = await mariadb.query('eqDownInfo', eqp_cd);
   return list[0];

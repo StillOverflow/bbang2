@@ -26,8 +26,7 @@
           <!-- 왼쪽 입력란 -->
           <div class="col-lg-5 col-md-5 col-sm-12">
             <div v-for="(field, index) in leftFields" :key="index" class="mb-2">
-              <template
-                v-if="field.value == 'eqp_type' || field.value == 'downtime_reason' || field.value == 'status'">
+              <template v-if="field.value == 'eqp_type' || field.value == 'downtime_reason' || field.value == 'status'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <select class="form-select custom-width" v-model="equipmentData[field.value]"
                   :disabled="isFieldDisabled(field.value)">
@@ -131,7 +130,7 @@ export default {
         end_time: '',
         note: '',
         id: '',
-        status: '비가동',
+        status: 'S02',
         downtime_cd: '',
       },
       equipDefs: [
@@ -168,7 +167,7 @@ export default {
         { label: '비가동 시작 일시', value: 'start_time', type: 'datetime-local' },
         { label: '설비 구분 *', value: 'eqp_type', type: 'text', selectOptions: [] },
         { label: '설비명 *', value: 'eqp_nm', type: 'text' },
-        { label: '설비 상태', value: 'status', type: 'text', selectOptions: [] },
+        { label: '모델명', value: 'model', type: 'text' },
         { label: '비가동 사유', value: 'downtime_reason', type: 'text', selectOptions: [] },
       ],
       rightFields: [
@@ -222,7 +221,7 @@ export default {
 
         // 설비 상태 초기화
         if (!this.equipmentData.status) {
-          this.equipmentData.status = '비가동'; // 기본값 설정
+          this.equipmentData.status = 'S02'; // 기본값 설정
         }
 
         // 세션에서 비가동 등록인 ID 가져오기
@@ -275,8 +274,13 @@ export default {
 
     // 공통코드 가져오기
     async getComm(cd) {
-      const result = await axios.get(`/api/comm/codeList/${cd}`).catch((err) => console.log(err));
-      return result.data;
+      try {
+        const result = await axios.get(`/api/comm/codeList/${cd}`);
+        return result.data || []; // 결과가 없으면 빈 배열 반환
+      } catch (err) {
+        console.error(`Error fetching code list for ${cd}:`, err);
+        return []; // 에러 발생 시 빈 배열 반환
+      }
     },
 
 
@@ -318,7 +322,7 @@ export default {
           this.equipmentData = {
             ...this.equipmentData,
             ...result.data,
-            downtime_cd: result.data.downtime_cd, // 덮어쓰지 않도록
+            downtime_cd: result.data.downtime_cd || this.equipmentData.downtime_cd, // downtime_cd 업데이트
             start_time: this.formatDate(result.data.start_time),
             end_time: this.formatDate(result.data.end_time),
           };
@@ -358,6 +362,7 @@ export default {
           downtime_reason: this.equipmentData.downtime_reason || '',
           note: this.equipmentData.note || '',
           id: this.equipmentData.id,
+          status: 'S02', // 등록 시 비가동 상태로 설정
         };
 
         //서버로 데이터 전송
@@ -366,14 +371,13 @@ export default {
         //서버 응답처리
         let addRes = result.data; // 서버에서 반환된 응답 처리
         if (addRes.success) {
+          this.equipmentData.downtime_cd = result.data.downtime_cd; // downtime_cd 저장
+          this.isEditMode = true; // 등록 후 수정 모드로 전환
           Swal.fire({
             icon: 'success',
             title: '등록 완료',
             text: '비가동 데이터가 등록되었습니다.',
           });
-
-          this.isEditMode = true; // 등록 후 수정 모드로 전환
-          this.equipmentData.downtime_cd = result.data.downtime_cd; // 새로 생성된 downtime_cd 설정
         }
       } catch (err) {
         Swal.fire({
@@ -394,6 +398,8 @@ export default {
         const sessionId = this.$session.get('user_id');
         console.log('수정 시 가져온 세션 ID:', sessionId);
 
+        const isOperational = !!this.equipmentData.end_time; // 종료일시가 있으면 가동으로 변경
+
         // 기존 ID가 없을 경우에만 세션 ID를 설정
         if (!this.equipmentData.id && sessionId) {
           this.equipmentData.id = sessionId; // 점비가동 등록인 ID에 세션 ID 설정
@@ -407,6 +413,7 @@ export default {
           downtime_reason: this.equipmentData.downtime_reason || '',
           note: this.equipmentData.note || '',
           id: this.equipmentData.id,
+          status: isOperational ? 'S01' : 'S02', // 종료일시 여부에 따라 상태 설정
         };
 
         console.log('보낼 데이터:', obj);
@@ -419,6 +426,11 @@ export default {
             title: '수정 완료',
             text: '비가동 데이터가 수정되었습니다.',
           });
+
+          if (isOperational) {
+            this.resetForm(); // 가동으로 전환된 경우 폼 초기화
+          }
+
         }
       } catch (err) {
         Swal.fire({
@@ -435,7 +447,11 @@ export default {
         end_time: '',
         downtime_reason: '',
         note: '',
-        status: '비가동', // 기본값 설정
+        model: '',
+        eqp_type: '',
+        eqp_nm: '',
+        id: '',
+        status: 'S02', // 초기화 시 기본값 설정
       };
 
       this.equipmentData = {
@@ -494,30 +510,44 @@ export default {
 
     //설비구분
     this.getComm('EQ').then((result) => {
-      this.leftFields.find((field) => field.value === 'eqp_type').selectOptions = result.map((item) => ({
-        item: item.comm_dtl_cd,
-        name: item.comm_dtl_nm,
-      }));
+      const field = this.leftFields.find((field) => field.value === 'eqp_type');
+      if (field) {
+        field.selectOptions = result.map((item) => ({
+          item: item.comm_dtl_cd,
+          name: item.comm_dtl_nm,
+        }));
+      } else {
+        console.warn('Field "eqp_type" not found in leftFields');
+      }
 
     });
 
     //설비상태구분
     this.getComm('ES').then((result) => {
-      this.leftFields.find((field) => field.value === 'status').selectOptions = result
-        .sort((a) => a.comm_dtl_nm === '비가동' ? -1 : 1) // "비가동"을 첫 번째로 설정
-        .map((item) => ({
+      const field = this.leftFields.find((field) => field.value === 'status');
+      if (field) {
+        field.selectOptions = result.map((item) => ({
           item: item.comm_dtl_cd,
           name: item.comm_dtl_nm,
         }));
+      } else {
+        console.warn('Field "status" not found in leftFields');
+      }
     });
 
     //비가동사유구분
     this.getComm('EC').then((result) => {
-      this.leftFields.find((field) => field.value === 'downtime_reason').selectOptions = result.map((item) => ({
-        item: item.comm_dtl_cd,
-        name: item.comm_dtl_nm,
-      }));
+      const field = this.leftFields.find((field) => field.value === 'downtime_reason');
+      if (field) {
+        field.selectOptions = result.map((item) => ({
+          item: item.comm_dtl_cd,
+          name: item.comm_dtl_nm,
+        }));
+      } else {
+        console.warn('Field "downtime_reason" not found in leftFields');
+      }
     });
+
   },
 };
 </script>
