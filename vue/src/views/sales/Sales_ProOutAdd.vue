@@ -269,11 +269,13 @@ export default {
                         button.innerText = 'SEARCH';
                         button.className = 'btn btn-warning btn-xsm';
                         button.addEventListener('click', () => {
-                            this.modalOpen3(); //LOT모달 오픈
-                            this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
-                            this.getOutLotList(); //단건조회로 보내기
+                            if(this.prdEndStatusJ03 == false){
+                                this.modalOpen3(); //LOT모달 오픈
+                                this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
+                                this.getOutLotList(); //단건조회로 보내기
 
-                            this.odtCd = params.data.order_dtl_cd //등록할 때 필요한 코드 변수에 담기
+                                this.odtCd = params.data.order_dtl_cd //등록할 때 필요한 코드 변수에 담기
+                            }
                         });
                         return button;
                     }
@@ -342,19 +344,20 @@ export default {
                         button.innerText = 'DELETE';
                         button.className = 'btn btn-danger btn-xsm';
                         button.addEventListener('click', () => {
-                            this.proOutData = this.proOutData.filter(row => row !== params.data);
-
                             // 상세 페이지 일떄
                             if(this.isdetail == true){
-                                //한 행에 관한 단건 딜리트 메소드
-                                this.prd_out_dtl_cd = params.data.prd_out_dtl_cd;
-                                this.prd_lot_cd = params.data.prd_lot_cd;
-                                this.prd_out_qty = params.data.prd_out_qty;
-                                this.prdOutListDelete();
+                                if(this.prdEndStatusJ03 == false){ //상세 페이지에서 출고완료가 안되었을때
+                                    //한 행에 관한 단건 딜리트 메소드
+                                    this.prd_out_dtl_cd = params.data.prd_out_dtl_cd;
+                                    this.prd_lot_cd = params.data.prd_lot_cd;
+                                    this.prd_out_qty = params.data.prd_out_qty;
+                                    this.prdOutListDelete();
 
+                                    this.proOutData = this.proOutData.filter(row => row !== params.data);
+                                }
+                            }else{// 상세 페이지가 아니라 등록 페이지 일때
                                 this.proOutData = this.proOutData.filter(row => row !== params.data);
-                            };
-
+                            }
                         });
                         return button;
                     }
@@ -744,26 +747,34 @@ export default {
                     confirmButtonText: "Yes, delete!"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
+                        //출고 제품 삭제
                         let result2 = await axios.delete(`/api/sales/prdOutDelete/${this.selectNo}`)
                                                 .catch(err => console.log("deleteAxios에러",err));
 
                         if(result2.data.result == 'success'){
-                            this.resetForm(); // 초기화
+                            //출고 제품 삭제 후 상태 원복
+                            let result3 = await axios.put(`/api/sales/prdOutDeleteStatus/${this.order_code}`)
+                                                    .catch(err => console.log("Status에러",err));
+
+                            if(result3.data.result == 'success'){
+                                this.resetForm(); // 초기화
                             
-                            this.$swal({
-                            title: "DELETE!",
-                            text: "GO to ProductOut List",
-                            icon: "success"
-                            }).then(result =>{
-                                if(result){
-                                    this.$router.push({name:'Sales_ProOutList'}) //OK누르면 목록으로 이동
-                                }
-                            })
+                                this.$swal({
+                                title: "DELETE!",
+                                text: "GO to ProductOut List",
+                                icon: "success"
+                                }).then(result =>{
+                                    if(result){
+                                        this.$router.push({name:'Sales_ProOutList'}) //OK누르면 목록으로 이동
+                                    }
+                                })
+                            }
+                            
                         }                        
                     }
                 });
             //};
-        },
+        }, 
 
         //출고 단건 삭제(제품수량 업데이트 후)
         async prdOutListDelete() {

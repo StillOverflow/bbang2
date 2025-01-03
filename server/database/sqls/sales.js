@@ -326,6 +326,11 @@ DELETE product_out, product_out_detail
 FROM product_out product_out LEFT JOIN product_out_detail product_out_detail ON product_out.prd_out_cd = product_out_detail.prd_out_cd 
 WHERE product_out.prd_out_cd = ?
 `;
+//출고 제품 삭제시 상태 원복
+const prdOutDeleteStatus =
+`
+UPDATE \`order\` SET \`status\` = 'J01' WHERE order_cd = ?
+`;
 //출고 제품 삭제시 제품수량 원복
 const prdOutDeleteQty = 
 ` 
@@ -695,6 +700,7 @@ module.exports = {
     prdOutDtlList,
     prdOutDtlLotList,
     prdOutDelete,
+    prdOutDeleteStatus,
     prdOutDeleteQty,
     prdOutListDelete,
     prdOutUpdate,
