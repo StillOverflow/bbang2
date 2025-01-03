@@ -47,9 +47,9 @@ const getProduceInstruction = async(searchObj) => {
 }
 
 // 지시서에 대한 자재 출고 내역 getMaterialOutForProduction
-const getMaterialOutForProduction = async(searchObj) => {
-    console.log("service searchObj => ", searchObj)
-    let list = await mariadb.query('getMaterialOutForProduction', searchObj);
+const getMaterialOutForProduction = async(data) => {
+    console.log("service searchObj => ", data)
+    let list = await mariadb.query('getMaterialOutForProduction', data);
     return list;
 }
 

@@ -47,11 +47,14 @@ import Equipment_DTimeList from '../views/equipment/Equipment_DTimeList.vue';
 
 
 ////////////////////////////// 자재 //////////////////////////////
-import MaterialOrderList from '../views/material/MaterialsOrderList.vue';
-import MaterialsPlanStockList from '../views/material/ProductionPlanAndStock.vue';
-import MaterialsOrderManage from '../views/material/MaterialsOrderManage.vue';
-import MaterialsOutList from '../views/material/MaterialsOutList.vue';
-
+import MaterialOrderList from '../views/material/MaterialsOrderList.vue'; // 자재 발주서 조회
+import MaterialsPlanStockList from '../views/material/ProductionPlanAndStock.vue';  // 미지시 계획서 자재 재고 조회
+import MaterialsOrderManage from '../views/material/MaterialsOrderManage.vue';  // 자재 발주서 관리
+import MaterialsInList from '../views/material/MaterialsInList.vue'; // 자재 입고 조회
+import MaterialsInManage from '../views/material/MaterialsInManage.vue'; // 자재 입고 관리
+import MaterialsStockList from '../views/material/MaterialsStockList.vue'; // 자재 재고 조회
+import MaterialsLotStockList from '../views/material/MaterialsLotStockList.vue'; // 자재 LOT 재고 조회
+import MaterialsOutList from '../views/material/MaterialsOutList.vue';  // 자재 출고 목록
 
 
 
@@ -348,7 +351,7 @@ const routes = [
     component: MaterialOrderList,
   },
   {
-    // 미지시 생산 계획서 조회 및 자재 재고 조회ㄱ
+    // 미지시 생산 계획서 조회 및 자재 재고 조회
     path: '/materials/planStock/list',
     name: 'MaterialsPlanStockList',
     component: MaterialsPlanStockList,
@@ -360,6 +363,31 @@ const routes = [
     component: MaterialsOrderManage,
   },
   {
+    // 자재 입고 조회
+    path: '/materials/in/list',
+    name: 'MaterialsInList',
+    component: MaterialsInList,
+  },
+  {
+    // 자재 입고 관리
+    path: '/materials/in/manage',
+    name: 'MaterialsInManage',
+    component: MaterialsInManage,
+  },
+  {
+    // 자재 재고 조회
+    path: '/materials/stock/list',
+    name: 'MaterialsStockList',
+    component: MaterialsStockList,
+  },
+  {
+    // 자재 LOT별 재고 조회
+    path: '/materials/lotStock/list',
+    name: 'MaterialsLotStockList',
+    component: MaterialsLotStockList,
+  },
+  {
+    // 자재 출고 조회
     path : '/materials/out/list',
     name : 'MaterialsOutList',
     component : MaterialsOutList,
