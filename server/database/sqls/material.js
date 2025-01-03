@@ -115,7 +115,8 @@ const getMaterialOrder = `
    WHERE    
       UPPER(status) <> UPPER('L01')
    ORDER BY 
-      mat_order_cd
+      create_dt DESC
+   
 `
 
 // 발주서 디테일 조회
@@ -171,6 +172,7 @@ const getProduceInstruction = (searchObj) => {
    if (conditions.length > 0) {
       query += " AND " + conditions.join(" AND ");
    }
+   query += ` ORDER BY a.work_dt DESC`;
    // 쿼리 반환
    return query;
 }
@@ -183,7 +185,7 @@ const getMaterialOutForProduction = (data) => {
          c.proc_cd,                               -- 공정 코드
          fn_get_proc_nm(proc_cd) AS proc_nm,      -- 공정명
          a.mat_cd,                                -- 자재코드
-         fn_get_materialname(a.mat_cd) AS mat_nm, -- 자재명 
+         b.mat_nm,                                -- 자재명 
          fn_get_codename(b.unit) AS unit,         -- 자재 단위
          a.mat_out_qty,                           -- 출고량
          a.mat_out_dt,                            -- 출고날짜
@@ -214,14 +216,15 @@ const getMaterialOutForProduction = (data) => {
       conditions.push(`UPPER(b.type) = UPPER('${data.type}')`)
    }
 
-   if(data.mat_cd) {
-      conditions.push(`UPPER(a.mat_cd) = UPPER('${data.mat_cd}')`)
+   if(data.mat_nm) {
+      conditions.push(`b.mat_nm LIKE '%${data.mat_nm}%'`)
    }
 
    // WHERE 절 조립
    if (conditions.length > 0) {
       query += " WHERE " + conditions.join(" AND ");
    }
+   query += ` ORDER BY a.mat_out_dt DESC`;
    // 쿼리 반환
    return query;
 } 
