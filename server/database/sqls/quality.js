@@ -12,6 +12,7 @@ const yetList = `
          pass_ispercent
   FROM   quality_test
   WHERE  target_type = ?
+    AND  use_status = 'A01' -- 현재 노출가능한 것만 표시
     AND  test_cd NOT IN (
                           SELECT test_cd
                           FROM   quality_standard_detail
@@ -27,6 +28,7 @@ const yetList = `
 // 특정 대상에 현재 적용중인 검사항목 조회
 const getMyList = () => {
   let myListSql = yetList.replace('NOT IN', 'IN')
+                         .replace(`AND  use_status = 'A01' -- 현재 노출가능한 것만 표시`, '')
                          .replace('pass_ispercent', `pass_ispercent,
                                                      (SELECT qu_std_cd
                                                       FROM   quality_standard
@@ -88,8 +90,30 @@ const testList = (valueObj) => {
       ${!status ? "" : "AND  status = '" + status + "' "}
       ${!useStatus ? "" : "AND  use_status = '" + useStatus + "' "}
       ${!targetType ? "" : "AND  target_type = '" + targetType + "' "}
+    ORDER  BY test_cd DESC
   `;
 };
+
+// 검사항목 수정
+const testUpdate = `
+  UPDATE quality_test
+  SET    ?
+  WHERE  test_cd = ?
+`;
+
+// 검사항목 삭제
+const testDelete = `
+  DELETE FROM quality_test
+  WHERE  test_cd = ?
+`;
+
+// 검사항목 추가
+const testInsert = `
+  INSERT INTO quality_test
+  SET test_cd = CONCAT('QT', LPAD(nextval(qual_test_seq), 3,'0'))
+     , ?
+`;
+
 
 
 // 품질기준 (QUALITY_STANDARD) 등록
@@ -402,6 +426,9 @@ module.exports = {
   getMyList,
   stdTestList,
   testList,
+  testUpdate,
+  testDelete,
+  testInsert,
 
   stdSeq,
   stdInsert,

@@ -30,11 +30,39 @@ router.get('/quality/test/all', async (req, resp) => {
   resp.send(result);
 });
 
+// 검사항목 수정(단건)
+router.put('/quality/test/all/:cd', async (req, resp) => {
+  let values = [req.body, req.params.cd];
+  let result = await qualityService.updateTest(values);
+  resp.send(result);
+});
+
+// 검사항목 수정(일괄)
+router.put('/quality/test/all/', async (req, resp) => {
+  let values = req.body;
+  let result = await qualityService.updateTestAll(values);
+  resp.send(result);
+});
+
+// 검사항목 삭제
+router.delete('/quality/test/all/:cd', async (req, resp) => {
+  let value = req.params.cd;
+  let result = await qualityService.deleteTest(value);
+  resp.send(result);
+});
+
+// 검사항목 추가
+router.post('/quality/test', async (req, resp) => {
+  let valueObj = req.body;
+  let result = await qualityService.insertTest(valueObj);
+  resp.send(result);
+});
+
 
 // 품질기준
 // 등록
 router.post('/quality/std', async (req, resp) => {
-  let values = req.body; // body: 배열로 값을 받음.
+  let values = req.body; // body: 배열/객체로 값을 받음.
   let result = await qualityService.stdInsert(values);
   resp.send(result);
 });
