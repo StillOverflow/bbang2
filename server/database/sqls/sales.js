@@ -340,6 +340,47 @@ const prdOutListDelete =
 DELETE FROM product_out_detail WHERE prd_out_dtl_cd = ?
 `;
 
+//출고 제품 수정
+const prdOutUpdate =
+`
+UPDATE product_out_detail SET ? WHERE prd_out_dtl_cd = ?
+`;
+
+//출고 제품 수정을 위한 등록
+const prdOutUpdateInsert = (values) => {
+    let sql = `
+              INSERT INTO product_out_detail (prd_out_dtl_cd, prd_out_cd, order_dtl_cd, prd_cd, prd_out_qty, prd_lot_cd, note)
+              VALUES
+              `;
+
+    values.forEach((obj) => {
+        sql += `(CONCAT('PODT', LPAD(nextval(prd_out_dtl_cd_seq), 3,'0')),'${obj.prd_out_cd}','${obj.order_dtl_cd}', '${obj.prd_cd}', '${obj.prd_out_qty}', '${obj.prd_lot_cd}', '${obj.note}'), `;
+    });
+    sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
+    return sql;
+
+};
+
+//출고 완료시 제품수량 업데이트
+const productOutEndQty = 
+` 
+UPDATE product_in i JOIN product_out_detail o ON i.prd_lot_cd = o.prd_lot_cd
+SET i.stock = (i.stock - ? )
+WHERE i.prd_lot_cd = ? ; 
+`;
+//출고 완료시 상태 변경
+const orderStautsPrdOutEnd =
+`
+UPDATE \`order\` SET \`status\` = 'J03' WHERE order_cd = ?
+`;
+//출고 완료 확인
+const prdOutEnd =
+`
+SELECT \`status\` FROM \`order\` WHERE order_cd = ?
+`;
+
+
 
 /* --------------------------------------------------------------제품 반품----------------------------------------------------------------- */
 
@@ -619,6 +660,8 @@ const moPrdOutList =
 SELECT p.prd_out_cd, p.act_cd, a.act_nm, m.name, p.prd_out_dt
 FROM product_out p JOIN account a ON p.ACT_CD = a.act_cd
 						 JOIN member m ON p.id = m.id
+						 JOIN \`order\` o ON p.order_cd = o.order_cd
+WHERE o.status = 'J03'
 `;
 
 
@@ -654,6 +697,11 @@ module.exports = {
     prdOutDelete,
     prdOutDeleteQty,
     prdOutListDelete,
+    prdOutUpdate,
+    prdOutUpdateInsert,
+    productOutEndQty,
+    orderStautsPrdOutEnd,
+    prdOutEnd,
 
     //제품반품
     returnList,
