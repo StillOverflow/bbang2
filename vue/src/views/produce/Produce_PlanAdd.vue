@@ -80,9 +80,9 @@
             overlayNoRowsTemplate="주문내역이 없습니다."/>
           </div>
         </div>
-        <div class="center">
+        <div class="center" v-if="this.$session.get('user_ps') == 'H01'">
           <button class="btn mtp30" :class="isUpdated ? 'btn-success' : 'btn-primary'" @click="planInsert"> {{ isUpdated ? "UPDATE" : "SAVE" }}</button>
-          <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
+          <button class="btn btn-secondary mlp10 mtp30" @click="resetForm" v-if="!isUpdated">RESET</button>
         </div>
       </div>
     </div>

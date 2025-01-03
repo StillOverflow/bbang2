@@ -144,7 +144,7 @@ export default {
               :navText="'생산계획서 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Produce_PlanAdd" :class="getRoute() === 'Produce_PlanAdd' ? 'active' : ''"
               :navText="'생산계획서 관리'">
             </sidenav-item>
@@ -154,7 +154,7 @@ export default {
               :navText="'생산지시서 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Produce_InstAdd" :class="getRoute() === 'Produce_InstAdd' ? 'active' : ''"
               :navText="'생산지시서 관리'">
             </sidenav-item>
