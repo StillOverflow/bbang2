@@ -61,7 +61,7 @@ export default {
         <li class="nav-item head" id="Sales" @click="showList('Sales')">
           <a class="nav-link" :class="urlCompare('Sales') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="fa-solid fa-scroll text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-scroll text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">영업</span>
           </a>
@@ -133,7 +133,7 @@ export default {
         <li class="nav-item head" id="Produce" @click="showList('Produce')">
           <a class="nav-link" :class="urlCompare('Produce') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="fa-solid fa-desktop text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-desktop text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">생산</span>
           </a>
@@ -200,7 +200,7 @@ export default {
         <li class="nav-item head" id="Material" @click="showList('Material')">
           <a class="nav-link" :class="urlCompare('Material') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="fa-solid fa-cart-shopping text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-cart-shopping text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">자재</span>
           </a>
@@ -307,7 +307,7 @@ export default {
         <li class="nav-item head" id="Equipment" @click="showList('Equipment')">
           <a class="nav-link" :class="urlCompare('Equipment') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="fa-solid fa-wrench text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-wrench text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">설비</span>
           </a>
@@ -399,7 +399,7 @@ export default {
         <li class="nav-item head" id="Quality" @click="showList('Quality')">
           <a class="nav-link" :class="urlCompare('Quality') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="fa-solid fa-vial-circle-check text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-vial-circle-check text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">품질</span>
           </a>
@@ -494,7 +494,7 @@ export default {
         <li class="nav-item head" id="Standard" @click="showList('Standard')" v-if="this.$session.get('user_ps') == 'H01'">
           <a class="nav-link" :class="urlCompare('Standard') == true ? 'active' : ''">
             <div class="icon icon-shape icon-sm text-center d-flex align-items-center justify-content-center">
-              <i class="fa-solid fa-gear text-primary text-sm opacity-10"></i>
+              <i class="fa-solid fa-gear text-success text-sm opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">기준정보관리</span>
           </a>
