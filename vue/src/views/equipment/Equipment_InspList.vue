@@ -28,8 +28,8 @@
           </div>
           <div class="col col-lg-3">
             <div class="input-group">
-              <input type="text" class="form-control" v-model="equipmentData.eqp_cd" placeholder="설비코드"
-                aria-label="설비코드" aria-describedby="button-addon2" @input="searchEquipments" @click="modalOpen" />
+              <input type="text" class="form-control" v-model="selectedEqp" placeholder="설비코드" aria-label="설비코드"
+                aria-describedby="button-addon2" @input="searchEquipments" @click="modalOpen" />
               <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
@@ -129,12 +129,15 @@ import { AgGridVue } from 'ag-grid-vue3';
 import axios from 'axios';
 import * as XLSX from 'xlsx';
 import debounce from 'lodash/debounce';
+import Layout from '../components/modalLayout.vue';
+
 
 export default {
   name: 'EquipmentInspList',
   data() {
     return {
       isModal: false,
+      selectedEqp: '',
       start_datetime: '',
       end_datetime: '',
 
@@ -208,6 +211,7 @@ export default {
   },
   components: {
     AgGridVue,
+    Layout
   },
   created() {
     // 페이지 제목 저장
@@ -224,7 +228,7 @@ export default {
       this.isModal = !this.isModal;
 
       if (this.isModal) {
-        this.getEquipInfo(this.selectedEqp);
+        this.getEquipInfo(this.equipmentData.eqp_type);
       }
     },
     modalClicked(params) {
