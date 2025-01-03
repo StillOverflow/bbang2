@@ -18,7 +18,7 @@ const eqStatList = (datas) => {
 FROM 
     equipment e
 LEFT JOIN 
-    prod_result pr ON e.eqp_cd = pr.eqp_cd
+    prod_result pr ON e.eqp_cd = pr.eqp_cd AND pr.start_time IS NOT NULL AND (pr.end_time IS NULL OR pr.end_time = '')
 LEFT JOIN 
     process p ON pr.proc_cd = p.proc_cd`;
 
