@@ -249,10 +249,16 @@ const updateRepairEq = async (repairData) => {
   }
 };
 
+
 //설비 수리 전체 조회
-const findRepairEq = async () => {
-  let list = await mariadb.query('eqRepairList');
-  return list;
+const findRepairEq = async (datas) => {
+  try {
+    let list = await mariadb.query('eqRepairListSearch', datas);
+    return list;
+  } catch (err) {
+    console.error('설비 비가동 DB 쿼리 실패:', err);
+    throw err;
+  }
 };
 
 //설비 수리 전체 조회(설비별 최근 1건씩만)

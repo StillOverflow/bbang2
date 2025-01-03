@@ -491,6 +491,20 @@ router.get('/equip/repair/:no', async (req, res) => {
 });
 
 
+//수리전체조회(필터링)
+router.get('/equipList/repair', async (req, res) => {
+  try {
+    let searchList = req.query;
+    console.log("받은 쿼리 파라미터 => ", searchList)
+    let result = await equipmentService.findRepairEq(searchList);
+    res.send(result);
+  } catch (err) {
+    console.error('필터링된 수리 조회 실패:', err);
+    res.status(500).json({ error: '필터링된 수리 조회 실패' });
+  }
+});
+
+
 
 
 module.exports = router;

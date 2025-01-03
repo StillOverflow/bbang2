@@ -469,23 +469,23 @@ FROM equipment e
 
   const queryArr = [];
 
-  // 설비점검조회 조건
+  // 설비비가동조회 조건
 
   // 설비명 검색
   if (datas.eqp_nm) queryArr.push(`e.eqp_nm LIKE '%${datas.eqp_nm}%'`);
-  // 점검 시작일
+  // 비가동 시작일
   if (datas.start_time) {
     queryArr.push(`(d.start_time IS NULL OR date(d.start_time) >= '${datas.start_time}')`);
   }
-  // 점검 종료일
+  // 비가동 종료일
   if (datas.end_time) {
     queryArr.push(`(d.end_time IS NULL OR date(d.end_time) <= '${datas.end_time}')`);
   }
-  //설비구분
+  //설비 구분
   if (datas.eqp_type) queryArr.push(`e.eqp_type = UPPER('${datas.eqp_type}')`);
-  //점검사유
+  //비가동 사유
   if (datas.downtime_reason) queryArr.push(`downtime_reason = UPPER('${datas.downtime_reason}')`);
-  //설비코드
+  //설비 코드
   if (datas.eqp_cd) queryArr.push(`e.eqp_cd = UPPER('${datas.eqp_cd}')`);
 
 
@@ -596,6 +596,69 @@ limit 1
 
 
 
+//설비 수리 조회(필터링 적용) 
+const eqRepairListSearch = (datas) => {
+  let sql = ` SELECT e.eqp_cd as eqp_cd,
+                        fn_get_codename(e.eqp_type) as eqp_type,
+                        e.eqp_nm as eqp_nm,
+                        e.insp_cycle as insp_cycle,
+                        e.img_path as img_path,
+                        fn_get_codename(e.is_use) as is_use,
+                        e.model as model,
+                        fn_get_codename(e.status) AS status,
+                        e.last_insp_dt as last_insp_dt, 
+                        r.start_time as start_time,
+                        fn_get_codename(r.repair_reason) as repair_reason,
+                        r.repair_parts as repair_parts,
+                        r.repair_act as repair_act,
+                        r.note as note,
+                        r.end_time as end_time,
+                        r.id as id,
+                        r.create_dt as create_dt,
+                        r.update_dt as update_dt
+
+FROM equipment e
+      LEFT JOIN repair_log r 
+              ON e.eqp_cd = r.eqp_cd
+`;
+
+  const queryArr = [];
+
+  // 설비점검조회 조건
+
+  // 설비명 검색
+  if (datas.eqp_nm) queryArr.push(`e.eqp_nm LIKE '%${datas.eqp_nm}%'`);
+  // 수리 시작일
+  if (datas.start_time) {
+    queryArr.push(`(r.start_time IS NULL OR date(r.start_time) >= '${datas.start_time}')`);
+  }
+  // 수리 종료일
+  if (datas.end_time) {
+    queryArr.push(`(r.end_time IS NULL OR date(r.end_time) <= '${datas.end_time}')`);
+  }
+  //설비구분
+  if (datas.eqp_type) queryArr.push(`e.eqp_type = UPPER('${datas.eqp_type}')`);
+  //수리 사유
+  if (datas.repair_reason) queryArr.push(`repair_reason = UPPER('${datas.repair_reason}')`);
+  //설비 코드
+  if (datas.eqp_cd) queryArr.push(`e.eqp_cd = UPPER('${datas.eqp_cd}')`);
+
+
+  // WHERE 절 조립
+  if (queryArr.length > 0) {
+    sql += ` WHERE ` + queryArr.join(' AND ');
+  }
+
+  sql += ` order by eqp_cd asc, last_insp_dt desc`; // 정렬
+
+  console.log('Generated SQL:', sql); // SQL 쿼리 출력
+
+  return sql;
+
+};
+
+
+
 module.exports = {
   eqStatList,
   eqAllList,
@@ -623,5 +686,6 @@ module.exports = {
   eqRepairList,
   eqRepairListOne,
   eqRepairInfo,
-  eqDownListSearch
+  eqDownListSearch,
+  eqRepairListSearch
 };
