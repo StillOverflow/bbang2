@@ -1,14 +1,14 @@
 const mariadb = require('../database/mapper.js');
 
-// QQQ01 중 'QQQ'와 관련된 공통코드를 모두 찾을 때
+//! QQQ01 중 'QQQ'와 관련된 공통코드를 모두 찾을 때
 const findCommList = async (cd) => {
   let result = await mariadb.query('findCommList', cd);  
   return result;
 };
 
-// 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회)
-const findMemList = async (dpt_cd) => {
-  let result = await mariadb.query('memList', dpt_cd);  
+//! 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회)
+const findMemList = async (data) => {
+  let result = await mariadb.query('memList', data);  
   return result;
 };
 
@@ -30,13 +30,13 @@ const productSelect = async (datas) => {
   return result;
 };
 
-//주문서 제품조회
+//! 주문서 제품조회
 const findOrderNo = async (no)=>{
   let list = await mariadb.query('commOrderDtlList', no);
   return list;
 }
 
-//로그인
+//! 로그인
 const login = async (datas)=>{
   let list = await mariadb.query('login', datas);
   let info = list[0];

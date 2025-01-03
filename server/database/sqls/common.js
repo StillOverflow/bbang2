@@ -12,26 +12,64 @@ const findCommList = `
 `;
 
 // 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회)
-const memList = (dpt_cd) => {
-  return `
-  SELECT mem_cd,
-         name,
-         id,
-         password,
-         phone,
-         addr,
-         email,
-         birth,
-         hire_dt,
-         quit_dt,
-         fn_get_codename(status) as status,
-         fn_get_codename(permission) as permission,
-         create_dt,
-         update_dt,
-         fn_get_departname(dpt_cd) as dpt_cd,
-         gender
-  FROM member ${!dpt_cd ? "" : "WHERE  UPPER(dpt_cd) = UPPER('" + dpt_cd + "') "} -- 부서번호 있을 시 동적 조건 생성
-  ORDER  BY id `;
+// const memList = (dpt_cd) => {
+//   return `
+//   SELECT mem_cd,
+//          name,
+//          id,
+//          password,
+//          phone,
+//          addr,
+//          email,
+//          birth,
+//          hire_dt,
+//          quit_dt,
+//          fn_get_codename(status) as status,
+//          fn_get_codename(permission) as permission,
+//          create_dt,
+//          update_dt,
+//          fn_get_departname(dpt_cd) as dpt_cd,
+//          gender
+//   FROM member ${!dpt_cd ? "" : "WHERE  UPPER(dpt_cd) = UPPER('" + dpt_cd + "') "} -- 부서번호 있을 시 동적 조건 생성
+//   ORDER  BY id `;
+// };
+
+const memList = (data) => {
+  let query =  `
+    SELECT mem_cd,
+          name,
+          id,
+          password,
+          phone,
+          addr,
+          email,
+          birth,
+          hire_dt,
+          quit_dt,
+          fn_get_codename(status) as status,
+          fn_get_codename(permission) as permission,
+          create_dt,
+          update_dt,
+          fn_get_departname(dpt_cd) as dpt_cd,
+          gender
+    FROM member 
+  `;
+
+  const conditions = [];
+
+  // 거래처조회 조건
+  if (data.dpt_cd) conditions.push(`UPPER(dpt_cd) = UPPER('${data.dpt_cd}')`)
+  //if (data.id) conditions.push(`id = '${data.act_type}'`);
+  //if (data.password) conditions.push(`password = '${data.act_cd}'`);
+  if (data.name) conditions.push(`name LIKE '%${data.name}%'`);
+
+  if (conditions.length > 0) {
+    query += ` WHERE ` + conditions.join(' AND ');
+  }
+  
+  query += ` ORDER BY id, name`; // 정렬
+
+  return query; // 합체한 쿼리 전체
 };
 
 //! 거래처 조회

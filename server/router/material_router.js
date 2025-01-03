@@ -42,16 +42,14 @@ router.get("/material/orderDetailList/:code", async (req, res) => {
 
 //! ------------------------------ 자재 출고조회 ------------------------------
 router.get("/material/produceInstruction", async (req, res) => {
-   console.log("router searchObj => ", req.query)
    let result = await materialService.getProduceInstruction(req.query);
-   console.log("조회 결과 -> ", result);
+
    res.send(result);
 });
 
 router.get("/material/out", async (req, res) => {
-   let searchObj = req.query.inst_cd
-   console.log("router searchObj => ", searchObj)
-   let result = await materialService.getMaterialOutForProduction(searchObj);
+   console.log("router => ", req.query)
+   let result = await materialService.getMaterialOutForProduction(req.query);
 
    res.send(result);
 });
