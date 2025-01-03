@@ -122,6 +122,9 @@
         },
 
         gridOptions: {
+          defaultColDef: {
+            cellClass: 'text-overflow'
+          },
           pagination: true,
           paginationAutoPageSize: true,
           overlayNoRowsTemplate: '표시할 항목이 없습니다.', // 표시할 행이 없을 때 적용할 메세지
@@ -232,3 +235,10 @@
     }
   }
 </script>
+
+<style>
+  .text-overflow {
+    white-space: nowrap;
+    overflow: hidden;
+  }
+</style>

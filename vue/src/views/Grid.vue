@@ -50,6 +50,9 @@ export default {
       myColApi: null,
 
       gridOptions: {
+        defaultColDef: {
+          cellClass: 'text-overflow'
+        },
         pagination: true,
         // paginationPageSize: 10, // 몇 행까지 표시할지 지정하고 싶은 경우
         // paginationPageSizeSelector: false,
@@ -143,5 +146,9 @@ export default {
     color : rgb(13, 184, 13);
     font-weight: bold;
     text-align: left;
+  }
+  .text-overflow {
+    white-space: nowrap;
+    overflow: hidden;
   }
 </style>

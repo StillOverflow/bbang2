@@ -25,6 +25,69 @@ const findTestList = async (valueObj) => {
     return result;
 };
 
+// 검사항목 수정(단건)
+const updateTest = async (values) => { 
+    let result = await mariadb.query('testUpdate', values);
+    if(result.affectedRows > 0) return 'success';
+    else return 'fail';
+};
+
+// 검사항목 수정(일괄)
+const updateTestAll = async (values) => { 
+    let result = await mariadb.transOpen( async () => {
+        
+        let successCnt = 0;
+        for(let obj of values){ // 받은 값만큼 반복 실행 (** forEach 쓰면 await과 맞지 않음.)
+            let result = await mariadb.transQuery('testUpdate', [obj.changeObj, obj.test_cd]);
+            if(result.affectedRows > 0) successCnt++;
+        };
+
+        if(successCnt == values.length){ // 모두 성공했는지 판단
+            await mariadb.commit();
+            return 'success';
+        } else {
+            await mariadb.rollback();
+            return 'fail';
+        }
+    });
+    
+    return result;
+};
+
+// 검사항목 삭제
+const deleteTest = async (value) => { 
+    let result = await mariadb.query('testDelete', value);
+    if(result.affectedRows > 0) return 'success';
+    else return 'fail';
+};
+
+// 검사항목 추가
+const insertTest = async (valueObj) => { 
+    // valueObj : {target_type: [], test_metd:..., test_nm:..., ...} 식으로 들어옴.
+    let result = await mariadb.transOpen( async () => {
+        
+        let successCnt = 0;
+        let targetTypes = valueObj.target_type;
+        for(let type of targetTypes){ // 받은 값만큼 반복 실행 (** forEach 쓰면 await과 맞지 않음.)
+            let newObj = {...valueObj};
+            newObj.target_type = type;
+            
+            let result = await mariadb.transQuery('testInsert', newObj);
+            if(result.affectedRows > 0) successCnt++;
+        };
+
+        if(successCnt == targetTypes.length){ // 모두 성공했는지 판단
+            await mariadb.commit();
+            return 'success';
+        } else {
+            await mariadb.rollback();
+            return 'fail';
+        }
+    });
+    
+    return result;
+};
+
 
 // 품질기준
 // 등록 (트랜잭션 적용)
@@ -173,6 +236,10 @@ module.exports = {
     getMyList,
     getStdTestList,
     findTestList,
+    updateTest,
+    updateTestAll,
+    deleteTest,
+    insertTest,
 
     stdInsert,
     searchAll,
