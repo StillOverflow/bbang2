@@ -192,7 +192,7 @@ AND prd_cd = ?
 //공정별 자재 사용량 업데이트
 const updateProcMtl =
 `
-UPDATE proc_material
+UPDATE proc_flow_mtl
 SET mat_qty = ?
 WHERE proc_mat_flow_cd = ?
 `;

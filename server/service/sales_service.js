@@ -408,11 +408,11 @@ const listLotDtlReturn = async (no) => {
 const deleteReturn = async (no) => {
     let del = await mariadb.query('returnDelete',no);
 
-    if(del.affectedRows > 0){ // 모두 성공했는지 판단
-        mariadb.commit();
+    console.log(del);
+
+    if(del.affectedRows > 0){ 
         return {"result" : "success"};
     } else {
-        mariadb.rollback();
         return {"result" : "fail"};
     }
 };

@@ -323,7 +323,7 @@ WHERE prd_out_cd = ?
 const prdOutDelete =
 `
 DELETE product_out, product_out_detail  
-FROM product_out product_out JOIN product_out_detail product_out_detail ON product_out.prd_out_cd = product_out_detail.prd_out_cd 
+FROM product_out product_out LEFT JOIN product_out_detail product_out_detail ON product_out.prd_out_cd = product_out_detail.prd_out_cd 
 WHERE product_out.prd_out_cd = ?
 `;
 //출고 제품 삭제시 제품수량 원복
@@ -495,7 +495,7 @@ WHERE prd_return_cd = ?
 const returnDelete =
 `
 DELETE product_return, product_return_detail  
-FROM product_return product_return JOIN product_return_detail product_return_detail ON product_return.prd_return_cd = product_return_detail.prd_return_cd 
+FROM product_return product_return LEFT JOIN product_return_detail product_return_detail ON product_return.prd_return_cd = product_return_detail.prd_return_cd 
 WHERE product_return.prd_return_cd = ?
 `;
 

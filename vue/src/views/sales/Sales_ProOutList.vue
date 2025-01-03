@@ -53,18 +53,20 @@ export default {
   data() {
       return {
           columnDefs: [
-              {field: 'prd_out_cd', headerName: '출고코드'},
-              {field: 'act_cd', headerName: '거래처코드'},
-              {field: 'act_nm', headerName: '거래처이름'},
-              {field: 'name', headerName: '담당자'},
+              {field: 'prd_out_cd', headerName: '출고코드', cellStyle: { textAlign: "center" }},
+              {field: 'act_cd', headerName: '거래처코드', cellStyle: { textAlign: "center" }},
+              {field: 'act_nm', headerName: '거래처이름', cellStyle: { textAlign: "center" }},
+              {field: 'name', headerName: '담당자', cellStyle: { textAlign: "center" }},
               {
                   field: 'prd_out_dt',
-                  headerName: '출고일자',
+                  headerName: '출고일자', 
+                  cellStyle: { textAlign: "center" },
                   valueFormatter: this.$comm.dateFormatter // 날짜 포맷터 추가
               },
               {
                   field: 'prd_out_qty',
-                  headerName: '출고수량',
+                  headerName: '출고수량', 
+                  cellStyle: { textAlign: "center" },
                   valueFormatter: (params) => {
                       if (params.value == null || params.value === '') return '';
                       return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -72,7 +74,8 @@ export default {
               },
               {
                   headerName: '상세' ,
-                  field: 'detailed',
+                  field: 'detailed', 
+                  cellStyle: { textAlign: "center" },
                   cellRenderer: (params) => {
                       const button = document.createElement('button');
                       button.innerText = 'DETAILED';

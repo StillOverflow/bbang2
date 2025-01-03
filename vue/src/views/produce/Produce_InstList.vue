@@ -31,7 +31,7 @@
           :gridOptions="gridOptions" overlayNoRowsTemplate="등록된 지시서가 없습니다.">
         </ag-grid-vue>
         <div class="center">
-          <button class="btn btn-danger mtp30" @click="PlanCancel">DELETE</button>
+          <button class="btn btn-danger mtp30" @click="PlanCancel" v-if="this.$session.get('user_ps') == 'H01'">DELETE</button>
           <button class="btn btn-outline-success mlp10 mtp30" @click="excelDownload()"><i
               class="fa-regular fa-file-excel"></i> EXCEL</button>
         </div>
@@ -80,7 +80,7 @@ export default {
               button.innerText = 'DETAILED';
               button.className = 'btn btn-warning btn-xsm';
               button.addEventListener('click', () => {
-                  this.$router.push({ name: 'Produce_InstAdd' , query : { inst_cd : params.data.INST_CD}});
+                  this.$router.push({ name: 'Produce_InstView' , query : { inst_cd : params.data.INST_CD}});
               });
               return button;
           }

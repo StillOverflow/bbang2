@@ -427,6 +427,7 @@ export default {
 
     //공정정보 가져오기
     async getResultInfo(result_cd){
+      
       let obj = {
         PROD_RESULT_CD : result_cd
       }
@@ -446,20 +447,27 @@ export default {
 
     //공정관리화면 노출
     showProcess(){
+      if(this.resultInfo.LAST_STATUS != 'Z03' && this.resultInfo.LAST_STATUS != '0'){
+        this.$swal({
+          icon: "error",
+          title: "이전 공정이 완료되지 않았습니다.",
+        });        
+      }
+
       let flow_cd = this.resultInfo.PROC_FLOW_CD;
       const elements = document.querySelectorAll('.flowList');
       for (var i = 0; i < elements.length; i++) {
         elements[i].classList.remove('table-primary');
       }
       const flowEle = document.querySelector('.flow_'+flow_cd);
-      flowEle.classList.add("table-primary");
-    },
+      flowEle.classList.add("table-primary");    
+   },
 
     //설비 선택목록 조회
     async getFlowEquList() {
       let result = await axios.get(`/api/progress/equ/${this.resultInfo.EQP_TYPE}`)
                               .catch(err => console.log(err));
-      this.equData = result.data;
+      this.equData = result.data
     },
 
     //사용 자재목록 조회
@@ -543,35 +551,46 @@ export default {
                                   .catch(err => console.log(err));
 
                 if(result.data == 'success'){
+                  this.resultAble = false;
                   this.resultInfo.START_TIME = obj.START_TIME;
+                  this.getResultInfo(this.resultInfo.PROD_RESULT_CD);
                 }              
               }
             })
           }
         }else{
-          this.$swal({
-            title: "해당 공정을 종료하시겠습니까?",
-            icon: "question",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, delete it!"
-          }).then(async(result) => {
-            if (result.isConfirmed) {
+          if(this.resultInfo.STATUS == 'Z03'){
+            this.$swal({
+              title: "진행 완료된 공정입니다.",
+              icon: "error",
+            })
+          }else{
+            this.$swal({
+              title: "해당 공정을 종료하시겠습니까?",
+              icon: "question",
+              showCancelButton: true,
+              confirmButtonColor: "#3085d6",
+              cancelButtonColor: "#d33",
+              confirmButtonText: "Yes, delete it!"
+            }).then(async(result) => {
+              if (result.isConfirmed) {
 
-              let obj = {
-                STATUS : 'Z03',
-                END_TIME: this.$comm.getDateTime()
-              };
+                let obj = {
+                  STATUS : 'Z03',
+                  END_TIME: this.$comm.getDateTime()
+                };
 
-              let result =await axios.put(`/api/progress/end/${this.resultInfo.PROD_RESULT_CD}`, obj)
-                         .catch(err => console.log(err));
-                         
-              if(result.data == 'success'){
-                this.resultInfo.END_TIME = obj.END_TIME;
+                let result =await axios.put(`/api/progress/end/${this.resultInfo.PROD_RESULT_CD}`, obj)
+                                      .catch(err => console.log(err));
+
+                if(result.data == 'success'){
+                  this.resultInfo.END_TIME = obj.END_TIME;
+                  this.resultInfo.STATUS = 'Z03';
+                  this.getResultInfo(this.resultInfo.PROD_RESULT_CD);
+                }
               }
-            }
-          })
+            })
+          }
         }
       
       }

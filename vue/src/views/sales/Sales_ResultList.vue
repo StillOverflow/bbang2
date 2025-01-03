@@ -53,28 +53,31 @@ export default {
   data() {
       return {
           columnDefs: [
-              {field: 'prd_return_cd', headerName: '반품코드'},
-              {field: 'act_cd', headerName: '거래처코드'},
-              {field: 'act_nm', headerName: '거래처이름'},
-              {field: 'name', headerName: '담당자'},
+              {field: 'prd_return_cd', headerName: '반품코드', cellStyle: { textAlign: "center" }},
+              {field: 'act_cd', headerName: '거래처코드', cellStyle: { textAlign: "center" }},
+              {field: 'act_nm', headerName: '거래처이름', cellStyle: { textAlign: "center" }},
+              {field: 'name', headerName: '담당자', cellStyle: { textAlign: "center" }},
               {
                   field: 'prd_return_dt',
                   headerName: '반품일자',
-                  valueFormatter: this.$comm.dateFormatter // 날짜 포맷터 추가
+                  valueFormatter: this.$comm.dateFormatter, // 날짜 포맷터 추가
+                  cellStyle: { textAlign: "center" }
               },
               {
                   field: 'prd_return_qty',
                   headerName: '반품수량',
+                  cellStyle: { textAlign: "center" },
                   valueFormatter: (params) => {
                       if (params.value == null || params.value === '') return '';
                       return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
                       
                   },
               },
-              {field: 'prd_return_receipt', headerName: '반품접수상태', hide: true},
+              {field: 'prd_return_receipt', headerName: '반품접수상태', cellStyle: { textAlign: "center" }, hide: true},
               {
                   headerName: '상세' ,
                   field: 'detailed',
+                  cellStyle: { textAlign: "center" },
                   cellRenderer: (params) => {
                       const button = document.createElement('button');
                       button.innerText = 'DETAILED';
