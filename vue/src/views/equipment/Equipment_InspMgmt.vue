@@ -159,6 +159,9 @@ export default {
               R05: '오븐',
               R06: '냉각기',
               R07: '도포기',
+              R08: '커팅기',
+              R09: '포장기',
+              R10: '세척기',
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
