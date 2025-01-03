@@ -189,21 +189,13 @@
 
         // 모달용
         isModal: false, // 토글기능
-        selected: {
-          test_cd: null,
-          test_nm: null,
-          test_dtl: null,
-          test_metd: null,
-          target_type: [],
-          create_dt: null,
-          isUsed: null // true(status == Y): 이미 품질기준에 사용된 경우 변경 불가
-        },
+        selected: {},
         selectedSave: {}, // 수정 시 변경사항 확인용
         isInserted: null, // 신규등록 아닐 때 true
 
         // 일반 grid API 데이터
         defs: [
-          { headerName: '코드', field: 'test_cd', maxWidth: 70 },
+          { headerName: '코드', field: 'test_cd', maxWidth: 80 },
           { headerName: '검사명', field: 'test_nm', maxWidth: 140 },
           { headerName: '검사방식', field: 'test_metd_nm', maxWidth: 100 },
           { headerName: '적용대상', field: 'target_type_nm', maxWidth: 100 },
