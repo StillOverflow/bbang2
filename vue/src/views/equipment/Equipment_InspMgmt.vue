@@ -74,12 +74,12 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success mlp10" @click="isEditMode ? inspUpdate() : inspInsert()"
+          <button :class="isEditMode ? 'btn btn-success mlp10' : 'btn btn-primary mlp10'" @click="isEditMode ? inspUpdate() : inspInsert()"
             :disabled="!selectedEqp">
-            {{ isEditMode ? "UPDATE" : "SAVE" }}
+            {{ isEditMode ? "수정" : "등록" }}
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm" :disabled="!selectedEqp">
-            RESET
+            초기화
           </button>
         </div>
       </div>
@@ -480,6 +480,11 @@ export default {
 
       const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle', 'last_insp_dt', 'id'];
 
+      // 수정 모드일 때 시작시간 비활성화
+      if (this.isEditMode && fieldName === 'start_time') {
+        return true;
+      }
+
       // 등록 모드와 수정 모드에 따른 비활성화 처리
       if (!this.isEditMode) {
         return alwaysDisabled.includes(fieldName); // 등록 모드에서 특정 필드 비활성화
@@ -533,15 +538,15 @@ export default {
 
 <style scoped>
 .fade-enter-from {
-  transform: translateY(-1000px);
+  opacity: 0;
 }
 
 .fade-enter-active {
-  transition: all 0.5s;
+  transition: all 0.7s;
 }
 
 .fade-enter-to {
-  transform: translateY(0px);
+  opacity: 1;
 }
 
 .fade-leave-from {

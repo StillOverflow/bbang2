@@ -65,12 +65,12 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success mlp10" @click="isEditMode ? repairUpdate() : repairInsert()"
+          <button :class="isEditMode ? 'btn btn-success mlp10' : 'btn btn-primary mlp10'" @click="isEditMode ? repairUpdate() : repairInsert()"
             :disabled="!selectedEqp">
-            {{ isEditMode ? "UPDATE" : "SAVE" }}
+            {{ isEditMode ? "수정" : "등록" }}
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm" :disabled="!selectedEqp">
-            RESET
+            초기화
           </button>
         </div>
       </div>
@@ -520,15 +520,15 @@ export default {
 
 <style scoped>
 .fade-enter-from {
-  transform: translateY(-1000px);
+  opacity: 0;
 }
 
 .fade-enter-active {
-  transition: all 0.5s;
+  transition: all 0.7s;
 }
 
 .fade-enter-to {
-  transform: translateY(0px);
+  opacity: 1;
 }
 
 .fade-leave-from {

@@ -106,20 +106,22 @@
   </div>
 
   <!--검색모달[S]-->
-  <Layout :modalCheck="isModal">
-    <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-      <h5 class="modal-title">설비 코드 검색</h5>
-      <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
-    </template>
-    <template v-slot:default>
-      <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="equipDefs"
-        :rowData="equipData" @rowClicked="modalClicked" @grid-ready="gridFit" overlayNoRowsTemplate="등록된 설비가 없습니다.">
-      </ag-grid-vue>
-    </template>
-    <template v-slot:footer>
-      <button type=" button" class="btn btn-secondary mx-auto" @click="modalOpen">닫기</button>
-    </template>
-  </Layout>
+  <Transition name="fade">
+    <Layout :modalCheck="isModal">
+      <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+        <h5 class="modal-title">설비 코드 검색</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="equipDefs"
+          :rowData="equipData" @rowClicked="modalClicked" @grid-ready="gridFit" overlayNoRowsTemplate="등록된 설비가 없습니다.">
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type=" button" class="btn btn-secondary mx-auto" @click="modalOpen">닫기</button>
+      </template>
+    </Layout>
+  </Transition>
   <!--검색모달[E]-->
 
 </template>
@@ -477,17 +479,15 @@ export default {
 
 <style scoped lang="scss">
 .fade-enter-from {
-  /* opacity: 0; */
-  transform: translateY(-1000px);
+  opacity: 0;
 }
 
 .fade-enter-active {
-  transition: all 0.5s;
+  transition: all 0.7s;
 }
 
 .fade-enter-to {
-  /* opacity: 1; */
-  transform: translateY(0px);
+  opacity: 1;
 }
 
 .fade-leave-from {

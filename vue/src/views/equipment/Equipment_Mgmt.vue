@@ -90,13 +90,13 @@
         <!-- 버튼 -->
         <div class="text-center mt-3">
           <button v-if="isEditMode" class="btn btn-success mlp10" @click="equipUpdate">
-            SAVE
+            수정
           </button>
-          <button v-if="!isEditMode" class="btn btn-success mlp10" @click="equipInsert">
-            SAVE
+          <button v-if="!isEditMode" class="btn btn-primary mlp10" @click="equipInsert">
+            등록
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm">
-            RESET
+            초기화
           </button>
         </div>
       </div>
@@ -601,17 +601,15 @@ export default {
 
 <style scoped>
 .fade-enter-from {
-  /* opacity: 0; */
-  transform: translateY(-1000px);
+  opacity: 0;
 }
 
 .fade-enter-active {
-  transition: all 0.5s;
+  transition: all 0.7s;
 }
 
 .fade-enter-to {
-  /* opacity: 1; */
-  transform: translateY(0px);
+  opacity: 1;
 }
 
 .fade-leave-from {

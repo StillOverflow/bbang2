@@ -67,10 +67,10 @@
         <div class="text-center mt-3">
           <button class="btn btn-success mlp10" @click="isEditMode ? downUpdate() : downInsert()"
             :disabled="!selectedEqp">
-            {{ isEditMode ? "UPDATE" : "SAVE" }}
+            {{ isEditMode ? "수정" : "등록" }}
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm" :disabled="!selectedEqp">
-            RESET
+            초기화
           </button>
         </div>
       </div>
@@ -92,7 +92,7 @@
         </template>
         <template v-slot:footer>
           <button type="button" class="btn btn-secondary" @click="modalOpen">
-            닫기기
+            닫기
           </button>
 
         </template>
@@ -558,15 +558,15 @@ export default {
 
 <style scoped>
 .fade-enter-from {
-  transform: translateY(-1000px);
+  opacity: 0;
 }
 
 .fade-enter-active {
-  transition: all 0.5s;
+  transition: all 0.7s;
 }
 
 .fade-enter-to {
-  transform: translateY(0px);
+  opacity: 1;
 }
 
 .fade-leave-from {
