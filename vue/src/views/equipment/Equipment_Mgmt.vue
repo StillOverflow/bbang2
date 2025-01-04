@@ -54,6 +54,19 @@
                   </option>
                 </select>
               </template>
+
+              <template v-else-if="field.value == 'id'" >
+                <label class="form-control-label">{{ field.label }}</label>
+                <div class="input-group custom-width">
+                <input v-model="equipmentData[field.value]" :type="field.type" class="form-control "
+                  :disabled="isFieldDisabled(field.value)" />
+                  <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+              </div>
+              </template>
+              
+              
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
