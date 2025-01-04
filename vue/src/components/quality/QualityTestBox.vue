@@ -115,8 +115,8 @@
             </div>
           </div>
           <div class="col-3 col-md-2 col-xl-1 text-end">
-            <button class="btn btn-primary" :style="t_overflow" @click="recInsert" v-show="isWaitList">SUBMIT</button>
-            <button class="btn btn-outline-success" @click="excelDownload" v-show="!isWaitList">EXCEL 상세</button>
+            <button class="btn btn-primary" :style="t_overflow" @click="recInsert" v-show="isWaitList">등록</button>
+            <button class="btn btn-outline-success" @click="excelDownload" v-show="!isWaitList" :style="t_break">EXCEL 상세</button>
           </div>
         </div>
 
@@ -131,7 +131,7 @@
                 :gridOptions="gridOptions" @rowClicked="modalSelect"/>
             </template>
             <template v-slot:footer> <!-- 아무것도 안 넣으면 기본 버튼이 표시됨. -->
-            <button type="button" class="btn btn-secondary" @click="modalToggle">CLOSE</button>
+            <button type="button" class="btn btn-secondary" @click="modalToggle">닫기</button>
             </template>
         </ModalLayout>
     </div>

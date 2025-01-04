@@ -68,8 +68,8 @@
 
         <div class="row">
           <div class="col text-center mt-3">
-            <button class="btn btn-warning" @click="getList">SEARCH</button>
-            <button class="btn btn-secondary ms-3" @click="searchReset">RESET</button>
+            <button class="btn btn-warning" @click="getList">조회</button>
+            <button class="btn btn-secondary ms-3" @click="searchReset">초기화</button>
           </div>
         </div>
       </div>
@@ -115,7 +115,7 @@
             <h6 class="col-4 mb-2 d-flex justify-content-center align-items-center" :style="t_overflow">검사방식</h6>
             <div class="form-check col-8 d-flex align-items-center">
               <div v-for="(opt, idx) in testMetds" :key="idx">
-                <input class="form-check-input ms-1" type="radio" v-model="selected.test_metd" :value="opt.comm_dtl_cd" :id="'r_metd' + opt.comm_dtl_cd" :disabled="selected.isUsed">
+                <input class="form-check-input ms-1" type="radio" v-model="selected.test_metd" :value="opt.comm_dtl_cd" :id="'r_metd' + opt.comm_dtl_cd" :disabled="selected.isUsed" @change="nullPassValue">
                 <label class="form-check-label ms-1 me-3 text-start" :for="'r_metd' + opt.comm_dtl_cd">
                   {{opt.comm_dtl_nm}}
                 </label>
@@ -150,9 +150,9 @@
 
             <h6 class="col-4 mb-2 d-flex justify-content-center align-items-center" :style="t_overflow">퍼센트(%)</h6>
             <div class="form-check col-8 d-flex">
-              <input class="form-check-input ms-1" type="radio" v-model="selected.pass_ispercent" :value="'A01'" :id="'r_isPercentY'" :disabled="isInserted || selected.test_metd == 'O02'">
+              <input class="form-check-input ms-1" type="radio" v-model="selected.pass_ispercent" :value="'A01'" :id="'r_isPercentY'" :disabled="selected.isUsed || selected.test_metd == 'O02'">
               <label class="form-check-label ms-2 me-4 text-start" :for="'r_isPercentY'">Y</label>
-              <input class="form-check-input ms-2" type="radio" v-model="selected.pass_ispercent" :value="null" :id="'r_isPercentN'" :disabled="isInserted || selected.test_metd == 'O02'">
+              <input class="form-check-input ms-2" type="radio" v-model="selected.pass_ispercent" :value="null" :id="'r_isPercentN'" :disabled="selected.isUsed || selected.test_metd == 'O02'">
               <label class="form-check-label ms-2 me-3 text-start" :for="'r_isPercentN'">N</label>
             </div>
 
@@ -164,10 +164,10 @@
 
         </template>
         <template v-slot:footer>
-          <button type="button" class="btn btn-primary" @click="insertTest" v-show="!isInserted">SUBMIT</button>
-          <button type="button" class="btn btn-success" @click="updateTest" v-show="isInserted">SAVE</button>
-          <button type="button" class="btn btn-danger" @click="deleteTest" v-show="!selected.isUsed && isInserted">DELETE</button>
-          <button type="button" class="btn btn-secondary" @click="modalToggle">CLOSE</button>
+          <button type="button" class="btn btn-primary" @click="insertTest" v-show="!isInserted">등록</button>
+          <button type="button" class="btn btn-success" @click="updateTest" v-show="isInserted">수정</button>
+          <button type="button" class="btn btn-danger" @click="deleteTest" v-show="!selected.isUsed && isInserted">삭제</button>
+          <button type="button" class="btn btn-secondary" @click="modalToggle">닫기</button>
         </template>
     </ModalLayout>
 
@@ -202,8 +202,8 @@
           { headerName: '검사내용', field: 'test_dtl' },
           { headerName: '사용', field: 'status_nm', maxWidth: 70 },
           { headerName: '노출', field: 'use_status_nm', maxWidth: 70 },
-          { headerName: '등록일', field: 'create_dt', valueFormatter: this.$comm.dateFormatter, maxWidth: 100 },
-          { headerName: '수정일', field: 'update_dt', valueFormatter: this.$comm.dateFormatter_returnNull, maxWidth: 100 },
+          { headerName: '등록일', field: 'create_dt', valueFormatter: this.$comm.dateFormatter, width: 80 },
+          { headerName: '수정일', field: 'update_dt', valueFormatter: this.$comm.dateFormatter_returnNull, width: 80 },
         ],
         rowData: [],
         gridApi: null,
@@ -351,9 +351,10 @@
             'success'
           );
           let newArr = [...this.rowData]; // 새로운 배열 선언
-          newArr.forEach((obj, idx) => { // 수정사항 반영
-            if(obj.test_cd == this.selected.test_cd){
-              newArr[idx] = this.changeObj(this.selected, obj);
+          newArr.forEach((row, idx) => { // 수정사항 반영
+            if(row.test_cd == this.selected.test_cd){
+              let newObj = this.changeObj(this.selected, this.selected)
+              newArr[idx] = newObj;
             }
           });
           this.rowData = newArr; // 변경된 배열로 반영
@@ -389,7 +390,7 @@
                                 .catch(err => console.log(err));
         if(result.data == 'success'){
           this.$swal(
-            '변경완료',
+            '수정완료',
             `선택한 검사항목들이 ${val == 'expose' ? '노출' : '미노출'} 상태로 변경되었습니다.`,
             'success'
           );
@@ -432,12 +433,23 @@
         return change;
       },
 
+      // 전수검사를 선택했을 때 합격값 모두 null 변경
+      nullPassValue(){
+        if(this.selected.test_metd == 'O02'){
+          this.selected.pass_max = null;
+          this.selected.pass_min = null;
+          this.selected.pass_ispercent = null;
+        }
+      },
+      
+      // 신규등록 버튼 클릭 시 검사항목 등록 모달 오픈
       insertTestOpen(){
         this.selected = {target_type: [], create_dt: this.$comm.getMyDay()};
         this.isInserted = false;
         this.modalToggle();
       },
 
+      // 검사항목 신규등록
       async insertTest(){
         let insertObj = this.selected;
 
@@ -463,32 +475,18 @@
             'warning'
           );
           return;
-        } 
-
-        if(insertObj.test_metd == 'O02'){ // 전수검사를 선택한 경우 샘플링검사에서만 입력하는 값들 제거
-          insertObj.pass_max = null;
-          insertObj.pass_min = null;
-          insertObj.pass_ispercent = null;
         }
 
         let result = await axios.post('/api/quality/test', insertObj)
                                 .catch(err => console.log(err));
-        if(result.data == 'success'){
+        if(result){
           this.$swal(
             '등록완료',
             `검사항목이 등록되었습니다.`,
             'success'
           );
-          // ***** 배열에 추가하려면 등록된 시퀀스값 필요하여 미반영했음.
-          // let newObjArr = [];
-          // insertObj.target_type.forEach((type) => { // target_type 선택한 만큼 복사
-          //   let newObj = {...insertObj};
-          //   newObj.target_type = type;
-          //   newObjArr.push(this.changeObj(newObj, newObj)) // 공통코드 이름 적용
-          // });
-          
-          // let newArr =[...newObjArr, ...this.rowData];
-          // this.rowData = newArr; // 변경된 배열로 반영
+          let newArr = [...result.data, ...this.rowData]; // 입력된 행을 결과로 받아 펼침연산자로 합침
+          this.rowData = newArr;
           this.modalToggle();
         } else {
           this.$swal(

@@ -40,7 +40,7 @@
         </div>
 
         <div class="col-3 col-md-2 text-end">
-          <button class="btn btn-success" :style="t_overflow" @click="defUpdate">SAVE</button>
+          <button class="btn btn-success" :style="t_overflow" @click="defUpdate">저장</button>
         </div>
 
       </div>
@@ -186,7 +186,7 @@
 
         if(result.data == 'success'){
           this.$swal(
-            '완료',
+            '등록완료',
             '불량내역이 처리되었습니다.',
             'success'
           );

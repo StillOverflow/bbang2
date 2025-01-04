@@ -78,7 +78,8 @@ const insertTest = async (valueObj) => {
 
         if(successCnt == targetTypes.length){ // 모두 성공했는지 판단
             await mariadb.commit();
-            return 'success';
+            let inserted = await mariadb.query('testList', {testNm: valueObj.test_nm, testDtl: valueObj.test_dtl}); // 성공하면 입력된 거 조회해옴
+            return inserted;
         } else {
             await mariadb.rollback();
             return 'fail';

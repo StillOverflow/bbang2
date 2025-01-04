@@ -55,9 +55,9 @@
 
         <div class="row">
           <div class="col text-center mt-3">
-            <button class="btn btn-warning" @click="getRecList">SEARCH</button>
-            <button class="btn btn-secondary ms-3" @click="searchReset">RESET</button>
-            <button class="btn btn-outline-success ms-3" @click="excelDownload"><i class="fa-regular fa-file-excel"></i>EXCEL</button>
+            <button class="btn btn-warning" @click="getRecList">조회</button>
+            <button class="btn btn-secondary ms-3" @click="searchReset">초기화</button>
+            <button class="btn btn-outline-success ms-3" @click="excelDownload"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
           </div>
         </div>
 
