@@ -92,7 +92,7 @@
         </template>
         <template v-slot:footer>
           <button type="button" class="btn btn-secondary" @click="modalOpen">
-            Cancel
+            닫기기
           </button>
 
         </template>

@@ -91,8 +91,8 @@
             overlayNoRowsTemplate="등록된 설비가 없습니다."></ag-grid-vue>
         </template>
         <template v-slot:footer>
-          <button type="button" class="btn btn-secondary" @click="modalOpen">
-            Cancel
+          <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen">
+            닫기
           </button>
 
         </template>

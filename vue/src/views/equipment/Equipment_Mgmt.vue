@@ -34,6 +34,17 @@
                   </option>
                 </select>
               </template>
+
+              <template v-else-if="field.value == 'pur_act'||field.value == 'mfg_act'" >
+                <label class="form-control-label">{{ field.label }}</label>
+                <div class="input-group custom-width">
+                  <input v-model="equipmentData[field.value]" :type="field.type" class="form-control " readonly />
+                  <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen3(field.value)">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+              </div>
+              </template>
+
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
@@ -59,7 +70,7 @@
                 <label class="form-control-label">{{ field.label }}</label>
                 <div class="input-group custom-width">
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control "
-                  :disabled="isFieldDisabled(field.value)" />
+                readonly />
                   <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen2">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
@@ -84,7 +95,7 @@
           <button v-if="!isEditMode" class="btn btn-success mlp10" @click="equipInsert">
             SAVE
           </button>
-          <button v-if="!isEditMode" class="btn btn-secondary mlp10" @click="resetForm">
+          <button class="btn btn-secondary mlp10" @click="resetForm">
             RESET
           </button>
         </div>
@@ -93,6 +104,7 @@
   </div>
 
   <!--모달-->
+    <!-- 설비 코드 모달 -->
   <Transition name="fade">
     <Layout :modalCheck="isModal">
       <template v-slot:header>
@@ -109,11 +121,8 @@
         </ag-grid-vue>
       </template>
       <template v-slot:footer>
-        <button type="button" class="btn btn-secondary" @click="modalOpen">
-          Cancel
-        </button>
-        <button type="button" class="btn btn-primary" @click="modalOpen">
-          OK
+        <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen">
+          닫기
         </button>
       </template>
     </Layout>
@@ -133,12 +142,26 @@
         </ag-grid-vue>
       </template>
       <template v-slot:footer>
-        <button type="button" class="btn btn-secondary" @click="modalOpen2">Cancel</button>
-				
-				 
-        <button type="button" class="btn btn-primary" @click="modalOpen2">OK</button>
-			
-				 
+        <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen2">닫기</button>
+      </template>
+    </Layout>
+  </Transition>
+
+    <!-- 거래처 선택 모달 -->
+    <Transition name="fade">
+    <Layout :modalCheck="isModal3">
+      <template v-slot:header>
+        <h5 class="modal-title">거래처 선택</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalOpen3">×</button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="accDefs"
+          :rowData="accData" :pagination="true" @rowClicked="modalClicked3" @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 거래처가 없습니다.">
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen3">닫기</button>
       </template>
     </Layout>
   </Transition>
@@ -160,6 +183,7 @@ export default {
       selectedEqp: '',
       previewImage: require('@/assets/img/blank_img.png'), // 이미지 미리보기 경로
       selectedFile: null, // 선택한 파일
+      targetField: '', // Modal3 거래처 어떤 필드를 채울지 구분
       equipInfo: {},
       equipmentData: {
         //이미지 경로
@@ -218,8 +242,15 @@ export default {
         { headerName: '부서', field: 'dpt_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
       ],
 
+      accDefs: [
+      { headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '구분', field: 'act_type', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+      ],
+
       equipData: [],
       memData: [],
+      accData: [],
 
       leftFields: [
         {
@@ -249,6 +280,7 @@ export default {
 
       isModal: false,
       isModal2: false,
+      isModal3: false,
     };
   },
   methods: {
@@ -262,6 +294,10 @@ export default {
     modalOpen2() {
       this.isModal2 = !this.isModal2;
     },
+    modalOpen3(field) {
+      this.targetField = field;  // 어떤 필드를 설정할지 지정
+      this.isModal3 = !this.isModal3;
+    },
     modalClicked(params) {
       this.getEquipInfo(params.data.eqp_cd);
       this.selectedEqp = params.data.eqp_cd;
@@ -270,6 +306,14 @@ export default {
     modalClicked2(params) {
       this.equipmentData.id = params.data.ID;
       this.isModal2 = false;
+    },
+    modalClicked3(params) {
+      if (this.targetField === 'pur_act') { 
+        this.equipmentData.pur_act = params.data.act_cd; // 구매업체
+      } else if (this.targetField === 'mfg_act') {
+        this.equipmentData.mfg_act = params.data.act_cd; // 제조업체
+      } 
+      this.isModal3 = false;
     },
 
 
@@ -369,6 +413,19 @@ export default {
             this.memData = result.data; 
             console.log(this.memData);
         },
+
+    //거래처조회
+    async getAccList() {
+      try {
+            let result = await axios.get('/api/moacc')
+                                    .catch(err => console.log(err));
+            this.accData = result.data; 
+          } catch (error) {
+        console.error('Error fetching account data:', error);
+					
+      }
+        },
+
 
     isFieldDisabled(fieldName) {
       // 특정 필드 비활성화 조건
@@ -493,6 +550,7 @@ export default {
   created() {
     this.getEquipList();
     this.getMemList();
+    this.getAccList();
 
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 관리' });
