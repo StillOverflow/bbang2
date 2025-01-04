@@ -118,6 +118,32 @@
       </template>
     </Layout>
   </Transition>
+
+    <!-- 담당자 선택 모달 -->
+    <Transition name="fade">
+    <Layout :modalCheck="isModal2">
+      <template v-slot:header>
+        <h5 class="modal-title">담당자 선택</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="memDefs"
+          :rowData="memData" :pagination="true" @rowClicked="modalClicked2" @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 담당자가 없습니다.">
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type="button" class="btn btn-secondary" @click="modalOpen2">Cancel</button>
+				
+				 
+        <button type="button" class="btn btn-primary" @click="modalOpen2">OK</button>
+			
+				 
+      </template>
+    </Layout>
+  </Transition>
+
+
 </template>
 
 <script>
@@ -186,7 +212,14 @@ export default {
         { headerName: '모델명', field: 'model', sortable: true, width: 163 },
       ],
 
+      memDefs: [
+        { headerName: '담당자 ID', field: 'ID', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '담당자 명', field: 'name', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '부서', field: 'dpt_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+      ],
+
       equipData: [],
+      memData: [],
 
       leftFields: [
         {
@@ -215,6 +248,7 @@ export default {
       ],
 
       isModal: false,
+      isModal2: false,
     };
   },
   methods: {
@@ -225,10 +259,17 @@ export default {
     modalOpen() {
       this.isModal = !this.isModal;
     },
+    modalOpen2() {
+      this.isModal2 = !this.isModal2;
+    },
     modalClicked(params) {
       this.getEquipInfo(params.data.eqp_cd);
       this.selectedEqp = params.data.eqp_cd;
       this.isModal = !this.isModal;
+    },
+    modalClicked2(params) {
+      this.equipmentData.id = params.data.ID;
+      this.isModal2 = false;
     },
 
 
@@ -320,6 +361,14 @@ export default {
         .catch((err) => console.log(err));
       this.equipData = result.data; // 서버가 실제로 보낸 데이터
     },
+
+    //멤버조회
+    async getMemList() {
+            let result = await axios.get('/api/momem')
+                                    .catch(err => console.log(err));
+            this.memData = result.data; 
+            console.log(this.memData);
+        },
 
     isFieldDisabled(fieldName) {
       // 특정 필드 비활성화 조건
@@ -443,6 +492,7 @@ export default {
 
   created() {
     this.getEquipList();
+    this.getMemList();
 
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 관리' });
