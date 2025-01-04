@@ -3,21 +3,17 @@
 const produceHeadPlanList = `
    SELECT
       prod_plan_cd,
+      order_cd,
+      fn_get_membername(id) AS name,
       start_dt,
       end_dt,
-      fn_get_membername(id) AS name,
-      id
+      status,
+      update_dt,
+      create_dt
    FROM
       prod_plan
    WHERE
-      prod_plan_cd IN (
-         SELECT
-            prod_plan_cd
-         FROM
-            prod_inst
-         WHERE
-            UPPER(STATUS) = 'Z01'
-      )
+      UPPER(STATUS) = UPPER('Z01')
 `
 
 // 날짜별로 미지시 생산계획 검색
@@ -102,6 +98,7 @@ const getPlanMaterialStock = `
    ORDER BY
       b.mat_cd
 `
+
 //! ----------------------------------- 자재 발주관리 -----------------------------------
 // 발주서 조회
 const getMaterialOrder = `
@@ -142,6 +139,146 @@ const getMaterialOrderDetail = `
    ORDER BY
       mat_nm
 `
+
+//! ----------------------------------- 자재 재고조회 -----------------------------------
+const getMaterialStockList = `
+   SELECT   
+      a.mat_lot_cd,                            -- 자재 LOT
+      fn_get_materialname(a.mat_cd) AS mat_nm, -- 자재 코드
+      sum(a.mat_qty) mat_qty,                  -- 입고량
+      sum(a.mat_stock) AS mat_stock,           -- 재고량
+      a.exp_dt,                                -- 유통기한
+      a.mat_int_dt,                            -- 입고일시
+      fn_get_membername(a.id) AS name,         -- 담당자
+      a.create_dt,                             -- 등록일
+      a.update_dt,                             -- 수정일
+      fn_get_accountname(a.act_cd) AS act_nm,  -- 거래처 코드
+      a.test_rec_cd,                           -- 검사내역코드
+      a.mat_order_cd,                          -- 발주서 코드
+      fn_get_codename(b.category) AS category, -- 카테고리
+      fn_get_codename(b.unit) AS unit,         -- 단위
+      fn_get_codename(\`type\`) AS type,       -- 자재 구분
+      b.safe_stk                               -- 안전재고
+   FROM    
+      material_in a 
+   INNER JOIN 
+      material b ON a.mat_cd = b.mat_cd
+   GROUP BY
+      a.mat_cd, 
+      a.act_cd
+   ORDER BY 
+      CAST(SUBSTRING(a.mat_lot_cd, 7) AS UNSIGNED) DESC,
+      b.mat_nm ASC
+`
+
+const getMaterialStockLotList = `
+   SELECT   
+      a.mat_lot_cd,                            -- 자재 LOT
+      fn_get_materialname(a.mat_cd) AS mat_nm, -- 자재 코드
+      a.mat_qty mat_qty,                  -- 입고량
+      a.mat_stock AS mat_stock,           -- 재고량
+      a.exp_dt,                                -- 유통기한
+      a.mat_int_dt,                            -- 입고일시
+      fn_get_membername(a.id) AS name,         -- 담당자
+      a.create_dt,                             -- 등록일
+      a.update_dt,                             -- 수정일
+      fn_get_accountname(a.act_cd) AS act_nm,  -- 거래처 코드
+      a.test_rec_cd,                           -- 검사내역코드
+      a.mat_order_cd,                          -- 발주서 코드
+      fn_get_codename(b.category) AS category, -- 카테고리
+      fn_get_codename(b.unit) AS unit,         -- 단위
+      fn_get_codename(\`type\`) AS TYPE,         -- 자재 구분
+      b.safe_stk
+   FROM    
+      material_in a 
+   INNER JOIN 
+      material b ON a.mat_cd = b.mat_cd
+   ORDER BY 
+      CAST(SUBSTRING(a.mat_lot_cd, 7) AS UNSIGNED) DESC,
+      b.mat_nm ASC
+`
+
+// 자재 재고 리스트
+// const getMaterialStockList = (searchObj) => {
+//    console.log("sql.js sql.js sql.js => ", searchObj);
+
+//    let query = `
+//       SELECT   
+//          a.mat_lot_cd,                 -- 자재 LOT
+//          fn_get_materialname(a.mat_cd),-- 자재 코드
+//          sum(a.mat_qty),                    -- 입고량
+//          sum(a.mat_stock),                  -- 재고량
+//          a.exp_dt,                     -- 유통기한
+//          a.mat_int_dt,                 -- 입고일시
+//          fn_get_membername(a.id),      -- 담당자
+//          a.create_dt,                  -- 등록일
+//          a.update_dt,                  -- 수정일
+//          fn_get_accountname(a.act_cd), -- 거래처 코드
+//          a.test_rec_cd,                -- 검사내역코드
+//          a.mat_order_cd,               -- 발주서 코드
+//          fn_get_codename(b.category),  -- 카테고리
+//          fn_get_codename(b.unit)       -- 단위
+//       FROM    
+//          material_in a 
+//       INNER JOIN 
+//          material b ON a.mat_cd = b.mat_cd
+//    `
+
+//    let conditions = [];
+
+//    if (searchObj.inst_cd) {  // LOT로 검색
+//       conditions.push(`UPPER(a.mat_lot_cd) = UPPER('${searchObj.mat_lot_cd}') `);
+//    }
+
+//    if (searchObj.startDt && data.lastDt) { // 유통기한
+//       conditions.push(`DATE(a.exp_dt) BETWEEN '${searchObj.startDt} AND '${searchObj.lastDt}')`);
+//    }
+
+//    if(searchObj.type) {   // 자재 구분 
+//       conditions.push(`DATE(a.mat_int_dt) BETWEEN '${searchObj.in_startDt} AND '${searchObj.in_lastDt}')`)
+//    }
+
+//    if(searchObj.mat_nm) { // 거래처
+//       conditions.push(`UPPER(a.act_cd) = UPPER('%${searchObj.act_cd}%')`)
+//    }
+
+//    if (searchObj.category) { // 카테고리
+//       conditions.push(`UPPER(b.category) = UPPER('${searchObj.category}')`);
+//    }
+
+//    if(searchObj.type) {   // 자재 유형   
+//       conditions.push(`UPPER(b.type) = UPPER('${searchObj.type}')`)
+//    }
+
+//    // WHERE 절 조립
+//    if (conditions.length > 0) {
+//       query += " WHERE " + conditions.join(" AND ");
+//    }
+//    query += ` 
+//       GROUP BY 
+//          a.mat_cd 
+//       ORDER BY 
+//          CAST(SUBSTRING(a.mat_lot_cd, 7) AS UNSIGNED) DESC, b.mat_nm ASC 
+//    `;
+   
+//    // 쿼리 반환
+//    return query; 
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //! ----------------------------------- 자재 출고조회 -----------------------------------
 // 생산완료된 생산지시서 조회
 const getProduceInstruction = (searchObj) => {
@@ -152,9 +289,9 @@ const getProduceInstruction = (searchObj) => {
          status,
          fn_get_codename(status) AS statusName   -- 진행 상태         
       FROM
-         prod_inst
+         prod_inst   -- 생산 지시서
       WHERE
-         UPPER(STATUS) <> 'Z01'
+         UPPER(STATUS) <> 'Z01'  -- 진행전이 아닌것
    `
    const conditions = [];
 
@@ -172,12 +309,12 @@ const getProduceInstruction = (searchObj) => {
    if (conditions.length > 0) {
       query += " AND " + conditions.join(" AND ");
    }
-   query += ` ORDER BY a.work_dt DESC`;
+   query += ` ORDER BY work_dt DESC `;
    // 쿼리 반환
    return query;
 }
 
-
+// 자재 출고 내역
 const getMaterialOutForProduction = (data) => {
    let query = `
       SELECT 
@@ -203,20 +340,19 @@ const getMaterialOutForProduction = (data) => {
    `
    const conditions = [];
 
-   // 날짜 조건 추가
-   if (data.inst_cd) {
+   if (data.inst_cd) {  // 생산 지시서 코드
       conditions.push(`UPPER(c.inst_cd) = UPPER('${data.inst_cd}') `);
    }
 
-   if (data.category) {
+   if (data.category) { // 카테고리
       conditions.push(`UPPER(b.category) = UPPER('${data.category}')`);
    }
 
-   if(data.type) {
+   if(data.type) {   // 자재 유형   
       conditions.push(`UPPER(b.type) = UPPER('${data.type}')`)
    }
 
-   if(data.mat_nm) {
+   if(data.mat_nm) { // 자재명
       conditions.push(`b.mat_nm LIKE '%${data.mat_nm}%'`)
    }
 
@@ -224,18 +360,22 @@ const getMaterialOutForProduction = (data) => {
    if (conditions.length > 0) {
       query += " WHERE " + conditions.join(" AND ");
    }
-   query += ` ORDER BY a.mat_out_dt DESC`;
+   query += ` ORDER BY inst_dtl_cd DESC, a.mat_out_dt DESC`;
    // 쿼리 반환
-   return query;
-} 
+   return query; 
+}
 
 module.exports = {
-   produceHeadPlanList,    // 미지시 생산계획서 조회
-   planListSearch,         // 미지시 생산계획서 검색
-   getPlanMaterialStock,   // 미지시 생산 계획서에 대한 자재 재고 조회
-   getMaterialOrder,       // 발주서 헤더 조회
-   getMaterialOrderDetail, // 발주서 디테일 조회
+   produceHeadPlanList,         // 미지시 생산계획서 조회
+   planListSearch,              // 미지시 생산계획서 검색
+   getPlanMaterialStock,        // 미지시 생산 계획서에 대한 자재 재고 조회
+   getMaterialOrder,            // 발주서 헤더 조회
+   getMaterialOrderDetail,      // 발주서 디테일 조회
    
-   getProduceInstruction,  // 생산완료된 생산지시서 조회
+   getMaterialStockList,        // 제품 총 재고
+   getMaterialStockLotList,     // 제품 LOT별 재고
+
+   getProduceInstruction,       // 생산완료된 생산지시서 조회
    getMaterialOutForProduction, // 지시서에 대한 자재 출고 내역
+
 };

@@ -1,47 +1,47 @@
 <!-- 출고 제품 조회 -->
 <template>
-  <div class="py-4 container-fluid">
-      <div class="card">
-          <!-- 검색조건 -->
-          <div class="card-header bg-light ps-5 ps-md-4">  
-              <div class="d-flex justify-content-center align-items-center text-center">
-                  <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">거래처 명</div>
-                  <div class="col-6 col-lg-5 mb-2">
-                      <input class="form-control " type="text" v-model="search" />         
-                  </div>
-              </div>
-              <div class="d-flex justify-content-center align-items-center text-center">
-                  <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">출고 일자</div>
-                  <div class="col-6 col-lg-2 mb-2">
-                      <input class="form-control" type="date" :max="edt" v-model="sdt" />
-                  </div>
-                  <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">~</div>
-                  <div class="col-6 col-lg-2 mb-2">
-                      <input class="form-control" type="date" :min="sdt" v-model="edt" />
-                  </div>
-              </div>
-              <div class="d-flex justify-content-center align-items-center mt-3 text-center">
-                  <button type="button" class="btn btn-warning m-2" @click="searchForm">
-                      <i class="fa-solid fa-magnifying-glass"></i>
-                  </button>
-                  <button type="button" class="btn btn-secondary m-2" @click="resetBtn">
-                      <i class="fa-solid fa-rotate"></i>
-                  </button>
-              </div>
-          </div>
-          <!-- 출고목록 -->
-              <div class="card-body" style="position: relative; height: 550px;">
-              <ag-grid-vue
-                  style="width: 100%; height: 100%;"
-                  class="ag-theme-alpine"
-                  :columnDefs="columnDefs"
-                  :rowData="rowData"
-                  :pagination="true"
-                  @grid-ready="gridFit">
-              </ag-grid-vue>
-              </div>
-      </div>
-  </div>
+    <div class="py-4 container-fluid">
+        <div class="card">
+            <!-- 검색조건 -->
+            <div class="card-header bg-light ps-5 ps-md-4">  
+                <div class="d-flex justify-content-center align-items-center text-center">
+                    <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">거래처 명</div>
+                    <div class="col-6 col-lg-5 mb-2">
+                        <input class="form-control " type="text" v-model="search" />         
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center align-items-center text-center">
+                    <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">출고 일자</div>
+                    <div class="col-6 col-lg-2 mb-2">
+                        <input class="form-control" type="date" :max="edt" v-model="sdt" />
+                    </div>
+                    <div class="col-6 col-lg-1 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">~</div>
+                    <div class="col-6 col-lg-2 mb-2">
+                        <input class="form-control" type="date" :min="sdt" v-model="edt" />
+                    </div>
+                </div>
+                <div class="d-flex justify-content-center align-items-center mt-3 text-center">
+                    <button type="button" class="btn btn-warning m-2" @click="searchForm">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    <button type="button" class="btn btn-secondary m-2" @click="resetBtn">
+                        <i class="fa-solid fa-rotate"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- 출고목록 -->
+                <div class="card-body" style="position: relative; height: 550px;">
+                <ag-grid-vue
+                    style="width: 100%; height: 100%;"
+                    class="ag-theme-alpine"
+                    :columnDefs="columnDefs"
+                    :rowData="rowData"
+                    :pagination="true"
+                    @grid-ready="gridFit">
+                </ag-grid-vue>
+                </div>
+        </div>
+    </div>
 </template>
 
 <script>
@@ -49,8 +49,8 @@ import axios from 'axios';
 import { AgGridVue } from "ag-grid-vue3";
 
 export default {
-  name: 'App',
-  data() {
+    name: 'App',
+    data() {
       return {
           columnDefs: [
               {field: 'prd_out_cd', headerName: '출고코드', cellStyle: { textAlign: "center" }},
