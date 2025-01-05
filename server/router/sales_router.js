@@ -157,12 +157,14 @@ router.get('/sales/prdOutDtlLotList/:no', async (req, res) => {
 //출고 제품 삭제
 router.delete('/sales/prdOutDelete/:del', async (req, res) => {
     let del = req.params.del;
+    console.log("제품삭제라우터",del)
     let outDel = await salesService.deleteOutPrd(del);
     res.send(outDel);
 });
 //출고 제품 삭제시 상태 원복
-router.delete('/sales/prdOutDeleteStatus/:del', async (req, res) => {
-    let ocd = req.params.ocd;
+router.put('/sales/prdOutDeleteStatus/:del', async (req, res) => {
+    let ocd = req.params.del;
+    console.log("제품상태라우터",ocd)
     let ocdSt = await salesService.statusDeleteOutPrd(ocd);
     res.send(ocdSt);
 });

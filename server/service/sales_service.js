@@ -274,23 +274,33 @@ const listLotDtlOutPrd = async (no) => {
 
 //출고 제품 삭제
 const deleteOutPrd = async (no) => {
-    let del = await mariadb.query('prdOutDelete',no);
-
-    if(del.affectedRows > 0){ 
-        return {"result" : "success"};
-    } else {
-        return {"result" : "fail"};
+    try {
+        let del = await mariadb.query('prdOutDelete',no);
+        console.log("제품삭제서비스",del)
+        if(del.affectedRows > 0){ 
+            return {"result" : "success"};
+        } else {
+            return {"result" : "fail"};
+        }
+    } catch (error) {
+        console.log("출고제품삭제서비스",error)
     }
+    
 };
 //출고 제품 삭제시 상태 원복
 const statusDeleteOutPrd = async (no) => {
-    let ocd = await mariadb.query('prdOutDeleteStatus', no);
-
-    if(ocd.affectedRows > 0){ 
-        return {"result" : "success"};
-    } else {
-        return {"result" : "fail"};
+    try {
+        let ocd = await mariadb.query('prdOutDeleteStatus', no);
+        console.log("제품삭제상태서비스",ocd)
+        if(ocd.affectedRows > 0){ 
+            return {"result" : "success"};
+        } else {
+            return {"result" : "fail"};
+        }
+    } catch (error) {
+        console.log("출고제품상태원복서비스",error)
     }
+
 
 };
 //출고 제품 삭제시 제품수량 원복
