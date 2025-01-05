@@ -36,6 +36,17 @@
                 </select>
               </template>
 
+              
+              <template v-else-if="field.value === 'repair_act'">
+                <label class="form-control-label">{{ field.label }}</label>
+                <div class="input-group custom-width">
+                  <input v-model="equipmentData[field.value]" :type="field.type" class="form-control" readonly />
+                  <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen2(field.value)">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                </div>
+              </template>
+
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
@@ -77,6 +88,7 @@
     </div>
 
     <!-- 모달 -->
+     <!-- 설비 코드 모달 -->
     <Transition name="fade">
       <Layout :modalCheck="isModal">
         <template v-slot:header>
@@ -98,6 +110,28 @@
         </template>
       </Layout>
     </Transition>
+
+    
+    <!-- 거래처 선택 모달 -->
+    <Transition name="fade">
+    <Layout :modalCheck="isModal2">
+      <template v-slot:header>
+        <h5 class="modal-title">거래처 선택</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="accDefs"
+          :rowData="accData" :pagination="true" @rowClicked="modalClicked2" @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 거래처가 없습니다.">
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen2">닫기</button>
+      </template>
+    </Layout>
+  </Transition>
+
+
   </div>
 </template>
 
@@ -117,6 +151,7 @@ export default {
       previewImage: require('@/assets/img/blank_img.png'),
       selectedFile: null,
       isModal: false,
+      isModal2: false,
       equipInfo: {},
       equipmentData: {
         eqp_cd: '',
@@ -166,7 +201,17 @@ export default {
           },
         },
       ],
+
+      accDefs: [
+      { headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '구분', field: 'act_type', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+      ],
+
       equipData: [],
+      accData: [],
+
+      
       leftFields: [
         { label: '수리 시작 일시', value: 'start_time', type: 'datetime-local' },
         { label: '설비 구분 *', value: 'eqp_type', type: 'text', selectOptions: [] },
@@ -210,6 +255,15 @@ export default {
 
     modalOpen() {
       this.isModal = !this.isModal;
+    },
+
+    modalOpen2() {
+      this.isModal2 = !this.isModal2;
+    },
+
+    modalClicked2(params) {
+      this.equipmentData.repair_act = params.data.act_cd;
+      this.isModal2 = false;
     },
 
     async modalClicked(params) {
@@ -302,6 +356,19 @@ export default {
       const result = await axios.get(`/api/equip`).catch((err) => console.log(err));
       this.equipData = result.data; // 서버가 실제로 보낸 데이터
     },
+
+    //거래처조회
+    async getAccList() {
+      try {
+            let result = await axios.get('/api/moacc')
+                                    .catch(err => console.log(err));
+            this.accData = result.data; 
+          } catch (error) {
+        console.error('Error fetching account data:', error);
+					
+      }
+        },
+
 
     //수리 조회(최신1건)
     // 설비 단건 조회
@@ -476,6 +543,8 @@ export default {
   created() {
     this.resetForm(); // 초기화 호출
     this.getEquipList();
+    this.getAccList();
+
     this.$store.dispatch('breadCrumb', { title: '설비 수리 관리' });
 
     // this.equipmentData.start_time = this.currentDateTime;

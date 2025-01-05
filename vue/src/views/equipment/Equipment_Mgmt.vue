@@ -81,7 +81,7 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :disabled="isFieldDisabled(field.value)" />
+                  :disabled="isFieldDisabled(field.value)"  />
               </template>
             </div>
           </div>
@@ -268,13 +268,13 @@ export default {
         { label: '점검주기 (일)', value: 'insp_cycle', type: 'number' },
       ],
       rightFields: [
-        { label: '적정 온도', value: 'opt_temp', type: 'text' },
-        { label: '적정 습도', value: 'opt_humid', type: 'text' },
-        { label: '적정 RPM', value: 'opt_rpm', type: 'text' },
-        { label: '적정 속도', value: 'opt_speed', type: 'text' },
-        { label: '적정 전력량', value: 'opt_power', type: 'text' },
-        { label: 'UPH', value: 'uph', type: 'text' },
-        { label: '설비상태', value: 'is_use', type: 'text', selectOptions: [] },
+        { label: '적정 온도 (°C)', value: 'opt_temp', type: 'text' },
+        { label: '적정 습도 (%)', value: 'opt_humid', type: 'text' },
+        { label: '적정 RPM (분당 회전수)', value: 'opt_rpm', type: 'text' },
+        { label: '적정 속도 (m/s)', value: 'opt_speed', type: 'text' },
+        { label: '적정 전력량 (kW)', value: 'opt_power', type: 'text' },
+        { label: 'UPH (Unit Per Hour)', value: 'uph', type: 'text' },
+        { label: '사용유무', value: 'is_use', type: 'text', selectOptions: [] },
         { label: '설비담당자', value: 'id', type: 'text' },
       ],
 
