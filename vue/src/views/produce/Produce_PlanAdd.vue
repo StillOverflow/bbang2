@@ -12,7 +12,7 @@
           </div>
         </div>
 
-        <p for="example-text-input" class="text-sm font-weight-bolder">생산기간</p>
+        <p for="example-text-input" class="text-sm font-weight-bolder">생산기간 <em class="point-red">*</em></p>
         <div class="row">
           <div class="col col-lg-2">
             <input class="form-control" type="date" v-model="START_DT">

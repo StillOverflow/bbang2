@@ -50,7 +50,7 @@ const planInsert = async (values) => {
       values[1].forEach((val) => { // 헤더 시퀀스값 추가
           val["PROD_PLAN_CD"] = mySeq;
       });
-      console.log(values[1]);
+      
       let dtl_res = await mariadb.transQuery('planDtlInsert', values[1]);
       
       if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0){ // 모두 성공했는지 판단

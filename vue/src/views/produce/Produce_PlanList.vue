@@ -7,7 +7,7 @@
         <div class="row">
           <div class="col-3 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">계획서 코드</div>
           <div class="input-group w-30">
-            <input class="form-control" type="text" v-model="plan_cd" :v-bind="this.plan_cd" placeholder="생산지시서 코드를 검색해주세요" style="height: 41px;" v-on:keyup.enter="searchOrder">
+            <input class="form-control" type="text" v-model="plan_cd" :v-bind="this.plan_cd" placeholder="생산계획서 코드를 검색해주세요" style="height: 41px;" v-on:keyup.enter="searchOrder">
             <button class="btn btn-warning mb-3" type="button" @click="searchOrder"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
         </div>
@@ -155,6 +155,14 @@ export default {
         .then(() => {
           this.getPlanList();
         });          
+      }else{
+        this.$swal({
+          icon: "error",
+          title: "진행중인 계획서는 삭제할 수 없습니다.",
+        })
+        .then(() => {
+          this.getPlanList();
+        });     
       }
       return result;
     },
