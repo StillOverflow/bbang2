@@ -9,7 +9,7 @@
             <div
               class="d-flex justify-content-left align-items-center mb-2" style="width: 100%">
               <div style="width: 15%">
-                <label class="me-2 align-self-center">제품명</label>
+                <label class="me-2 align-self-center" style="font-size: 18px; font-weight: bold;">제품명</label>
               </div>
               <div
                 class="d-flex justify-content-left align-items-center"
@@ -51,7 +51,7 @@
             <!-- 자재 목록 -->
             <h4 class="mb-3 text-center">자재 목록</h4>
             <div class="mb-3" >
-              <label class="me-2 align-self-center">자재명</label>
+              <label class="me-2 align-self-center" style="font-size: 18px; font-weight: bold;">자재명</label>
               <input
                 type="text"
                 class="form-control d-inline"
@@ -194,6 +194,14 @@ export default {
         { headerName: "자재명", field: "mat_nm", sortable: true },
         { headerName: "구분", field: "type", sortable: true },
         {
+          headerName: "BOM양",
+          field: "usage",
+          editable: true,
+          enableCellChangeFlash: true,
+          cellDataType: 'number',
+          cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
+        },
+        {
           headerName: "단위",
           field: "unit_cd",
           sortable: true,
@@ -202,14 +210,6 @@ export default {
             params.data.unit_cd = params.newValue; // 내부 코드 전달
             return true;
           },
-        },
-        {
-          headerName: "BOM양",
-          field: "usage",
-          editable: true,
-          enableCellChangeFlash: true,
-          cellDataType: 'number',
-          cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
         },
       ],
       // 자재 테이블 데이터
@@ -402,40 +402,34 @@ export default {
       }
     },
     async save() {
-      try {
-        this.$swal({
-          title: "Do you want to save the changes?",
-          showDenyButton: true,
-          showCancelButton: true,
-          confirmButtonText: "Save",
-          denyButtonText: `Don't save`,
-        }).then(async (result) => {
-          if (result.isConfirmed) {
+  try {
+    const result = await this.$swal({
+      title: "저장하시겠습니까?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "확인",
+      cancelButtonText: "취소",
+    });
 
-            //{del : this.deleteData, ins : this.saveData }
-            for (const bom of this.deleteData) {
-              await axios.delete(
-                `/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`
-              );
-            }
-            for (const bom of this.saveData) {
-              await axios.post(`/api/standard/bom`, bom);
-              console.log(bom);
-            }
-            this.saveData = [];
-            this.deleteData = [];
-            this.bringBomData(this.selectBomData);
-
-            this.$swal("Saved!", "", "success");
-          } else if (result.isDenied) {
-            this.$swal("Changes are not saved", "", "info");
-          }
-        });
-      } catch (error) {
-        console.error("오류 발생:", error);
-        alert("저장 실패");
+    if (result.isConfirmed) {
+      for (const bom of this.deleteData) {
+        await axios.delete(`/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`);
       }
-    },
+      for (const bom of this.saveData) {
+        await axios.post(`/api/standard/bom`, bom);
+        console.log(bom);
+      }
+      this.saveData = [];
+      this.deleteData = [];
+      this.bringBomData(this.selectBomData);
+
+      this.$swal("저장되었습니다!", "", "success");
+    }
+  } catch (error) {
+    console.error("오류 발생:", error);
+    this.$swal("저장 실패", "오류가 발생했습니다.", "error");
+  }
+},
     reset(){
       this.bomData = [];
       this.keyword = "";

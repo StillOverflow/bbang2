@@ -1,123 +1,129 @@
 <template>
     <div id="page-inner" class="mx-auto">
-      <div class="py-4 container-fluid">
-        <div class="card py-5 px-6">
-          <div class="row">
-            <!-- 자재목록 -->
-            <div class="col-md-6" style="height: auto">
-              <h4 class="mb-3 text-center">자재 목록</h4>
-              <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%" >
-                <div style="width: 15%">
-                  <label class="me-2 align-self-center">자재명</label>
-                </div>
-                
-                <div  class="d-flex justify-content-left align-items-center" style="width: 85%" >
-                  <input type="search" class="form-control d-inline" v-model="keyword" placeholder="자재명을 입력하세요" style="width: 75%" />
-                  <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchMtl" > <i class="fa-solid fa-magnifying-glass"></i> </button>
-                </div>
-              </div>
-              <!-- 자재 테이블 ag-gird -->
-              <ag-grid-vue
-                class="ag-theme-alpine"
-                style="width: 100%; height: 600px"
-                :columnDefs="materialDefs"
-                :rowData="materialData"
-                :pagination="true"
-                :gridOptinos="gridOptinos"
-                @gridReady="onMatGridReady"
-                @rowClicked="matClicked">
-              </ag-grid-vue>
-            </div>
-            
-            <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
-            <div class="col-md-4 mt-5" style="height: auto">
-                <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newMaterial"
-                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT5' )">신규등록</button>
-                </div>
-                <div class="d-flex justify-content-left mb-2">
-                    <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재코드</div>
-                    <div class="input-group mb-3 w-50">
-                        <input type="text" class="form-control" v-model="matInfo.mat_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
+        <div class="py-4 container-fluid">
+            <div class="card py-5 px-6">
+                <div class="row">
+                    <!-- 자재목록 -->
+                    <div class="col-md-7" style="height: auto">
+                        <h4 class="mb-3 text-center">자재 목록</h4>
+                        <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%">
+                            <div style="width: 15%">
+                                <label class="me-2 align-self-center" style="font-size: 18px; font-weight: bold;">자재명</label>
+                            </div>
+                            <div class="d-flex justify-content-left align-items-center" style="width: 85%">
+                                <input type="search" class="form-control d-inline" v-model="keyword" placeholder="자재명을 입력하세요" style="width: 75%" />
+                                <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchMtl">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- 자재 테이블 ag-gird -->
+                        <ag-grid-vue
+                            class="ag-theme-alpine"
+                            style="width: 100%; height: 600px"
+                            :columnDefs="materialDefs"
+                            :rowData="materialData"
+                            :pagination="true"
+                            :gridOptinos="gridOptinos"
+                            @gridReady="onMatGridReady"
+                            @rowClicked="matClicked">
+                        </ag-grid-vue>
+                    </div>
+
+                    <div class="col-md-5 mt-5" style="height: auto; padding-left: 30px">
+                        <!-- 신규등록 버튼 -->
+                        <div class="text-end mb-3">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                @click="newMaterial"
+                                v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT5')">
+                                신규등록
+                            </button>
+                        </div>
+                        <!-- 입력 폼 -->
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재코드</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="text" class="form-control" v-model="matInfo.mat_cd" style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재명 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="text" class="form-control" v-model="matInfo.mat_nm" style="height: 41px;" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단가 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="number" class="form-control" v-model="matInfo.price" style="height: 41px;" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <select class="form-select" v-model="matInfo.unit">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.unit" :key="idx" :value="opt.comm_dtl_cd">
+                                        {{ opt.comm_dtl_nm }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재유형 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <select class="form-select" v-model="matInfo.type">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.type" :key="idx" :value="opt.comm_dtl_cd">
+                                        {{ opt.comm_dtl_nm }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">카테고리</div>
+                            <div class="input-group mb-3 w-50">
+                                <select class="form-select" v-model="matInfo.category">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.category" :key="idx" :value="opt.comm_dtl_cd">
+                                        {{ opt.comm_dtl_nm }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="number" class="form-control" v-model="matInfo.safe_stk" style="height: 41px;" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>
+                            <textarea cols="30" rows="4" class="form-control" v-model="matInfo.note" style="height: 100px;" />
+                        </div>
                     </div>
                 </div>
-            <div class="d-flex justify-content-left mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재명 *</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="text" class="form-control" v-model="matInfo.mat_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단가 *</div>
-                <div class="input-group mb-3 w-50">
-                        <input type="number" class="form-control" v-model="matInfo.price" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;"  />
-                </div>
-            </div>    
-            <div class="d-flex justify-content-left mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위 *</div>
-                <div class="input-group mb-3 w-50">
-                    <select class="form-select custon-width" v-model="matInfo.unit">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.unit"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="d-flex justify-content-left mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">자재유형 *</div>
-                <div class="input-group mb-3 w-50">
-                    <select class="form-select custon-width" v-model="matInfo.type">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.type"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="d-flex justify-content-left mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">카테고리</div>
-                <div class="input-group mb-3 w-50">
-                    <select class="form-select custon-width" v-model="matInfo.category">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.category"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="d-flex justify-content-left mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
-                <div class="input-group mb-3 w-50">
-                        <input type="number" class="form-control" v-model="matInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-2 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>
-                
-                        <textarea cols="40" rows="8" type="text" class="form-control" v-model="matInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" />
-                
-            </div>
-            </div> 
+                <!-- 저장 및 삭제 버튼 -->
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? matUpdate() : matInsert()"
-                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT5' )"> 저장 </button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delMaterial"
-                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT5' )"> 삭제 </button>
+                    <button
+                        type="button"
+                        id="submitBtn"
+                        class="btn btn-success ms-2 mt-3"
+                        @click="isUpdated ? matUpdate() : matInsert()"
+                        v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT5')">
+                        저장
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-danger mt-3 ms-2"
+                        @click="delMaterial"
+                        v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT5')">
+                        삭제
+                    </button>
                 </div>
             </div>
         </div>
-      </div> 
     </div>
-  </template>
+</template>
 <script>
 import { AgGridVue } from "ag-grid-vue3";
 import axios from "axios";

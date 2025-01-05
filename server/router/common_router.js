@@ -10,7 +10,8 @@ router.get('/comm/codeList/:cd', async (req, resp) => {
 
 // 사원 조회 (매개변수 없으면 전체 조회, 있으면 부서별 직원 조회) => queryString 방식 ~~
 router.get('/comm/member', async (req, resp) => {
-  let result = await commonService.findMemList(req.query); // dpt_cd(부서코드) 있으면 넘겨줄 것
+  let datas =req.query;
+  let result = await commonService.findMemList(datas); // dpt_cd(부서코드) 있으면 넘겨줄 것
 
   resp.send(result);
 });

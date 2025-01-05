@@ -1,118 +1,127 @@
 <template>
     <div id="page-inner" class="mx-auto">
-      <div class="py-4 container-fluid">
-        <div class="card py-5 px-6">
-          <div class="row">
-            <!-- 제품목록 -->
-            <div class="col-md-6" style="height: auto">
-              <h4 class="mb-3 text-center">제품 목록</h4>
-              <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%" >
-                <div style="width: 15%">
-                  <label class="me-2 align-self-center">제품명</label>
-                </div>
-                
-                <div  class="d-flex justify-content-left align-items-center" style="width: 85%" >
-                  <input type="search" class="form-control d-inline" v-model="keyword" placeholder="제품명을 입력하세요" style="width: 75%" />
-                  <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchPrd" > <i class="fa-solid fa-magnifying-glass"></i> </button>
-                </div>
-              </div>
-              <!-- 자재 테이블 ag-gird -->
-              <ag-grid-vue
-                class="ag-theme-alpine"
-                style="width: 100%; height: 600px"
-                :columnDefs="productDefs"
-                :rowData="productData"
-                :pagination="true"
-                :gridOptinos="gridOptinos"
-                @gridReady="onPrdGridReady"
-                @rowClicked="prdClicked">
-              </ag-grid-vue>
-            </div>
-            
-            <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
-            <div class="col-md-4 mt-5" style="height: auto">
-                <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProduct"
-                    v-if="this.$session.get('user_ps') == 'H01'">신규등록</button>
-                </div>
-                <div class="d-flex justify-content-left = mb-2">
-                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">제품코드</div>
-                    <div class="input-group mb-3 w-50">
-                        <input type="text" class="form-control" v-model="prdInfo.prd_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
+        <div class="py-4 container-fluid">
+            <div class="card py-5 px-6">
+                <div class="row">
+                    <!-- 제품목록 -->
+                    <div class="col-md-7" style="height: auto">
+                        <h4 class="mb-3 text-center">제품 목록</h4>
+                        <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%">
+                            <div style="width: 15%">
+                                <label class="me-2 align-self-center" style="font-size: 18px; font-weight: bold;">제품명</label>
+                            </div>
+                            <div class="d-flex justify-content-left align-items-center" style="width: 85%">
+                                <input type="search" class="form-control d-inline" v-model="keyword" placeholder="제품명을 입력하세요" style="width: 75%" />
+                                <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchPrd">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- 제품 테이블 ag-grid -->
+                        <ag-grid-vue
+                            class="ag-theme-alpine"
+                            style="width: 100%; height: 600px"
+                            :columnDefs="productDefs"
+                            :rowData="productData"
+                            :pagination="true"
+                            :gridOptinos="gridOptinos"
+                            @gridReady="onPrdGridReady"
+                            @rowClicked="prdClicked">
+                        </ag-grid-vue>
+                    </div>
+
+                    <!-- 우측 입력 폼 -->
+                    <div class="col-md-5 mt-5" style="height: auto; padding-left: 30px">
+                        <!-- 신규등록 버튼 -->
+                        <div class="text-end mb-3">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                @click="newProduct"
+                                v-if="this.$session.get('user_ps') == 'H01'">
+                                신규등록
+                            </button>
+                        </div>
+                        <!-- 입력 필드 -->
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">제품코드</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="text" class="form-control" v-model="prdInfo.prd_cd" style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">제품명 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="text" class="form-control" v-model="prdInfo.prd_nm" style="height: 41px;" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단가 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="number" class="form-control" v-model="prdInfo.price" style="height: 41px;" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">유통가능기간(일) *</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="number" class="form-control" v-model="prdInfo.exp_range" style="height: 41px;" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <select class="form-select" v-model="prdInfo.unit">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.unit" :key="idx" :value="opt.comm_dtl_cd">
+                                        {{ opt.comm_dtl_nm }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">카테고리 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <select class="form-select" v-model="prdInfo.category">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.category" :key="idx" :value="opt.comm_dtl_cd">
+                                        {{ opt.comm_dtl_nm }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="number" class="form-control" v-model="prdInfo.safe_stk" style="height: 41px;" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>
+                            <textarea cols="30" rows="4" class="form-control" v-model="prdInfo.note" style="height: 100px;" />
+                        </div>
                     </div>
                 </div>
-            <div class="d-flex justify-content-left = mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">제품명 *</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="text" class="form-control" v-model="prdInfo.prd_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left = mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단가 *</div>
-                <div class="input-group mb-3 w-50">
-                        <input type="number" class="form-control" v-model="prdInfo.price" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;"  />
-                </div>
-            </div>    
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">유통가능기간(일) *</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="number" class="form-control" v-model="prdInfo.exp_range" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">단위 *</div>
-                <div class="input-group mb-3 w-50">
-                    <select class="form-select custon-width" v-model="prdInfo.unit">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.unit"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">카테고리 *</div>
-                <div class="input-group mb-3 w-50">
-                    <select class="form-select custon-width" v-model="prdInfo.category">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.category"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
-                <div class="input-group mb-3 w-50">
-                        <input type="number" class="form-control" v-model="prdInfo.safe_stk" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>
-                
-                        <textarea cols="40" rows="8" type="text" class="form-control" v-model="prdInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" />
-                
-            </div>
-            </div> 
+                <!-- 저장 및 삭제 버튼 -->
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? prdUpdate() : prdInsert()" 
-                    v-if="this.$session.get('user_ps') == 'H01'"> 저장 </button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delProduct"
-                    v-if="this.$session.get('user_ps') == 'H01'"> 삭제 </button>
+                    <button
+                        type="button"
+                        id="submitBtn"
+                        class="btn btn-success ms-2 mt-3"
+                        @click="isUpdated ? prdUpdate() : prdInsert()"
+                        v-if="this.$session.get('user_ps') == 'H01'">
+                        저장
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-danger mt-3 ms-2"
+                        @click="delProduct"
+                        v-if="this.$session.get('user_ps') == 'H01'">
+                        삭제
+                    </button>
                 </div>
             </div>
         </div>
-      </div> 
     </div>
-  </template>
+</template>
+
 <script>
 import { AgGridVue } from "ag-grid-vue3";
 import axios from "axios";

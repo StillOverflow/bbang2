@@ -85,10 +85,23 @@ router.post("/standard/procFlowMtl", async (req, res) => {
   let result = await standardService.insertProcMat(procFlowMtlInfo);
   res.send(result);
 });
+//다중공정흐름 + 자재추가
+router.post("/standard/multipleProcFlowMtl", async (req, res) => {
+    let data = req.body; // 클라이언트에서 보낸 데이터
+    let result = await standardService.insertMultipleProcMat(data); // 서비스 호출
+    res.send(result);
+});
+//공정흐름+ 기존자재추가
+router.post("/standard/procFlowStnMaterials", async(req,res)=>{
+  let data = req.body;
+  let result = await standardService.insertProcFlowStnMaterials(data);
+  res.send(result);
+})
 // 공정흐름도만 등록
-router.post("/standard/flow", async (req, res) => {
+router.post("/standard/flow/:prd_cd", async (req, res) => {
   const procFlowData = req.body;
-  const result = await standardService.insertProcFlow(procFlowData);
+  let procPrdCd = req.params.prd_cd;
+  const result = await standardService.insertProcFlow(procFlowData, procPrdCd);
   res.send(result);
 });
 // 공정별 자재만 추가

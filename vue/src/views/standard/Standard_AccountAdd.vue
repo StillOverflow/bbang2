@@ -8,7 +8,7 @@
               <h4 class="mb-3 text-center">거래처 목록</h4>
               <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%" >
                 <div style="width: 15%">
-                  <label class="me-2 align-self-center">거래처명</label>
+                  <label class="me-2 align-self-center" style="font-size: 18px; font-weight: bold;">거래처명</label>
                 </div>
                 
                 <div  class="d-flex justify-content-left align-items-center" style="width: 85%" >
@@ -28,51 +28,53 @@
                 @rowClicked="actClicked">
               </ag-grid-vue>
             </div>
-            <div class="col-1 col-xl-1 d-flex flex-column align-items-center ">
-                    <button type="button" class="btn btn-secondary mb-0 ms-4  mt-5" @click="newAccount"
-                    v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )">신규등록</button>              
-            </div>
+
             <!-- <div class="col-1 col-xl-1 d-flex flex-column align-items-center ">
                     <button type="button" class="btn btn-secondary mb-0 ms-4  mt-5 saveBtn" @click="newAccount"
                     style="visibility: hidden;">신규등록</button>              
             </div> -->
-            <div class="col-md-4 mt-5" style="height: auto">
+            <div class="col-md-5 mt-5" style="height: auto; padding-left: 30px; margin-left: 20px;">
+                <div class="text-end mb-3">
+                        <button type="button" class="btn btn-secondary mb-0 ms-4" @click="newAccount"
+                        v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )">신규등록</button>              
+                </div>
+                
                 <div class="d-flex justify-content-left mb-2">
-                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처코드 *</div>
-                    <div class="input-group mb-3 w-25">
+                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">거래처코드 *</div>
+                    <div class="input-group mb-3" style="width: 45%;">
                         <input type="text" class="form-control" v-model="actInfo.act_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" maxlength="2" disabled/>                     
                     </div>
-                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처명 *</div>
-                    <div class="input-group mb-3 w-50">
+                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 25%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">거래처명 *</div>
+                    <div class="input-group mb-3">
                         <input type="text" class="form-control" v-model="actInfo.act_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;"  />
                     </div>
                 </div>
            
             <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder w-22" :style="t_overflow">사업자등록번호 *</div>
-                <div class="input-group mb-3 w-50">
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">사업자등록번호 *</div>
+                <div class="input-group mb-3" style="width: 65%;">
                     <input type="text" class="form-control" v-model="actInfo.business_no" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;" @input = "autoBusinessNo" maxlength ="12"/>
                 </div>
             </div>
             <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">대표자명</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">대표자명</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="actInfo.ceo_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
             <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처담당자</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">거래처담당자</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="actInfo.mgr_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
                 </div>
             </div>
             <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder align-items-center" :style="t_overflow">거래처담당자<br> 연락처</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder align-items-center" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">거래처담당자<br> 연락처</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="actInfo.mgr_tel" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;" @input="autoSeparate"  maxlength="13" placeholder="010-0000-0000" />
@@ -80,14 +82,14 @@
             </div>
 
             <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">업체연락처</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">업체연락처</div>
                 <div class="input-group mb-3 w-50">
                     <input type="text" class="form-control" v-model="actInfo.act_tel" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;" @input="autoSeparateTel"  maxlength="12" placeholder="000-000-0000"/>
                 </div>
             </div>
             <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">소재지</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">소재지</div>
                 <div class="input-group mb-3 w-50">
                     <!-- <input type="text" class="form-control" v-model="actInfo.location" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  /> -->
@@ -112,7 +114,7 @@
                 </div>
             </div>
             <div class="d-flex justify-content-left  mb-2">    
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처주소</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">거래처주소</div>
                 <div class="input-group mb-3 w-70">
                     <input type="text" class="form-control" v-model="actInfo.act_addr" aria-label="Recipient's username" aria-describedby="button-addon2" 
                     style="height: 41px;"  />
@@ -121,7 +123,7 @@
             </div>
 
             <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">거래처구분 *</div>
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">거래처구분 *</div>
                 <div class="input-group mb-3 w-50">
                     <select class="form-select custon-width" v-model="actInfo.act_type">
                         <option v-for="(opt, idx) in selectedData.selectOptions.act_type"
@@ -133,7 +135,7 @@
                 </div>
             </div>
             <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>                
+                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;" :style="t_overflow">비고</div>                
                         <textarea cols="30" rows="6" type="text" class="form-control h-25" v-model="actInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px;" />                
             </div>
@@ -362,6 +364,7 @@ export default {
                         });
                         await axios.post(`/api/standard/account/${this.actInfo.act_cd}`, this.actInfo);
                         this.searchAct(); // 목록 갱신
+                        this.actInfo={};
                     }                   
                 });
 
@@ -445,6 +448,7 @@ export default {
                         });
                         await axios.delete(`/api/standard/delAccount/${this.actInfo.act_cd}`);
                         this.searchAct(); // 목록 갱신
+                        this.actInfo={};
                     }
                 });
         },

@@ -97,66 +97,98 @@ const deleteProMtl = async(proc_flow_cd)=>{
   return result;
 };
 
-//공정흐름 등록 + 자재추가
-const insertProcMat = async (values) => {
+// 다중 공정 흐름도 + 자재 추가
+const insertMultipleProcMat = async (values) => {
   let result = await mariadb.transOpen(async () => {
+    for (const item of values) {
+      const seqResult = await mariadb.transQuery("procFlowSeq");
+      const procFlowCode = seqResult[0].seq;
 
-    // 1. 공정흐름코드가 없으면 시퀀스 새로 생성
-    const seqResult = await mariadb.transQuery("procFlowSeq");
-    let procFlowCode = seqResult[0].seq;
-    values[0]["PROC_FLOW_CD"] = procFlowCode; // 새 공정흐름코드 추가
+      item.procFlow["PROC_FLOW_CD"] = procFlowCode; // 자동 생성된 공정 흐름 코드
+      const flowRes = await mariadb.transQuery("insertProcFlow", item.procFlow);
 
-    // 공정흐름 추가
-    let flowRes = await mariadb.transQuery("insertProcFlow", values[0]);
-    if (flowRes.affectedRows <= 0) {
-      await mariadb.rollback();
-      return "fail";
-    }
+      if (flowRes.affectedRows <= 0) {
+        await mariadb.rollback();
+        return { result: "fail", message: "공정 흐름 추가 실패" };
+      }
 
-    // 2. 공정별 자재 추가
-    let materials = values[1]; // 자재 리스트
-    if (!Array.isArray(materials)) {
-      materials = [materials];
-    }
-    if (materials.length > 0) {
-      for (const material of materials) {
-        const seqResult = await mariadb.transQuery("procMtlSeq");
-        material["PROC_MAT_FLOW_CD"] = seqResult[0].seq;
-        material["PROC_FLOW_CD"] = procFlowCode;
+      const materials = item.materials.map((material) => {
+        material["PROC_FLOW_CD"] = procFlowCode; // 자동 생성된 코드로 매핑
+        return material;
+      });
 
-        const matRes = await mariadb.transQuery(
-          "insertProcessMtlFlow",
-          material
-        );
-        if (matRes.affectedRows <= 0) {
-          await mariadb.rollback();
+      if (materials.length > 0) {
+        for (const material of materials) {
+          const matSeqResult = await mariadb.transQuery("procMtlSeq");
+          material["PROC_MAT_FLOW_CD"] = matSeqResult[0].seq;
+
+          const matRes = await mariadb.transQuery("insertProcessMtlFlow", material);
+
+          if (matRes.affectedRows <= 0) {
+            await mariadb.rollback();
+            return { result: "fail", message: "자재 추가 실패" };
+          }
         }
       }
-    } else {
-      console.log("자재추가할게 없음");
+      const prdCd = item.procFlow.prd_cd; // prd_cd 추출
+      await updateProSeqBYtrans(prdCd, mariadb.transQuery);
     }
 
-    // 3. 성공
     await mariadb.commit();
     return { result: "success" };
   });
 
   return result;
 };
+const updateProSeqBYtrans = async (prdCd, transQuery) => {
+  const result = await mariadb.transQuery("procFlowByProd", [prdCd]); // 트랜잭션 내에서 실행
+  let seq = 1;
+
+  for (const obj of result) {
+    await mariadb.transQuery("updateProSeq", [seq, obj.proc_flow_cd]); // 순서 업데이트
+    seq++;
+  }
+};
 
 //공정흐름도만 추가
-const insertProcFlow = async (procFlowData) => {
-  return await mariadb.transOpen(async () => {
-    // 공정흐름 코드 시퀀스 생성
-    const seqResult = await mariadb.transQuery("procFlowSeq");
-    const procFlowCode = seqResult[0].seq;
-    procFlowData["PROC_FLOW_CD"] = procFlowCode;
+// const insertProcFlow = async (procFlowData, prd_cd) => {
+//   return await mariadb.transOpen(async () => {
+//     // 공정흐름 코드 시퀀스 생성
+//     const seqResult = await mariadb.transQuery("procFlowSeq");
+//     const procFlowCode = seqResult[0].seq;
+//     procFlowData["PROC_FLOW_CD"] = procFlowCode;
 
-    // 공정흐름 등록
-    const result = await mariadb.transQuery("insertProcFlow", procFlowData);
-    if (result.affectedRows <= 0) {
-      await mariadb.rollback();
-      return { result: "fail" };
+//     // 공정흐름 등록
+//     const result = await mariadb.transQuery("insertProcFlow", procFlowData);
+//     await updateProSeqBYtrans(prd_cd)
+//     if (result.affectedRows <= 0) {
+//       await mariadb.rollback();
+//       return { result: "fail" };
+//     }
+
+//     await mariadb.commit();
+//     return { result: "success" };
+//   });
+// };
+const insertProcFlow = async (procFlows) => {
+  return await mariadb.transOpen(async () => {
+    for (const procFlow of procFlows) {
+      // 공정흐름 코드 시퀀스 생성
+      const seqResult = await mariadb.transQuery("procFlowSeq");
+      const procFlowCode = seqResult[0].seq;
+      procFlow["PROC_FLOW_CD"] = procFlowCode;
+
+      // 공정흐름 등록
+      const result = await mariadb.transQuery("insertProcFlow", procFlow);
+
+      if (result.affectedRows <= 0) {
+        await mariadb.rollback();
+        return { result: "fail", message: "공정 흐름 추가 실패" };
+      }
+
+      // prd_cd 추출 및 업데이트
+      const prdCd = procFlow.prd_cd;
+      await updateProSeqBYtrans(prdCd, mariadb.transQuery);
     }
 
     await mariadb.commit();
@@ -164,19 +196,64 @@ const insertProcFlow = async (procFlowData) => {
   });
 };
 // 공정별 자재만 추가
-const insertProcessMaterial = async (materialData) => {
+const insertProcessMaterial = async (materials) => {
   return await mariadb.transOpen(async () => {
-    const seqResult = await mariadb.transQuery("procMtlSeq");
-    const procMatFlowCode = seqResult[0].seq; // 공정별 자재 코드 시퀀스 생성
-    materialData["PROC_MAT_FLOW_CD"] = procMatFlowCode;
+    for (const material of materials) {
+      // 공정별 자재 코드 시퀀스 생성
+      const seqResult = await mariadb.transQuery("procMtlSeq");
+      const procMatFlowCode = seqResult[0].seq;
+      material["PROC_MAT_FLOW_CD"] = procMatFlowCode;
 
-    const result = await mariadb.transQuery(
-      "insertProcessMtlFlow",
-      materialData
-    );
-    if (result.affectedRows <= 0) {
-      await mariadb.rollback();
-      return { result: "fail" };
+      // 자재 등록
+      const result = await mariadb.transQuery("insertProcessMtlFlow", material);
+
+      if (result.affectedRows <= 0) {
+        await mariadb.rollback();
+        return { result: "fail", message: "자재 등록 실패" };
+      }
+    }
+
+    await mariadb.commit();
+    return { result: "success" };
+  });
+};
+//흐름도추가+ 기존자재추가
+const insertProcFlowStnMaterials = async (values) => {
+  return await mariadb.transOpen(async () => {
+    for (const item of values) {
+      let procFlowCode;
+
+      // 새로운 공정 흐름도 추가
+      if (item.procFlow) {
+        const seqResult = await mariadb.transQuery("procFlowSeq");
+        procFlowCode = seqResult[0].seq;
+
+        item.procFlow["PROC_FLOW_CD"] = procFlowCode; // 자동 생성된 공정 흐름 코드
+        const flowRes = await mariadb.transQuery("insertProcFlow", item.procFlow);
+
+        if (flowRes.affectedRows <= 0) {
+          await mariadb.rollback();
+          return { result: "fail", message: "새 공정 흐름도 추가 실패" };
+        }
+      }
+
+      // 기존 공정 흐름도에 자재 추가
+      if (item.existingFlowMaterials?.length > 0) {
+        for (const material of item.existingFlowMaterials) {
+          const matSeqResult = await mariadb.transQuery("procMtlSeq");
+          material["PROC_MAT_FLOW_CD"] = matSeqResult[0].seq;
+
+          const matRes = await mariadb.transQuery("insertProcessMtlFlow", material);
+
+          if (matRes.affectedRows <= 0) {
+            await mariadb.rollback();
+            return { result: "fail", message: "기존 공정 흐름도 자재 추가 실패" };
+          }
+        }
+      }
+       // 공정 순서 업데이트
+       const prdCd = item.procFlow.prd_cd;
+       await updateProSeqBYtrans(prdCd, mariadb.transQuery);
     }
 
     await mariadb.commit();
@@ -494,7 +571,7 @@ module.exports = {
   searchProMtl,
   searchProcCd,
   deleteProcessFlow,
-  insertProcMat,
+  //insertProcMat,
   insertProcFlow,
   insertProcessMaterial,
   deleteProcessMtlFlow,
@@ -502,7 +579,8 @@ module.exports = {
   updateProSeq,
   updateProcSeq,
   sarchProMtlByPrd,
-  
+  insertMultipleProcMat,
+  insertProcFlowStnMaterials,
   //자재관리
   bringMaterial,
   insertMaterial,
@@ -539,5 +617,6 @@ module.exports = {
 
   procMatUsage,
   updateMatUsage,
-  deleteProMtl
+  deleteProMtl,
+  updateProSeqBYtrans
 };

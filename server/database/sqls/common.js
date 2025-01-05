@@ -34,7 +34,7 @@ const findCommList = `
 //   ORDER  BY id `;
 // };
 
-const memList = (data) => {
+const memList = (datas) => {
   let query =  `
     SELECT mem_cd,
           name,
@@ -58,10 +58,10 @@ const memList = (data) => {
   const conditions = [];
 
   // 거래처조회 조건
-  if (data.dpt_cd) conditions.push(`UPPER(dpt_cd) = UPPER('${data.dpt_cd}')`)
+  if (datas.dpt_cd) conditions.push(`UPPER(dpt_cd) = UPPER('${datas.dpt_cd}')`);
   //if (data.id) conditions.push(`id = '${data.act_type}'`);
   //if (data.password) conditions.push(`password = '${data.act_cd}'`);
-  if (data.name) conditions.push(`name LIKE '%${data.name}%'`);
+  if (datas.name) conditions.push(`name LIKE '%${datas.name}%'`);
 
   if (conditions.length > 0) {
     query += ` WHERE ` + conditions.join(' AND ');
