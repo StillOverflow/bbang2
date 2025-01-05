@@ -542,14 +542,14 @@
           def_cd: this.def_qty > 0 ? this.def_cd : null, // def_cd가 있더라도 불량양이 없으면 null 입력
           note: this.note
         };
-        
+
         if(this.isMatTest){
           headerObj.target_type = 'P01';
         } else {
-          headerObj.target_type = isLast ? 'P03' : 'P02'; // 제품 마지막 공정에서의 검사는 P03(완제품검사)으로 입력 
+          headerObj.target_type = isLast ? 'P03' : 'P02'; // 제품 마지막 공정에서의 검사는 P03(완제품검사)으로 입력
         }
 
-        let result = await axios.post('/api/quality/rec', {header: headerObj, dtl: dtlArr})
+        let result = await axios.post('/api/quality/rec', {header: headerObj, dtl: dtlArr, inst_cd: target.inst_cd})
                                 .catch(err => console.log(err));
 
         if(result.data == 'success'){

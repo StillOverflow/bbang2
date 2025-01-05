@@ -170,6 +170,7 @@ const testRecInsert = async (valueObj) => {
         
         let header = valueObj.header;
         let dtl = valueObj.dtl;
+        let instCd = valueObj.inst_cd; // 완제품 후처리에 필요
         // 헤더 삽입
         header.test_rec_cd = headerSeq;
         let header_res = await mariadb.transQuery('testRecInsert', header);
@@ -184,16 +185,30 @@ const testRecInsert = async (valueObj) => {
             dtl_res = await mariadb.transQuery('testRecDtlInsert', dtl);
         }
         
-        // 생산실적의 검사상태 업데이트
-        let isMat = header.target_type == 'P01';
+        // 타 테이블 후처리
+        let isMat = header.target_type == 'P01' ? true : false;
+        let isLast = header.target_type == 'P03' ? true : false;
         let update_res = null;
-        if(!isMat){
+        let update_inst_res = null;
+        if(!isMat){ // 공정 or 완제품검사의 경우
+            // 생산실적의 검사상태 업데이트
             update_res = await mariadb.transQuery('prodResultUpdate', [header.def_qty, header.pass_qty, header.refer_cd]);
+            if(isLast){ // 완제품검사의 경우
+                // 마지막 공정까지 끝났으므로 생산지시서 상태 완료로 업데이트
+                update_inst_res = await mariadb.transQuery('prodInstUpdate', instCd);
+                
+                // 완제품을 제품LOT입고처리
+                let values = [header.target_cd, header.pass_qty, header.pass_qty, header.target_cd, instCd, headerSeq];
+                insert_prd_res = await mariadb.transQuery('prodIn', values);
+            }
         }
 
         // 성공여부 판단
         if((!isMat && dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && update_res.affectedRows > 0) ||
             (!isMat && header_res.affectedRows > 0 && update_res.affectedRows > 0) ||
+            // 완제품 검사인 경우
+            (isLast && update_inst_res.affectedRows > 0 && insert_prd_res.affectedRows > 0 && dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && update_res.affectedRows > 0) ||
+            (isLast && update_inst_res.affectedRows > 0 && insert_prd_res.affectedRows > 0 && header_res.affectedRows > 0 && update_res.affectedRows > 0) ||
             // 자재 검사인 경우
             (isMat && dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0) || 
             (isMat && header_res.affectedRows > 0)){

@@ -218,9 +218,9 @@ const searchAll  = (valueObj) => {
 
 // 품질검사결과 (QUALITY_TEST_RECORD)
 // 검사대기 내역 조회 (생산실적 테이블에서 공정완료&검사대기 상태인 내역을 가져옴.)
-///////////////////// ** 테스트용이라 쿼리가 달라질 수 있음에 유의.
 const testWaitPrdList = `
   SELECT prod_result_cd refer_cd,
+         inst_cd,
          prd_cd target_cd, 
          fn_get_prd_nm(prd_cd) target_nm,
          proc_cd, 
@@ -232,7 +232,7 @@ const testWaitPrdList = `
                                                    ELSE 0 END is_last, -- 마지막 공정인지 여부
          end_time -- 공정 완료시점 시간
   FROM   prod_result r
-  WHERE  STATUS = 'Z03'
+  WHERE  status = 'Z03'
   AND    que_status = 'A02'
 `;
 
@@ -258,8 +258,8 @@ const testWaitMatList = `
 
 // 자재 미입고 거래처조회 (모달용)
 const actList = `
-  SELECT o.act_cd,
-         fn_get_accountname(o.act_cd) act_nm,
+  SELECT a.act_cd,
+         fn_get_accountname(a.act_cd) act_nm,
          a.ceo_nm,
          a.act_tel,
          a.mgr_nm,
@@ -331,6 +331,36 @@ const prodResultUpdate = `
   WHERE  prod_result_cd = ?
 `;
 
+// 완제품 검사 이후 해당 생산지시서의 상태를 Z03(완료)로 변경
+const prodInstUpdate = `
+  UPDATE prod_inst
+  SET    status = 'Z03'
+  WHERE  inst_cd = ?
+`;
+
+// 완제품 검사 이후 합격량만큼 제품 입고
+const prodIn = `
+  INSERT INTO product_in (
+          prd_lot_cd,
+          prd_cd,
+          prd_qty,
+          stock,
+          exp_dt,
+          inst_cd,
+          test_rec_cd)
+  VALUES (
+          CONCAT('PRDLOT', TO_CHAR(NOW(), 'yyMMddhhMIss')),
+          ?,
+          ?,
+          ?,
+          -- 유통기한 계산
+          (SELECT DATE_ADD(NOW(), INTERVAL exp_range DAY) 
+           FROM   product
+           WHERE  prd_cd = ?),
+          ?,
+          ?
+          )
+`;
 
 // 검사결과내역 조회+검색
 const testRecList = (valueObj) => {
@@ -443,6 +473,8 @@ module.exports = {
   testRecInsert,
   testRecDtlInsert,
   prodResultUpdate,
+  prodInstUpdate,
+  prodIn,
 
   testRecList,
   testRecDtlSelect,
