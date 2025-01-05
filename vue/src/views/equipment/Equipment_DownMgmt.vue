@@ -26,7 +26,7 @@
           <!-- 왼쪽 입력란 -->
           <div class="col-lg-5 col-md-5 col-sm-12">
             <div v-for="(field, index) in leftFields" :key="index" class="mb-2">
-              <template v-if="field.value == 'eqp_type' || field.value == 'downtime_reason' || field.value == 'status'">
+              <template v-if="field.value == 'eqp_type' || field.value == 'downtime_reason'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <select class="form-select custom-width" v-model="equipmentData[field.value]"
                   :disabled="isFieldDisabled(field.value)">
@@ -65,7 +65,7 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success mlp10" @click="isEditMode ? downUpdate() : downInsert()"
+          <button :class="isEditMode ? 'btn btn-success mlp10' : 'btn btn-primary mlp10'" @click="isEditMode ? downUpdate() : downInsert()"
             :disabled="!selectedEqp">
             {{ isEditMode ? "수정" : "등록" }}
           </button>
@@ -130,7 +130,6 @@ export default {
         end_time: '',
         note: '',
         id: '',
-        status: 'S02',
         downtime_cd: '',
       },
       equipDefs: [
@@ -223,11 +222,6 @@ export default {
 
         // 설비 데이터 가져오기
         await this.getEquipInfo(this.selectedEqp);
-
-        // 설비 상태 초기화
-        if (!this.equipmentData.status) {
-          this.equipmentData.status = 'S02'; // 기본값 설정
-        }
 
         // 세션에서 비가동 등록인 ID 가져오기
         const sessionId = this.$session.get('user_id');
@@ -367,7 +361,6 @@ export default {
           downtime_reason: this.equipmentData.downtime_reason || '',
           note: this.equipmentData.note || '',
           id: this.equipmentData.id,
-          status: 'S02', // 등록 시 비가동 상태로 설정
         };
 
         //서버로 데이터 전송
@@ -418,7 +411,6 @@ export default {
           downtime_reason: this.equipmentData.downtime_reason || '',
           note: this.equipmentData.note || '',
           id: this.equipmentData.id,
-          status: isOperational ? 'S01' : 'S02', // 종료일시 여부에 따라 상태 설정
         };
 
         console.log('보낼 데이터:', obj);
@@ -456,7 +448,6 @@ export default {
         eqp_type: '',
         eqp_nm: '',
         id: '',
-        status: 'S02', // 초기화 시 기본값 설정
         downtime_cd: clearDowntimeCd ? '' : this.equipmentData.downtime_cd, // downtime_cd 초기화 여부 설정
       };
 
@@ -528,18 +519,6 @@ export default {
 
     });
 
-    //설비상태구분
-    this.getComm('ES').then((result) => {
-      const field = this.leftFields.find((field) => field.value === 'status');
-      if (field) {
-        field.selectOptions = result.map((item) => ({
-          item: item.comm_dtl_cd,
-          name: item.comm_dtl_nm,
-        }));
-      } else {
-        console.warn('Field "status" not found in leftFields');
-      }
-    });
 
     //비가동사유구분
     this.getComm('EC').then((result) => {
