@@ -7,7 +7,7 @@
         <p for="example-text-input" class="text-sm font-weight-bolder">주문코드</p>
         <div class="row">
           <div class="input-group w-30">
-            <input class="form-control" type="text" v-model="order_cd" placeholder="주문코드를 검색해주세요" style="height: 41px;">
+            <input class="form-control" type="text" v-model="order_cd" placeholder="주문코드를 검색해주세요" style="height: 41px;" readonly>
             <button class="btn btn-warning mb-3" type="button" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
         </div>
@@ -41,8 +41,7 @@
             </ag-grid-vue>
           </template>
           <template v-slot:footer>            
-            <button type="button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>          
+            <button type="button" class="btn btn-secondary" @click="modalOpen">닫기</button>
           </template>
         </Layout>
       <!--검색모달[E]-->
@@ -81,8 +80,8 @@
           </div>
         </div>
         <div class="center" v-if="this.$session.get('user_ps') == 'H01'">
-          <button class="btn mtp30" :class="isUpdated ? 'btn-success' : 'btn-primary'" @click="planInsert"> {{ isUpdated ? "UPDATE" : "SAVE" }}</button>
-          <button class="btn btn-secondary mlp10 mtp30" @click="resetForm" v-if="!isUpdated">RESET</button>
+          <button class="btn mtp30" :class="isUpdated ? 'btn-success' : 'btn-primary'" @click="planInsert"> {{ isUpdated ? "수정" : "등록" }}</button>
+          <button class="btn btn-secondary mlp10 mtp30" @click="resetForm" v-if="!isUpdated">초기화</button>
         </div>
       </div>
     </div>
@@ -334,7 +333,7 @@ export default {
           if(result.data == 'success'){
             this.$swal({
                 icon: "success",
-                title: "수정에 성공 하였습니다.",
+                title: "수정완료",
             })    
           }
         }else{
@@ -351,7 +350,7 @@ export default {
         if(result.data == 'success'){
           this.$swal({
               icon: "success",
-              title: "등록에 성공 하였습니다.",
+              title: "등록완료",
               text: "등록한 계획서는 목록에서 확인 해주세요.",
           })
           .then(() => {

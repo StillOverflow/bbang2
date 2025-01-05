@@ -15,17 +15,17 @@
       <hr>
 
       <h4>버튼 예시</h4>
-      <button class="btn btn-primary">SUBMIT</button> <!-- 등록 -->
-      <button class="btn btn-success mlp10">SAVE</button> <!-- 수정 -->
-      <button class="btn btn-danger mlp10">DELETE</button>
-      <button class="btn btn-secondary mlp10">RESET</button>
-      <button class="btn btn-outline-success mlp10" @click="excelDownload()"><i class="fa-regular fa-file-excel"></i>EXCEL</button>
+      <button class="btn btn-primary">등록</button> <!-- 등록 -->
+      <button class="btn btn-success mlp10">수정</button> <!-- 수정 -->
+      <button class="btn btn-danger mlp10">삭제</button>
+      <button class="btn btn-secondary mlp10">초기화</button>
+      <button class="btn btn-outline-success mlp10" @click="excelDownload()"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
       <div class="input-group mb-3 w-30">
-        <input type="search" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
-        <button class="btn btn-warning" type="button" id="button-addon2">SEARCH</button>
+        <input type="search" class="form-control" placeholder="코드를 검색해주세요" aria-label="코드를 검색해주세요" aria-describedby="button-addon2" style="height: 41px;">
+        <button class="btn btn-warning" type="button" id="button-addon2">조회</button>
       </div>
       <div class="input-group mb-3 w-30">
-        <input type="text" class="form-control" placeholder="Recipient's username" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
+        <input type="text" class="form-control" placeholder="코드를 검색해주세요" aria-label="Recipient's username" aria-describedby="button-addon2" style="height: 41px;">
         <button class="btn btn-warning" type="button" id="button-addon3">
           <i class="fa-solid fa-magnifying-glass"></i>
         </button>

@@ -20,8 +20,9 @@ const planSelect = (datas) => {
  const searchOrder = [];
 
   // 거래처조회 조건
-  if (datas.PROD_PLAN_CD) searchOrder.push(`PROD_PLAN_CD = UPPER('${datas.PROD_PLAN_CD}')`);
+  if (datas.PROD_PLAN_CD) searchOrder.push(`PROD_PLAN_CD LIKE UPPER('%${datas.PROD_PLAN_CD}%')`);
   if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
+  if (datas.NOT_STATUS) searchOrder.push(`STATUS != UPPER('${datas.NOT_STATUS}')`);
   
 
   if (searchOrder.length > 0) { //조건이 있으면
@@ -128,7 +129,9 @@ const planDtlList =
          FROM 
             PROD_INST pi JOIN PROD_INST_DTL pid 
             ON pi.INST_CD=pid.INST_CD 
-         WHERE pi.PROD_PLAN_CD = pp.prod_plan_cd AND pid.PRD_CD = pp.prd_cd) AS reg_cnt
+         WHERE pi.PROD_PLAN_CD = pp.prod_plan_cd AND pid.PRD_CD = pp.prd_cd) AS reg_cnt,
+         (SELECT COUNT(*) FROM process_flow where prd_cd=pp.PRD_CD) AS flow_cnt,
+         (SELECT COUNT(*) FROM proc_flow_mtl where prd_cd=pp.PRD_CD) AS mtl_cnt
 FROM 
         PROD_PLAN_DTL pp JOIN PRODUCT p ON pp.PRD_CD = p.PRD_CD
 WHERE PROD_PLAN_CD = ? `;
@@ -150,7 +153,7 @@ const instList = (datas) => {
  const searchOrder = [];
 
   // 거래처조회 조건
-  if (datas.PROD_PLAN_CD) searchOrder.push(`INST_CD = UPPER('${datas.INST_CD}')`);
+  if (datas.INST_CD) searchOrder.push(`INST_CD LIKE UPPER('%${datas.INST_CD}%')`);
   if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
 
   if (searchOrder.length > 0) {
@@ -171,10 +174,10 @@ const instDelete = (datas) => {
   //공정실적, 사용자재, 지시서 헤더/디테일 동시삭제
   let sql =
       `DELETE PROD_INST, prod_inst_dtl, prod_result, proc_mat FROM 
-		  PROD_INST prod_inst JOIN prod_inst_dtl prod_inst_dtl ON prod_inst.INST_CD=prod_inst_dtl.INST_CD
+		  PROD_INST PROD_INST JOIN prod_inst_dtl prod_inst_dtl ON prod_inst.INST_CD=prod_inst_dtl.INST_CD
 		  							      JOIN prod_result prod_result ON prod_inst.INST_CD=prod_result.INST_CD
-									        JOIN proc_mat proc_mat ON prod_inst.INST_CD=proc_mat.INST_CD;
-        WHERE STATUS='Z01' and prod_inst_dtl.INST_CD IN `;
+									        JOIN proc_mat proc_mat ON prod_inst.INST_CD=proc_mat.INST_CD
+        WHERE PROD_INST.STATUS='Z01' and PROD_INST.INST_CD IN `;
 
   let delArr = [];
   delArr.push(Object.values(datas));
@@ -276,7 +279,7 @@ const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
 const instMatInsert = 
 `INSERT INTO
   proc_mat (
-      INST_MAT_CD
+    INST_MAT_CD
     ,INST_CD
     ,PROC_FLOW_CD
     ,MAT_CD
@@ -287,7 +290,7 @@ const instMatInsert =
 
 SELECT 
     CONCAT('IM', LPAD(nextval(inst_mat_seq), 3,'0')) AS 'INST_MAT_CD',
-    ?,
+    (SELECT INST_CD FROM prod_inst WHERE inst_cd=?),
     pf.PROC_FLOW_CD AS 'PROC_FLOW_CD',
     pf.MAT_CD AS MAT_CD,
     pf.MAT_QTY AS MAT_QTY,

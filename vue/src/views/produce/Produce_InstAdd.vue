@@ -10,7 +10,7 @@
 
         <!--기본정보-->
         <p class="text-uppercase text-lg font-weight-bolder">기본정보</p>
-        <p for="example-text-input" class="text-sm font-weight-bolder">생산계획코드</p>
+        <p for="example-text-input" class="text-sm font-weight-bolder">생산계획코드 <em class="point-red">*</em></p>
           <div class="row">
             <div class="input-group w-30">
               <input class="form-control" type="text" v-model="plan_cd" placeholder="생산계획코드를 검색해주세요" style="height: 41px;" readonly>
@@ -30,7 +30,7 @@
           </template>
           <template v-slot:default>
             <div class="alert alert-light alert-dismissible fade show">
-              <strong>진행정인 생산계획서가 조회됩니다.</strong>
+              <strong>진행전인 생산계획서가 조회됩니다.</strong>
               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             <ag-grid-vue class="ag-theme-alpine" 
@@ -45,8 +45,7 @@
             </ag-grid-vue>
           </template>
           <template v-slot:footer>
-            <button type="button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
+            <button type="button" class="btn btn-secondary" @click="modalOpen">닫기</button>
           </template>
         </Layout>
       <!--검색모달[E]-->
@@ -55,7 +54,7 @@
         <div class="row">
 
           <!--생산제품 목록-->
-          <div class="col-md-6">
+          <div class="col-md-7">
             <p class="text-uppercase text-lg font-weight-bolder">생산제품 목록</p>
             <div class="alert alert-light alert-dismissible fade show">
               <strong>생산공정에서 제외할 제품은 체크박스를 해제해주세요.</strong>
@@ -69,12 +68,14 @@
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 제품코드 </th>
                     <th class="text-center text-uppercase text-ser opacity-7"> 제품명 </th>
                     <th class="text-center text-uppercase text-ser opacity-7" width="20%"> 계획수량</th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="20%"> 공정설정</th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="20%"> 자재설정</th>
                     <th class="text-center text-uppercase text-ser opacity-7" width="20%"></th>
                   </tr>
                 </thead>
                 <tbody>
                   <template v-if="planDtlCount >0">
-                    <tr :key="i" v-for="(Dtl, i) in planDtlData" class="text-center align-middle planDtl" v-bind:id="Dtl.prd_cd+'_dtl'" >
+                    <tr :key="i" v-for="(Dtl, i) in planDtlData" class="text-center align-middle planDtl"  :class="Dtl.flow_cnt < 1 || Dtl.mtl_cnt < 1 ? 'none-select' : ''" v-bind:id="Dtl.prd_cd+'_dtl'" >
                       <td>
                         <div class="form-check">
                           <input class="form-check-input" type="checkbox" v-model="prdArr" :value="Dtl" :id="'fl' + Dtl.PRD_CD">
@@ -83,6 +84,8 @@
                       <td>{{ Dtl.prd_cd }}</td>
                       <td>{{ Dtl.prd_nm }}</td>
                       <td>{{ Dtl.order_qty }}</td>
+                      <td><span :class="Dtl.flow_cnt > 0 ? 'text-primary' : 'text-secondary'"> {{ Dtl.flow_cnt > 0 ? "설정됨" : "미설정" }}</span></td>
+                      <td><span :class="Dtl.mtl_cnt > 0 ? 'text-primary' : 'text-secondary'"> {{ Dtl.mtl_cnt > 0 ? "설정됨" : "미설정" }}</span></td>
                       <td><button @click="prdClicked(Dtl.prd_cd)" class="btn btn-sm btn-warning">SELECT</button></td>
                     </tr>
                   </template>
@@ -98,11 +101,11 @@
           </div>
 
           <!--공정설정-->
-          <div class="col-md-6">
+          <div class="col-md-5">
 
             <p class="text-uppercase text-lg font-weight-bolder">공정설정</p>
             <div class="alert alert-light alert-dismissible fade show">
-              <strong>생산공정에서 제외할 공정은 체크박스를 해제해주세요.</strong>
+              <strong>생산에 사용할 공정을 선택해주세요.</strong>
               <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
             <div class="table-responsive">
@@ -142,8 +145,8 @@
           </div>
         </div>
         <div class="center" v-if="this.$session.get('user_ps') == 'H01'">
-          <button class="btn btn-primary mtp30" @click="instInsert">SUBMIT</button>
-          <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
+          <button class="btn btn-primary mtp30" @click="instInsert">등록</button>
+          <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">초기화</button>
         </div>
       </div>
     </div>
@@ -165,14 +168,6 @@ export default {
   created() {
     this.$store.dispatch('breadCrumb', { title: '생산지시서 관리' });
     this.getPlanFlowList();
-
-    let selectNo = this.$route.query.inst_cd;
-    if(selectNo){
-        //수정
-        this.selectNo = selectNo;
-        this.getInstInfo(selectNo); 
-        this.isUpdated = true;      
-    }
   },
   computed : {
     planDtlCount(){
@@ -254,7 +249,7 @@ export default {
     //계획서 리스트
     async getPlanList() {
       let obj = {
-        STATUS : 'Z01'
+        NOT_STATUS : 'Z03'
       }
       let result = await axios.get(`/api/plan`, {params:obj})
                               .catch(err => console.log(err));
@@ -266,7 +261,14 @@ export default {
       let result = await axios.get(`/api/plan/${plan_cd}/dtl`)
                               .catch(err => console.log(err));                              
       this.planDtlData = result.data;
-      this.prdArr = result.data;
+
+      this.planDtlData.forEach((obj) => {
+        if(obj.flow_cnt > 0 && obj.mtl_cnt > 0){
+          this.prdArr.push(obj);
+        }
+      });
+      console.log( this.prdArr);
+      
     },
 
     //계획서 제품 리스트 선택
@@ -301,7 +303,7 @@ export default {
       let result = await axios.get(`/api/inst/${prd_cd}/flow`)
                               .catch(err => console.log(err));                              
       this.planFlowData = result.data;
-      this.flowArr = result.data;
+      //this.flowArr = result.data;
     },
 
     //공정설정 리스트 드래그 시 이벤트 (공정 순서 재정렬)
@@ -346,7 +348,7 @@ export default {
           STEP: obj.PROC_SEQ
         });
       });
-
+      
       let insertArr = [...insertInst, insertPrd, insertFlow];
 
       let result = await axios.post('/api/inst', insertArr)
@@ -355,7 +357,7 @@ export default {
       if(result.data == 'success'){
         this.$swal({
           icon: "success",
-          title: "등록에 성공 하였습니다.",
+          title: "등록완료",
           text: "등록한 지시서는 목록에서 확인 해주세요.",
         })
         .then(() => {
