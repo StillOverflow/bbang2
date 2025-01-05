@@ -228,7 +228,7 @@ const eqInspList = (datas) => {
     sql += ` WHERE ` + queryArr.join(' AND ');
   }
 
-  sql += ` order by eqp_cd asc, last_insp_dt desc`; // 정렬
+  sql += ` order by eqp_cd asc, i.start_time desc`; // 정렬
 
   return sql;
 
@@ -647,7 +647,7 @@ FROM equipment e
     sql += ` WHERE ` + queryArr.join(' AND ');
   }
 
-  sql += ` order by eqp_cd asc, last_insp_dt desc`; // 정렬
+  sql += ` order by eqp_cd asc, r.start_time desc`; // 정렬
 
   console.log('Generated SQL:', sql); // SQL 쿼리 출력
 
