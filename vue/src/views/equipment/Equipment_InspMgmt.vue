@@ -144,10 +144,14 @@ export default {
         id: '',
         insp_log_cd: '',
       },
+
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 120 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
-          headerName: '설비 구분', field: 'eqp_type', sortable: true, width: 130, valueFormatter: (params) => {
+          headerName: '설비 구분',
+          field: 'eqp_type',
+          filter: 'agTextColumnFilter',
+          sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
               R02: '분할기',
@@ -162,16 +166,21 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '설비명', field: 'eqp_nm', sortable: true, width: 130 },
-        { headerName: '모델명', field: 'model', sortable: true, width: 130 },
         {
-          headerName: '마지막 점검일', field: 'last_insp_dt', sortable: true, width: 130, valueFormatter: (params) => {
-            if (!params.value) return ''; // 값이 없을 경우 빈 문자열 반환
-            return params.value.split('T')[0]; // T로 나눈 뒤 첫 번째 부분만 반환
-          },
+          headerName: '설비명',
+          field: 'eqp_nm',
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
       ],
+
+
       equipData: [],
       leftFields: [
         { label: '점검 시작 일시', value: 'start_time', type: 'datetime-local' },

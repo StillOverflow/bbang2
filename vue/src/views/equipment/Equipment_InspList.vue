@@ -144,10 +144,11 @@ export default {
 
       //모달 설비 목록
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 163 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
+          filter: 'agTextColumnFilter',
           sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
@@ -163,13 +164,18 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true, width: 163
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '모델명', field: 'model', sortable: true, width: 163 },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
       ],
 
       equipData: [],
@@ -188,15 +194,15 @@ export default {
       },
       rowData: [], // ag-grid의 데이터
       columnDefs: [
-        { field: 'eqp_cd', headerName: '설비코드', sortable: true },
-        { field: 'eqp_type', headerName: '설비구분', sortable: true },
-        { field: 'eqp_nm', headerName: '설비명', sortable: true },
-        { field: 'insp_cycle', headerName: '점검주기(일)', sortable: true },
-        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter },
-        { field: 'insp_reason', headerName: '점검사유', sortable: true },
-        { field: 'insp_result', headerName: '점검판정', sortable: true },
-        { field: 'insp_action', headerName: '조치사항', sortable: true },
-        { field: 'id', headerName: '점검담당자 ID', sortable: true },
+        { field: 'eqp_cd', headerName: '설비코드', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_type', headerName: '설비구분', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_nm', headerName: '설비명', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'insp_cycle', headerName: '점검주기(일)', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'insp_reason', headerName: '점검사유', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'insp_result', headerName: '점검판정', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'insp_action', headerName: '조치사항', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'id', headerName: '점검담당자 ID', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
           field: 'start_time',
           headerName: '점검시작일시',
@@ -216,6 +222,12 @@ export default {
         pagination: true,
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+        getRowStyle: (params) => {
+        if (!params.data.end_time) {
+          return { background: '#ffcccc' }; // 종료시간이 없는 행
+        }
+        return null;
+      },
         /*
         rowSelection: {
           mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow

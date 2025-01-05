@@ -145,10 +145,11 @@ export default {
 
       //모달 설비 목록
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 163 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
+          filter: 'agTextColumnFilter',
           sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
@@ -164,13 +165,18 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true, width: 163
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '모델명', field: 'model', sortable: true, width: 163 },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
       ],
 
       equipData: [],
@@ -189,33 +195,53 @@ export default {
       },
       rowData: [], // ag-grid의 데이터
       columnDefs: [
-        { field: 'eqp_cd', headerName: '설비코드', sortable: true },
-        { field: 'eqp_type', headerName: '설비구분', sortable: true },
-        { field: 'eqp_nm', headerName: '설비명', sortable: true },
-        { field: 'status', headerName: '설비상태', sortable: true },
-        { field: 'downtime_reason', headerName: '비가동사유', sortable: true },
-        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter },
-        { field: 'note', headerName: '비고', sortable: true },
-        { field: 'id', headerName: '등록인 ID', sortable: true },
+        { field: 'eqp_cd', headerName: '설비코드', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_type', headerName: '설비구분', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_nm', headerName: '설비명', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'downtime_reason', headerName: '비가동사유', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', valueFormatter: this.$comm.dateFormatter },
+        { field: 'note', headerName: '비고', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'id', headerName: '등록인 ID', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
           field: 'start_time',
           headerName: '비가동시작일시',
           sortable: true,
-          valueFormatter: (params) => this.formatDateTime(params.value), width: 250
+          valueFormatter: (params) => this.formatDateTime(params.value), width: 250,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
         {
           field: 'end_time',
           headerName: '비가동종료일시',
           sortable: true,
-          valueFormatter: (params) => this.formatDateTime(params.value), width: 250
-        },
+          valueFormatter: (params) => this.formatDateTime(params.value), width: 250,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
 
+          
+        },
+        /*
+        { field: 'status', headerName: '설비 상태', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellRenderer: (params) => {
+            if (params.value === '비가동') {
+              return `<i class="fa-solid fa-circle text-danger"></i> ${params.value}`;
+            } else if (params.value === '가동') {
+              return `<i class="fa-solid fa-circle text-success"></i> ${params.value}`;
+            }
+            return params.value; // 상태가 비가동/가동이 아닐 경우
+          }, 
+        },     
+        */   
       ],
 
       gridOptions: {
         pagination: true,
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+        getRowStyle: (params) => {
+        if (!params.data.end_time) {
+          return { background: '#ffcccc' }; // 종료시간이 없는 행
+        }
+        return null;
+      },
         /*
         rowSelection: {
           mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow

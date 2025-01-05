@@ -104,16 +104,34 @@ export default {
       },
       rowData: [], // ag-grid의 데이터
       columnDefs: [
-        { field: 'eqp_cd', headerName: '설비코드', sortable: true },
-        { field: 'eqp_type', headerName: '설비구분', sortable: true },
-        { field: 'eqp_nm', headerName: '설비명', sortable: true },
-        { field: 'model', headerName: '모델', sortable: true },
-        { field: 'proc_cd', headerName: '공정코드', sortable: true },
-        { field: 'proc_nm', headerName: '공정명', sortable: true },
-        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter },
-        { field: 'id', headerName: '담당자 ID', sortable: true },
-        { field: 'status', headerName: '설비상태', sortable: true },
-        { field: 'is_use', headerName: '사용유무', sortable: true },
+        { field: 'eqp_cd', headerName: '설비코드', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',  },
+        { field: 'eqp_type', headerName: '설비구분', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_nm', headerName: '설비명', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'model', headerName: '모델', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'proc_cd', headerName: '공정코드', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'proc_nm', headerName: '공정명', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'id', headerName: '담당자 ID', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'status', headerName: '설비 상태', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellRenderer: (params) => {
+            if (params.value === '비가동') {
+              return `<i class="fa-solid fa-circle text-danger"></i> ${params.value}`;
+            } else if (params.value === '가동') {
+              return `<i class="fa-solid fa-circle text-success"></i> ${params.value}`;
+            }
+            return params.value; // 상태가 비가동/가동이 아닐 경우
+          }, 
+        },
+        { field: 'is_use', headerName: '사용유무', sortable: true , cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', 
+          cellRenderer: (params) => {
+            if (params.value === '사용가능') {
+              return `<span style="color: RoyalBlue ">${params.value}</span>`;
+            } else if (params.value === '사용불가') {
+              return `<span style="color: #E41B17  ">${params.value}</span>`;
+            }
+            return params.value;
+          },
+        },
 
       ],
 
@@ -350,6 +368,13 @@ export default {
   /* 플렉스 박스 사용 */
   align-items: center;
   /* 라디오 버튼과 라벨 수직 정렬 */
+}
+
+.ag-header-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
 //그리드 사용시 아래 스타일 임포트

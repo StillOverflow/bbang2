@@ -134,9 +134,12 @@ export default {
         downtime_cd: '',
       },
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 120 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
-          headerName: '설비 구분', field: 'eqp_type', sortable: true, width: 130, valueFormatter: (params) => {
+          headerName: '설비 구분',
+          field: 'eqp_type',
+          filter: 'agTextColumnFilter',
+          sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
               R02: '분할기',
@@ -151,19 +154,18 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '설비명', field: 'eqp_nm', sortable: true, width: 130 },
-        { headerName: '모델명', field: 'model', sortable: true, width: 130 },
         {
-          headerName: '설비상태', field: 'status', sortable: true, width: 130, valueFormatter: (params) => {
-            // 상태 코드에 따른 이름 변환
-            const statusMap = {
-              S01: '가동',
-              S02: '비가동',
-            };
-            return statusMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값 반환
-          },
+          headerName: '설비명',
+          field: 'eqp_nm',
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
       ],
       equipData: [],
       leftFields: [

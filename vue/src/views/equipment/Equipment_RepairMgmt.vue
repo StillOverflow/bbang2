@@ -114,7 +114,7 @@
     
     <!-- 거래처 선택 모달 -->
     <Transition name="fade">
-    <Layout :modalCheck="isModal2">
+    <Layout :modalCheck="isModal2" >
       <template v-slot:header>
         <h5 class="modal-title">거래처 선택</h5>
         <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
@@ -169,10 +169,14 @@ export default {
         id: '',
         repair_cd: '',
       },
+
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 120 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
-          headerName: '설비 구분', field: 'eqp_type', sortable: true, width: 130, valueFormatter: (params) => {
+          headerName: '설비 구분',
+          field: 'eqp_type',
+          filter: 'agTextColumnFilter',
+          sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
               R02: '분할기',
@@ -187,25 +191,25 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '설비명', field: 'eqp_nm', sortable: true, width: 130 },
-        { headerName: '모델명', field: 'model', sortable: true, width: 130 },
         {
-          headerName: '설비상태', field: 'status', sortable: true, width: 130, valueFormatter: (params) => {
-            // 상태 코드에 따른 이름 변환
-            const statusMap = {
-              S01: '가동',
-              S02: '비가동',
-            };
-            return statusMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값 반환
-          },
+          headerName: '설비명',
+          field: 'eqp_nm',
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
       ],
 
+
       accDefs: [
-      { headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '구분', field: 'act_type', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+      { headerName: '거래처 코드', field: 'act_cd', width:200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 명', field: 'act_nm', width:235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '구분', field: 'act_type', width:210, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
       ],
 
       equipData: [],

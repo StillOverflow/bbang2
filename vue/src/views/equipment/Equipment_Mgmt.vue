@@ -208,10 +208,11 @@ export default {
       },
 
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 163 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
+          filter: 'agTextColumnFilter',
           sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
@@ -227,25 +228,30 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true, width: 163
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '모델명', field: 'model', sortable: true, width: 163 },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
       ],
 
       memDefs: [
-        { headerName: '담당자 ID', field: 'ID', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '담당자 명', field: 'name', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '부서', field: 'dpt_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '담당자 ID', field: 'ID',width:200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' }},
+        { headerName: '담당자 명', field: 'name',width:235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '부서', field: 'dpt_nm',width:210, filter: 'agTextColumnFilter' , cellStyle: { textAlign: 'center' }},
       ],
 
       accDefs: [
-      { headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '구분', field: 'act_type', filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+      { headerName: '거래처 코드', field: 'act_cd', width:200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 명', field: 'act_nm', width:235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '구분', field: 'act_type', width:210, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
       ],
 
       equipData: [],
