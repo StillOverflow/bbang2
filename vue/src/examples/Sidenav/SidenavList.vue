@@ -72,7 +72,7 @@ export default {
               :navText="'주문서 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' ">
             <sidenav-item to="/Sales_OrderAdd" :class="getRoute() === 'Sales_OrderAdd' ? 'active' : ''"
               :navText="'주문서 등록'">
             </sidenav-item>
@@ -82,7 +82,7 @@ export default {
               :navText="'출고제품 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' ">
             <sidenav-item to="/Sales_ProOutAdd" :class="getRoute() === 'Sales_ProOutAdd' ? 'active' : ''"
               :navText="'출고제품 등록'">
             </sidenav-item>
@@ -92,7 +92,7 @@ export default {
               :navText="'반품제품 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' ">
             <sidenav-item to="/Sales_ResultAdd" :class="getRoute() === 'Sales_ResultAdd' ? 'active' : ''"
               :navText="'반품제품 등록'">
             </sidenav-item>

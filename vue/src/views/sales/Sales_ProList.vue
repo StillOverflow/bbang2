@@ -73,8 +73,18 @@ export default {
                     },
                 },
                 {
+                  field: 'prd_qty', 
+                  headerName: '총입고수량', 
+                  cellStyle: { textAlign: "center" },
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
+                {
                     field: 'prd_out_qty',
                     headerName: '출고량', 
+                    hide: true,
                     cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
@@ -107,6 +117,15 @@ export default {
                 {
                   field: 'stock', 
                   headerName: '재고수량', 
+                  cellStyle: { textAlign: "center" },
+                    valueFormatter: (params) => {
+                        if (params.value == null || params.value === '') return '';
+                        return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
+                    },
+                },
+                {
+                  field: 'prd_qty', 
+                  headerName: '입고수량', 
                   cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';

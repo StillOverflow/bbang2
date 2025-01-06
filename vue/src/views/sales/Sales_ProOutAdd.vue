@@ -14,14 +14,14 @@
           <div class="card-header bg-light ps-5 ps-md-4">
               <div class="row">
                   <div class="col-6 col-lg-2"></div>
-                  
+
                   <div class="col-6 col-lg-1 text-center mb-3 mt-2 fw-bolder" :style="t_overflow">주문서 코드</div> 
                   <div class="input-group mb-2 w-25">
                       <input type="text" class="form-control" v-model="order_code" aria-label="Recipient's username" aria-describedby="button-addon2" 
                       style="height: 41px; background-color: rgb(236, 236, 236);"  readonly />
                       <button class="btn btn-warning" type="button" v-if="this.isdetail == false" @click="modalOpen"><i class="fa-solid fa-magnifying-glass"></i></button>
                   </div>
-              
+
               </div>
               <div class="row">
                   <div class="col-6 col-lg-2 "></div>
@@ -52,7 +52,7 @@
               <div class="row">
                   <div class="col-6 col-lg-2"></div>
                   <div class="col-6 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">담당자 명</div> 
-                  <div class="input-group w-25">
+                  <div class="input-group w-25 mb-3">
                       <input type="text" class="form-control" id="mem_name" aria-label="Recipient's username" aria-describedby="button-addon2" 
                         style="height: 41px; background-color: rgb(236, 236, 236);" readonly />
                       <button class="btn btn-warning" type="button" v-if="this.isdetail == false" @click="modalOpen2"><i class="fa-solid fa-magnifying-glass"></i></button>
@@ -62,7 +62,27 @@
                       <input class="form-control" type="text" id="mem_id" value="" readonly />
                   </div>
               </div>
+              
+              <div class="row" v-if="this.isdetail == true &&  this.prdEndStatusJ03 == false && (this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' )" >
+                <div class="col-6 col-lg-2"></div>
+                <div class="col-6 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">
+                출고구분
+                </div>
+                <div class="col-6 col-lg-2">
+                    <select class="form-select" v-model="selected2" >
+                        <option v-for="(opt, idx) in selectList" :key="idx" :value="opt.value">
+                        {{ opt.name }}
+                        </option>
+                    </select>
+                </div>
+              </div>
           </div>
+
+            <div class="alert alert-light alert-dismissible fade show"
+             v-if="this.isdetail == true && (this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' )">
+                <strong>출고완료 선택 후 UPDATE 하면 출고완료가 되며 수정/삭제 불가합니다.</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
 
           <!-- 출고디테일 테이블 부분 -->
           <div class="card-body">
@@ -88,14 +108,18 @@
                         </ag-grid-vue>
                     </div>
                 </div>
-               
+
                 <div class="center " v-if="this.isdetail == false"> <!--등록페이지-->
                     <button class="btn btn-primary mtp30" @click="prdOutInsert">SUBMIT</button>
                     <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
                 <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
-                    <button class="btn btn-primary mtp30" @click="returnUpdate">UPDATE</button>
-                    <button class="btn btn-secondary mlp10 mtp30" @click="prdOutDelete">DELETE</button>
+                    <div v-if="this.prdEndStatusJ03 == false">
+                        <button v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' "
+                         class="btn btn-primary mtp30" @click="prdOutUpdate">UPDATE</button>
+                        <button v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' "
+                         class="btn btn-secondary mlp10 mtp30" @click="prdOutDelete">DELETE</button>
+                    </div>
                 </div>
           </div>
       </div>
@@ -176,6 +200,8 @@ export default {
         return {
             //상세,수정,삭제
             isdetail: false,
+            //출고완료후
+            prdEndStatusJ03: '',
 
             //상세 헤드부분에 넣을 데이터 
             POHead: {
@@ -192,13 +218,21 @@ export default {
             order_date: '',
             order_code: '',
 
+            //셀렉트박스
+            selected2: "",
+            selectList: [
+                { name: "출고지시.", value: "" },
+                { name: "출고완료", value: "prdOutEnd" },
+            ],
+
+
 
             prd_out_dtl_cd: '',
             prd_lot_cd: '',
             prd_out_qty: '',
 
             odtCd: '',
-            
+
             OLDefs: [
                 {headerName: '주문상세코드', field: 'order_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
                 {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }},
@@ -235,19 +269,21 @@ export default {
                     field: 'lotlist', 
                     cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
-                        const button = document.createElement('button');
-                        button.innerText = 'SEARCH';
-                        button.className = 'btn btn-warning btn-xsm';
-                        button.addEventListener('click', () => {
-                            if(this.prdEndStatusJ03 == false){
-                                this.modalOpen3(); //LOT모달 오픈
-                                this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
-                                this.getOutLotList(); //단건조회로 보내기
+                        if( this.prdEndStatusJ03 == false  ){
+                            if(this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3'){
+                                const button = document.createElement('button');
+                                button.innerText = 'SEARCH';
+                                button.className = 'btn btn-warning btn-xsm';
+                                button.addEventListener('click', () => {                                
+                                        this.modalOpen3(); //LOT모달 오픈
+                                        this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
+                                        this.getOutLotList(); //단건조회로 보내기
 
-                                this.odtCd = params.data.order_dtl_cd //등록할 때 필요한 코드 변수에 담기
-                            }
-                        });
-                        return button;
+                                        this.odtCd = params.data.order_dtl_cd //등록할 때 필요한 코드 변수에 담기                                
+                                });
+                                return button;
+                            }                            
+                        }
                     }
                  },
             ],
@@ -277,7 +313,7 @@ export default {
             },
 
             proOutDefs: [
-                {headerName: '출고상세코드', field: 'prd_out_dtl_cd', cellStyle: { textAlign: "center" }},
+                {headerName: '출고상세코드', field: 'prd_out_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
                 {headerName: '주문상세코드', field: 'order_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
                 {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }},
                 {headerName: '제품코드', field: 'prd_cd', cellStyle: { textAlign: "center" }, hide: true},
@@ -420,7 +456,15 @@ export default {
             
             const selectedRows = this.$refs.lotGrid.api.getSelectedRows();
 
-            const newRowData = selectedRows.map(row => ({
+            // 기존 데이터에서 중복을 방지할 키값(prd_lot_cd)
+            const existingData = new Set(this.proOutData.map(row => row.prd_lot_cd));
+
+            const newRowData = selectedRows
+            .filter(row => {
+                // prd_lot_cd 기존 데이터에 없는 경우에만 추가(.has()는 set안에 값이 존재하느지 확인하고 true/false를 반환)
+                return !existingData.has(row.prd_lot_cd);
+            })
+            .map(row => ({
                 
                 order_dtl_cd: this.odtCd, //행 선택할 때 담은 변수 코드 여기서 넣어주기
                 prd_lot_cd: row.prd_lot_cd,
@@ -446,6 +490,18 @@ export default {
             return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
         },
 
+        //출고완료인지 확인
+        async prdOutEndStatus() {
+            let result = await axios.get(`/api/sales/prdOutEndStatus/${this.order_code}`)
+                                    .catch(err => console.log("출고확인",err));
+            if(result.data[0].status == 'J03'){
+                console.log("드디어")
+                this.prdEndStatusJ03 = true;
+            }else{
+                this.prdEndStatusJ03 = false;
+            }
+        },
+
         //상세조회 출고제품 헤드부분
         async prdOutDtlList(selectNo) {
             let result = await axios.get(`/api/sales/prdOutDtlList/${selectNo}`)
@@ -457,6 +513,9 @@ export default {
             this.getOutOrdList();
             //상세조회 디테일(lot)
             this.prdOutDtlLotList(selectNo);
+
+            //출고완료체크
+            this.prdOutEndStatus();
         },
         prdOutHeadList(){
             document.getElementById('acc_name').value = this.POHead[0].act_nm;
@@ -547,20 +606,20 @@ export default {
                 });
                 return;
             }
-            
+
 
             //출고 등록
             let insertPrdOut = [];
             let insertPrdOutDtl = [];
-            let updatePrdOutQty = [];
+            //let updatePrdOutQty = [];
 
-            this.proOutData.forEach((obj) => {
-                updatePrdOutQty.push({
-                        prd_lot_cd: obj.prd_lot_cd,
-                        prd_out_qty: obj.prd_out_qty
-                    });
-            });
-            console.log("업데이트조건",updatePrdOutQty)
+            // this.proOutData.forEach((obj) => {
+            //     updatePrdOutQty.push({
+            //             prd_lot_cd: obj.prd_lot_cd,
+            //             prd_out_qty: obj.prd_out_qty
+            //         });
+            // });
+            // console.log("업데이트조건",updatePrdOutQty)
 
             this.proOutData.forEach((obj) => {
                 insertPrdOutDtl.push({
@@ -571,7 +630,7 @@ export default {
                         note: obj.note,
                     });
             });
-            
+
             console.log("출고디테일",insertPrdOutDtl);
 
             insertPrdOut.push({
@@ -582,7 +641,7 @@ export default {
             });
             console.log("출고테이블",insertPrdOut);
 
-            let insertPrdOutArr = [...insertPrdOut, insertPrdOutDtl, updatePrdOutQty ];   //첫번째가 헤드, 두번째가 디테일, 세번째 업데이트
+            let insertPrdOutArr = [...insertPrdOut, insertPrdOutDtl ];   //첫번째가 헤드, 두번째가 디테일, 세번째 업데이트
             console.log("합친거",insertPrdOutArr);
 
             let result = await axios.post('/api/sales/prdOut', insertPrdOutArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
@@ -617,22 +676,76 @@ export default {
             this.proOutData = [];         
         },
 
-        //출고 삭제(제품수량 업데이트 후)
-        async prdOutDelete() {
-            let updateResult
+        //출고 수정
+        async prdOutUpdate() {
+            let updateResult 
+            let updateStatus
             let upObj = [];
             let upRow = '';
-            
+            //뒷단에서 업데이트랑 인서트 한번에 하게 할려고 필요한 값들 한번에 보내기
             for(let i = 0; i < this.proOutData.length; i++){
                 upRow = this.proOutData[i];
                 upObj.push({
-                    prd_lot_cd : upRow.prd_lot_cd,
+                    prd_out_dtl_cd : upRow.prd_out_dtl_cd,
+                    prd_out_cd: this.selectNo,
+                    order_dtl_cd: upRow.order_dtl_cd, 
+                    prd_cd : upRow.prd_cd,
                     prd_out_qty: upRow.prd_out_qty,
+                    prd_lot_cd: upRow.prd_lot_cd,
+                    note: upRow.note,
+                    stock: upRow.stock,
+                    order_cd: this.POHead[0].order_cd
                 })
             };
-            updateResult = await axios.put(`/api/sales/prdOutDeleteQty`,upObj)
-                                      .catch(err => console.log("updateAxiosError",err));  
+            updateResult = await axios.put(`/api/sales/prdOutUpdates`,upObj)
+                                        .catch(err => console.log("updateAxiosError",err));       
             if(updateResult.data.result == 'success'){
+
+                if(this.selected2 == 'prdOutEnd') {
+                    console.log("출고")
+                    updateStatus = await axios.put(`/api/sales/prdOutEndUpdates`,upObj)
+                                        .catch(err => console.log("updateAxiosError",err));
+                    if(updateStatus.data.result == 'success') {
+                        this.$swal({
+                        title: "Update!",
+                        text: "GO to ProductOut List",
+                        icon: "success"
+                        }).then(result =>{
+                            if(result){
+                                this.$router.push({name:'Sales_ProOutList'}) //OK누르면 목록으로 이동
+                            }
+                        });
+                    };
+                };
+
+                this.$swal({
+                title: "Update!",
+                text: "GO to ProductOut List",
+                icon: "success"
+                }).then(result =>{
+                    if(result){
+                        this.$router.push({name:'Sales_ProOutList'}) //OK누르면 목록으로 이동
+                    }
+                });     
+            };
+        },
+
+        //출고 삭제(제품수량 업데이트 후)
+        async prdOutDelete() {
+            // let updateResult
+            // let upObj = [];
+            // let upRow = '';
+
+            // for(let i = 0; i < this.proOutData.length; i++){
+            //     upRow = this.proOutData[i];
+            //     upObj.push({
+            //         prd_lot_cd : upRow.prd_lot_cd,
+            //         prd_out_qty: upRow.prd_out_qty,
+            //     })
+            // };
+            // updateResult = await axios.put(`/api/sales/prdOutDeleteQty`,upObj)
+            //                           .catch(err => console.log("updateAxiosError",err));  
+            // if(updateResult.data.result == 'success'){
                 this.$swal({
                     title: "정말 삭제하시겠습니까??",
                     text: "",
@@ -646,12 +759,10 @@ export default {
                         //출고 제품 삭제
                         let result2 = await axios.delete(`/api/sales/prdOutDelete/${this.selectNo}`)
                                                 .catch(err => console.log("deleteAxios에러",err));
-
                         if(result2.data.result == 'success'){
                             //출고 제품 삭제 후 상태 원복
                             let result3 = await axios.put(`/api/sales/prdOutDeleteStatus/${this.order_code}`)
                                                     .catch(err => console.log("Status에러",err));
-
                             if(result3.data.result == 'success'){
                                 this.resetForm(); // 초기화
                             
@@ -669,30 +780,30 @@ export default {
                         }                        
                     }
                 });
-            };
+            //};
         }, 
 
-        //출고 삭제(제품수량 업데이트 후)
+        //출고 단건 삭제(제품수량 업데이트 후)
         async prdOutListDelete() {
-            let updateResult
-            let upObj = [];
+            // let updateResult
+            // let upObj = [];
 
-            if(this.prd_out_qty == null){
-                this.prd_out_qty = 0;
-            }
+            // if(this.prd_out_qty == null){
+            //     this.prd_out_qty = 0;
+            // }
 
-            upObj.push({
-                prd_lot_cd : this.prd_lot_cd,
-                prd_out_qty: this.prd_out_qty,
-            })
+            // upObj.push({
+            //     prd_lot_cd : this.prd_lot_cd,
+            //     prd_out_qty: this.prd_out_qty,
+            // })
 
-            updateResult = await axios.put(`/api/sales/prdOutDeleteQty`,upObj)
-                                      .catch(err => console.log("updateAxiosError",err));  
-            if(updateResult.data.result == 'success'){
+            // updateResult = await axios.put(`/api/sales/prdOutDeleteQty`,upObj)
+            //                           .catch(err => console.log("updateAxiosError",err));  
+            // if(updateResult.data.result == 'success'){
                 let result2 = await axios.delete(`/api/sales/prdOutListDelete/${this.prd_out_dtl_cd}`)
                                          .catch(err => console.log("deleteAxios에러",err));
                 console.log(result2.data.result);
-            }
+            //}
         },
 
 

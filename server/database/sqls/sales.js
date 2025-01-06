@@ -15,6 +15,7 @@ SELECT o.order_cd as order_cd,
        (SELECT count(*) FROM order_detail WHERE order_cd=o.order_cd) AS prd_cnt
 FROM \`order\` o JOIN account a ON o.act_cd = a.act_cd
                  JOIN member m ON o.ID = m.id
+ORDER BY order_cd DESC
 `;
 
 //주문서조회-거래처, 날짜 따로 검색
@@ -168,7 +169,8 @@ SELECT d.prd_out_cd,
 FROM product_out p JOIN  product_out_detail d ON p.prd_out_cd = d.prd_out_cd 
                    JOIN account a ON p.act_cd = a.act_cd
                    JOIN member m ON p.id = m.id
-GROUP BY d.prd_out_cd;
+GROUP BY d.prd_out_cd
+ORDER BY p.prd_out_cd DESC;
 `;
 
 //출고제품조회-거래처, 날짜 따로 검색
@@ -402,7 +404,8 @@ SELECT r.prd_return_cd,
 FROM product_return r JOIN account a ON r.act_cd = a.act_cd
                       JOIN member m ON r.id = m.id
                       JOIN product_return_detail d ON r.prd_return_cd = d.prd_return_cd
-GROUP BY r.prd_return_cd;
+GROUP BY r.prd_return_cd
+ORDER BY r.prd_return_cd DESC;
 `;
 
 //반품제품조회-거래처, 날짜 따로 검색
@@ -617,7 +620,7 @@ GROUP BY p.prd_cd;
 // 제품당 LOT조회
 const prdLotList =
 `
-SELECT p.prd_nm, i.prd_lot_cd, i.stock, i.exp_dt, i.prd_in_dt
+SELECT p.prd_nm, i.prd_lot_cd, i.prd_qty, i.stock, i.exp_dt, i.prd_in_dt
 FROM product p JOIN product_in i ON p.prd_cd = i.prd_cd
 WHERE p.prd_cd = ?
 `;
@@ -632,7 +635,7 @@ SELECT act_cd,
        (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = act_type) AS act_type
 FROM account;
 `;
-// 담당자 조회(모달)
+// 영업 담당자 조회(모달)
 const moMemList =
 `
 SELECT m.ID, 

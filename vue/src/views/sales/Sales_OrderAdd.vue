@@ -77,17 +77,27 @@
             </div>
             <!-- 주문디테일 테이블 부분 -->
             <div class="card-body">
-                <div class="row">
+                <!--등록페이지-->
+                <div class="row" v-if="this.isdetail == false">
                     <div class="col-6 col-lg-11"></div>
                     <div class="col-6 col-lg-1 text-end text-md-start">
-                        <button class="btn btn-warning " @click="modalOpen3">제품 조회</button>
+                        <button v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' "
+                         class="btn btn-warning " @click="modalOpen3">제품 조회</button>
                     </div>
                 </div>
+                <!--상세페이지-->
+                <div class="row" v-if="this.isdetail == true">
+                    <div class="col-6 col-lg-11"></div>
+                    <div class="col-6 col-lg-1 text-end text-md-start">
+                        <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
+                         class="btn btn-warning " @click="modalOpen3">제품 조회</button>
+                    </div>
+                </div>
+
                 <ag-grid-vue style="width:100%; height: 380px;"
                 class="ag-theme-alpine"
                 :columnDefs="columnDefs"
                 :rowData="rowData"
-                :gridOptions="gridOptions"
                 @grid-ready="gridFit"
                 overlayNoRowsTemplate="제품 조회 버튼을 이용하여 제품을 추가 해주세요.">
                 </ag-grid-vue>
@@ -97,8 +107,10 @@
                     <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
                 <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
-                    <button class="btn btn-primary mtp30" @click="orderUpdate">UPDATE</button>
-                    <button class="btn btn-danger mlp10 mtp30" @click="orderDelete">DELETE</button>
+                    <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
+                     class="btn btn-primary mtp30" @click="orderUpdate">UPDATE</button>
+                    <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
+                     class="btn btn-danger mlp10 mtp30" @click="orderDelete">DELETE</button>
                 </div>
             </div> 
         </div>
@@ -147,14 +159,21 @@
             <button type="button" aria-label="Close" class="close" @click="modalOpen3">×</button>
         </template>
         <template v-slot:default>
-            <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="proDefs"
-            :rowData="proData" :pagination="true" @rowClicked="modalClicked3" @grid-ready="gridFit"
+            <ag-grid-vue class="ag-theme-alpine" 
+            ref="lotGrid"
+            style="width: 100%; height: 400px;" 
+            :columnDefs="proDefs"
+            :rowData="proData" 
+            :pagination="true" 
+            :gridOptions="gridOptions"
+            rowClicked="multiple" 
+            @grid-ready="gridFit"
             overlayNoRowsTemplate="등록된 제품이 없습니다.">
             </ag-grid-vue>
         </template>
         <template v-slot:footer>
-            <button v-show="hidden" type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
-            <button v-show="hidden" type="button" class="btn btn-primary" @click="modalOpen3">OK</button>
+            <button type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
+            <button type="button" class="btn btn-primary" @click="modalClicked3">OK</button>
         </template>
     </Layout>
 </template>
@@ -214,28 +233,36 @@ export default {
                     field: 'delete', 
                     cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
-                        
-                        const button = document.createElement('button');
-                        button.innerText = 'DELETE';
-                        button.className = 'btn btn-danger btn-xsm';
-                        button.addEventListener('click', () => {
-                            
-                            //행만 삭제 
-                            this.rowData = this.rowData.filter(row => row !== params.data);
-                            
-                            // 상세 페이지 일떄
-                            if(this.isdetail == true){
-                                //한 행에 관한 단건 딜리트 메소드
-                                this.order_dtl_cd = params.data.order_dtl_cd;
-                                this.orderListDelete();
-
+                        //등록 페이지
+                        if(this.isdetail == false){
+                            const button = document.createElement('button');
+                            button.innerText = 'DELETE';
+                            button.className = 'btn btn-danger btn-xsm';
+                            button.addEventListener('click', () => {
+                                //행만 삭제
                                 this.rowData = this.rowData.filter(row => row !== params.data);
-                            };
-                        });
-                        return button;
-
-                        }
-                    
+                            });
+                            return button;
+                        };
+                        // 상세 페이지 일떄
+                        if(this.isdetail == true){
+                            //관리자랑 영업팀장만 삭제할 수 있다
+                            if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
+                                const button = document.createElement('button');
+                                button.innerText = 'DELETE';
+                                button.className = 'btn btn-danger btn-xsm';
+                                button.addEventListener('click', () => {
+                                    
+                                        //한 행에 관한 단건 딜리트 메소드
+                                        this.order_dtl_cd = params.data.order_dtl_cd;
+                                        this.orderListDelete();
+                                        this.rowData = this.rowData.filter(row => row !== params.data);
+                                    
+                                });
+                                return button;
+                            }
+                        };
+                    }                    
                 },
             ],
             rowData: [ ],
@@ -266,6 +293,11 @@ export default {
                 },
             ],
             proData: [],
+
+            gridOptions: {
+                rowSelection: { mode: "multiRow" },
+                suppressMovableColumns: true,
+            },
 
             asModal: false,
             msModal: false,
@@ -334,20 +366,30 @@ export default {
             document.getElementById('mem_name').value = params.data.name;
             this.msModal = !this.msModal;
         },
-        modalClicked3(params) {
+        modalClicked3() {
             // 선택한 제품 rowData에 추가
-            const newRowData = {
-                prd_cd: params.data.prd_cd, 
-                prd_nm: params.data.prd_nm, 
+            const selectedRows = this.$refs.lotGrid.api.getSelectedRows();
+
+            // 기존 데이터에서 중복을 방지할 키값(prd_cd)
+            const existingData = new Set(this.rowData.map(row => row.prd_cd));
+
+            const newRowData = selectedRows
+            .filter(row => {
+                // prd_cd 기존 데이터에 없는 경우에만 추가(.has()는 set안에 값이 존재하느지 확인하고 true/false를 반환)
+                return !existingData.has(row.prd_cd);
+            })
+            .map(row => ({
+                prd_cd: row.prd_cd, 
+                prd_nm: row.prd_nm, 
                 order_qty: '', 
                 note: '',  
                 delete: 'delete', 
-            };
+            }));
 
             //수정후에 인서트 할 값들 담기
             this.upInsert.push(newRowData);
 
-            this.rowData = [...this.rowData, newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
+            this.rowData = [...this.rowData, ...newRowData]; // 기존 데이터 유지하면서 새 데이터 추가
             this.psModal = !this.psModal;
         },
         placeholderRenderer(params) {

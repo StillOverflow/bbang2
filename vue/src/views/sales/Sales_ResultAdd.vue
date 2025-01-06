@@ -68,6 +68,7 @@
                         class="ag-theme-alpine"
                         :columnDefs="prdRTDefs"
                         :rowData="prdRTData"
+                        :gridOptions="newgridOptions"
                         @grid-ready="gridFit"
                         overlayNoRowsTemplate="제품의 LOT를 선택해주세요.">
                         </ag-grid-vue>
@@ -79,8 +80,10 @@
                     <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
                 </div>
                 <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
-                    <button class="btn btn-primary mtp30" @click="returnUpdate">UPDATE</button>
-                    <button class="btn btn-secondary mlp10 mtp30" @click="prdReturnDelete">DELETE</button>
+                    <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
+                     class="btn btn-primary mtp30" @click="returnUpdate">UPDATE</button>
+                    <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
+                     class="btn btn-secondary mlp10 mtp30" @click="prdReturnDelete">DELETE</button>
                 </div>
           </div>
       </div>
@@ -202,24 +205,33 @@ export default {
                     field: 'lotlist', 
                     cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
-                        const button = document.createElement('button');
-                        button.innerText = 'SEARCH';
-                        button.className = 'btn btn-warning btn-xsm';
-                        button.addEventListener('click', () => {
-
-                            //if(this.isdetail == false){
-                            this.modalOpen3(); //LOT모달 오픈
-                            this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
-                            this.getOutLotList(); 
-                            //};
-
-                            // if(this.isdetail == true){
-                                
-                            //     this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
-                            //     this.getreturnLotList();
-                            // }
-                        });
-                        return button;
+                        //등록 페이지
+                        if(this.isdetail == false){
+                            const button = document.createElement('button');
+                            button.innerText = 'SEARCH';
+                            button.className = 'btn btn-warning btn-xsm';
+                            button.addEventListener('click', () => {
+                                this.modalOpen3(); //LOT모달 오픈
+                                this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
+                                this.getOutLotList();
+                            });
+                            return button;
+                        };
+                        // 상세 페이지 일떄
+                        if(this.isdetail == true){
+                            //관리자랑 영업팀장만 검색할 수 있다
+                            if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
+                                const button = document.createElement('button');
+                                button.innerText = 'SEARCH';
+                                button.className = 'btn btn-warning btn-xsm';
+                                button.addEventListener('click', () => {
+                                    this.modalOpen3(); //LOT모달 오픈
+                                    this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
+                                    this.getOutLotList();
+                                });
+                                return button;
+                            }
+                        };
                     }
                  },
             ],
@@ -280,28 +292,79 @@ export default {
                     field: 'delete', 
                     cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
-                        const button = document.createElement('button');
-                        button.innerText = 'DELETE';
-                        button.className = 'btn btn-danger btn-xsm';
-                        button.addEventListener('click', () => {
-                            this.prdRTData = this.prdRTData.filter(row => row !== params.data);
-
-                            // 상세 페이지 일때
-                            if(this.isdetail == true){
-                                //한 행에 관한 단건 딜리트 메소드
-                                this.prd_return_dtl_cd = params.data.prd_return_dtl_cd;
-                                this.returnListDelete();
-
+                        //등록 페이지
+                        if(this.isdetail == false){
+                            const button = document.createElement('button');
+                            button.innerText = 'DELETE';
+                            button.className = 'btn btn-danger btn-xsm';
+                            button.addEventListener('click', () => {
+                                //행만 삭제
                                 this.prdRTData = this.prdRTData.filter(row => row !== params.data);
-                            };
-                            
-                        });
-                        return button;
+                            });
+                            return button;
+                        };
+                        // 상세 페이지 일떄
+                        if(this.isdetail == true){
+                            //관리자랑 영업팀장만 삭제할 수 있다
+                            if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
+                                const button = document.createElement('button');
+                                button.innerText = 'DELETE';
+                                button.className = 'btn btn-danger btn-xsm';
+                                button.addEventListener('click', () => {                                    
+                                    //한 행에 관한 단건 딜리트 메소드
+                                    this.prd_return_dtl_cd = params.data.prd_return_dtl_cd;
+                                    this.returnListDelete();
+
+                                    this.prdRTData = this.prdRTData.filter(row => row !== params.data);
+                                    
+                                });
+                                return button;
+                            }
+                        };
                     }
                 },
-                // {headerName: 'type', field: 'type'},
             ],
             prdRTData: [],
+
+            //반품수량이 출구수량을 못 넘기게 하기
+            newgridOptions: {
+                    onCellValueChanged: (params) => {
+                    if (params.colDef.field === 'prd_return_qty') {
+                        const returnQty = params.data.prd_return_qty || 0;
+                        const outQty = params.data.prd_out_qty || 0;
+
+                        if (returnQty > outQty) {
+                            // 알림 메시지 또는 에러 처리
+                            this.$swal({
+                                icon: "error",
+                                title: "다시 입력 해주세요.",
+                                text: "반품 수량은 출고 수량을 초과할 수 없습니다.",
+                            });
+
+                            //이전 값으로 되돌리기(행 데이터를 재설정)
+                            params.node.setData({
+                                ...params.data, //기존 데이터 유지
+                                prd_return_qty: params.oldValue ?? 0,   //prd_return_qty만 수정
+                            });
+                            // 강제로 UI 업데이트(잘목된 값이 UI에 남아 있는 문제방지)
+                            params.api.refreshCells({ force: true });
+                        }
+                        //음수 못 넣게 하기
+                        if (returnQty < 0) {
+                            this.$swal({
+                                icon: "error",
+                                title: "다시 입력 해주세요.",
+                                text: "반품 수량은 음수가 될 수 없습니다.",
+                            });
+                            params.node.setData({
+                                ...params.data,
+                                prd_return_qty: params.oldValue ?? 0,
+                            });
+                            params.api.refreshCells({ force: true });
+                        }
+                    }
+                },
+            },
 
             prdOutDefs: [
                 {headerName: '출고 코드', field: 'prd_out_cd', cellStyle: { textAlign: "center" }},
@@ -386,7 +449,15 @@ export default {
             
             const selectedRows = this.$refs.lotGrid.api.getSelectedRows();
 
-            const newRowData = selectedRows.map(row => ({
+            // 기존 데이터에서 중복을 방지할 키값(prd_out_dtl_cd)
+            const existingData = new Set(this.prdRTData.map(row => row.prd_out_dtl_cd));
+
+            const newRowData = selectedRows
+            .filter(row => {
+                // prd_out_dtl_cd가 기존 데이터에 없는 경우에만 추가(.has()는 set안에 값이 존재하느지 확인하고 true/false를 반환)
+                return !existingData.has(row.prd_out_dtl_cd);
+            })
+            .map(row => ({
                 
                 prd_out_dtl_cd: row.prd_out_dtl_cd, 
                 prd_cd: row.prd_cd,
