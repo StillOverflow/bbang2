@@ -99,10 +99,10 @@ const deleteProcessFlow = async (proc_flow_cd, prd_cd) => {
   let result = await mariadb.query("deleteProcessFlow", proc_flow_cd); //info 객체형태 전달
   if (result.affectedRows > 0) {
     //순서 업데이트
-    await Promise.all([
-      updateProSeq(prd_cd),
-      deleteProMtl(proc_flow_cd)
-    ]);
+
+      deleteProMtl(proc_flow_cd),
+      updateProSeq(prd_cd)
+
     return { result: true };
   } else {
     return { result: false };
