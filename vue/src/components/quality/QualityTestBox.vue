@@ -115,8 +115,8 @@
             </div>
           </div>
           <div class="col-3 col-md-2 col-xl-1 text-end">
-            <button class="btn btn-primary" :style="t_overflow" @click="recInsert" v-show="isWaitList">SUBMIT</button>
-            <button class="btn btn-outline-success" @click="excelDownload" v-show="!isWaitList">EXCEL 상세</button>
+            <button class="btn btn-primary" :style="t_overflow" @click="recInsert" v-show="isWaitList">등록</button>
+            <button class="btn btn-outline-success" @click="excelDownload" v-show="!isWaitList" :style="t_break">EXCEL 상세</button>
           </div>
         </div>
 
@@ -131,7 +131,7 @@
                 :gridOptions="gridOptions" @rowClicked="modalSelect"/>
             </template>
             <template v-slot:footer> <!-- 아무것도 안 넣으면 기본 버튼이 표시됨. -->
-            <button type="button" class="btn btn-secondary" @click="modalToggle">CLOSE</button>
+            <button type="button" class="btn btn-secondary" @click="modalToggle">닫기</button>
             </template>
         </ModalLayout>
     </div>
@@ -542,14 +542,14 @@
           def_cd: this.def_qty > 0 ? this.def_cd : null, // def_cd가 있더라도 불량양이 없으면 null 입력
           note: this.note
         };
-        
+
         if(this.isMatTest){
           headerObj.target_type = 'P01';
         } else {
-          headerObj.target_type = isLast ? 'P03' : 'P02'; // 제품 마지막 공정에서의 검사는 P03(완제품검사)으로 입력 
+          headerObj.target_type = isLast ? 'P03' : 'P02'; // 제품 마지막 공정에서의 검사는 P03(완제품검사)으로 입력
         }
 
-        let result = await axios.post('/api/quality/rec', {header: headerObj, dtl: dtlArr})
+        let result = await axios.post('/api/quality/rec', {header: headerObj, dtl: dtlArr, inst_cd: target.inst_cd})
                                 .catch(err => console.log(err));
 
         if(result.data == 'success'){

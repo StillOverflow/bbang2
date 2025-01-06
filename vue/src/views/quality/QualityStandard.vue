@@ -51,8 +51,7 @@
             <input type="text" class="form-control" :value="date_val" readonly>
           </div>
           <div class="col-4 col-md-2 text-center">
-            <button class="btn btn-primary" :style="t_overflow" @click="stdInsert">SUBMIT</button>
-            <!-- <button class="btn btn-secondary" :style="t_overflow" @click="getTList">RESET</button> -->
+            <button class="btn btn-primary" :style="t_overflow" @click="stdInsert">등록</button>
           </div>
         </div>
       </div>

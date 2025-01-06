@@ -35,7 +35,7 @@
             :gridOptions="gridOptions" @rowClicked="modalSelect"/>
         </template>
         <template v-slot:footer> <!-- 아무것도 안 넣으면 기본 버튼이 표시됨. -->
-        <button type="button" class="btn btn-secondary" @click="modalToggle">CLOSE</button>
+        <button type="button" class="btn btn-secondary" @click="modalToggle">닫기</button>
         </template>
     </ModalLayout>
 
