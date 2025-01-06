@@ -316,6 +316,7 @@ let sql =
   (SELECT EQP_TYPE FROM process where proc_cd=pr.proc_cd) AS EQP_TYPE,
   (SELECT PRD_NM FROM product WHERE PRD_CD=pr.PRD_CD) PRD_NM,
   (SELECT PROC_NM FROM process where proc_cd=pr.proc_cd) AS PROC_NM,
+  IFNULL((SELECT PASS_QTY FROM prod_result WHERE inst_cd=pr.INST_CD AND prd_cd=pr.PRD_CD AND step=(pr.step-1)),0) AS LAST_PASS_QTY,
   IFNULL((SELECT STATUS FROM prod_result WHERE inst_cd=pr.INST_CD AND prd_cd=pr.PRD_CD AND step=(pr.step-1)),0) AS LAST_STATUS,
   IFNULL((SELECT QUE_STATUS FROM prod_result WHERE inst_cd=pr.INST_CD AND prd_cd=pr.PRD_CD AND step=(pr.step-1)),0) AS LAST_QUE_STATUS,
   fn_get_codename(pr.STATUS) as ACT_TYPE,
@@ -459,7 +460,7 @@ WHERE MAT_LOT_CD = ? `;
 
 
  //공정시작 시 계획서/지시서 상태변경
- const statusChage = (values) => {
+ const statusChange = (values) => {
 let sql = `
   UPDATE 
     prod_inst a INNER JOIN prod_plan b ON a.PROD_PLAN_CD=b.PROD_PLAN_CD
@@ -501,5 +502,5 @@ module.exports = {
     matLotSearch,
     matLotInsert,
     matLotUpdate,
-    statusChage
+    statusChange
 }

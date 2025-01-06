@@ -68,7 +68,7 @@
                   <td>{{ val.TOTAL_QTY }}</td>
                   <td>{{ val.PRD_OUT_QTY }}</td>
                   <td>{{ val.TOTAL_QTY-val.PRD_OUT_QTY }}</td>
-                  <td><button class="btn btn-dark btn-sm" @click="getResultList(val.PRD_CD); this.PRD_NM=val.PRD_NM">선택하기</button></td>
+                  <td><button class="btn btn-dark btn-sm" @click="getResultList(val);">선택하기</button></td>
                 </tr>
               </template>
               <tr v-else>
@@ -85,7 +85,7 @@
         <div class="row">
           <!--공정목록-->
           <div class="col-7">
-            <p class="text-uppercase text-lg font-weight-bolder">2. <span>{{ this.PRD_NM ? '\"'+this.PRD_NM+'\"': '제품' }}</span> 공정목록</p>
+            <p class="text-uppercase text-lg font-weight-bolder">2. <span>{{ this.prdInfo.PRD_NM ? '\"'+this.prdInfo.PRD_NM+'\"': '제품' }}</span> 공정목록</p>
             <div class="table-responsive produce">
               <table class="table">
                 <thead class="table-secondary">
@@ -110,14 +110,15 @@
                       <template v-for="equ in equData" :key="equ.EQP_CD">
                         <template v-if="equ.EQP_TYPE == flow.EQP_TYPE">
                           <tr class="text-center align-middle sub-tr" :class="equ.use_cnt > 0 ? 'none-select' : ''">
+                            <td width="20%"></td>
                             <td width="10%">
                               <div class="form-check col-10 d-flex">
                                 <input class="form-check-input ms-1" type="radio" v-model="equ_radio" :value="equ.EQP_CD" :id="'radio' + equ.EQP_CD">
                               </div>
                             </td>
-                            <td width="30%">{{ equ.EQP_CD }}</td>
+                            <td width="10%">{{ equ.EQP_CD }}</td>
                             <td width="30%">{{ equ.EQP_NM }}</td>
-                            <td width="30%">{{ equ.use_cnt > 0 ? '사용불가' : '사용가능' }}</td>
+                            <td width="30%">{{ equ.use_cnt > 0 ? '사용중' : '사용가능' }}</td>
                           </tr>
                         </template>
                       </template>
@@ -135,7 +136,7 @@
 
           
           <div class="col-5">
-            <p class="text-uppercase text-lg font-weight-bolder">3. <span>{{ this.PROC_NM ? '\"'+this.PROC_NM+'\"': '' }}</span> 공정 설정</p>
+            <p class="text-uppercase text-lg font-weight-bolder">3. <span>{{ this.resultInfo.PROC_NM ? '\"'+this.resultInfo.PROC_NM+'\"': '' }}</span> 공정 설정</p>
             <div class="progress-bx">
               <template v-if="this.resultInfo.PROD_RESULT_CD">
                 <!--공정설정-->      
@@ -225,29 +226,34 @@
                     </tr>
                   </thead>
                   <tbody>
-
-                    <tr v-for="mat in matData" :key="mat.PROC_CD" class="text-center align-middle">
-                      <td>{{ mat.MAT_CD }}</td>
-                      <td>{{ mat.MAT_NM }}</td>
-                      <td>{{ mat.MAT_QTY }}</td>
-                      <td class="row">
-                        <input type="number" class="form-control col-8 w-80" v-model.number="mat.MAT_USE_QTY" @keyup="matHandle(mat)">
-                        <span class="col-1">{{ mat.UNIT }}</span>
-                        <span class="point-red dnone" :id="'point_' + mat.MAT_CD">지시량보다 높게 설정할 수 없습니다.</span>
-                      </td>    
-                      <td class="align-middle text-center">
-                        <div class="d-flex align-items-center justify-content-center">
-                          <span class="me-2 text-xs font-weight-bold">{{ mat.result_qty }}%</span>
-                            <div>
-                              <div class="progress">
-                                <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="60"
-                                    aria-valuemin="0" aria-valuemax="100" :style="'width:'+mat.result_qty+'%' "></div>
+                    <template v-if="matCount >0">
+                      <tr v-for="mat in matData" :key="mat.PROC_CD" class="text-center align-middle">
+                        <td>{{ mat.MAT_CD }}</td>
+                        <td>{{ mat.MAT_NM }}</td>
+                        <td>{{ mat.MAT_QTY }}</td>
+                        <td class="row">
+                          <input type="number" class="form-control col-8 w-80" v-model.number="mat.MAT_USE_QTY" @keyup="matHandle(mat)">
+                          <span class="col-1">{{ mat.UNIT }}</span>
+                          <span class="point-red dnone" :id="'point_' + mat.MAT_CD">지시량보다 높게 설정할 수 없습니다.</span>
+                        </td>    
+                        <td class="align-middle text-center">
+                          <div class="d-flex align-items-center justify-content-center">
+                            <span class="me-2 text-xs font-weight-bold">{{ mat.result_qty }}%</span>
+                              <div>
+                                <div class="progress">
+                                  <div class="progress-bar bg-gradient-info" role="progressbar" aria-valuenow="60"
+                                      aria-valuemin="0" aria-valuemax="100" :style="'width:'+mat.result_qty+'%' "></div>
+                                </div>
                               </div>
-                            </div>
-                        </div>
+                          </div>
+                        </td>
+                      </tr>
+                    </template>
+                    <tr v-else>
+                      <td colspan="6">
+                        <div class="list-nodata">등록된 자재목록이 없습니다.</div>
                       </td>
                     </tr>
-
                   </tbody>
               </table>
             </div>
@@ -281,7 +287,7 @@ export default {
     },
     flowCount(){ //공정 갯수
       return this.flowData.length;
-    },
+    }
   },
   data() {
     return {
@@ -290,6 +296,7 @@ export default {
       isModal3: false, //자재수량 모달
       inst_cd:'',
       proc_flow_cd:'', 
+      prdInfo: [],
       flowInfo: [],
       resultInfo: [],
       resultAble: false,
@@ -378,11 +385,12 @@ export default {
       this.memData = result.data; 
     },
 
-     //자재 리스트
+    //자재 리스트
     async getMatList() {
       let result = await axios.get(`/api/inst/${this.resultInfo.PROC_FLOW_CD}/mat`)
                               .catch(err => console.log(err));
       this.matData = result.data;
+      this.matCount = this.matData.length;
     },    
 
     //지시서 제품 리스트
@@ -392,7 +400,6 @@ export default {
                               .catch(err => console.log(err));
       this.instDtlData = result.data;
     },
-
 
     //자재 수량 조정
     matHandle(mat){
@@ -418,10 +425,11 @@ export default {
     },
 
     //생산 공정리스트
-    async getResultList(prd_cd){
+    async getResultList(val){
+      this.prdInfo = val;
       let obj = {
         INST_CD : this.inst_cd,
-        PRD_CD : prd_cd
+        PRD_CD : this.prdInfo.PRD_CD
       }
       let result = await axios.get('/api/progress/result', {params:obj})
                               .catch(err => console.log(err));
@@ -444,6 +452,13 @@ export default {
       if(this.resultInfo.STATUS == 'Z01'){
         this.resultAble = true;
       }
+
+      if(this.resultInfo.STEP > 1){
+        this.resultInfo.PROD_QTY = this.resultInfo.LAST_PASS_QTY;
+      }else{
+        this.resultInfo.PROD_QTY = this.prdInfo.TOTAL_QTY;
+      }
+      
       this.resultInfo.START_TIME = this.$comm.getDatetimeMin(this.resultInfo.START_TIME);
       this.resultInfo.END_TIME = this.$comm.getDatetimeMin(this.resultInfo.END_TIME);
 
@@ -477,7 +492,7 @@ export default {
       this.equData = result.data
     },
 
-    //사용 자재목록 조회
+    //자재 사용량 등록
     async matInsert(){
       let matArr = [];
 

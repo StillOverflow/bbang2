@@ -197,6 +197,7 @@ export default {
       planFlowData: [],
       prd_cd: "",
       instInfo: [],
+      chkArr : [],
 
 
       /* 모달 계획서 목록 */
@@ -314,7 +315,11 @@ export default {
       let result = await axios.get(`/api/inst/${prd_cd}/flow`)
                               .catch(err => console.log(err));                              
       this.planFlowData = result.data;
-      //this.flowArr = result.data;
+      this.flowArr = result.data;      
+      if(!this.chkArr.includes(this.flowArr)){
+        this.chkArr.push(this.flowArr);
+      }
+      console.log(this.chkArr);
     },
 
     //공정설정 리스트 드래그 시 이벤트 (공정 순서 재정렬)
