@@ -119,6 +119,7 @@
                         :columnDefs="proOutDefs"
                         :rowData="proOutData"
                         @grid-ready="gridFit"
+                        :gridOptions="newgridOptions"
                         overlayNoRowsTemplate="제품의 LOT를 선택해주세요.">
                         </ag-grid-vue>
                     </div>
@@ -416,6 +417,29 @@ export default {
                 },
             ],
             proOutData: [],
+
+             //출고수량에 음수 못 넣게 하기
+             newgridOptions: {
+                    onCellValueChanged: (params) => {
+                    if (params.colDef.field === 'prd_out_qty') {
+                        const prdOutQty = params.data.prd_out_qty || 0;
+
+                        //음수 못 넣게 하기
+                        if (prdOutQty < 0) {
+                            this.$swal({
+                                icon: "error",
+                                title: "다시 입력 해주세요.",
+                                text: "출고 수량은 음수가 될 수 없습니다.",
+                            });
+                            params.node.setData({
+                                ...params.data,
+                                prd_out_qty: params.oldValue ?? 0,
+                            });
+                            params.api.refreshCells({ force: true });
+                        }
+                    }
+                },
+            },
 
             ordDefs: [
                 {headerName: '주문서 코드', field: 'order_cd', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter', width: 130 },
