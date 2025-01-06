@@ -29,6 +29,8 @@ const planSelect = (datas) => {
     query += ` WHERE ` + searchOrder.join(' AND ');
   }
 
+  query += ` order by create_dt desc`;
+
   return query; // 쿼리 통합
 };
 
@@ -271,7 +273,7 @@ const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
     sql += `(CONCAT('PRS', LPAD(nextval(result_seq), 3,'0')), '${obj.inst_cd}', '${obj.PRD_CD}', '${obj.PROC_FLOW_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
   });
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
-
+  
   return sql;
 };
 
@@ -318,7 +320,8 @@ let sql =
   (SELECT PROC_NM FROM process where proc_cd=pr.proc_cd) AS PROC_NM,
   IFNULL((SELECT STATUS FROM prod_result WHERE inst_cd=pr.INST_CD AND prd_cd=pr.PRD_CD AND step=(pr.step-1)),0) AS LAST_STATUS,
   IFNULL((SELECT QUE_STATUS FROM prod_result WHERE inst_cd=pr.INST_CD AND prd_cd=pr.PRD_CD AND step=(pr.step-1)),0) AS LAST_QUE_STATUS,
-  fn_get_codename(pr.STATUS) as ACT_TYPE
+  fn_get_codename(pr.STATUS) as ACT_TYPE,
+  fn_get_codename(pr.QUE_STATUS) as QUE_ACT_TYPE
 FROM 
   PROD_RESULT pr`;
 
@@ -382,7 +385,10 @@ SELECT
   EQP_TYPE,
 	EQP_NM,
 	MODEL,
-  fn_get_codename(STATUS) as ACT_TYPE
+  fn_get_codename(STATUS) as ACT_TYPE,
+  (SELECT COUNT(*)
+    FROM prod_result
+  WHERE start_time IS NOT NULL AND (end_time IS NULL OR end_time = '')) AS use_cnt
 FROM equipment WHERE eqp_type = ?
 `;
 

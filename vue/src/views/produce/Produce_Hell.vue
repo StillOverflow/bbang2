@@ -6,7 +6,7 @@
 </style>
 <template>
   
-  <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
+  <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc1">
     <div class="card">      
       <div class="card-header ps-5 ps-md-4">
         <h5 class="modal-title mb-3">1. 생산지시서 선택</h5>
@@ -63,12 +63,12 @@
                 <tr class="text-center align-middle"
                 v-for="val in instDtlData"
                 :key="val.INST_DTL_CD">
-                  <td>{{val.PRD_CD}}</td>
+                  <td>{{ val.PRD_CD }}</td>
                   <td>{{ val.PRD_NM }}</td>
                   <td>{{ val.TOTAL_QTY }}</td>
                   <td>{{ val.PRD_OUT_QTY }}</td>
                   <td>{{ val.TOTAL_QTY-val.PRD_OUT_QTY }}</td>
-                  <td><button class="btn btn-dark btn-sm" @click="getResultList(val.PRD_CD)">선택하기</button></td>
+                  <td><button class="btn btn-dark btn-sm" @click="getResultList(val.PRD_CD); this.PRD_NM=val.PRD_NM">선택하기</button></td>
                 </tr>
               </template>
               <tr v-else>
@@ -84,30 +84,32 @@
         
         <div class="row">
           <!--공정목록-->
-          <h5 class="modal-title mb-3">2. 제품 공정목록</h5>
           <div class="col-7">
+            <p class="text-uppercase text-lg font-weight-bolder">2. <span>{{ this.PRD_NM ? '\"'+this.PRD_NM+'\"': '제품' }}</span> 공정목록</p>
             <div class="table-responsive produce">
               <table class="table">
                 <thead class="table-secondary">
                   <tr>
                     <th class="text-center text-uppercase text-ser opacity-7" width="10%"> 순번 </th>
-                    <th class="text-center text-uppercase text-ser opacity-7" width="30%">공정코드</th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="20%">공정코드</th>
                     <th class="text-center text-uppercase text-ser opacity-7" width="30%">공정명</th>
-                    <th class="text-center text-uppercase text-ser opacity-7" width="30%">상태</th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="20%">생산상태</th>
+                    <th class="text-center text-uppercase text-ser opacity-7" width="20%">검수상태</th>
                   </tr>
                 </thead>   
                 <tbody>
                   <template v-if="flowCount >0">
                     <template v-for="flow in flowData" :key="flow.PROC_CD">
-                      <tr class="text-center align-middle flowList" :class="'flow_'+flow.PROC_FLOW_CD" @click="getResultInfo(flow.PROD_RESULT_CD);">
+                      <tr class="text-center align-middle flowList" :class="'flow_'+flow.PROC_FLOW_CD" @click="getResultInfo(flow.PROD_RESULT_CD);this.PROC_NM = flow.PROC_NM">
                         <td width="10%">{{ flow.STEP }}</td>
-                        <td width="30%">{{ flow.PROC_CD }}</td>
+                        <td width="20%">{{ flow.PROC_CD }}</td>
                         <td width="30%">{{ flow.PROC_NM }}</td>
-                        <td width="30%">{{ flow.ACT_TYPE }}</td>    
+                        <td width="20%" :class="flow.ACT_TYPE != '완료' ? 'text-secondary' : 'text-primary'">{{ flow.ACT_TYPE }}</td>    
+                        <td width="20%" :class="flow.QUE_ACT_TYPE == 'N' ? 'text-secondary' : 'text-primary'">{{ flow.QUE_ACT_TYPE == 'N' ? '미완료' : '완료' }}</td>    
                       </tr>
                       <template v-for="equ in equData" :key="equ.EQP_CD">
                         <template v-if="equ.EQP_TYPE == flow.EQP_TYPE">
-                          <tr class="text-center align-middle sub-tr" :class="equ.ACT_TYPE == '비가동' ? 'none-select' : ''">
+                          <tr class="text-center align-middle sub-tr" :class="equ.use_cnt > 0 ? 'none-select' : ''">
                             <td width="10%">
                               <div class="form-check col-10 d-flex">
                                 <input class="form-check-input ms-1" type="radio" v-model="equ_radio" :value="equ.EQP_CD" :id="'radio' + equ.EQP_CD">
@@ -115,14 +117,14 @@
                             </td>
                             <td width="30%">{{ equ.EQP_CD }}</td>
                             <td width="30%">{{ equ.EQP_NM }}</td>
-                            <td width="30%">{{ equ.ACT_TYPE }}</td>
+                            <td width="30%">{{ equ.use_cnt > 0 ? '사용불가' : '사용가능' }}</td>
                           </tr>
                         </template>
                       </template>
                     </template>
                   </template>
                   <tr v-else>
-                    <td colspan="5">
+                    <td colspan="6">
                       <div class="list-nodata">생산지시서를 선택해주세요.</div>
                     </td>
                   </tr>
@@ -131,75 +133,78 @@
             </div>
           </div>
 
-          <div class="col-5 progress-bx">
-
-            <template v-if="this.resultInfo.PROD_RESULT_CD">
-              <!--공정설정-->      
-              <div class="row mtp10">
-                <div class="col-3 text-center font-weight-bolder mtp10">담당자명</div>
-                <input type="hidden" v-model="resultInfo.ID">
-                <div class="input-group w-50">                  
-                  <input class="form-control form-control-sm" type="text" v-model="resultInfo.NAME" :v-bind="this.$session.get('user_nm')" placeholder="담당자를 검색해주세요" style="height: 41px;" readonly>
-                  <button class="btn btn-warning" type="button" @click="modalOpen2" v-if="resultAble == true"><i class="fa-solid fa-magnifying-glass"></i></button>
+          
+          <div class="col-5">
+            <p class="text-uppercase text-lg font-weight-bolder">3. <span>{{ this.PROC_NM ? '\"'+this.PROC_NM+'\"': '' }}</span> 공정 설정</p>
+            <div class="progress-bx">
+              <template v-if="this.resultInfo.PROD_RESULT_CD">
+                <!--공정설정-->      
+                <div class="row mtp10">
+                  <div class="col-3 text-center font-weight-bolder mtp10">담당자명</div>
+                  <input type="hidden" v-model="resultInfo.ID">
+                  <div class="input-group w-50">                  
+                    <input class="form-control form-control-sm" type="text" v-model="resultInfo.NAME" :v-bind="this.$session.get('user_nm')" placeholder="담당자를 검색해주세요" style="height: 41px;" readonly>
+                    <button class="btn btn-warning" type="button" @click="modalOpen2" v-if="resultAble == true"><i class="fa-solid fa-magnifying-glass"></i></button>
+                  </div>
                 </div>
+
+                <Layout :modalCheck="isModal2">
+                  <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+                      <h5 class="modal-title">담당자 조회</h5>
+                      <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
+                  </template>
+                  <template v-slot:default>
+                      <ag-grid-vue class="ag-theme-alpine" 
+                      style="width: 100%; height: 400px;" 
+                      :columnDefs="memDefs"
+                      :rowData="memData" 
+                      :pagination="true" 
+                      @rowClicked="modalClicked2"
+                      @grid-ready="gridFit"
+                      overlayNoRowsTemplate="등록된 담당자가 없습니다.">
+                      </ag-grid-vue>
+                  </template>
+                  <template v-slot:footer>
+                      <button v-show="hidden" type="button" class="btn btn-secondary" @click="modalOpen2">Cancel</button>
+                      <button v-show="hidden" type="button" class="btn btn-primary" @click="modalOpen2">OK</button>
+                  </template>
+              </Layout>
+
+              <div class="row mtp10">
+                <div class="col-3 text-center font-weight-bolder mtp10">생산량</div>                
+                  <input class="form-control form-control-sm w-30 mlp10" type="text" v-model="resultInfo.PROD_QTY" :placeholder="resultInfo.TOTAL_QTY" style="height: 41px;" @keyup="prod_qty">
+                  <span class="point-red dnone" :id="'qty_' + resultInfo.PROD_RESULT_CD">계획량보다 높게 설정할 수 없습니다.</span>
               </div>
 
-              <Layout :modalCheck="isModal2">
-                <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-                    <h5 class="modal-title">담당자 조회</h5>
-                    <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
-                </template>
-                <template v-slot:default>
-                    <ag-grid-vue class="ag-theme-alpine" 
-                    style="width: 100%; height: 400px;" 
-                    :columnDefs="memDefs"
-                    :rowData="memData" 
-                    :pagination="true" 
-                    @rowClicked="modalClicked2"
-                     @grid-ready="gridFit"
-                    overlayNoRowsTemplate="등록된 담당자가 없습니다.">
-                    </ag-grid-vue>
-                </template>
-                <template v-slot:footer>
-                    <button v-show="hidden" type="button" class="btn btn-secondary" @click="modalOpen2">Cancel</button>
-                    <button v-show="hidden" type="button" class="btn btn-primary" @click="modalOpen2">OK</button>
-                </template>
-            </Layout>
-
-            <div class="row mtp10">
-              <div class="col-3 text-center font-weight-bolder mtp10">생산량</div>                
-                <input class="form-control form-control-sm w-30 mlp10" type="text" v-model="resultInfo.PROD_QTY" :placeholder="resultInfo.TOTAL_QTY" style="height: 41px;" @keyup="prod_qty">
-                <span class="point-red dnone" :id="'qty_' + resultInfo.PROD_RESULT_CD">계획량보다 높게 설정할 수 없습니다.</span>
+              <div class="row mtp10">
+                <div class="col-3 text-center font-weight-bolder mtp10">자재</div>
+                <div class="input-group w-50">
+                  <button class="btn btn-secondary" type="button" @click="modalOpen3">실사용량 등록</button>
+                </div>
+              </div>
+              
+                <div class="row mtp10">
+                  <div class="col-3 text-center">
+                    <button class="btn btn-success" @click="process('start')">작업시작</button>
+                  </div>
+                  <input class="form-control form-control-sm w-50" type="text" v-model="resultInfo.START_TIME" placeholder="0000-00-00 00:00:00" style="height: 41px;" readonly>
+                </div>
+                <div class="row mtp10">
+                  <div class="col-3 text-center">
+                    <button class="btn btn-danger" @click="process('end')">작업종료</button>
+                  </div>
+                  <input class="form-control form-control-sm w-50" type="text" v-model="resultInfo.END_TIME" placeholder="0000-00-00 00:00:00" style="height: 41px;" readonly>
+                </div>
+                <div class="row mtp10 mbp10">
+                  <div class="text-center mtp10">
+                    <button v-if="this.resultInfo.STATUS == 'Z03' && this.resultInfo.QUE_STATUS == 'A01'" class="btn btn-outline-secondary btn-lg" disabled>공정완료</button>
+                    <button v-else-if="this.resultInfo.STATUS == 'Z03' && this.resultInfo.QUE_STATUS == 'A02'" class="btn btn-outline-primary btn-lg" disabled>품질검사 진행중</button>
+                    <button v-else-if="this.resultInfo.STATUS == 'Z02' && this.resultInfo.QUE_STATUS == 'A02'" class="btn btn-outline-success btn-lg" disabled>공정 진행중</button>
+                    <button v-else-if="this.resultInfo.STATUS == 'Z01' && this.resultInfo.QUE_STATUS == 'A02'" class="btn btn-outline-secondary btn-lg" disabled>공정 대기중</button>
+                  </div>
+                </div>
+              </template>
             </div>
-
-            <div class="row mtp10">
-              <div class="col-3 text-center font-weight-bolder mtp10">자재</div>
-              <div class="input-group w-50">
-                <button class="btn btn-secondary" type="button" @click="modalOpen3">실사용량 등록</button>
-              </div>
-            </div>
-            
-              <div class="row mtp10">
-                <div class="col-3 text-center">
-                  <button class="btn btn-success" @click="process('start')">작업시작</button>
-                </div>
-                <input class="form-control form-control-sm w-50" type="text" v-model="resultInfo.START_TIME" placeholder="0000-00-00 00:00:00" style="height: 41px;" readonly>
-              </div>
-              <div class="row mtp10">
-                <div class="col-3 text-center">
-                  <button class="btn btn-danger" @click="process('end')">작업종료</button>
-                </div>
-                <input class="form-control form-control-sm w-50" type="text" v-model="resultInfo.END_TIME" placeholder="0000-00-00 00:00:00" style="height: 41px;" readonly>
-              </div>
-              <div class="row mtp10">
-                <div class="text-center mtp10">
-                  <button v-if="this.resultInfo.STATUS == 'Z03' && this.resultInfo.QUE_STATUS == 'A01'" class="btn btn-outline-secondary btn-lg" disabled>공정완료</button>
-                  <button v-else-if="this.resultInfo.STATUS == 'Z03' && this.resultInfo.QUE_STATUS == 'A02'" class="btn btn-outline-primary btn-lg" disabled>품질검사 진행중</button>
-                  <button v-else-if="this.resultInfo.STATUS == 'Z02' && this.resultInfo.QUE_STATUS == 'A02'" class="btn btn-outline-success btn-lg" disabled>공정 진행중</button>
-                  <button v-else-if="this.resultInfo.STATUS == 'Z01' && this.resultInfo.QUE_STATUS == 'A02'" class="btn btn-outline-secondary btn-lg" disabled>공정 대기중</button>
-                </div>
-              </div>
-            </template>
           </div>
 
           <Layout :modalCheck="isModal3">
@@ -248,8 +253,8 @@
             </div>
             </template>
             <template v-slot:footer>
-              <button type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
-              <button type="button" class="btn btn-primary" @click="matInsert">OK</button>
+              <button type="button" class="btn btn-secondary" @click="modalOpen3">닫기</button>
+              <button type="button" class="btn btn-primary" @click="matInsert">저장</button>
             </template>
           </Layout>
 
@@ -352,10 +357,10 @@ export default {
 
       this.isModal2 = !this.isModal2;
     },
-    modalCloseFunc() {
-      this.isModal = !this.isModal;
-      this.isModal2 = !this.isModal2;
-      this.isModal3= !this.isModal3;
+    modalCloseFunc1() {
+      if(this.isModal){
+        this.isModal = !this.isModal;
+      }
     },
     /*모달 [E]*/
 
@@ -439,6 +444,8 @@ export default {
       if(this.resultInfo.STATUS == 'Z01'){
         this.resultAble = true;
       }
+      this.resultInfo.START_TIME = this.$comm.getDatetimeMin(this.resultInfo.START_TIME);
+      this.resultInfo.END_TIME = this.$comm.getDatetimeMin(this.resultInfo.END_TIME);
 
       this.showProcess(); //공정관리화면 노출
       this.getFlowEquList(); //설비 선택목록 조회

@@ -10,9 +10,7 @@ SELECT o.order_cd as order_cd,
        m.name as name, 
        o.order_dt as order_dt, 
        o.due_dt as due_dt, 
-       (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd=o.status) AS status,
-       (SELECT IFNULL(sum(order_qty),0) FROM order_detail WHERE order_cd=o.order_cd) AS order_cnt,
-       (SELECT count(*) FROM order_detail WHERE order_cd=o.order_cd) AS prd_cnt
+       (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd=o.status) AS status
 FROM \`order\` o JOIN account a ON o.act_cd = a.act_cd
                  JOIN member m ON o.ID = m.id
 ORDER BY order_cd DESC
@@ -21,12 +19,14 @@ ORDER BY order_cd DESC
 //주문서조회-거래처, 날짜 따로 검색
 const orderSearch = (searchObj) => {
     //검색 조건인 거래처명, 시작날짜, 끝나는 날짜 가져와서 담음
-    const {search, std, etd} = searchObj;
+    const {search, std, etd, not_status} = searchObj;
     let query = `
         SELECT o.order_cd, 
                a.act_cd, 
                a.act_nm, m.name, o.order_dt, o.due_dt, 
-               (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd=o.status) AS status
+               (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd=o.status) AS status,
+               (SELECT IFNULL(sum(order_qty),0) FROM order_detail WHERE order_cd=o.order_cd) AS order_cnt,
+               (SELECT count(*) FROM order_detail WHERE order_cd=o.order_cd) AS prd_cnt
         FROM \`order\` o 
         JOIN account a ON o.act_cd = a.act_cd
         JOIN member m ON o.ID = m.id
@@ -41,6 +41,10 @@ const orderSearch = (searchObj) => {
     // 날짜 조건 추가
     if (std && etd) {
         conditions.push(`DATE(o.order_dt) BETWEEN '${std}' AND '${etd}'`);
+    }
+    // 상태 조건 추가
+    if (not_status) {
+        conditions.push(`o.status != '%${not_status}%'`);
     }
     // WHERE 절 조립
     if (conditions.length > 0) {

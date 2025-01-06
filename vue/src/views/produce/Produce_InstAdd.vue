@@ -29,10 +29,10 @@
             <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
           </template>
           <template v-slot:default>
-            <div class="alert alert-light alert-dismissible fade show">
-              <strong>진행전인 생산계획서가 조회됩니다.</strong>
-              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <div class="alert alert-primary d-flex align-items-center" role="alert">
+              <div>완료된 계획서는 제외된 결과입니다.</div>
             </div>
+
             <ag-grid-vue class="ag-theme-alpine" 
             style="width: 100%; height: 400px;" 
             :columnDefs="planDefs"
@@ -56,9 +56,14 @@
           <!--생산제품 목록-->
           <div class="col-md-7">
             <p class="text-uppercase text-lg font-weight-bolder">생산제품 목록</p>
-            <div class="alert alert-light alert-dismissible fade show">
-              <strong>생산공정에서 제외할 제품은 체크박스를 해제해주세요.</strong>
-              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+              <symbol id="check-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+              </symbol>
+            </svg>
+            <div class="alert alert-primary d-flex align-items-center" role="alert">
+              <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Warning:"><use xlink:href="#check-circle-fill"/></svg>
+              <div>공정/자재 설정이 완료 제품만 생산가능합니다.</div>
             </div>
             <div class="table-responsive">
               <table class="table">
@@ -104,9 +109,14 @@
           <div class="col-md-5">
 
             <p class="text-uppercase text-lg font-weight-bolder">공정설정</p>
-            <div class="alert alert-light alert-dismissible fade show">
-              <strong>생산에 사용할 공정을 선택해주세요.</strong>
-              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+              <symbol id="check-circle-fill" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+              </symbol>
+            </svg>
+            <div class="alert alert-primary d-flex align-items-center" role="alert">
+              <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Warning:"><use xlink:href="#check-circle-fill"/></svg>
+              <div>생산에 사용할 공정을 선택해주세요.</div>
             </div>
             <div class="table-responsive">
               <table class="table">
@@ -242,7 +252,9 @@ export default {
       this.isModal = !this.isModal;
     },
     modalCloseFunc() {
-      this.isModal = !this.isModal;
+      if(this.isModal){
+        this.isModal = !this.isModal;
+      }
     },
     /*모달 [E]*/
 
@@ -267,7 +279,6 @@ export default {
           this.prdArr.push(obj);
         }
       });
-      console.log( this.prdArr);
       
     },
 

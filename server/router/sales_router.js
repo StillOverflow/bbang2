@@ -20,8 +20,9 @@ router.get('/sales/search/', async (req, res) => {
         let salesNo = req.query.no;
         let std = req.query.st;
         let etd = req.query.et;
+        let not_status = req.query.not_status;
         
-        let info = await salesService.searchOrder(salesNo,std,etd);
+        let info = await salesService.searchOrder(salesNo,std,etd,not_status);
         res.send(info);
     } catch (error) {
         console.error(error);

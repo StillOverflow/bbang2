@@ -181,7 +181,9 @@ export default {
       this.getResultList(); 
     },
     modalCloseFunc() {
-      this.isModal = !this.isModal;
+      if(this.isModal){
+        this.isModal = !this.isModal;
+      }
     },
 
     //지시서 리스트
