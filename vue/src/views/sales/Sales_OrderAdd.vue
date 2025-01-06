@@ -99,6 +99,7 @@
                 :columnDefs="columnDefs"
                 :rowData="rowData"
                 @grid-ready="gridFit"
+                :gridOptions="newgridOptions"
                 overlayNoRowsTemplate="제품 조회 버튼을 이용하여 제품을 추가 해주세요.">
                 </ag-grid-vue>
                 
@@ -270,6 +271,30 @@ export default {
                 },
             ],
             rowData: [ ],
+
+                //주문수량에 음수 못 넣게 하기
+            newgridOptions: {
+                onCellValueChanged: (params) => {
+                    if (params.colDef.field === 'order_qty') {
+                        const orderQty = params.data.order_qty || 0;
+
+                        //음수 못 넣게 하기
+                        if (orderQty < 0) {
+                        this.$swal({
+                            icon: "error",
+                            title: "다시 입력 해주세요.",
+                            text: "주문 수량은 음수가 될 수 없습니다.",
+                        });
+                            params.node.setData({
+                            ...params.data,
+                            order_qty: params.oldValue ?? 0,
+                        });
+                        params.api.refreshCells({ force: true });
+                        }
+                    }
+                },
+            },
+
             accDefs: [
                 {headerName: '거래처 코드', field: 'act_cd', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" } },
                 {headerName: '거래처 명', field: 'act_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" } },
@@ -283,7 +308,7 @@ export default {
             ],
             memData: [],
             proDefs: [
-                {headerName: '제품 코드', field: 'prd_cd', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" }},
+                {headerName: '제품 코드', field: 'prd_cd', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" }, width: 180},
                 {headerName: '제품 이름', field: 'prd_nm', filter: 'agTextColumnFilter', cellStyle: { textAlign: "center" }},
                 {
                     headerName: '제품 수량', 
@@ -410,7 +435,7 @@ export default {
         placeholderRenderer(params) {
             // 주문 수량 값이 없으면 placeholder 텍스트 표시
             if (!params.value) {
-                return `<span style="color: gray; font-style: italic;">수량은 숫자만 입력하세요.</span>`;
+                return `<span style="color: gray; font-style: italic;">주문 수량은 숫자만 입력하세요.</span>`;
             }
             return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시(천 단위 콤마 표시도 같이 해줌)
         },
@@ -473,7 +498,7 @@ export default {
                                         .catch(err => console.log("updateAxiosError",err));       
             if(updateResult.data.result == 'success'){
                 this.$swal({
-                title: "수정완료!",
+                title: "수정완료",
                 text: "주문 목록으로 돌아갑니다.",
                 icon: "success"
                 }).then(result =>{
@@ -567,7 +592,7 @@ export default {
                             this.resetForm(); // 초기화
                             
                             this.$swal({
-                            title: "삭제완료!",
+                            title: "삭제완료",
                             text: "주문 목록으로 돌아갑니다.",
                             icon: "success"
                             }).then(result =>{
@@ -675,7 +700,7 @@ export default {
             if(result.data.result == 'success'){
                 this.$swal({
                     icon: "success",
-                    title: "등록완료.",
+                    title: "등록완료",
                     text: "등록한 주문서는 목록에서 확인 해주세요.",
                 })
                 .then(() => {

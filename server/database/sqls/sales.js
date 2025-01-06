@@ -658,7 +658,8 @@ SELECT p.prd_cd,
        sum(i.stock) AS stock
 FROM product p 
 LEFT JOIN product_in i ON p.prd_cd = i.prd_cd
-GROUP BY p.prd_nm;
+GROUP BY p.prd_nm
+ORDER BY p.prd_cd
 `;
 // 주문서 조회(모달)
 const moOrderList = 
