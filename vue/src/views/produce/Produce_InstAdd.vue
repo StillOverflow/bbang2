@@ -96,7 +96,7 @@
                   </template>
 
                   <tr v-else>
-                    <td colspan="4">
+                    <td colspan="7">
                       <div class="list-nodata">생산계획코드를 검색해주세요.</div>
                     </td>
                   </tr>

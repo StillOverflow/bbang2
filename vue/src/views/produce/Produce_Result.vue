@@ -157,7 +157,8 @@ export default {
           valueFormatter: (params) => this.$comm.getDatetimeMin(params.value)
           , cellStyle: {textAlign: "center"}
         },
-        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, cellStyle: {textAlign: "center"} }
+        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, cellStyle: {textAlign: "center"} },
+        { headerName: '검수상태', field: 'QUE_ACT_TYPE', sortable: true, cellStyle: {textAlign: "center"} }
       ],
       resultData: [],
       
