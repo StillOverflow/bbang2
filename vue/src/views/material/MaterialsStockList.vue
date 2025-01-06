@@ -85,17 +85,6 @@
                      <input class="form-control" type="date" :min="startDt" v-model="lastDt" />
                   </div>
                </div>
-
-               <!-- <div class="d-flex justify-content-center align-items-center mb-3">
-                  <div class="col-lg-1 text-left fw-bolder">입고날짜</div>
-                  <div class="col-6 col-lg-3">
-                     <input class="form-control" type="date" :max="in_lastDt" v-model="in_startDt" />
-                  </div>
-                  <div class="col-6 col-lg-1 text-center fw-bolder" :style="t_overflow">~</div>
-                  <div class="col-6 col-lg-3">
-                     <input class="form-control" type="date" :min="in_startDt" v-model="in_lastDt" />
-                  </div>
-               </div> -->
                
                <!-- 자재구분 -->
                <div class="d-flex justify-content-center align-items-center mb-3">
@@ -167,13 +156,14 @@
                      <i class="fa-solid fa-rotate"></i>
                   </button>
                </div>
+               
             </div>
 
             <div class="card-body px-0 pt-0 pb-2">
                <!-- <div class="alert alert-warning" role="alert">
                   A simple warning alert—check it out!
                </div> -->
-
+               
                <!-- //& 거래처 모달창 -->
                <Layout :modalCheck="isAccModal">
                   <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
@@ -185,7 +175,6 @@
                         class="ag-theme-alpine"
                         style="width: 100%; height: 500px;"
                         :rowData="accountModalData"
-                        :pagination="true"
                         :gridOptions="accountGridOptions"
                         @grid-ready="accountGrid"
                         @firstDataRendered="accountGridRendered"
@@ -209,7 +198,6 @@
                         class="ag-theme-alpine"
                         style="width: 100%; height: 500px;"
                         :rowData="materialModalData"
-                        :pagination="true"
                         :gridOptions="materialGridOptions"
                         @grid-ready="materialGrid"
                         @firstDataRendered="materialGridRendered"
@@ -226,12 +214,14 @@
                   class="ag-theme-alpine"
                   style="width: 100%; height: 700px;"
                   :rowData="filterRowData"
-                  :pagination="true"
                   :gridOptions="materialStockOptions"
                   @grid-ready="materialStockGrid"
                   @firstDataRendered="materialStockGridRendered"
                   @grid-size-changed="onGridSizeChanged"
                />
+               <div class="text-center mt-3 mb-2">
+                  <button class="btn btn-outline-success" @click="excelDownload"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
+               </div>
             </div>
          </div>
          </div>
@@ -246,6 +236,7 @@
    import { useStore } from 'vuex';
    import { onBeforeMount, shallowRef, ref } from 'vue';
 
+   import * as XLSX from 'xlsx'; // 엑셀
    import Layout from '../components/modalLayout.vue';   // modal Layout 불러오기
 //! ---------------------------------------- 데이터 정의 ----------------------------------------
    // Vuex store 사용
@@ -529,16 +520,18 @@
          console.log("거래처 모달 데이터 클릭 -> ", event)
          accountModalOpen();  // 거래처 조회 모달
       },
+      
       pagination: true,
       paginationPageSize: 10,
       paginationPageSizeSelector: [10, 20, 50, 100],
       animateRows: false,
       defaultColDef: {
-         filter: true,
+         filter: false,
          flex: 1,
          minWidth: 10,
       },
-
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
 
@@ -569,15 +562,18 @@
 
          materialModalOpen(); // 자재조회 모달
       },
+      
       pagination: true,
       paginationPageSize: 10,
       paginationPageSizeSelector: [10, 20, 50, 100],
       animateRows: false,
       defaultColDef: {
-         filter: true,
+         filter: false,
          flex: 1,
          minWidth: 10,
       },
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
    }
 
    // 자재 모달 데이터
@@ -703,17 +699,38 @@
             return false;
          },
       },
-      domLayout: "autoHeight",
       pagination: true,
       paginationPageSize: 10,
       paginationPageSizeSelector: [10, 20, 50, 100],
       animateRows: false,
       defaultColDef: {
-         filter: true,
+         filter: false,
          flex: 1,
          minWidth: 10,
       },
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
    }
+
+   const excelDownload = () => {
+
+      const header = materialStockOptions.columnDefs.map((col) => col.headerName);
+      const data = filterRowData.value.map((row) =>
+         materialStockOptions.columnDefs.map((col) => {
+            return row[col.field] || '데이터없음';
+         })
+      );
+
+      // WorkSheet 생성
+      const workSheet = XLSX.utils.aoa_to_sheet([header, ...data]);
+
+      // WorkBook 생성
+      const workBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workBook, workSheet, '자재 데이터');
+
+      // 엑셀 파일 다운로드
+      XLSX.writeFile(workBook, `자재_재고_${new Date().toISOString().slice(0, 10)}.xlsx`);
+   };
 </script>
 
 <style lang="scss" scoped>

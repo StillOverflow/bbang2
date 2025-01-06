@@ -228,10 +228,11 @@
       materials.forEach((data) => {
          if(!data.mat_qty) {
             Swal.fire({
-            icon: 'warning',
-            title: '발주 수량을 입력하세요.',
-         });
+               icon: 'warning',
+               title: '발주 수량을 입력하세요.',
+            });
          }
+         return;
       });
 
       if(materials.mat_qty < 0) {
@@ -239,6 +240,7 @@
             icon: 'warning',
             title: '발주 수량을 확인하세요.',
          });
+         return;
       }
 
       if (materials.length > 0) {         

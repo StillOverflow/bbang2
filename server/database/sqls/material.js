@@ -140,7 +140,90 @@ const getMaterialOrderDetail = `
       mat_nm
 `
 
+//! ----------------------------------- 자재 입고관리 -----------------------------------
+// 자재 입고전 대기목록 조회
+const getMaterialBeforeIn = `
+   SELECT 
+      test_rec_cd,                       -- 검사내역코드
+      refer_cd,                          -- 자재 발주서 번호
+      target_type,                       -- 대상유형 (p01)
+      target_cd,                         -- 대상코드
+      mat_nm,                            -- 자재명
+      fn_get_codename(unit) AS unit,     -- 자재단위
+      fn_get_codename(\`type\`) AS type, -- 자재구분
+      pass_qty                           -- 합격량
+   FROM
+      quality_test_record a
+   LEFT OUTER JOIN
+      material b ON target_cd = mat_cd
+   WHERE 
+      UPPER(target_type) = UPPER('p01')
+   AND
+      NOT EXISTS (
+                  SELECT 1
+                  FROM material_in mi
+                  WHERE mi.test_rec_cd = a.test_rec_cd
+                  )
+`
+
+// 자재 LOT 마지막값에서 +1한 값
+const materialLotSeq = `
+   SELECT CONCAT('MATLOT', 
+                  DATE_FORMAT(NOW(), '%Y%m%d'),
+                  LPAD(
+                        COALESCE(MAX(CAST(RIGHT(mat_lot_cd, 4) AS UNSIGNED)), 0) + 1,
+                        4,
+                        '0'
+                     )
+               ) AS seq
+   FROM material_in;
+` 
+
+// 자재 입고 등록
+const insertMaterial = `
+   INSERT INTO material_in
+   SET ?
+`
+
+// 자재발주서 디테일 상태변환
+const updateMatOrderDtlStatus = `
+   UPDATE material_order_detail a
+      LEFT JOIN (
+         SELECT 
+            mat_order_cd, 
+            mat_cd, 
+            sum(mat_qty) AS total_in_qty
+         FROM 
+            material_in
+         WHERE 
+            mat_order_cd = ?
+         GROUP BY
+            mat_order_cd, 
+            mat_cd
+      ) b ON a.mat_cd = b.mat_cd
+   SET a.STATUS = CASE 
+                     WHEN IFNULL(b.total_in_qty, 0) > 1 AND IFNULL(b.total_in_qty, 0) < a.mat_qty THEN 'L02' -- 일부만 입고되었으면 입고중
+                     WHEN IFNULL(b.total_in_qty, 0) = a.mat_qty THEN 'L03' -- 발주 수량과 동일하면 입고완료
+                     ELSE a.STATUS                              -- 기본 상태 유지
+                  END
+   WHERE a.mat_order_cd = ?
+`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //! ----------------------------------- 자재 재고조회 -----------------------------------
+// 자재 재고조회
 const getMaterialStockList = `
    SELECT   
       a.mat_lot_cd,                            -- 자재 LOT
@@ -152,7 +235,6 @@ const getMaterialStockList = `
       fn_get_membername(a.id) AS name,         -- 담당자
       a.create_dt,                             -- 등록일
       a.update_dt,                             -- 수정일
-      fn_get_accountname(a.act_cd) AS act_nm,  -- 거래처 코드
       a.test_rec_cd,                           -- 검사내역코드
       a.mat_order_cd,                          -- 발주서 코드
       fn_get_codename(b.category) AS category, -- 카테고리
@@ -164,13 +246,13 @@ const getMaterialStockList = `
    INNER JOIN 
       material b ON a.mat_cd = b.mat_cd
    GROUP BY
-      a.mat_cd, 
-      a.act_cd
+      a.mat_cd
    ORDER BY 
       CAST(SUBSTRING(a.mat_lot_cd, 7) AS UNSIGNED) DESC,
       b.mat_nm ASC
 `
 
+// 자재 LOT별 재고조회
 const getMaterialStockLotList = `
    SELECT   
       a.mat_lot_cd,                            -- 자재 LOT
@@ -182,7 +264,6 @@ const getMaterialStockLotList = `
       fn_get_membername(a.id) AS name,         -- 담당자
       a.create_dt,                             -- 등록일
       a.update_dt,                             -- 수정일
-      fn_get_accountname(a.act_cd) AS act_nm,  -- 거래처 코드
       a.test_rec_cd,                           -- 검사내역코드
       a.mat_order_cd,                          -- 발주서 코드
       fn_get_codename(b.category) AS category, -- 카테고리
@@ -197,73 +278,6 @@ const getMaterialStockLotList = `
       CAST(SUBSTRING(a.mat_lot_cd, 7) AS UNSIGNED) DESC,
       b.mat_nm ASC
 `
-
-// 자재 재고 리스트
-// const getMaterialStockList = (searchObj) => {
-//    console.log("sql.js sql.js sql.js => ", searchObj);
-
-//    let query = `
-//       SELECT   
-//          a.mat_lot_cd,                 -- 자재 LOT
-//          fn_get_materialname(a.mat_cd),-- 자재 코드
-//          sum(a.mat_qty),                    -- 입고량
-//          sum(a.mat_stock),                  -- 재고량
-//          a.exp_dt,                     -- 유통기한
-//          a.mat_int_dt,                 -- 입고일시
-//          fn_get_membername(a.id),      -- 담당자
-//          a.create_dt,                  -- 등록일
-//          a.update_dt,                  -- 수정일
-//          fn_get_accountname(a.act_cd), -- 거래처 코드
-//          a.test_rec_cd,                -- 검사내역코드
-//          a.mat_order_cd,               -- 발주서 코드
-//          fn_get_codename(b.category),  -- 카테고리
-//          fn_get_codename(b.unit)       -- 단위
-//       FROM    
-//          material_in a 
-//       INNER JOIN 
-//          material b ON a.mat_cd = b.mat_cd
-//    `
-
-//    let conditions = [];
-
-//    if (searchObj.inst_cd) {  // LOT로 검색
-//       conditions.push(`UPPER(a.mat_lot_cd) = UPPER('${searchObj.mat_lot_cd}') `);
-//    }
-
-//    if (searchObj.startDt && data.lastDt) { // 유통기한
-//       conditions.push(`DATE(a.exp_dt) BETWEEN '${searchObj.startDt} AND '${searchObj.lastDt}')`);
-//    }
-
-//    if(searchObj.type) {   // 자재 구분 
-//       conditions.push(`DATE(a.mat_int_dt) BETWEEN '${searchObj.in_startDt} AND '${searchObj.in_lastDt}')`)
-//    }
-
-//    if(searchObj.mat_nm) { // 거래처
-//       conditions.push(`UPPER(a.act_cd) = UPPER('%${searchObj.act_cd}%')`)
-//    }
-
-//    if (searchObj.category) { // 카테고리
-//       conditions.push(`UPPER(b.category) = UPPER('${searchObj.category}')`);
-//    }
-
-//    if(searchObj.type) {   // 자재 유형   
-//       conditions.push(`UPPER(b.type) = UPPER('${searchObj.type}')`)
-//    }
-
-//    // WHERE 절 조립
-//    if (conditions.length > 0) {
-//       query += " WHERE " + conditions.join(" AND ");
-//    }
-//    query += ` 
-//       GROUP BY 
-//          a.mat_cd 
-//       ORDER BY 
-//          CAST(SUBSTRING(a.mat_lot_cd, 7) AS UNSIGNED) DESC, b.mat_nm ASC 
-//    `;
-   
-//    // 쿼리 반환
-//    return query; 
-// }
 
 
 
@@ -371,7 +385,12 @@ module.exports = {
    getPlanMaterialStock,        // 미지시 생산 계획서에 대한 자재 재고 조회
    getMaterialOrder,            // 발주서 헤더 조회
    getMaterialOrderDetail,      // 발주서 디테일 조회
-   
+
+   getMaterialBeforeIn,         // 자재 입고전 대기목록
+   materialLotSeq,              // LOT seq값
+   insertMaterial,              // 자재 등록
+   updateMatOrderDtlStatus,     // 자재 발주서 디테일 상태변환
+
    getMaterialStockList,        // 제품 총 재고
    getMaterialStockLotList,     // 제품 LOT별 재고
 

@@ -228,6 +228,10 @@
                   @firstDataRendered="materialStockGridRendered"
                   @grid-size-changed="onGridSizeChanged"
                />
+
+               <div class="text-right mt-3 mb-2">
+                  <button class="btn btn-outline-success" @click="excelDownload"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
+               </div>
             </div>
          </div>
          </div>
@@ -243,6 +247,9 @@
    import { onBeforeMount, shallowRef, ref } from 'vue';
 
    import Layout from '../components/modalLayout.vue';   // modal Layout 불러오기
+
+   import * as XLSX from 'xlsx'; // 엑셀
+
 //! ---------------------------------------- 데이터 정의 ----------------------------------------
    // Vuex store 사용
    const store = useStore();
@@ -524,16 +531,18 @@
          console.log("거래처 모달 데이터 클릭 -> ", event)
          accountModalOpen();  // 거래처 조회 모달
       },
+      
       pagination: true,
       paginationPageSize: 10,
       paginationPageSizeSelector: [10, 20, 50, 100],
       animateRows: false,
       defaultColDef: {
-         filter: true,
+         filter: false,
          flex: 1,
          minWidth: 10,
       },
-
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
 
@@ -564,18 +573,21 @@
 
          materialModalOpen(); // 자재조회 모달
       },
+      
       pagination: true,
       paginationPageSize: 10,
       paginationPageSizeSelector: [10, 20, 50, 100],
       animateRows: false,
       defaultColDef: {
-         filter: true,
+         filter: false,
          flex: 1,
          minWidth: 10,
       },
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
    }
 
-   // 자재 모달 데이터
+   // 자재 재고조회 그리드
    const materialStockOptions = {
       columnDefs : [
          { 
@@ -707,16 +719,40 @@
             return false;
          },
       },
+      
       pagination: true,
       paginationPageSize: 10,
       paginationPageSizeSelector: [10, 20, 50, 100],
       animateRows: false,
       defaultColDef: {
-         filter: true,
+         filter: false,
          flex: 1,
          minWidth: 10,
       },
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
    }
+
+   const excelDownload = () => {
+
+      const header = materialStockOptions.columnDefs.map((col) => col.headerName);
+      const data = filterRowData.value.map((row) =>
+         materialStockOptions.columnDefs.map((col) => {
+            return row[col.field] || '데이터없음';
+         })
+      );
+
+      // WorkSheet 생성
+      const workSheet = XLSX.utils.aoa_to_sheet([header, ...data]);
+
+      // WorkBook 생성
+      const workBook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workBook, workSheet, '자재 데이터');
+
+      // 엑셀 파일 다운로드
+      XLSX.writeFile(workBook, `LOT별_자재_재고_${new Date().toISOString().slice(0, 10)}.xlsx`);
+   };
+
 </script>
 
 <style lang="scss" scoped>
