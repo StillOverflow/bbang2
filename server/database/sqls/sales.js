@@ -657,7 +657,7 @@ SELECT p.prd_cd,
        p.prd_nm, 
        sum(i.stock) AS stock
 FROM product p 
-JOIN product_in i ON p.prd_cd = i.prd_cd
+LEFT JOIN product_in i ON p.prd_cd = i.prd_cd
 GROUP BY p.prd_nm;
 `;
 // 주문서 조회(모달)

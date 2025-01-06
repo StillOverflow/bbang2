@@ -55,6 +55,7 @@ onBeforeUnmount(() => {
                       placeholder="Id"
                       v-model="id"
                       size="lg"
+                      v-on:keyup.enter="signIn"
                     />
                   </div>
                   <div class="mb-3">
@@ -64,6 +65,7 @@ onBeforeUnmount(() => {
                       placeholder="Password"
                       v-model="password"
                       size="lg"
+                      v-on:keyup.enter="signIn"
                     />
                   </div>
 
@@ -138,7 +140,6 @@ export default {
       }
       let result = await axios.get('/api/comm/login', { params:obj })
                               .catch(err => console.log(err));
-      console.log( result.data);
       
       if(result.data.ID){
         if(result.data.STATUS == 'G03'){
