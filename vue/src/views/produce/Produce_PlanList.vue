@@ -133,11 +133,10 @@ export default {
   },
   methods: {
     async getStatus() {
-      /*
       let arr = await this.$comm.getComm("PS");
       let arrAdd = {comm_dtl_cd: '', comm_dtl_nm: '전체'};
-      arr.unshift(arrAdd);*/
-      this.radios = '';
+      arr.unshift(arrAdd);
+      this.radios = arr;
       
     },
     myGrid(params){ // 매개변수 속성으로 자동 접근
