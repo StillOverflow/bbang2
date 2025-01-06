@@ -24,7 +24,7 @@
                             :columnDefs="materialDefs"
                             :rowData="materialData"
                             :pagination="true"
-                            :gridOptinos="gridOptinos"
+                            :gridOptions="gridOptions"
                             @gridReady="onMatGridReady"
                             @rowClicked="matClicked">
                         </ag-grid-vue>
@@ -145,7 +145,7 @@ export default {
     data(){
         return{
             namePd: '',
-            gridOptinos: {
+            gridOptions: {
                 rowSelection: {
                     mode:"singleRow",
                     checkboxes: false,
@@ -191,16 +191,16 @@ export default {
                 this.isUpdated = false; // 신규등록 모드로 전환
             },
             materialDefs:[
-                {headerName: '자재코드' , field: 'mat_cd'},
-                {headerName: '자재명' , field: 'mat_nm'},
-                {headerName: '자재유형' , field: 'type'},
-                {headerName: '카테고리' , field: 'category'},
+                {headerName: '자재코드' , field: 'mat_cd', cellStyle: { textAlign: "center" } },
+                {headerName: '자재명' , field: 'mat_nm', cellStyle: { textAlign: "center" } },
+                {headerName: '자재유형' , field: 'type', cellStyle: { textAlign: "center" } },
+                {headerName: '카테고리' , field: 'category', cellStyle: { textAlign: "center" } },
                 {headerName: '단가(원)' , field: 'price', 
                 valueFormatter: (params) => {
                     if (params.value == null || params.value === '') return '';
                     return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
-                },},
-                {headerName: '단위' , field: 'unit'},        
+                }, cellStyle: { textAlign: "right" } },
+                {headerName: '단위' , field: 'unit', cellStyle: { textAlign: "center" } },        
             ],
             materialData:[],
             keyword: '',
@@ -268,6 +268,7 @@ export default {
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
                 text: "자재명, 단위, 자재유형은 필수 입력값입니다.",
+                confirmButtonText: "확인"
             });
             return;        
             }
@@ -279,16 +280,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes!"
+                    confirmButtonText: "확인",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "register!",
-                        text: "Your file has been register.",
-                        icon: "success"
+                        title: "등록완료!",
+                        text: "",
+                        icon: "성공",
+                        confirmButtonText: "확인"
                         });
                         await axios.post('/api/standard/material', this.matInfo);
                         this.bringMat();
+                        this.matInfo={};
                     }                   
                 });
         },
@@ -298,6 +302,7 @@ export default {
                     icon: "warning",
                     title: "수정할 변경 사항이 없습니다.",
                     text: "수정 후 저장 버튼을 눌러주세요.",
+                    confirmButtonText: "확인"
                 });
                 return; // 작업 중단
             }
@@ -308,16 +313,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, modify!"
+                    confirmButtonText: "저장",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "modify!",
-                        text: "Your file has been modified.",
-                        icon: "success"
+                        title: "수정완료!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
                         await axios.put(`/api/standard/updateMaterial/${this.matInfo.mat_cd}`, this.matInfo);
                         this.bringMat(); // 목록 갱신
+                        this.matInfo={};
                     }
                 });
         },
@@ -325,15 +333,13 @@ export default {
             const currentTime = new Date();
             const createDate = new Date(this.matInfo.create_dt);
             const timeDifference = (currentTime - createDate) / (24 *1000 * 60 * 60); 
-            console.log(currentTime);
-            console.log(createDate);
-            console.log(timeDifference);
             // 1시간 이내인지 확인
             if (timeDifference > 1) {
                 this.$swal({
                     icon: "error",
                     title: "삭제 불가",
                     text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
+                    confirmButtonText: "확인"
                 });
                 return; 
             }
@@ -346,16 +352,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete!"
+                    confirmButtonText: "삭제",
+                    cancelButtonText:"취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "delete!",
-                        text: "Your file has been deleted.",
-                        icon: "success"
+                        title: "삭제성공!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
                         await axios.delete(`/api/standard/delMaterial/${this.matInfo.mat_cd}`);
                         this.bringMat(); // 목록 갱신
+                        this.matInfo={};
                     }
                 });
         },

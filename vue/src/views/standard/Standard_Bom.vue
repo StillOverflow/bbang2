@@ -107,18 +107,19 @@
                 :rowData="bomData"
                 :pagination="true"
                 :gridOptions="gridOptions"
+                :cellValueChanged="cellValueMtlChanged"
                 overlayNoRowsTemplate="제품에 대한 bom정보가 없습니다."
                 @gridReady="onBomGridReady"
               >
               </ag-grid-vue>
               <div class="text-center">
                 <button
-                  type="button" class="btn btn-success mt-3 saveBtn " @click="save"
-                  v-bind:disabled="this.saveData.length == 0 && this.deleteData.length == 0"
+                  type="button" class="btn btn-success ms-2 mt-3" @click="save"
+                  
                   v-if="this.$session.get('user_ps') == 'H01'">
                   저장
                 </button>
-                <button type="button" class="btn btn-secondary ms-2 mt-3 saveBtn" @click="reset">
+                <button type="button" class="btn btn-secondary ms-2 mt-3" @click="reset">
                         초기화
                 </button>
               </div>              
@@ -166,17 +167,17 @@ export default {
         },
       },
       productDefs: [
-        { headerName: "제품코드", field: "prd_cd", sortable: true },
-        { headerName: "제품명", field: "prd_nm", sortable: true },
+        { headerName: "제품코드", field: "prd_cd", sortable: true , cellStyle: { textAlign: "center" } },
+        { headerName: "제품명", field: "prd_nm", sortable: true , cellStyle: { textAlign: "center" } },
         {
           headerName: "카테고리",
           field: "category",
-          cellEditor: "agSelectCellEditor",
+          cellEditor: "agSelectCellEditor", cellStyle: { textAlign: "center" } 
         },
         {
           headerName: "등록날짜",
           field: "create_dt",
-          valueFormatter: this.$comm.dateFormatter
+          valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: "center" } 
         },
       ],
       // 제품 테이블 데이터
@@ -191,8 +192,8 @@ export default {
           field: "mat_cd",
           sortable: true,
         },
-        { headerName: "자재명", field: "mat_nm", sortable: true },
-        { headerName: "구분", field: "type", sortable: true },
+        { headerName: "자재명", field: "mat_nm", sortable: true , cellStyle: { textAlign: "center" } },
+        { headerName: "구분", field: "type", sortable: true, cellStyle: { textAlign: "center" }  },
         {
           headerName: "BOM양",
           field: "usage",
@@ -200,6 +201,7 @@ export default {
           enableCellChangeFlash: true,
           cellDataType: 'number',
           cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
+          cellStyle: { textAlign: "right" }  
         },
         {
           headerName: "단위",
@@ -222,10 +224,12 @@ export default {
           field: "prd_cd",
           sortable: true,
         },
-        { headerName: "자재코드", field: "mat_cd", sortable: true },
-        { headerName: "자재명", field: "mat_nm", sortable: true },
-        { headerName: "BOM양", field: "usage", sortable: true ,cellStyle: {textAlign: "right"}},
-        { headerName: "단위", field: "unit", sortable: true },
+        { headerName: "자재코드", field: "mat_cd", sortable: true, cellStyle: { textAlign: "center" }  },
+        { headerName: "자재명", field: "mat_nm", sortable: true, cellStyle: { textAlign: "center" }  },
+        { headerName: "BOM양", field: "usage", sortable: true ,editable: true,
+        cellStyle: {textAlign: "right"},
+        cellValueChanged: this.cellValueMtlChanged},
+        { headerName: "단위", field: "unit", sortable: true , cellStyle: { textAlign: "center" } },
       ],
       // BOM 테이블 데이터
       bomData: [],
@@ -236,6 +240,36 @@ export default {
   },
 
   methods: {
+    //자재업데이트
+    cellValueMtlChanged(params)  { 
+        const updatedBom = params.data;
+
+        // 값이 숫자인지 확인하고 변환
+        if (!isNaN(params.newValue)) {
+          updatedBom.usage = parseFloat(params.newValue);
+        } else {
+          updatedBom.usage = 0; // 잘못된 입력 처리
+        }
+
+        // 수정된 데이터 저장
+        const saveIndex = this.updatedBoms.findIndex(
+          (item) => item.prd_cd == updatedBom.prd_cd && item.mat_cd == updatedBom.mat_cd
+        );
+
+        if (saveIndex != -1) { //이미 있다면 기존 데이터 업데이트, 없으면 새로운 데이터 추가
+          this.updatedBoms[saveIndex] = {
+            usage: updatedBom.usage,
+            prd_cd: updatedBom.prd_cd,
+            mat_cd: updatedBom.mat_cd
+          };
+        } else {
+          this.updatedBoms.push({
+            usage: updatedBom.usage,
+            prd_cd: updatedBom.prd_cd,
+            mat_cd: updatedBom.mat_cd
+          });
+        }
+    },
     //플레이스홀더
     placeholderRenderer(params) {
             // 주문 수량 값이 없으면 placeholder 텍스트 표시
@@ -256,13 +290,6 @@ export default {
         });
     },
 
-    //제품정보 불러오기
-    // async bringPrdData() {
-    //   let result = await axios
-    //     .get("/api/standard/products")
-    //     .catch((err) => console.log(err));
-    //   this.productData = result.data;
-    // },
     //자재검색기능
     searchMtl() {
       axios
@@ -285,6 +312,7 @@ export default {
     rowClicked(params) {
       this.selectBomData = params.data.prd_cd;
       this.bringBomData(this.selectBomData);
+      this.bringMtlData();
     },
 
     //bom정보 불러오기
@@ -320,6 +348,7 @@ export default {
             icon: "error",
             title: "제품 선택이 되지 않았습니다.",
             text: "제품 선택 후 추가해주세요",
+            confirmButtonText: "확인"
           });
           return;
         }
@@ -329,6 +358,7 @@ export default {
             icon: "warning",
             title: "BOM양을 입력해주세요.",
             text: "BOM양은 0보다 큰 숫자를 적어주세요.",
+            confirmButtonText: "확인"
           });
           return; // 입력값이 잘못된 경우 추가 작업 중단
         }
@@ -355,6 +385,7 @@ export default {
               icon: "error",
               title: "존재하는 자재가 있습니다.",
               text: "다시 선택해주세요",
+              confirmButtonText: "확인"
             });
             break;
           }
@@ -402,7 +433,11 @@ export default {
       }
     },
     async save() {
-  try {
+      const updatedBoms = this.bomData.map((bom) => ({
+        usage: bom.usage,
+        mat_cd: bom.mat_cd,
+        prd_cd: bom.prd_cd
+      }));
     const result = await this.$swal({
       title: "저장하시겠습니까?",
       icon: "warning",
@@ -412,23 +447,27 @@ export default {
     });
 
     if (result.isConfirmed) {
+      if(this.deleteData.length>0){
       for (const bom of this.deleteData) {
         await axios.delete(`/api/standard/bom/${bom.prd_cd}/${bom.mat_cd}`);
       }
+    }
+    if(this.saveData.length>0){
       for (const bom of this.saveData) {
         await axios.post(`/api/standard/bom`, bom);
-        console.log(bom);
+      }
+    }
+      if (updatedBoms.length > 0) {
+        await axios.put('/api/standard/updateBomUsage', updatedBoms);
       }
       this.saveData = [];
       this.deleteData = [];
       this.bringBomData(this.selectBomData);
 
-      this.$swal("저장되었습니다!", "", "success");
+      this.$swal("저장되었습니다!", "", "success"); 
+      this.bomData = [];
     }
-  } catch (error) {
-    console.error("오류 발생:", error);
-    this.$swal("저장 실패", "오류가 발생했습니다.", "error");
-  }
+
 },
     reset(){
       this.bomData = [];
@@ -437,6 +476,9 @@ export default {
       this.saveData = [];
       this.deleteData = [];
       this.selectBomData = null;
+      this.materialData.forEach(item => {
+        item.usage = '';  
+      });
 
       this.$swal({
         icon: "success",

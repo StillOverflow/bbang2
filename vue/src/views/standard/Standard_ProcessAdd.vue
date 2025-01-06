@@ -24,7 +24,7 @@
                             :columnDefs="processDefs"
                             :rowData="processData"
                             :pagination="true"
-                            :gridOptinos="gridOptinos"
+                            :gridOptions="gridOptions"
                             @gridReady="onProcGridReady"
                             @rowClicked="procClicked">
                         </ag-grid-vue>
@@ -126,7 +126,7 @@ export default {
     data(){
         return{
             namePd: '',
-            gridOptinos: {
+            gridOptions: {
                 rowSelection: {
                     mode:"singleRow",
                     checkboxes: false,
@@ -154,10 +154,10 @@ export default {
             },
             
             processDefs:[
-                {headerName: '공정코드' , field: 'proc_cd'},
-                {headerName: '공정명' , field: 'proc_nm'},
-                {headerName: '설비구분' , field: 'eqp_type'},
-                {headerName: '평균가동시간(시간)' , field: 'duration'},     
+                {headerName: '공정코드' , field: 'proc_cd', cellStyle: { textAlign: "center" } },
+                {headerName: '공정명' , field: 'proc_nm', cellStyle: { textAlign: "center" } },
+                {headerName: '설비구분' , field: 'eqp_type', cellStyle: { textAlign: "center" } },
+                {headerName: '평균가동시간(시간)' , field: 'duration', cellStyle: { textAlign: "center" } },     
             ],
             processData:[],
             keyword: '',
@@ -225,6 +225,7 @@ export default {
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
                 text: "자재명, 단위, 자재유형은 필수 입력값입니다.",
+                confirmButtonText: "확인"
             });
             return;        
             }
@@ -235,16 +236,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes!"
+                    confirmButtonText: "등록",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
                         title: "등록성공!",
-                        text: "등록되었습니다.",
-                        icon: "success"
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
                         axios.post(`/api/standard/insertProcess/${this.procInfo.proc_cd}`, this.procInfo);
                         this.searchProc(); // 목록 갱신
+                        this.procInfo={};
                     }                   
                 });
         },
@@ -254,6 +258,7 @@ export default {
                     icon: "warning",
                     title: "수정할 변경 사항이 없습니다.",
                     text: "수정 후 저장 버튼을 눌러주세요.",
+                    confirmButtonText: "확인"
                 });
                 return; // 작업 중단
             }
@@ -265,16 +270,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, modify!"
+                    confirmButtonText: "수정",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "modify!",
-                        text: "Your file has been modified.",
-                        icon: "success"
+                        title: "수정완료!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
                         await axios.put(`/api/standard/updateProcess/${this.procInfo.proc_cd}`, this.procInfo);
                         this.searchProc(); // 목록 갱신
+                        this.procInfo={};
                     }
                    
                 });
@@ -283,15 +291,14 @@ export default {
             const currentTime = new Date();
             const createDate = new Date(this.procInfo.create_dt);
             const timeDifference = (currentTime - createDate) / (24 *1000 * 60 * 60); 
-            console.log(currentTime);
-            console.log(createDate);
-            console.log(timeDifference);
+
             // 1시간 이내인지 확인
             if (timeDifference > 1) {
                 this.$swal({
                     icon: "error",
                     title: "삭제 불가",
                     text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
+                    confirmButtonText: "확인"
                 });
                 return; 
             }
@@ -304,16 +311,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete!"
+                    confirmButtonText: "삭제",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "delete!",
-                        text: "Your file has been deleted.",
-                        icon: "success"
+                        title: "삭제완료!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
                         await axios.delete(`/api/standard/delProcess/${this.procInfo.proc_cd}`);
                         this.searchProc(); // 목록 갱신
+                        this.procInfo={};
                     }
                 });
         },

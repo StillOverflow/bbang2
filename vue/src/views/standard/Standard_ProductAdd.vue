@@ -1,4 +1,4 @@
-<template>
+<template id="prdadd">
     <div id="page-inner" class="mx-auto">
         <div class="py-4 container-fluid">
             <div class="card py-5 px-6">
@@ -24,7 +24,7 @@
                             :columnDefs="productDefs"
                             :rowData="productData"
                             :pagination="true"
-                            :gridOptinos="gridOptinos"
+                            :gridOptions="gridOptions"
                             @gridReady="onPrdGridReady"
                             @rowClicked="prdClicked">
                         </ag-grid-vue>
@@ -143,7 +143,7 @@ export default {
         return{
             isDisabled: true,
             namePd: '',
-            gridOptinos: {
+            gridOptions: {
                 rowSelection: {
                     mode:"singleRow",
                     checkboxes: false,
@@ -187,15 +187,15 @@ export default {
                 this.isUpdated = false; // 신규등록 모드로 전환
             },
             productDefs:[
-                {headerName: '제품코드' , field: 'prd_cd'},
-                {headerName: '제품명' , field: 'prd_nm'},
-                {headerName: '카테고리' , field: 'category'},
+                {headerName: '제품코드' , field: 'prd_cd', cellStyle: { textAlign: "center" } },
+                {headerName: '제품명' , field: 'prd_nm', cellStyle: { textAlign: "center" } },
+                {headerName: '카테고리' , field: 'category', cellStyle: { textAlign: "center" } },
                 {headerName: '단가(원)' , field: 'price', 
                 valueFormatter: (params) => {
                     if (params.value == null || params.value === '') return '';
                     return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
-                },},
-                {headerName: '안전재고' , field: 'safe_stk'},       
+                }, cellStyle: { textAlign: "right" } },
+                {headerName: '안전재고' , field: 'safe_stk', cellStyle: { textAlign: "center" } },       
             ],
             productData:[],
             keyword: '',
@@ -260,17 +260,28 @@ export default {
             return;        
             }
 
-            try {
-                let result = await axios.post('/api/standard/product', this.prdInfo);
-                if (result.data.result) {
-                    alert('제품 등록');
-                    this.bringPrd(); // 목록 갱신
-                } else {
-                    alert('등록에 실패');
-                }
-            } catch (err) {
-            console.error('제품 등록 중 오류:', err);
-            }
+            this.$swal({
+                    title: "등록하시겠습니까??",
+                    text: "",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: "확인",
+                    cancelButtonText: "취소"
+                }).then(async(result) => {
+                    if (result.isConfirmed) {
+                        this.$swal({
+                        title: "등록완료!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
+                        });
+                        axios.post('/api/standard/product', this.prdInfo);
+                        this.searchPrd();
+                        this.prdInfo={};
+                    }                   
+                });
         },
         async prdUpdate() {
             if(!this.objectKey(this.prdInfo, this.copyPrdInfo)){
@@ -278,6 +289,7 @@ export default {
                     icon: "warning",
                     title: "수정할 변경 사항이 없습니다.",
                     text: "수정 후 저장 버튼을 눌러주세요.",
+                    confirmButtonText: "확인"
                 });
                 return; // 작업 중단
             }
@@ -288,16 +300,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, modify!"
+                    confirmButtonText: "수정",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "modify!",
-                        text: "Your file has been modified.",
-                        icon: "success"
+                        title: "수정완료!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
                     await axios.put(`/api/standard/updateProduct/${this.prdInfo.prd_cd}`, this.prdInfo);
-                    this.bringPrd(); // 목록 갱신
+                    this.searchPrd(); // 목록 갱신
+                    this.prdInfo={};
                     }
                     
                 });
@@ -306,9 +321,6 @@ export default {
             const currentTime = new Date();
             const createDate = new Date(this.prdInfo.create_dt);
             const timeDifference = (currentTime - createDate) / (24 *1000 * 60 * 60); 
-            console.log(currentTime);
-            console.log(createDate);
-            console.log(timeDifference);
             // 1시간 이내인지 확인
             if (timeDifference > 1) {
                 this.$swal({
@@ -326,16 +338,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete!"
+                    confirmButtonText: "삭제",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "delete!",
-                        text: "Your file has been deleted.",
-                        icon: "success"
+                        title: "삭제완료!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
                         await axios.delete(`/api/standard/delProduct/${this.prdInfo.prd_cd}`);
-                        this.bringPrd(); // 목록 갱신
+                        this.searchPrd(); // 목록 갱신
+                        this.prdInfo={};
                     }
                 });
         },
@@ -349,3 +364,14 @@ export default {
 
 }
 </script>
+<!-- <style>
+.ag-row-selected {
+    background-color: #c05870; /* 원하는 색상으로 변경 */
+}</style> -->
+<!-- <style>
+.ag-row .ag-cell {
+  display: flex;
+  justify-content: center; /* align horizontal */
+  align-items: center;
+  }
+</style> -->
