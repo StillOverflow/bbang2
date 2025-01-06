@@ -339,6 +339,7 @@
         } else { // 검사대기 목록인 경우
           testLists = await axios.get('/api/quality/test/my', {params: query}) // 가장 최신 품질기준의 검사항목 불러옴
                                  .catch(err => console.log(err));
+                                 
           if(type == 'P02') this.proc_qu_std_cd = testLists.data[0].qu_std_cd;
           else this.target_qu_std_cd = testLists.data[0].qu_std_cd;
         }
