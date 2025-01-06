@@ -1,158 +1,143 @@
 <template>
     <div id="page-inner" class="mx-auto">
-      <div class="py-4 container-fluid">
-        <div class="card py-5 px-6">
-          <div class="row">
-            <!-- 사원목록 -->
-            <div class="col-md-8" style="height: auto">
-              <h4 class="mb-3 text-center">사원 목록</h4>
-              <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%" >
-                <div style="width: 15%">
-                  <label class="me-2 align-self-center">사원명</label>
-                </div>
-                
-                <div  class="d-flex justify-content-left align-items-center" style="width: 75%" >
-                  <input type="search" class="form-control d-inline" v-model="keyword" placeholder="사원명을 입력하세요" style="width: 75%" />
-                  <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchMem" > <i class="fa-solid fa-magnifying-glass"></i> </button>
-                </div>
-              </div>
-              <!-- 사원 테이블 ag-gird -->
-              <ag-grid-vue
-                class="ag-theme-alpine"
-                style="width: 900px; height: 660px"
-                :columnDefs="memberDefs"
-                :rowData="memberData"
-                :pagination="true"
-                :gridOptinos="gridOptinos"
-                @gridReady="onMemGridReady"
-                @rowClicked="memClicked">
-              </ag-grid-vue>
-            </div>
-            
-            <!-- <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div> -->
-            <div class="col-md-4 mt-5" style="height: auto">
-                <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newMember">신규등록</button>
-                </div>
-                <div class="d-flex justify-content-left  mb-2">
-                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">사원코드 *</div>
-                    <div class="input-group mb-3 w-30">
-                        <input type="text" class="form-control" v-model="memInfo.mem_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px; background-color: rgb(236, 236, 236);" maxlength="2" disabled/>                     
+        <div class="py-4 container-fluid">
+            <div class="card py-5 px-6">
+                <div class="row">
+                    <!-- 사원목록 -->
+                    <div class="col-md-7" style="height: auto">
+                        <h4 class="mb-3 text-center">사원 목록</h4>
+                        <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%">
+                            <div style="width: 15%">
+                                <label class="me-2 align-self-center" style="font-size: 18px; font-weight: bold;">사원명</label>
+                            </div>
+                            <div class="d-flex justify-content-left align-items-center" style="width: 85%">
+                                <input type="search" class="form-control d-inline" v-model="keyword" placeholder="사원명을 입력하세요" style="width: 75%" />
+                                <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchMem">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- 사원 테이블 ag-grid -->
+                        <ag-grid-vue
+                            class="ag-theme-alpine"
+                            style="width: 100%; height: 600px"
+                            :columnDefs="memberDefs"
+                            :rowData="memberData"
+                            :pagination="true"
+                            :gridOptinos="gridOptinos"
+                            @gridReady="onMemGridReady"
+                            @rowClicked="memClicked">
+                        </ag-grid-vue>
                     </div>
-                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">ID *</div>
-                    <div class="input-group mb-3 w-30">
-                        <input type="text" class="form-control" v-model="memInfo.id" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" disabled/>
+
+                    <!-- 사원 상세정보 -->
+                    <div class="col-md-4 mt-5" style="height: auto; padding-left: 30px; margin-left: 20px;">
+                        <div class="text-end mb-3">
+                            <button type="button" class="btn btn-secondary mb-0 ms-4" @click="newMember">신규등록</button>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">사원코드 *</div>
+                            <div class="input-group mb-3" style="width: 45%;">
+                                <input type="text" class="form-control" v-model="memInfo.mem_cd" style="height: 41px; background-color: rgb(236, 236, 236);" maxlength="10" disabled />
+                            </div>
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 15%; font-size: 16px; text-align: right; padding-right: 15px;">ID *</div>
+                            <div class="input-group mb-3" style="width: 30%;">
+                                <input type="text" class="form-control" v-model="memInfo.id" style="height: 41px;" disabled />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">사원명</div>
+                            <div class="input-group mb-3" style="width: 65%;">
+                                <input type="text" class="form-control" v-model="memInfo.name" style="height: 41px;" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">성별</div>
+                            <div class="input-group mb-3" style="width: 25%;">
+                                <select class="form-select custon-width" v-model="memInfo.gender">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.gender" :key="idx" :value="opt.comm_dtl_cd">{{ opt.comm_dtl_nm }}</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 20%; font-size: 16px; text-align: right; padding-right: 15px;">부서</div>
+                            <div class="input-group mb-3" style="width: 30%;">
+                                <select class="form-select custon-width" v-model="memInfo.dpt_cd">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.dpt_cd" :key="idx" :value="opt.dpt_cd">{{ opt.dpt_nm }}</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">생년월일</div>
+                            <div class="input-group mb-3" style="width: 65%;">
+                                <input type="date" class="form-control" v-model="memInfo.birth" style="height: 41px;" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">연락처</div>
+                            <div class="input-group mb-3" style="width: 65%;">
+                                <input type="text" class="form-control" v-model="memInfo.phone" style="height: 41px;" @input="autoSeparate" maxlength="13" placeholder="000-0000-0000" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">e-mail</div>
+                            <div class="input-group mb-3" style="width: 65%;">
+                                <input type="text" class="form-control" v-model="memInfo.email" style="height: 41px;" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">입사일 *</div>
+                            <div class="input-group mb-3" style="width: 65%;">
+                                <input type="date" class="form-control" v-model="memInfo.hire_dt" style="height: 41px;" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">퇴사일</div>
+                            <div class="input-group mb-3" style="width: 65%;">
+                                <input type="date" class="form-control" v-model="memInfo.quit_dt" style="height: 41px;" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">주소</div>
+                            <div class="input-group mb-3" style="width: 65%;">
+                                <input type="text" class="form-control" v-model="memInfo.addr" style="height: 41px;" />
+                                <button type="button" class="btn btn-warning" @click="openPostcode">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">권한 *</div>
+                            <div class="input-group mb-3" style="width: 30%;">
+                                <select class="form-select custon-width" v-model="memInfo.permission">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.permission" :key="idx" :value="opt.comm_dtl_cd">{{ opt.comm_dtl_nm }}</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 20%; font-size: 16px; text-align: right; padding-right: 15px;">상태</div>
+                            <div class="input-group mb-3" style="width: 30%;">
+                                <select class="form-select custon-width" v-model="memInfo.status">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.status" :key="idx" :value="opt.comm_dtl_cd">{{ opt.comm_dtl_nm }}</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
-                </div>
-           
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">사원명</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="text" class="form-control" v-model="memInfo.name" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;" :disabled="!isNewMode"/>
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">성별</div>
-                <div class="input-group mb-3 w-20">
-                    <select class="form-select custon-width" v-model="memInfo.gender">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.gender"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
-                </div>
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">부서</div>
-                <div class="input-group mb-3 w-20">
-                    <select class="form-select custon-width" v-model="memInfo.dpt_cd">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.dpt_cd"
-                            :key="idx"
-                            :value="opt.dpt_cd">
-                            {{ opt.dpt_nm }}
-                        </option>
-                    </select>
-                </div>
-            </div>
 
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">생년월일</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="date" class="form-control" v-model="memInfo.birth" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-                <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">연락처</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="text" class="form-control" v-model="memInfo.phone" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;" @input="autoSeparate"  maxlength="13" placeholder="000-0000-0000"/>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">e-mail</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="text" class="form-control" v-model="memInfo.email" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">입사일 *</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="date" class="form-control" v-model="memInfo.hire_dt" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">퇴사일</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="date" class="form-control" v-model="memInfo.quit_dt" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">주소</div>
-                <div class="input-group mb-3 w-70">
-                    <input type="text" class="form-control" v-model="memInfo.addr" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                    <button type="button" class="btn btn-warning " @click="openPostcode"><i class="fa-solid fa-magnifying-glass"></i></button>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">권한 *</div>
-                <div class="input-group mb-3 w-20">
-                    <select class="form-select custon-width" v-model="memInfo.permission">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.permission"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
-                </div>
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">상태</div>
-                <div class="input-group mb-3 w-20">
-                    <select class="form-select custon-width" v-model="memInfo.status">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.status"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-            </div> 
-                <div class="text-center" v-if="this.$session.get('user_ps') == 'H01'">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? memUpdate() : memInsert()"> 저장 </button>
+                    <div class="text-center mt-3">
+                        <button type="button" id="submitBtn" class="btn btn-success ms-2 saveBtn" @click="isUpdated ? memUpdate() : memInsert()">저장</button>
+                    </div>
                 </div>
             </div>
         </div>
-      </div> 
     </div>
-  </template>
+</template>
 <script>
 import { AgGridVue } from "ag-grid-vue3";
 import axios from "axios";
@@ -162,8 +147,9 @@ export default {
     name: "PostCode",
     created(){
         this.$store.dispatch('breadCrumb', { title: '사원 관리' });
-        this.searchMem();
         this.fetchCommonCodes();
+        this.searchMem();
+        
         let memCd = this.$route.query.mem_cd;
         if(memCd > 0){
             //수정
@@ -210,6 +196,7 @@ export default {
                     gender: [], // 단위 공통코드
                     permission:[],
                     status:[],
+                    dpt_cd: [],
                 },
             },
             newMember() {
@@ -278,7 +265,7 @@ export default {
         //----------------------------공통함수()---------------------------
         //사원 검색 조회
         async searchMem() {
-        this.memKeyword = {mem_nm: this.keyword};
+        this.memKeyword = {name: this.keyword};
         let result = await axios.get('/api/comm/member', { params: this.memKeyword });
         this.memberData = result.data;
         },
@@ -363,13 +350,13 @@ export default {
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "register!",
-                        text: "Your file has been register.",
+                        title: "등록완료",
                         icon: "success"
                         });
                         await axios.post(`/api/standard/insertMember`, this.memInfo);
                         this.searchMem(); // 목록 갱신
-                    }                   
+                    }         
+                              
                 });
         },
         async memUpdate() {
@@ -392,8 +379,7 @@ export default {
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "modify!",
-                        text: "Your file has been modified.",
+                        title: "수정완료!",
                         icon: "success"
                         });
                     await axios.put(`/api/standard/updateMember/${this.memInfo.mem_cd}`, this.memInfo);
@@ -414,8 +400,7 @@ export default {
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "delete!",
-                        text: "Your file has been deleted.",
+                        title: "삭제완료",
                         icon: "success"
                         });
                         await axios.delete(`/api/standard/delMember/${this.memInfo.mem_cd}`);

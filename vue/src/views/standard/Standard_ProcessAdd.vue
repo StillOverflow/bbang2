@@ -1,91 +1,111 @@
 <template>
     <div id="page-inner" class="mx-auto">
-      <div class="py-4 container-fluid">
-        <div class="card py-5 px-6">
-          <div class="row">
-            <!-- 공정목록 -->
-            <div class="col-md-6" style="height: auto">
-              <h4 class="mb-3 text-center">공정 목록</h4>
-              <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%" >
-                <div style="width: 15%">
-                  <label class="me-2 align-self-center">공정명</label>
-                </div>
-                
-                <div  class="d-flex justify-content-left align-items-center" style="width: 85%" >
-                  <input type="search" class="form-control d-inline" v-model="keyword" placeholder="공정명을 입력하세요" style="width: 75%" />
-                  <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchProc" > <i class="fa-solid fa-magnifying-glass"></i> </button>
-                </div>
-              </div>
-              <!-- 자재 테이블 ag-gird -->
-              <ag-grid-vue
-                class="ag-theme-alpine"
-                style="width: 100%; height: 600px"
-                :columnDefs="processDefs"
-                :rowData="processData"
-                :pagination="true"
-                :gridOptinos="gridOptinos"
-                @gridReady="onProcGridReady"
-                @rowClicked="procClicked">
-              </ag-grid-vue>
-            </div>
-            
-            <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div>
-            <div class="col-md-4 mt-5" style="height: auto">
-                <div class="mb-3 d-flex justify-content-end" >
-                    <button type="button" class="btn btn-secondary ms-5  mt-3 saveBtn" @click="newProcess"
-                    v-if="this.$session.get('user_ps') == 'H01'">신규등록</button>
-                </div>
-                <div class="d-flex justify-content-left mb-2">
-                    <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정코드 *</div>
-                    <div class="input-group mb-3 w-50">
-                        <input type="text" class="form-control" v-model="procInfo.proc_cd" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="text-transform: uppercase; height: 41px; background-color: rgb(236, 236, 236);" maxlength="2" :disabled="isUpdated"/>
-                        
+        <div class="py-4 container-fluid">
+            <div class="card py-5 px-6">
+                <div class="row">
+                    <!-- 공정목록 -->
+                    <div class="col-md-6" style="height: auto">
+                        <h4 class="mb-3 text-center">공정 목록</h4>
+                        <div class="d-flex justify-content-left align-items-center mb-2" style="width: 100%">
+                            <div style="width: 15%">
+                                <label class="me-2 align-self-center" style="font-size: 18px; font-weight: bold;">공정명</label>
+                            </div>
+                            <div class="d-flex justify-content-left align-items-center" style="width: 85%">
+                                <input type="search" class="form-control d-inline" v-model="keyword" placeholder="공정명을 입력하세요" style="width: 75%" />
+                                <button class="btn btn-warning mb-0" style="width: 25%; margin-left: 10px" @click="searchProc">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- 공정 테이블 ag-grid -->
+                        <ag-grid-vue
+                            class="ag-theme-alpine"
+                            style="width: 100%; height: 600px"
+                            :columnDefs="processDefs"
+                            :rowData="processData"
+                            :pagination="true"
+                            :gridOptinos="gridOptinos"
+                            @gridReady="onProcGridReady"
+                            @rowClicked="procClicked">
+                        </ag-grid-vue>
+                    </div>
+
+                    <!-- 우측 입력 폼 -->
+                    <div class="col-md-6 mt-5" style="height: auto; padding-left: 30px">
+                        <!-- 신규등록 버튼 -->
+                        <div class="text-end mb-3">
+                            <button
+                                type="button"
+                                class="btn btn-secondary"
+                                @click="newProcess"
+                                v-if="this.$session.get('user_ps') == 'H01'">
+                                신규등록
+                            </button>
+                        </div>
+                        <!-- 입력 필드 -->
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정코드 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    v-model="procInfo.proc_cd"
+                                    :style="{textTransform: 'uppercase', height: '41px', backgroundColor: isUpdated ? 'rgb(236, 236, 236)' : 'white'}"
+                                    maxlength="2"
+                                    :disabled="isUpdated" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정명 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="text" class="form-control" v-model="procInfo.proc_nm" style="height: 41px;" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">설비구분 *</div>
+                            <div class="input-group mb-3 w-50">
+                                <select class="form-select" v-model="procInfo.eqp_type">
+                                    <option v-for="(opt, idx) in selectedData.selectOptions.eqp_type" :key="idx" :value="opt.comm_dtl_cd">
+                                        {{ opt.comm_dtl_nm }}
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">평균가동시간</div>
+                            <div class="input-group mb-3 w-50">
+                                <input type="number" class="form-control" v-model="procInfo.duration" style="height: 41px;" />
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-left mb-2">
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>
+                            <textarea cols="30" rows="10" class="form-control  h-25" v-model="procInfo.note" style="height: 100px;" />
+                        </div>
                     </div>
                 </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정명 *</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="text" class="form-control" v-model="procInfo.proc_nm" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">설비구분 *</div>
-                <div class="input-group mb-3 w-50">
-                    <select class="form-select custon-width" v-model="procInfo.eqp_type">
-                        <option v-for="(opt, idx) in selectedData.selectOptions.eqp_type"
-                            :key="idx"
-                            :value="opt.comm_dtl_cd">
-                            {{ opt.comm_dtl_nm }}
-                        </option>
-                    </select>
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">평균가동시간</div>
-                <div class="input-group mb-3 w-50">
-                    <input type="number" class="form-control" v-model="procInfo.duration" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                    style="height: 41px;"  />
-                </div>
-            </div>
-            <div class="d-flex justify-content-left  mb-2">
-                <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">비고</div>                
-                        <textarea cols="40" rows="8" type="text" class="form-control h-25" v-model="procInfo.note" aria-label="Recipient's username" aria-describedby="button-addon2" 
-                        style="height: 41px;" />                
-            </div>
-            </div> 
+                <!-- 저장 및 삭제 버튼 -->
                 <div class="text-center">
-                    <button type="button" id="submitBtn" class="btn btn-success ms-2  mt-3 saveBtn" @click="isUpdated? procUpdate() : procInsert()"
-                    v-if="this.$session.get('user_ps') == 'H01'"> 저장 </button>
-                    <button type="button" class="btn btn-danger mt-3 ms-2 saveBtn" @click="delProcess"
-                    v-if="this.$session.get('user_ps') == 'H01'"> 삭제 </button>
+                    <button
+                        type="button"
+                        id="submitBtn"
+                        class="btn btn-success ms-2 mt-3"
+                        @click="isUpdated ? procUpdate() : procInsert()"
+                        v-if="this.$session.get('user_ps') == 'H01'">
+                        저장
+                    </button>
+                    <button
+                        type="button"
+                        class="btn btn-danger mt-3 ms-2"
+                        @click="delProcess"
+                        v-if="this.$session.get('user_ps') == 'H01'">
+                        삭제
+                    </button>
                 </div>
             </div>
         </div>
-      </div> 
     </div>
-  </template>
+</template>
+
 <script>
 import { AgGridVue } from "ag-grid-vue3";
 import axios from "axios";
@@ -209,7 +229,7 @@ export default {
             return;        
             }
             this.$swal({
-                    title: "등록하시겠습니까??",
+                    title: "등록하시겠습니까?",
                     text: "",
                     icon: "warning",
                     showCancelButton: true,
@@ -219,8 +239,8 @@ export default {
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "register!",
-                        text: "Your file has been register.",
+                        title: "등록성공!",
+                        text: "등록되었습니다.",
                         icon: "success"
                         });
                         axios.post(`/api/standard/insertProcess/${this.procInfo.proc_cd}`, this.procInfo);

@@ -162,6 +162,12 @@ const insertProcessMtlFlow = `
 INSERT INTO proc_flow_mtl 
 SET ?
 `;
+//공정별 자재추가 흐름도위치
+const insertProcessMtlFlowByFlow = `
+INSERT INTO proc_flow_mtl 
+SET ?
+WHERE proc
+`;
 //공정별 자재 삭제
 const deleteProcessMtlFlow = `
 DELETE 
@@ -518,5 +524,6 @@ depSelect
 
 ,selectProcMtlsUsage,
 updateProcMtl,
-deleteProcFlowMtl
+deleteProcFlowMtl,
+insertProcessMtlFlowByFlow
 };

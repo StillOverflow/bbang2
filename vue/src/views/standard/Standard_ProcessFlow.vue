@@ -21,8 +21,8 @@
               </div>            
             </div>
             <div class="d-flex align-items-center">
-                <label class="fw-bold me-2">제품명</label>
-                <input type="text" class="form-control ms-7 me-2" placeholder="제품명을 입력하세요" v-model="keyword" style="width: 400px;" />
+                <label class="fw-bold me-2" style="font-size: 18px; font-weight: bold;">제품명</label>
+                <input type="text" class="form-control ms-6 me-2" placeholder="제품명을 입력하세요" v-model="keyword" style="width: 400px;" />
                 <button class="btn btn-warning" @click="searchPrd">
                   <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
@@ -44,8 +44,9 @@
           <!-- <div class="col-2 col-xl-1 d-flex flex-column align-items-center justify-content-center"></div> -->
           <div class="col-md-6 mt-5" style="height: auto">
             <!-- 자재 목록 -->
-            <h4 class="d-flex justify-content-start">공정흐름도</h4>
+            <h4 class="d-flex justify-content-start" style='visibility: hidden;'>공정흐름도</h4>
             <div class="mb-3 d-flex justify-content-end" >
+              <label class="align-self-center me-9 fs-5">공정흐름도</label>
               <button class="btn btn-outline-primary mb-0 ms-2"  @click="modalOpen"
               v-if="this.$session.get('user_ps') == 'H01'"> 공정추가 </button>
               <button class="btn btn-outline-primary mb-0 ms-2" 
@@ -75,7 +76,8 @@
             <!-- BOM 목록 -->          
             <div class="col-13 text-end">
               <!-- <h4 class="mt-4 mb-3">BOM 정보</h4> -->
-              <label class="d-flex justify-content-start fs-4">공정별자재</label>
+              <label class="d-flex justify-content-start fs-4" style='visibility: hidden;'>공정별자재</label>
+              <label class="align-self-center me-9 fs-5">공정별자재</label>
               <button class="btn btn-outline-primary mt-2 mb-2 ms-2" @click="bommodalOpen"
               v-if="this.$session.get('user_ps') == 'H01'">
                 자재추가
@@ -156,7 +158,6 @@
             </Layout>
               <div class="text-center">
                 <button type="button" class="btn btn-success mt-3 saveBtn " @click="save" 
-                v-bind:disabled="this.saveModal.length == 0 && this.deleteModal.length == 0 && this.saveProwMtlData.length== 0 && this.deleteProwMtlData.length ==0"
                 v-if="this.$session.get('user_ps') == 'H01'"> 저장 </button>
                 <button type="button" class="btn btn-secondary ms-2 mt-3 saveBtn" @click="reset">
                         초기화
@@ -191,7 +192,7 @@ export default {
     return {
       isdisabled: true,
       bomOptions: {
-        rowSelection: { mode: "singleRow", enableClickSelection: true },
+        rowSelection: { mode: "multiRow", enableClickSelection: true },
         suppressMovableColumns: true,
       },
       proFlowOptions: {
@@ -202,7 +203,7 @@ export default {
       },
       gridOptions: {
         rowSelection: {
-          mode: "singleRow",
+          mode: "multiRow",
           checkboxes: false,
           enableClickSelection: true,
         },
@@ -332,11 +333,14 @@ export default {
       this.selectProData = params.data.prd_cd;
       this.bringProFlow(this.selectProData);
       this.bringBomData(this.selectProData);
+      this.procFlowMtlData=[];
     },
     //공정흐름도선택정보
     proFlowClicked(params) {
       this.selectProFlowData = params.data.proc_flow_cd;
+      this.selctedTempId = params.data.temp_id;
       this.bringMtlData(this.selectProFlowData);
+      console.log(this.selectProFlowData);
     },
     //모달선택정보
     modalClicked(params) {
@@ -419,12 +423,14 @@ export default {
         const procSeq = maxSeq + index;
         index++;
 
+        const tempId = `TEMP_${Date.now()}`;
         //그리드용
         const saveBom = {
           proc_seq: procSeq,
           proc_cd: dup.proc_cd,
           proc_nm: dup.proc_nm,
-          eqp_type:dup.eqp_type
+          eqp_type:dup.eqp_type,
+          temp_id:tempId,
         };
          //그리드반영 
         this.prowFlowApi.applyTransaction({
@@ -436,7 +442,7 @@ export default {
           prd_cd: this.selectProData,
           proc_cd: saveBom.proc_cd,
           proc_seq: saveBom.proc_seq,
-          eqp_type : saveBom.eqp_type
+          temp_id:tempId
         };
         this.saveModal.push(saveRealModal);
       }
@@ -458,7 +464,6 @@ export default {
 
     //공정 자재추가
     async InsertProcMtl() {
-      
       const selectedNodes = this.gridApi.getSelectedRows(); // 선택된 BOM 데이터
 
       for (const material of selectedNodes) {
@@ -524,6 +529,7 @@ export default {
           mat_cd: saveMaterial.mat_cd,
           mat_qty: saveMaterial.mat_qty,
           prd_cd: this.selectProData,
+          temp_id: this.selctedTempId,
           proc_flow_cd: this.selectProFlowData,
         };
 
@@ -594,6 +600,8 @@ export default {
           });
         }
     },
+
+    
     //저장
     async save() {
       //업데이트
@@ -604,20 +612,6 @@ export default {
 
       if (updatedMaterials.length > 0) {
         await axios.put('/api/standard/updateFlowMatUsage', updatedMaterials);
-
-        // if (response.data == 'success') {
-        //   this.$swal({
-        //     icon: "success",
-        //     title: "저장 성공",
-        //     text: "자재 사용량 및 공정 데이터가 성공적으로 저장되었습니다!",
-        //   });
-        // } else {
-        //   this.$swal({
-        //     icon: "error",
-        //     title: "저장 실패",
-        //     text: "자재 사용량 업데이트 중 문제가 발생했습니다.",
-        //   });
-        // }
       }
 
       //드래그-----------------------------
@@ -646,54 +640,118 @@ export default {
           await axios.delete(`/api/standard/flowMtl/${bom.proc_mat_flow_cd}`);
         }
       }
+
+//------------------------------------저장---------------------------------------
+    // // 다중 공정 흐름도 추가 + 자재 추가
+    if (this.saveModal.length > 0 && this.saveProwMtlData.length > 0) {
+
+      const saveData = this.saveModal.map((procFlow) => ({
+        procFlow: {...procFlow,},
+        materials: this.saveProwMtlData.filter(
+          (material) => material.temp_id == procFlow.temp_id // temp_id로 매핑
+        ),
+      }));
+
+      console.log("서버로 전송할 데이터:", saveData);
+
+      try {
+        const result = await axios.post("/api/standard/multipleProcFlowMtl", saveData);
+
+        if (result.data.result === "success") {
+          this.$swal({
+            icon: "success",
+            title: "저장 성공",
+            text: "데이터가 성공적으로 저장되었습니다!",
+          });
+          this.reset();
+        }
+      } catch (error) {
+        console.error("저장 실패:", error);
+        this.$swal({
+          icon: "error",
+          title: "저장 실패",
+          text: "저장 중 오류가 발생했습니다. 다시 시도해주세요.",
+        });
+      }
+      }
+//--============================================================================
       // 공정흐름도만 등록
       if (this.saveModal.length > 0 && this.saveProwMtlData.length == 0) {
         //공정흐름등록 데이터 존재 자재등록데이터 비존재
-        for (const procFlow of this.saveModal) {
-          try {
-            await axios.post(`/api/standard/flow`, procFlow);
-          } catch (error) {
-            console.error("공정흐름도 등록 실패:", error);
-          }
-        }
+        // console.log("저장할 공정 데이터:", this.saveModal);
+        // for (const procFlow of this.saveModal) {
+        //   try {
+        //     await axios.post(`/api/standard/flow/${this.selectProData}`, procFlow);
+        //   } catch (error) {
+        //     console.error("공정흐름도 등록 실패:", error);
+        //   }
+        // }
+        const data = this.saveModal.map((procFlow) => ({
+        ...procFlow,
+        prd_cd: this.selectProData, // 선택된 제품 코드 추가
+      }));
+
+      console.log("저장할 공정 데이터:", data);
+
+      // 공정 흐름도 등록 API 호출
+      await axios.post(`/api/standard/flow/${this.selectProData}`, data);
       }
-      // 공정흐름도등록 + 등록한 공정에 자재 등록
-      if (this.saveModal.length > 0 && this.saveProwMtlData.length > 0) {
-        //공정흐름등록 데이터 존재 자재등록데이터 존재
-        const sendProcFlowMtl = [...this.saveModal, ...this.saveProwMtlData];
-        try {
-          await axios.post(`/api/standard/procFlowMtl`, sendProcFlowMtl);
-        } catch (error) {
-          console.error("공정흐름도와 자재 등록 실패:", error);
-        }
-      }
+
+//------------------------------------------
+
+
+
+//------------------------------실험--------------
+    // // 공정별 자재 저장
+    // if (this.saveProwMtlData.length > 0) {
+    //   console.log("저장할 자재 데이터:", this.saveProwMtlData);
+    //   for (const material of this.saveProwMtlData) {
+    //     try {
+    //       await axios.post(`/api/standard/processMaterial`, material);
+    //     } catch (error) {
+    //       console.error("공정별 자재 저장 실패:", error);
+    //     }
+    //   }
+    // }
+
+
       // 기존 흐름도 공정별 자재만 등록
       if (this.saveModal.length == 0 && this.saveProwMtlData.length > 0) {
-        //공정흐름도 데이터 비존재 자재등록데이터 존재
-        for (const material of this.saveProwMtlData) {
-          try {
-            await axios.post(`/api/standard/processMaterial`, material);
-          } catch (error) {
-            console.error("공정별 자재 등록 실패:", error);
-          }
-        }
+        // console.log("저장할 자재 데이터:", this.saveProwMtlData)
+        // //공정흐름도 데이터 비존재 자재등록데이터 존재
+        // for (const material of this.saveProwMtlData) {
+        //   try {
+        //     await axios.post(`/api/standard/processMaterial`, material);
+        //   } catch (error) {
+        //     console.error("공정별 자재 등록 실패:", error);
+        //   }
+        // }
+        const data = this.saveProwMtlData.map((material) => ({
+          ...material,
+          prd_cd: this.selectProData, // 선택된 제품 코드 추가
+          temp_id: material.temp_id || this.selctedTempId
+        }));
+          // 자재 데이터 다중 등록 API 호출
+          await axios.post("/api/standard/processMaterial", data);
       }
 
       //공정흐름도 등록하고 다른 공정데이터에 자재 추가하는경우
       if (
         this.saveModal.length > 0 &&
-        this.saveProwMtlData.some((material) => material.proc_flow_cd) 
+        this.saveProwMtlData.some((material) => material.proc_flow_cd) // 기존 흐름도와 연결된 자재
       ) {
-        for (const material of this.saveProwMtlData) {
-          if (material.proc_flow_cd) {
-            try {
-              await axios.post(`/api/standard/processMaterial`, material);
-            } catch (error) {
-              console.error("기존 공정흐름 자재 등록 실패:", error);
-            }
-          }
-        }
+        // 기존 공정 흐름도에 연결된 자재 필터링
+        const data = this.saveProwMtlData
+          .filter((material) => material.proc_flow_cd) // `proc_flow_cd`가 있는 데이터만
+          .map((material) => ({
+            ...material,
+            prd_cd: this.selectProData, // 선택된 제품 코드 추가
+          }));
+        
+        await axios.post("api/standard/procFlowStnMaterials", data);;
       }
+      //------------------------------------저장---------------------------------------
+
       this.$swal({
         icon: "success",
         title: "저장 성공",
