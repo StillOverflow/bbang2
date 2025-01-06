@@ -203,11 +203,9 @@ SELECT
       WHERE PRD_CD=pid.PRD_CD) AS PRD_NM, 
 		TOTAL_QTY,
 		(SELECT 
-			ifnull(sum(PRD_OUT_QTY),0)
+			ifnull(sum(PRD_QTY),0)
 		from 
-			product_out p JOIN product_out_detail pod 
-			ON p.PRD_OUT_CD=pod.PRD_OUT_CD 
-			WHERE p.order_cd=pi.order_cd
+			product_in where INST_CD=pi.INST_CD
 			AND PRD_CD=pid.PRD_CD
 		) AS PRD_OUT_QTY
 FROM 
