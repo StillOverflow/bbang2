@@ -69,8 +69,8 @@
                         @firstDataRendered="instructionsGridRendered"
                      />
                   </div>
-                  <div class="col-1">
-                     <button class="btn btn-secondary" @click="resetBtnFunc">RESET</button>
+                  <div class="col-1 text-center">
+                     <button class="btn btn-secondary btn-sm mt-7" @click="resetBtnFunc">초기화</button>
                   </div>
 
                   <!-- //! 자재 출고 내역 조회 Layout -->
@@ -93,7 +93,7 @@
                         </template>
                         <template v-slot:footer>
                            <div class="mx-auto">
-                              <button type="button" class="btn btn-secondary m-1" @click="materialModalOpen">Cancel</button>
+                              <button type="button" class="btn btn-secondary m-1" @click="materialModalOpen">닫기</button>
                            </div>
                         </template>
                      </Layout>
@@ -203,7 +203,6 @@
                            </div>
                         </div>
                         
-                        
                         <ag-grid-vue
                            class="ag-theme-alpine"
                            style="width: 100%; height: 700px;"
@@ -229,6 +228,7 @@
    import { useStore } from 'vuex';
    import { onBeforeMount, shallowRef, ref } from 'vue';
    import Layout from '../components/modalLayout.vue';   // modal Layout 불러오기
+   
 //! ---------------------------------------- 데이터 정의 ----------------------------------------
    // Vuex store 사용
    const store = useStore();
@@ -290,6 +290,7 @@
          });
       }
    }
+
    // 자재 구분 목록 조회
    const getType = async () => {
       try {
@@ -343,7 +344,7 @@
       try {
          const result = await axios.get(`/api/material/produceInstruction`, { params : { 'startDt' : startDt.value, 'endDt' : endDt.value, 'status' : selectedStatus.value } });
          instructionsData.value = result.data || [];
-
+         console.log("result.data => ", result.data)
          if(result.data.length > 0) {
             instCode.value = result.data[0].inst_cd || "";
             getMaterialOutForProduction(instCode.value);
@@ -381,7 +382,6 @@
          });
       }
    }
-
 //! ---------------------------------------- 이벤트 함수 ----------------------------------------
    // 검색
    const inputChange = () => {
@@ -568,14 +568,16 @@
             field: 'inst_dtl_cd',
             cellClass: "text-center",
             rowSpan: (params) => {
+               let rowSpanCache = {};
                const rowIndex = params.node.rowIndex;
                const instDtlCode = params.data.inst_dtl_cd;
 
-               if (
-                  rowIndex > 0 &&
-                  params.api.getDisplayedRowAtIndex(rowIndex - 1).data.inst_dtl_cd === instDtlCode
-               ) {
-                  console.log(`Skipping row ${rowIndex} for merge`);
+               // 캐시에 값이 있으면 반환
+               if (rowSpanCache[rowIndex] !== undefined) {
+                  return rowSpanCache[rowIndex];
+               }
+
+               if (rowIndex > 0 && params.api.getDisplayedRowAtIndex(rowIndex - 1).data.inst_dtl_cd === instDtlCode) {
                   return 0; // 병합 내부 셀
                }
 
@@ -589,7 +591,7 @@
                         break;
                   }
                }
-
+               rowSpanCache[rowIndex] = span;
                return span;
             },
             cellClassRules: {
@@ -600,7 +602,6 @@
                   return params.value !== undefined;
                },
             },
-            columnHoverHighlight : true
          },
          { 
             headerName: '공정 코드', 
@@ -674,6 +675,8 @@
          },
          
       ],
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+      rowModelType: 'clientSide',
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    };
 
@@ -691,15 +694,6 @@
       font-size: 15px;
    }
 
-   .cell-span {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      background-color: #e4e4e4;
-      border: 1px solid #BABFC7;
-      border-collapse: collapse;
-   }
    .text-center {
       text-align: center;
    }

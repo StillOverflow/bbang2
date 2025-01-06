@@ -1,7 +1,7 @@
 <template>
    <div class="py-4 container-fluid">
       <div class="row">
-          <div class="col-12">
+         <div class="col-12">
             <div class="card p-3">
                <div class="card-header bg-light mb-4">  
                   <div class="d-flex justify-content-center align-items-center text-center">
@@ -64,10 +64,11 @@
                      
                   </div>
                </div>
+               <div class="text-center">
+                  <button class="mt-3 btn btn-primary btn-lg" @click="orderFormClickFunc">발주하기</button>
+               </div>
             </div>
-            <div class="text-center">
-               <button class="mt-3 btn btn-primary" @click="orderFormClickFunc">SUBMIT</button>
-            </div>
+            
          </div>
       </div>
    </div>
@@ -307,7 +308,7 @@
       try {
          const response = await axios.get('/api/material/planList');
          prodPlanListData.value = response.data || [];
-
+         console.log(response.data);
          if (prodPlanListData.value.length > 0) {
             prodPlanCode.value = prodPlanListData.value[0].prod_plan_cd;
             planToMaterialStkStock(prodPlanListData.value[0].prod_plan_cd); // 데이터 로드

@@ -19,11 +19,12 @@
                   :gridOptions="accountModalGridOptions"
                   @grid-ready="accountModalGrid"
                   @first-data-rendered="accountModalGridRendered"
+                  @grid-size-changed="onGridSizeChanged"
                />
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
-                  <button type="button" class="btn btn-secondary m-1" @click="accountModalOpen">Cancel</button>
+                  <button type="button" class="btn btn-secondary m-1" @click="accountModalOpen">닫기</button>
                </div>
             </template>
          </Layout>
@@ -42,11 +43,12 @@
                   :gridOptions="orderModalGridOptions"
                   @grid-ready="orderModalGrid"
                   @first-data-rendered="orderModalGridRendered"
+                  @grid-size-changed="onGridSizeChanged"
                />
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
-                  <button type="button" class="btn btn-secondary m-1" @click="orderModalOpen">Cancel</button>
+                  <button type="button" class="btn btn-secondary m-1" @click="orderModalOpen">닫기</button>
                </div>
             </template>
          </Layout>
@@ -65,11 +67,12 @@
                   :gridOptions="materialModalGridOptions"
                   @grid-ready="materialGrid"
                   @first-data-rendered="materialGridRendered"
+                  @grid-size-changed="onGridSizeChanged"
                />
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
-                  <button type="button" class="btn btn-secondary m-1" @click="materialModalOpen">Cancel</button>
+                  <button type="button" class="btn btn-secondary m-1" @click="materialModalOpen">닫기</button>
                </div>
             </template>
          </Layout>
@@ -88,11 +91,12 @@
                   :gridOptions="memberModalGridOptions"
                   @grid-ready="memberModalGrid"
                   @first-data-rendered="memberModalGridRendered"
+                  @grid-size-changed="onGridSizeChanged"
                />
             </template>
             <template v-slot:footer>
                <div class="mx-auto">
-                  <button type="button" class="btn btn-secondary m-1" @click="memberModalOpen">Cancel</button>
+                  <button type="button" class="btn btn-secondary m-1" @click="memberModalOpen">닫기</button>
                </div>
             </template>
          </Layout>
@@ -109,12 +113,12 @@
                            <i class="fa-regular fa-file me-1"></i>
                            발주서조회
                         </button>
-                        <button class="btn btn-outline-primary btn-sm m-0 mx-1" @click="addRow">
+                        <button class="btn btn-success btn-sm m-0 mx-1" @click="addRow">
                            <i class="fa-solid fa-plus"></i>
                         </button>
-                        <button class="btn btn-outline-danger btn-sm m-0 mx-1" @click="removeRow">
+                        <!-- <button class="btn btn-outline-danger btn-sm m-0 mx-1" @click="removeRow">
                            <i class="fa-solid fa-minus"></i>
-                        </button>
+                        </button> -->
                      </div>
                   </div>
                   
@@ -135,8 +139,8 @@
                      </div>
                   </div>
                   <div class="text-center mtp30">
-                     <button class="btn btn-primary" @click="orderInsertFunc">SAVE</button>
-                     <button class="btn btn-secondary mlp10" @click="resetFunc">RESET</button>
+                     <button class="btn btn-primary btn-lg" @click="orderInsertFunc">저장</button>
+                     <button class="btn btn-secondary btn-lg mlp10" @click="resetFunc">초기화</button>
                   </div>
                </div>
             </div>
@@ -291,34 +295,31 @@
       orderFormGridRendered.value.applyTransaction( { add : [newObj] } );
    };
 
-   // 행 삭제
-   const removeRow = () => {
-      if (!orderFormGrid.value) {
-         Swal.fire({
-            icon: "error",
-            title: "그리드 초기화 오류",
-            text: "그리드가 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.",
-         });
-         return;
-      };
-
-      const selRows = orderFormGrid.value.getSelectedRows();
-
-      if(selRows.length > 0 ) {
-         orderFormGridRendered.value.applyTransaction( { remove : selRows } );
-      } else {
-         Swal.fire({
-            icon: "warning",
-            title: "선택된 행이 없습니다.",
-         });
-      }
-   };
-
    const orderInsertFunc = () => {
-      let rowData = [];
-      orderFormGridRendered.value.forEachNode(node => rowData.push(node.data));
-      
-      return rowData;
+      const groupedData = new Map();
+
+      // orderFormGrid 데이터 전체를 들고와서 그리드 api 내장함수인 forEachNode를 사용
+      orderFormGridRendered.value.forEachNode(item => {
+         const key = item.data.act_cd; // 거래처 코드 기준으로 그룹화
+         console.log("item => r", item)
+         if (!groupedData.has(key)) {
+            groupedData.set(key, {
+               header: {
+                  act_cd: item.data.act_cd,
+               },
+               details: []
+            });
+         }
+         // 디테일 데이터 추가
+         groupedData.get(key).details.push({
+            mat_cd: item.data.mat_cd,
+            mat_nm: item.data.mat_nm,
+            delivery_dt: item.data.delivery_dt || "defaultDate",
+            mat_qty: item.data.mat_qty || "defaultQty", // NULL 처리
+            unit: item.data.unit
+         });
+      });
+      console.log("rowData => ", groupedData)
    }
 
    // 그리드 데이터 초기화
@@ -562,7 +563,6 @@
             });
             return;
          }
-
          actObj.value = { 'act_cd' : event.data.act_cd, 'act_nm' : event.data.act_nm };
          orderFormGridRendered.value.stopEditing();  // 편집 종료
          accountModalOpen();  // 거래처 조회 모달
@@ -615,13 +615,7 @@
    }
 
    // member 모달에 row클릭 시 
-   let member_name = ref('')
-   const memberModalRowClick = (event) => {
-      member_name.value = event.data.name;
-      memberModalGridRendered.value.stopEditing();  // 편집 종료
-      memberModalOpen(); // 자재조회 모달
-   }
-
+   let member_name = ref('');
    const memberModalGridOptions = {
       columnDefs : [
          { 
@@ -656,7 +650,29 @@
             },
          },
       ],
-      onRowClicked: memberModalRowClick,
+      onRowClicked : (event) => {
+         if (!clickedGrid.value || !clickedGrid.value.data) {
+            Swal.fire({
+               icon: "warning",
+               title: "grid가 정의되지 않았습니다.",
+            });
+
+            return;
+         }
+
+         if (!event.data) {
+            Swal.fire({
+               icon: "warning",
+               title: "data가 정의되지 않았습니다.",
+            });
+            return;
+         }
+
+         member_name.value = event.data.name;
+         memberModalGridRendered.value.stopEditing();  // 편집 종료
+         memberModalOpen();  // 거래처 조회 모달
+      },
+      
    }
    
    let clickedGrid = ref(null);
@@ -667,9 +683,6 @@
    // no, 발주코드, 자재명, 수량, 거래처코드, 거래처명, 납기일
    // 발주서 입력 그리드 
    const orderFormOptions = {
-      rowSelection: {
-         mode: "multiRow", // 체크박스 다중선택
-      },
       columnDefs : [
          { 
             headerName: '발주서 코드', 
@@ -774,9 +787,9 @@
             cellClass: "text-center",
             editable: true,   // 편집 가능
             cellEditor : MemberDropdownEditor,  // 커스텀 드롭다운 셀 에디터
-            cellRenderer: () => {
+            cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return instance.proxy.$session.get('user_nm');
+               return params.value ? `<span style="color: #000; font-size: 13px">${params.value}</span>` : instance.proxy.$session.get('user_nm');
             },
             cellEditorParams: {
                isModal: {
@@ -817,10 +830,23 @@
             },
          },
          {
-            headerName: '삭제', 
-            editType: 'fullRow',
-            cellClass: "text-center",
-         }
+            headerName: '삭제' ,
+            field: 'x', 
+            cellStyle: { textAlign: "center" },
+            cellRenderer: (params) => {
+               const button = document.createElement('button');
+               button.innerText = 'X';
+               button.className = 'btn btn-outline-danger btn-sm';
+               button.addEventListener('click', () => {
+                  // 현재 행 데이터 가져오기
+                  const rowNode = params.node;
+
+                  // 그리드 데이터에서 행 제거
+                  params.api.applyTransaction({ remove: [rowNode.data] });
+               });
+               return button;
+            }
+         },
       ],
       onRowClicked: orderFormRowClick,
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
