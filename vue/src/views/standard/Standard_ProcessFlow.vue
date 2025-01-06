@@ -32,7 +32,7 @@
             <!-- 제품 목록 -->
             <ag-grid-vue
               class="ag-theme-alpine me-5 my-4"
-              style="width: 100%; height: 775px"
+              style="width: 100%; height: 855px"
               :columnDefs="productDefs"
               :rowData="productData"
               :pagination="true"
@@ -56,8 +56,12 @@
 
               <button class="btn btn-outline-danger mb-0 ms-2"  @click="deleteProc"
               v-if="this.$session.get('user_ps') == 'H01'">  삭제 </button>
-
+              
             </div>
+            <div class="alert alert-light alert-dismissible fade show text-center">
+                  <strong>공정추가 저장 후 순서 조정해주세요</strong>
+                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+              </div>
             <div class="col-13 text-end"></div>
 
             <!-- 공정 흐름도 -->
