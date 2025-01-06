@@ -297,8 +297,8 @@
 
         // 검사항목 불러오기
         if(clicked.is_last == 1 || clicked.target_type == 'P03'){ // 마지막 공정일 경우 공정별+완제품 검사를 동시에 해야 함.
-          this.getTests(clicked, 'P03');
           this.getTests(clicked, 'P02');
+          this.getTests(clicked, 'P03');
         } else if(clicked.is_last == 0 || clicked.target_type == 'P02'){ // 공정별 검사일 때
           this.getTests(clicked, 'P02');
         } else { // 자재 검사일 때 (is_last 컬럼이 없음)
@@ -339,9 +339,10 @@
         } else { // 검사대기 목록인 경우
           testLists = await axios.get('/api/quality/test/my', {params: query}) // 가장 최신 품질기준의 검사항목 불러옴
                                  .catch(err => console.log(err));
-                                 
-          if(type == 'P02') this.proc_qu_std_cd = testLists.data[0].qu_std_cd;
-          else this.target_qu_std_cd = testLists.data[0].qu_std_cd;
+        }
+        if(testLists.data[0]){
+          if(target == 'P02') this.proc_qu_std_cd = testLists.data[0].qu_std_cd;
+          this.target_qu_std_cd = testLists.data[0].qu_std_cd;
         }
         
         testLists.data.forEach((test) => {

@@ -62,8 +62,7 @@
                      <ag-grid-vue 
                         class="ag-theme-alpine " 
                         style="width: 100%; height: 700px;"  
-                        :rowData="instructionsData" 
-                        :pagination="true" 
+                        :rowData="instructionsData"
                         :gridOptions="instructionsOptions"
                         @grid-ready="instructionsGrid"
                         @firstDataRendered="instructionsGridRendered"
@@ -85,7 +84,6 @@
                               class="ag-theme-alpine"
                               style="width: 100%; height: 300px;"
                               :rowData="materialArr"
-                              :pagination="true"
                               :gridOptions="materialModalOptions"
                               @grid-ready="materialGrid"
                               @firstDataRendered="materialGridRendered"
@@ -207,11 +205,13 @@
                            class="ag-theme-alpine"
                            style="width: 100%; height: 700px;"
                            :rowData="materialOutData"
-                           :pagination="true"
                            :gridOptions="materialOutOptions"
                            @grid-ready="materialOutGrid"
                            @firstDataRendered="materialOutGridRendered"
                         />
+                        <div class="mx-auto right">
+                           <button class="btn btn-outline-success mlp10 mtp30" @click="excelDownload()"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
+                        </div>
                      </div>
                   </div>
                </div>
@@ -227,7 +227,8 @@
    import Swal from 'sweetalert2';
    import { useStore } from 'vuex';
    import { onBeforeMount, shallowRef, ref } from 'vue';
-   import Layout from '../components/modalLayout.vue';   // modal Layout 불러오기
+   import Layout from '../components/modalLayout.vue';
+   //import * as XLSX from 'xlsx';   // modal Layout 불러오기
    
 //! ---------------------------------------- 데이터 정의 ----------------------------------------
    // Vuex store 사용
@@ -512,6 +513,20 @@
             cellClass: "text-center",
          },
       ],
+
+
+      pagination: true,
+      paginationPageSize: 10,
+      paginationPageSizeSelector: [10, 20, 50, 100],
+      animateRows: false,
+      defaultColDef: {
+         filter: false,
+         flex: 1,
+         minWidth: 10,
+      },
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+
       onRowClicked : onClickMatNm,
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
@@ -552,6 +567,18 @@
             cellClass: "text-center",
          },
       ],
+
+      pagination: true,
+      paginationPageSize: 10,
+      paginationPageSizeSelector: [10, 20, 50, 100],
+      animateRows: false,
+      defaultColDef: {
+         filter: false,
+         flex: 1,
+         minWidth: 10,
+      },
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
       onRowClicked : onClickInstructionsRow,
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }
@@ -675,11 +702,52 @@
          },
          
       ],
+
+      pagination: true,
+      paginationPageSize: 10,
+      paginationPageSizeSelector: [10, 20, 50, 100],
+      animateRows: false,
+      defaultColDef: {
+         filter: false,
+         flex: 1,
+         minWidth: 10,
+      },
+
       suppressMovableColumns: true, // 컬럼 드래그 이동 방지
       rowModelType: 'clientSide',
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    };
 
+   // const excelDownload = () => {
+   //    const formattedToday = dateFormatter(today.value);
+
+   //    let selected = myApi.getSelectedNodes();
+   //    const selectedData = selected.map(item => ({
+   //       '계획서코드': item.data.PROD_PLAN_CD,
+   //       '생산시작일': item.data.START_DT,
+   //       '생산종료일': item.data.END_DT,
+   //       '제품수량': item.data.DTL_QTY,
+   //       '등록일': item.data.CREATE_DT
+   //    }));
+
+   //    const workBook = XLSX.utils.book_new();
+   //    const workSheet = XLSX.utils.json_to_sheet(selectedData);
+   //    XLSX.utils.book_append_sheet(workBook, workSheet, 'example');
+   //    XLSX.writeFile(workBook, `생산계획서_${formattedToday}.xlsx`);
+   // };
+
+   // const searchOrder = async () => {
+   //    const obj = {
+   //    PROD_PLAN_CD: plan_cd.value,
+   //    STATUS: selected_radio.value
+   //    };
+   //    try {
+   //    const result = await axios.get('/api/plan', { params: obj });
+   //    planData.value = result.data;
+   //    } catch (err) {
+   //    console.log(err);
+   //    }
+   // };
 </script>
 
 <style lang="scss">

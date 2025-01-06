@@ -15,7 +15,6 @@
                   class="ag-theme-alpine"
                   style="width: 100%; height: 500px;"
                   :rowData="accountModalData"
-                  :pagination="true"
                   :gridOptions="accountModalGridOptions"
                   @grid-ready="accountModalGrid"
                   @first-data-rendered="accountModalGridRendered"
@@ -39,7 +38,6 @@
                   class="ag-theme-alpine"
                   style="width: 100%; height: 500px;"
                   :rowData="orderModalData"
-                  :pagination="true"
                   :gridOptions="orderModalGridOptions"
                   @grid-ready="orderModalGrid"
                   @first-data-rendered="orderModalGridRendered"
@@ -63,7 +61,6 @@
                   class="ag-theme-alpine"
                   style="width: 100%; height: 500px; margin: auto;"
                   :rowData="materialModalData"
-                  :pagination="true"
                   :gridOptions="materialModalGridOptions"
                   @grid-ready="materialGrid"
                   @first-data-rendered="materialGridRendered"
@@ -87,7 +84,6 @@
                   class="ag-theme-alpine"
                   style="width: 100%; height: 500px;"
                   :rowData="memberModalData"
-                  :pagination="true"
                   :gridOptions="memberModalGridOptions"
                   @grid-ready="memberModalGrid"
                   @first-data-rendered="memberModalGridRendered"
@@ -128,7 +124,6 @@
                            class="ag-theme-alpine"
                            style="width: 100%; height: 700px;"
                            :rowData="orderFormData"
-                           :pagination="true"
                            :gridOptions="orderFormOptions"
                            @cellEditingStarted="cellEditingStartedEvent"
                            @cellEditingStopped="cellEditingStoppedEvent"
@@ -139,7 +134,7 @@
                      </div>
                   </div>
                   <div class="text-center mtp30">
-                     <button class="btn btn-primary btn-lg" @click="orderInsertFunc">저장</button>
+                     <button class="btn btn-primary btn-lg" @click="orderSaveBtnFunc">저장</button>
                      <button class="btn btn-secondary btn-lg mlp10" @click="resetFunc">초기화</button>
                   </div>
                </div>
@@ -184,7 +179,7 @@
    const orderModalData = shallowRef([]);    // 발주서 내역 조회 모달 데이터
    const orderFormData = shallowRef([]);     // 발주서 관리 데이터
    const materialModalData = ref([]);        // 자재 모달 데이터
-   const memberModalData = ref([]);        // 자재 모달 데이터
+   const memberModalData = ref([]);          // 자재 모달 데이터
 
    let vuexData = ref([]);
 
@@ -206,8 +201,6 @@
 
       // orderFormData.value를 Vuex 데이터로 매핑
       orderFormData.value = vuexData.map((data) => {
-         console.log("Mapping data => ", data);
-
          // 필요한 필드만 추출
          return {
             mat_cd: data.mat_cd || "", // 기본값 처리
@@ -295,13 +288,12 @@
       orderFormGridRendered.value.applyTransaction( { add : [newObj] } );
    };
 
-   const orderInsertFunc = () => {
+   const orderSaveBtnFunc = () => {
       const groupedData = new Map();
 
       // orderFormGrid 데이터 전체를 들고와서 그리드 api 내장함수인 forEachNode를 사용
       orderFormGridRendered.value.forEachNode(item => {
-         const key = item.data.act_cd; // 거래처 코드 기준으로 그룹화
-         console.log("item => r", item)
+         const key = item.data.act_cd; // 거래처 코드 기준으로 그룹화=
          if (!groupedData.has(key)) {
             groupedData.set(key, {
                header: {
@@ -319,7 +311,6 @@
             unit: item.data.unit
          });
       });
-      console.log("rowData => ", groupedData)
    }
 
    // 그리드 데이터 초기화
@@ -405,7 +396,7 @@
       }
    }
 
-//^ ------------------------------------------- Modal -------------------------------------------   
+//^ ------------------------------------------- Modal -------------------------------------------
    // 거래처 검색 모달'
    const accountModalOpen = (keyword) => {
       isAccountModal.value = !isAccountModal.value;
@@ -436,7 +427,7 @@
          materialGridRendered.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
       }
    };
-
+   // 담당자 모달
    const memberModalOpen = (keyword) => {
       isMemberModal.value = !isMemberModal.value;
 
@@ -530,6 +521,18 @@
          { headerName: '담당자', field: 'id', sortable: true  },
          { headerName: '거래처명', field: 'act_cd', sortable: true, },
       ],
+      
+      pagination: true,
+      paginationPageSize: 10,
+      paginationPageSizeSelector: [10, 20, 50, 100],
+      animateRows: false,
+      defaultColDef: {
+         filter: false,
+         flex: 1,
+         minWidth: 10,
+      },
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
 
       onRowClicked : orderModalRowClicked,
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
@@ -545,6 +548,18 @@
          { headerName: '담당자', field: 'mgr_nm', sortable: true, },
          { headerName: '담당자번호', field: 'mgr_tel', sortable: true, },
       ],
+      
+      pagination: true,
+      paginationPageSize: 10,
+      paginationPageSizeSelector: [10, 20, 50, 100],
+      animateRows: false,
+      defaultColDef: {
+         filter: false,
+         flex: 1,
+         minWidth: 10,
+      },
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
 
       onRowClicked : (event) => {
          if (!clickedGrid.value || !clickedGrid.value.data) {
@@ -590,6 +605,19 @@
             field: 'unit',
          },
       ],
+
+      pagination: true,
+      paginationPageSize: 10,
+      paginationPageSizeSelector: [10, 20, 50, 100],
+      animateRows: false,
+      defaultColDef: {
+         filter: false,
+         flex: 1,
+         minWidth: 10,
+      },
+
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+      overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
       onRowClicked : (event) => {
          if (!clickedGrid.value || !clickedGrid.value.data) {
             Swal.fire({
@@ -612,6 +640,7 @@
          orderFormGridRendered.value.stopEditing();  // 편집 종료
          materialModalOpen(); // 자재조회 모달
       }
+      
    }
 
    // member 모달에 row클릭 시 
@@ -650,6 +679,19 @@
             },
          },
       ],
+
+      pagination: true,
+      paginationPageSize: 10,
+      paginationPageSizeSelector: [10, 20, 50, 100],
+      animateRows: false,
+      defaultColDef: {
+         filter: false,
+         flex: 1,
+         minWidth: 10,
+      },
+      overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+
       onRowClicked : (event) => {
          if (!clickedGrid.value || !clickedGrid.value.data) {
             Swal.fire({
@@ -672,7 +714,6 @@
          memberModalGridRendered.value.stopEditing();  // 편집 종료
          memberModalOpen();  // 거래처 조회 모달
       },
-      
    }
    
    let clickedGrid = ref(null);
@@ -848,6 +889,18 @@
             }
          },
       ],
+      
+      pagination: true,
+      paginationPageSize: 10,
+      paginationPageSizeSelector: [10, 20, 50, 100],
+      animateRows: false,
+      defaultColDef: {
+         filter: false,
+         flex: 1,
+         minWidth: 10,
+      },
+      
+      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
       onRowClicked: orderFormRowClick,
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
    }

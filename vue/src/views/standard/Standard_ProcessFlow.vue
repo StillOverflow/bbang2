@@ -58,11 +58,15 @@
               v-if="this.$session.get('user_ps') == 'H01'">  삭제 </button>
               
             </div>
-            <div class="alert alert-light alert-dismissible fade show text-center">
-                  <strong>공정추가 저장 후 순서 조정해주세요</strong>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-              </div>
-            <div class="col-13 text-end"></div>
+            <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+              <symbol id="exclamation-triangle-fill" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+              </symbol>
+            </svg>
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+              <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+              <div>공정추가 모달에서 클릭한 순서대로 흐름순서가 저장이 됩니다.</div>
+            </div>
 
             <!-- 공정 흐름도 -->
             <ag-grid-vue
@@ -76,7 +80,7 @@
               :gridOptions="proFlowOptions"
               @rowClicked="proFlowClicked"
               @gridReady="onProFlowgridReady"
-              overlayNoRowsTemplate="제품을 선택하세요." >
+              overlayNoRowsTemplate="공정흐름도 정보가 없습니다." >
             </ag-grid-vue>
 
             <!-- BOM 목록 -->          
@@ -96,10 +100,15 @@
               v-if="this.$session.get('user_ps') == 'H01'">
                 삭제
               </button>
-              <div class="alert alert-light alert-dismissible fade show text-center">
-                  <strong>공정별 자재는 한 공정씩 저장해주세요</strong>
-                  <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-              </div>
+              <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+              <symbol id="exclamation-triangle-fill" viewBox="0 0 16 16">
+                <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+              </symbol>
+            </svg>
+            <div class="alert alert-warning d-flex align-items-center" role="alert">
+              <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Warning:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+              <div>공정별 자재는 한 공정씩 저장해주세요</div>
+            </div>
             </div>
             <!-- BOM 테이블 ag-grid -->
             <div >
@@ -200,6 +209,7 @@ export default {
   },
   data() {
     return {
+      previousSelectedNode: null,
       isdisabled: true,
       bomOptions: {
         rowSelection: { mode: "multiRow", enableClickSelection: true },
@@ -347,10 +357,40 @@ export default {
     },
     //공정흐름도선택정보
     proFlowClicked(params) {
-      this.selectProFlowData = params.data.proc_flow_cd;
-      this.selctedTempId = params.data.temp_id;
-      this.bringMtlData(this.selectProFlowData);
-      this.saveProwMtlData=[];
+        if (this.saveProwMtlData.length > 0 && params.node.selected) {
+        // 저장되지 않은 데이터가 있을 경우 경고창 표시
+        this.$swal({
+          title: "저장되지 않은 자재 정보가 있습니다.",
+          text: "이동하면 설정된 정보가 초기화됩니다",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "이동",
+          cancelButtonText: "취소",
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // 데이터 초기화 후 새로운 선택 적용
+            this.saveProwMtlData = [];
+            this.previousSelectedNode = params.node; // 현재 선택을 저장
+            this.selectProFlowData = params.node.data.proc_flow_cd;
+            this.selctedTempId = params.node.data.temp_id;
+            this.bringMtlData(this.selectProFlowData);
+          } else {
+            // 사용자가 취소를 선택한 경우
+            params.node.setSelected(false); // 현재 선택 취소
+            if (this.previousSelectedNode) {
+              this.previousSelectedNode.setSelected(true); // 이전 선택 복원
+            }
+          }
+        });
+      } else if (params.node.selected) {
+        // 저장되지 않은 데이터가 없을 경우 바로 데이터 갱신
+        this.previousSelectedNode = params.node; // 현재 선택을 저장
+        this.selectProFlowData = params.node.data.proc_flow_cd;
+        this.selctedTempId = params.node.data.temp_id;
+        this.bringMtlData(this.selectProFlowData);
+      }
     },
     //모달선택정보
     modalClicked(params) {
@@ -569,9 +609,8 @@ export default {
       const selectedNodes = this.procFlowMtlApi.getSelectedRows();
       for (const bom of selectedNodes) {
         this.deleteProwMtlData.push(bom);
-        this.deleteModal.push({ 
-        proc_flow_cd: bom.proc_flow_cd });
-
+        // this.deleteModal.push({ 
+        // proc_flow_cd: bom.proc_flow_cd });
         this.procFlowMtlApi.applyTransaction({
           remove: [bom],
         });
@@ -590,6 +629,9 @@ export default {
     cellValueMtlChanged(params)  { 
         const updatedMaterial = params.data;
 
+        if (this.deleteProwMtlData.some((deleted) => deleted.proc_mat_flow_cd == updatedMaterial.proc_mat_flow_cd)) {
+          return; // 삭제된 데이터는 업데이트하지 않음
+        }
         // 값이 숫자인지 확인하고 변환
         if (!isNaN(params.newValue)) {
           updatedMaterial.mat_qty = parseFloat(params.newValue);
@@ -618,12 +660,25 @@ export default {
     
     //저장
     async save() {
-      //업데이트
-      const updatedMaterials = this.procFlowMtlData.map((material) => ({
+            //공정흐름삭제
+      if (this.deleteModal.length > 0) {
+        for (const bom of this.deleteModal) {
+          await axios.delete(`/api/standard/flow/${bom.proc_flow_cd}/${this.selectProData}`);
+        }
+      }
+      //공정별 자재 삭제
+      if (this.deleteProwMtlData.length > 0) {
+        for (const bom of this.deleteProwMtlData) {
+          await axios.delete(`/api/standard/flowMtl/${bom.proc_mat_flow_cd}`);
+        }
+      }
+      //업데이트 대상에서 삭제데이터 제외
+      const updatedMaterials = this.procFlowMtlData.filter((material) => !this.deleteProwMtlData
+      .some((deleted) => deleted.proc_mat_flow_cd == material.proc_mat_flow_cd))
+      .map((material) => ({
         mat_qty: material.mat_qty,
         proc_mat_flow_cd: material.proc_mat_flow_cd,
       }));
-
       if (updatedMaterials.length > 0) {
         await axios.put('/api/standard/updateFlowMatUsage', updatedMaterials);
       }
@@ -641,19 +696,6 @@ export default {
           console.error("공정 흐름 순서 업데이트 실패:", error);
         }
       //드래거----------------------------------------
-
-      //공정흐름삭제
-      if (this.deleteModal.length > 0) {
-        for (const bom of this.deleteModal) {
-          await axios.delete(`/api/standard/flow/${bom.proc_flow_cd}/${this.selectProData}`);
-        }
-      }
-      //공정별 자재 삭제
-      if (this.deleteProwMtlData.length > 0) {
-        for (const bom of this.deleteProwMtlData) {
-          await axios.delete(`/api/standard/flowMtl/${bom.proc_mat_flow_cd}`);
-        }
-      }
 
 //------------------------------------저장---------------------------------------
     // // 다중 공정 흐름도 추가 + 자재 추가
@@ -698,9 +740,6 @@ export default {
       await axios.post(`/api/standard/flow/${this.selectProData}`, data);
       }
 
-
-
-
       // 기존 흐름도 공정별 자재만 등록
       if (this.saveModal.length == 0 && this.saveProwMtlData.length > 0) {
 
@@ -711,22 +750,6 @@ export default {
         }));
           // 자재 데이터 다중 등록 API 호출
           await axios.post("/api/standard/processMaterial", data);
-      }
-
-      //공정흐름도 등록하고 다른 공정데이터에 자재 추가하는경우
-      if (
-        this.saveModal.length > 0 &&
-        this.saveProwMtlData.some((material) => material.proc_flow_cd) // 기존 흐름도와 연결된 자재
-      ) {
-        // 기존 공정 흐름도에 연결된 자재 필터링
-        const data = this.saveProwMtlData
-          .filter((material) => material.proc_flow_cd) // `proc_flow_cd`가 있는 데이터만
-          .map((material) => ({
-            ...material,
-            prd_cd: this.selectProData, // 선택된 제품 코드 추가
-          }));
-        
-        await axios.post("api/standard/procFlowStnMaterials", data);;
       }
       //------------------------------------저장---------------------------------------
 
@@ -755,6 +778,7 @@ export default {
       this.deleteProwMtlData = [];
       this.selectProData = null;
       this.selectProFlowData = null;
+      this.bringProcCd();
 
       this.$swal({
         icon: "success",
