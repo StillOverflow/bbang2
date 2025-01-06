@@ -14,7 +14,7 @@
 }
 </style>
 <template>
-    <div class="py-4 container-fluid">
+    <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
         <div class="card">
 
             <!-- 주문 등록 폼 -->
@@ -80,15 +80,15 @@
                 <!--등록페이지-->
                 <div class="row" v-if="this.isdetail == false">
                     <div class="col-6 col-lg-11"></div>
-                    <div class="col-6 col-lg-1 text-end text-md-start">
+                    <div class="col-6 col-lg-1 mb-2 text-end text-md-start">
                         <button v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' "
                          class="btn btn-warning " @click="modalOpen3">제품 조회</button>
                     </div>
                 </div>
-                <!--상세페이지-->
-                <div class="row" v-if="this.isdetail == true">
+                <!--상세페이지 이면서 주문완료 상태일때만-->
+                <div class="row" v-if="this.isdetail == true && this.status == 'J01'">
                     <div class="col-6 col-lg-11"></div>
-                    <div class="col-6 col-lg-1 text-end text-md-start">
+                    <div class="col-6 col-lg-1 mb-2 text-end text-md-start">
                         <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
                          class="btn btn-warning " @click="modalOpen3">제품 조회</button>
                     </div>
@@ -103,14 +103,14 @@
                 </ag-grid-vue>
                 
                 <div class="center " v-if="this.isdetail == false"> <!--등록페이지-->
-                    <button class="btn btn-primary mtp30" @click="ordInsert">SUBMIT</button>
-                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
+                    <button class="btn btn-primary mtp30" @click="ordInsert">등록</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">초기화</button>
                 </div>
-                <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
+                <div class="center " v-if="this.isdetail == true && this.status == 'J01'"> <!--상세페이지 이면서 주문완료 상태일때만-->
                     <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
-                     class="btn btn-primary mtp30" @click="orderUpdate">UPDATE</button>
+                     class="btn btn-success mtp30" @click="orderUpdate">수정</button>
                     <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
-                     class="btn btn-danger mlp10 mtp30" @click="orderDelete">DELETE</button>
+                     class="btn btn-danger mlp10 mtp30" @click="orderDelete">삭제</button>
                 </div>
             </div> 
         </div>
@@ -147,8 +147,8 @@
             </ag-grid-vue>
         </template>
         <template v-slot:footer>
-            <button v-show="hidden" type="button" class="btn btn-secondary" @click="modalOpen2">Cancel</button>
-            <button v-show="hidden" type="button" class="btn btn-primary" @click="modalOpen2">OK</button>
+            <button v-show="hidden" type="button" class="btn btn-secondary" @click="modalOpen2">닫기</button>
+            <button v-show="hidden" type="button" class="btn btn-primary" @click="modalOpen2">저장</button>
         </template>
     </Layout>
 
@@ -172,8 +172,8 @@
             </ag-grid-vue>
         </template>
         <template v-slot:footer>
-            <button type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
-            <button type="button" class="btn btn-primary" @click="modalClicked3">OK</button>
+            <button type="button" class="btn btn-secondary" @click="modalOpen3">닫기</button>
+            <button type="button" class="btn btn-primary" @click="modalClicked3">저장</button>
         </template>
     </Layout>
 </template>
@@ -201,8 +201,12 @@ export default {
                 id: '',
                 name: '',
                 order_dt: '',
-                due_dt: ''
+                due_dt: '',
+                status: ''
             }, 
+            //주문완료 확인용
+            status:'',
+
             order_dtl_cd: '',
 
             //테스트 값을 넘기기 위해 담을 곳 만들기
@@ -218,8 +222,8 @@ export default {
                 {
                     headerName: '주문 수량', 
                     field: 'order_qty', 
-                    editable: true, 
-                    cellStyle: { textAlign: "center" }, 
+                    editable: this.sessionEditable, 
+                    cellStyle: { textAlign: "right" }, 
                     cellDataType: 'number',
                     // valueFormatter: (params) => {
                     //     if (params.value == null || params.value === '') return '';
@@ -227,7 +231,7 @@ export default {
                     // },
                     cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
                 },
-                {headerName: '비고', field: 'note', editable: true, cellStyle: { textAlign: "center" }},
+                {headerName: '비고', field: 'note', editable: this.sessionEditable, cellStyle: { textAlign: "center" }},
                 {
                     headerName: '삭제' ,
                     field: 'delete', 
@@ -236,7 +240,7 @@ export default {
                         //등록 페이지
                         if(this.isdetail == false){
                             const button = document.createElement('button');
-                            button.innerText = 'DELETE';
+                            button.innerText = '삭제';
                             button.className = 'btn btn-danger btn-xsm';
                             button.addEventListener('click', () => {
                                 //행만 삭제
@@ -244,19 +248,19 @@ export default {
                             });
                             return button;
                         };
-                        // 상세 페이지 일떄
-                        if(this.isdetail == true){
+                        // 상세페이지 이면서 주문완료 상태일때만
+                        if(this.isdetail == true && this.status == 'J01'){
                             //관리자랑 영업팀장만 삭제할 수 있다
                             if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
                                 const button = document.createElement('button');
-                                button.innerText = 'DELETE';
+                                button.innerText = '삭제';
                                 button.className = 'btn btn-danger btn-xsm';
                                 button.addEventListener('click', () => {
                                     
-                                        //한 행에 관한 단건 딜리트 메소드
-                                        this.order_dtl_cd = params.data.order_dtl_cd;
-                                        this.orderListDelete();
-                                        this.rowData = this.rowData.filter(row => row !== params.data);
+                                    //한 행에 관한 단건 딜리트 메소드
+                                    this.order_dtl_cd = params.data.order_dtl_cd;
+                                    this.orderListDelete();
+                                    this.rowData = this.rowData.filter(row => row !== params.data);
                                     
                                 });
                                 return button;
@@ -285,7 +289,7 @@ export default {
                     headerName: '제품 수량', 
                     field: 'stock', 
                     filter: 'agTextColumnFilter', 
-                    cellStyle: { textAlign: "center" },
+                    cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -342,6 +346,17 @@ export default {
         this.getProList();
     },
     methods: {
+        modalCloseFunc() {
+            if(this.asModal){
+                this.asModal = !this.asModal;
+            }
+            if(this.msModal){
+                this.msModal = !this.msModal;
+            }
+            if(this.psModal){
+                this.psModal = !this.psModal;
+            }
+        },
         modalOpen() {
             this.asModal = !this.asModal;
         },
@@ -399,12 +414,25 @@ export default {
             }
             return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시(천 단위 콤마 표시도 같이 해줌)
         },
+        //입력창을 조건따라 넣고 안넣고 하기
+        sessionEditable(){
+            if(this.isdetail == true && this.status == 'J01'){  //수정 페이지 이면서 주문완료인 상태일때만 관리자랑 영업팀장은 입력가능
+                if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
+                    return true
+                }
+            } else if(this.isdetail == false){  //등록 페이지 일때 입력가능
+                return true
+            }else{
+                return false;
+            }
+        },
 
         //상세조회 주문서 헤드부분
         async orderList(selectNo) {
             let result = await axios.get(`/api/sales/orderList/${selectNo}`)
                                     .catch(err => console.log("OrListError",err));
             this.OLHead = result.data;
+            
             this.orderHeadList();
         },
         orderHeadList(){
@@ -414,6 +442,7 @@ export default {
             document.getElementById('mem_name').value = this.OLHead[0].name;
             this.order_date = this.OLHead[0].order_dt.slice(0, 10); //길이가 안맞아서 안나옴 그래서 뒤에 시간부분 자름
             this.due_date = this.OLHead[0].due_dt.slice(0, 10);
+            this.status = this.OLHead[0].status;
         }, 
 
         //상세조회 주문서 디테일부분
@@ -444,8 +473,8 @@ export default {
                                         .catch(err => console.log("updateAxiosError",err));       
             if(updateResult.data.result == 'success'){
                 this.$swal({
-                title: "Update!",
-                text: "GO to Order List",
+                title: "수정완료!",
+                text: "주문 목록으로 돌아갑니다.",
                 icon: "success"
                 }).then(result =>{
                     if(result){
@@ -538,8 +567,8 @@ export default {
                             this.resetForm(); // 초기화
                             
                             this.$swal({
-                            title: "DELETE!",
-                            text: "GO to Order List",
+                            title: "삭제완료!",
+                            text: "주문 목록으로 돌아갑니다.",
                             icon: "success"
                             }).then(result =>{
                                 if(result){
@@ -568,7 +597,6 @@ export default {
             let result = await axios.get('/api/momem')
                                     .catch(err => console.log(err));
             this.memData = result.data; 
-            console.log(this.memData);
         },
         async getProList() {
             let result = await axios.get('/api/mopro')
@@ -647,7 +675,7 @@ export default {
             if(result.data.result == 'success'){
                 this.$swal({
                     icon: "success",
-                    title: "등록에 성공 하였습니다.",
+                    title: "등록완료.",
                     text: "등록한 주문서는 목록에서 확인 해주세요.",
                 })
                 .then(() => {

@@ -31,6 +31,9 @@
             <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
           </template>
           <template v-slot:default>
+            <div class="alert alert-primary d-flex align-items-center" role="alert">
+              <div>출고완료된 주문서는 제외된 결과입니다.</div>
+            </div>
             <ag-grid-vue class="ag-theme-alpine" 
             style="width: 100%; height: 400px;" 
             :columnDefs="orderDefs"
@@ -121,9 +124,9 @@ export default {
 
       //모달 계획서 목록 
       orderDefs: [
-        { headerName: '주문서코드', field: 'order_cd', sortable: true, width: 110, cellStyle: {textAlign: "center"} },
-        { headerName: '거래처코드', field: 'act_cd', sortable: true, width: 110, cellStyle: {textAlign: "center"} },
-        { headerName: '거래처이름', field: 'act_nm', sortable: true, width: 150, cellStyle: {textAlign: "center"} },
+        { headerName: '주문서코드', field: 'order_cd', sortable: true, width: 110, cellStyle: {textAlign: "center"}, filter: true ,floatingFilter: true },
+        { headerName: '거래처코드', field: 'act_cd', sortable: true, width: 110, cellStyle: {textAlign: "center"}, filter: true ,floatingFilter: true },
+        { headerName: '거래처이름', field: 'act_nm', sortable: true, width: 150, cellStyle: {textAlign: "center"}, filter: true ,floatingFilter: true },
         { headerName: '담당자', field: 'name', sortable: true, width: 80, cellStyle: {textAlign: "center"}},
         { headerName: '제품종류', field: 'prd_cnt', sortable: true, width: 100, cellStyle: {textAlign: "center"}},
         { headerName: '총 주문건수', field: 'order_cnt', sortable: true, width: 110, cellStyle: {textAlign: "center"}},
@@ -133,8 +136,8 @@ export default {
 
       //제품목록
       productDefs:[
-        { headerName: '제품코드', field: 'prd_cd', sortable: true, width:150, cellStyle: {textAlign: "center"}},
-        { headerName: '제품명', field: 'prd_nm', sortable: true, cellStyle: {textAlign: "center"}},
+        { headerName: '제품코드', field: 'prd_cd', sortable: true, width:150, cellStyle: {textAlign: "center"}, filter: true ,floatingFilter: true},
+        { headerName: '제품명', field: 'prd_nm', sortable: true, cellStyle: {textAlign: "center"}, filter: true ,floatingFilter: true},
         { headerName: '금액', field: 'price', sortable: true, valueFormatter:this.$comm.currencyFormatter, cellStyle: {textAlign: "center"} },
         { headerName: '현재고', field: 'in_cnt', sortable: true, valueFormatter:this.$comm.currencyFormatter, cellStyle: {textAlign: "center"}},
       ],
@@ -144,8 +147,8 @@ export default {
 
       //주문서 제품목록
       orderDtlDefs: [
-        {headerName: '제품 코드', field: 'prd_cd', width:150, cellStyle: {textAlign: "center"}},
-        {headerName: '제품 이름', field: 'prd_nm', cellStyle: {textAlign: "center"}},
+        {headerName: '제품 코드', field: 'prd_cd', width:150, cellStyle: {textAlign: "center"}, filter: true ,floatingFilter: true},
+        {headerName: '제품 이름', field: 'prd_nm', cellStyle: {textAlign: "center"}, filter: true ,floatingFilter: true},
         {
             headerName: '제품 수량', 
             field: 'order_qty', 
@@ -165,6 +168,7 @@ export default {
       orderDtlColApi: null,
 
       gridOptions: {
+        
         pagination: true,
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
@@ -208,13 +212,17 @@ export default {
 
     //주문서 리스트
      async getOrderList() {
-      let result = await axios.get('/api/sales')
+      let search = {not_status : 'J03'};
+            
+      let result = await axios.get('/api/sales/search/', {params : search})
                               .catch(err => console.log(err));
-      this.orderData = result.data;    
+      this.orderData = result.data;
     },
 
     modalCloseFunc() {
-      this.isModal = !this.isModal;
+      if(this.isModal){
+        this.isModal = !this.isModal;
+      }      
     },
     /*모달 [E]*/   
    
@@ -364,7 +372,6 @@ export default {
       this.order_cd = '';
       this.START_DT = '';
       this.END_DT = '';
-      this.productData = [];
       this.orderDtlData = [];      
     },
   }

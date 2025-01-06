@@ -35,14 +35,20 @@
                 </select>
               </template>
 
-              <template v-else-if="field.value == 'pur_act'||field.value == 'mfg_act'" >
+              <template v-else-if="field.value == 'pur_act' || field.value == 'mfg_act'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <div class="input-group custom-width">
                   <input v-model="equipmentData[field.value]" :type="field.type" class="form-control " readonly />
                   <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen3(field.value)">
-                <i class="fa-solid fa-magnifying-glass"></i>
-              </button>
-              </div>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                </div>
+              </template>
+
+              <template v-else-if="field.value == 'repl_cycle' || field.value == 'insp_cycle'">
+                <label class="form-control-label">{{ field.label }}</label>
+                <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
+                  @change="checkNumberAlert(field)" :disabled="isFieldDisabled(field.value)" />
               </template>
 
               <template v-else>
@@ -59,29 +65,28 @@
               <template v-if="field.value == 'is_use'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <select class="form-select custom-width" v-model="equipmentData[field.value]"
-                  :disabled="isFieldDisabled(field.value)">
+                  :disabled="isFieldDisabled(field.value)" @change="statusChange">
                   <option v-for="(opt, idx) in field.selectOptions" :key="idx" :value="opt.item">
                     {{ opt.name }}
                   </option>
                 </select>
               </template>
 
-              <template v-else-if="field.value == 'id'" >
+              <template v-else-if="field.value == 'id'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <div class="input-group custom-width">
-                <input v-model="equipmentData[field.value]" :type="field.type" class="form-control "
-                readonly />
+                  <input v-model="equipmentData[field.value]" :type="field.type" class="form-control " readonly />
                   <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen2">
-                <i class="fa-solid fa-magnifying-glass"></i>
-              </button>
-              </div>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                </div>
               </template>
-              
-              
+
+
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :disabled="isFieldDisabled(field.value)"  />
+                  @change="checkNumberAlert(field)" :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
           </div>
@@ -104,7 +109,7 @@
   </div>
 
   <!--모달-->
-    <!-- 설비 코드 모달 -->
+  <!-- 설비 코드 모달 -->
   <Transition name="fade">
     <Layout :modalCheck="isModal">
       <template v-slot:header>
@@ -128,17 +133,16 @@
     </Layout>
   </Transition>
 
-    <!-- 담당자 선택 모달 -->
-    <Transition name="fade">
+  <!-- 담당자 선택 모달 -->
+  <Transition name="fade">
     <Layout :modalCheck="isModal2">
       <template v-slot:header>
         <h5 class="modal-title">담당자 선택</h5>
         <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
       </template>
       <template v-slot:default>
-        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="memDefs"
-          :rowData="memData" :pagination="true" @rowClicked="modalClicked2" @grid-ready="gridFit"
-          overlayNoRowsTemplate="등록된 담당자가 없습니다.">
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="memDefs" :rowData="memData"
+          :pagination="true" @rowClicked="modalClicked2" @grid-ready="gridFit" overlayNoRowsTemplate="등록된 담당자가 없습니다.">
         </ag-grid-vue>
       </template>
       <template v-slot:footer>
@@ -147,17 +151,16 @@
     </Layout>
   </Transition>
 
-    <!-- 거래처 선택 모달 -->
-    <Transition name="fade">
+  <!-- 거래처 선택 모달 -->
+  <Transition name="fade">
     <Layout :modalCheck="isModal3">
       <template v-slot:header>
         <h5 class="modal-title">거래처 선택</h5>
         <button type="button" aria-label="Close" class="close" @click="modalOpen3">×</button>
       </template>
       <template v-slot:default>
-        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="accDefs"
-          :rowData="accData" :pagination="true" @rowClicked="modalClicked3" @grid-ready="gridFit"
-          overlayNoRowsTemplate="등록된 거래처가 없습니다.">
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="accDefs" :rowData="accData"
+          :pagination="true" @rowClicked="modalClicked3" @grid-ready="gridFit" overlayNoRowsTemplate="등록된 거래처가 없습니다.">
         </ag-grid-vue>
       </template>
       <template v-slot:footer>
@@ -208,7 +211,7 @@ export default {
       },
 
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
@@ -228,30 +231,31 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
           sortable: true, width: 163,
           filter: 'agTextColumnFilter',
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
-        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
-         },
+        {
+          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
+        },
       ],
 
       memDefs: [
-        { headerName: '담당자 ID', field: 'ID',width:200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' }},
-        { headerName: '담당자 명', field: 'name',width:235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '부서', field: 'dpt_nm',width:210, filter: 'agTextColumnFilter' , cellStyle: { textAlign: 'center' }},
+        { headerName: '담당자 ID', field: 'ID', width: 200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '담당자 명', field: 'name', width: 235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '부서', field: 'dpt_nm', width: 210, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
       ],
 
       accDefs: [
-      { headerName: '거래처 코드', field: 'act_cd', width:200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '거래처 명', field: 'act_nm', width:235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '구분', field: 'act_type', width:210, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 코드', field: 'act_cd', width: 200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 명', field: 'act_nm', width: 235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '구분', field: 'act_type', width: 210, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
       ],
 
       equipData: [],
@@ -270,8 +274,8 @@ export default {
         { label: '구매일자', value: 'pur_dt', type: 'date' },
         { label: '구매업체', value: 'pur_act', type: 'text' },
         { label: '제조업체', value: 'mfg_act', type: 'text' },
-        { label: '교체주기 (년)', value: 'repl_cycle', type: 'number' },
-        { label: '점검주기 (일)', value: 'insp_cycle', type: 'number' },
+        { label: '교체주기 (년)', value: 'repl_cycle', type: 'text' },
+        { label: '점검주기 (일)', value: 'insp_cycle', type: 'text' },
       ],
       rightFields: [
         { label: '적정 온도 (°C)', value: 'opt_temp', type: 'text' },
@@ -314,14 +318,43 @@ export default {
       this.isModal2 = false;
     },
     modalClicked3(params) {
-      if (this.targetField === 'pur_act') { 
+      if (this.targetField === 'pur_act') {
         this.equipmentData.pur_act = params.data.act_cd; // 구매업체
       } else if (this.targetField === 'mfg_act') {
         this.equipmentData.mfg_act = params.data.act_cd; // 제조업체
-      } 
+      }
       this.isModal3 = false;
     },
 
+
+    // is_use 바뀔 때마다 설비상태도 자동 전환 함수
+    statusChange() {
+      let isUse = this.equipmentData.is_use;
+      let status = isUse == 'T01' ? 'S01' : 'S02';
+      this.equipmentData.status = status;
+    },
+
+    // input text에서 숫자 유효성 확인용
+    checkNumberAlert(field) {
+      let val = this.equipmentData[field.value];
+
+      if (field.type == 'text') {
+        val = !val ? 0 : val; // 입력값 null이면 0으로 취급
+
+        if (isNaN(val)) { // 숫자가 아닌 경우
+          this.$swal(
+            '입력 오류',
+            `숫자를 정확히 입력해주세요.`,
+            'warning'
+          );
+          val = 0; // 숫자 아니면 0으로 돌려줌.
+        } else if (val < 0) {
+          val = val * -1; // 입력값이 음수면 양수로 변환
+        }
+      }
+
+      this.equipmentData[field.value] = val;
+    },
 
     // LAST_INSP_DT 값 변환 함수
     formatDate(date) {
@@ -390,6 +423,17 @@ export default {
         .catch((err) => console.log(err));
 
       if (result.data) {
+        // 생산중인 설비는 수정할 수 없어야 하므로 함수로 컬럼 만들어 판단
+        if (result.data.is_prod == 1) {
+          this.selectedEqp = null;
+          this.$swal({
+            icon: 'error',
+            title: '수정 불가',
+            text: '해당 설비는 현재 생산중인 설비입니다.',
+          });
+          return;
+        };
+
         // 날짜 필드 스플릿
         if (result.data.pur_dt) {
           result.data.pur_dt = result.data.pur_dt.split('T')[0]; // 'T' 앞의 날짜만 추출
@@ -414,23 +458,23 @@ export default {
 
     //멤버조회
     async getMemList() {
-            let result = await axios.get('/api/momem')
-                                    .catch(err => console.log(err));
-            this.memData = result.data; 
-            console.log(this.memData);
-        },
+      let result = await axios.get('/api/momem')
+        .catch(err => console.log(err));
+      this.memData = result.data;
+      console.log(this.memData);
+    },
 
     //거래처조회
     async getAccList() {
       try {
-            let result = await axios.get('/api/moacc')
-                                    .catch(err => console.log(err));
-            this.accData = result.data; 
-          } catch (error) {
+        let result = await axios.get('/api/moacc')
+          .catch(err => console.log(err));
+        this.accData = result.data;
+      } catch (error) {
         console.error('Error fetching account data:', error);
-					
+
       }
-        },
+    },
 
 
     isFieldDisabled(fieldName) {
@@ -512,6 +556,7 @@ export default {
           formData.set('last_insp_dt', this.formatDate(lastInspDt)); // 수정된 값 덮어쓰기
         }
       }
+
       try {
         let response = await axios.put(
           `/api/equip/${this.selectedEqp}`,
@@ -540,11 +585,13 @@ export default {
 
     // 초기화
     resetForm() {
-      this.isEditMode = false; // 수정 모드 종료
-      this.selectedEqp = ''; // 설비 코드 입력란 초기화
+      if (!this.isEditMode) {
+        this.selectedEqp = ''; // 설비 코드 입력란 초기화
+      }
       this.selectedFile = null; // 선택된 파일 초기화
       this.previewImage = require('@/assets/img/blank_img.png'); // 기본 이미지로 초기화
 
+      this.isEditMode = false; // 수정 모드 종료
       // 입력 필드 초기화
       Object.keys(this.equipmentData).forEach((key) => {
         this.equipmentData[key] = '';

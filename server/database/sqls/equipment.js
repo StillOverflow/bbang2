@@ -143,7 +143,8 @@ const equipInfo = `SELECT eqp_cd,
   last_insp_dt,
   uph,
   is_use,
-  img_path
+  img_path,
+  fn_is_prod_eqp(eqp_cd) is_prod
 
 FROM equipment
 WHERE eqp_cd = ?
@@ -171,13 +172,42 @@ const getInspCd = `
 SELECT CONCAT('INS', LPAD(IFNULL(MAX(SUBSTR(i.INSP_LOG_CD, -3)) + 1, 1), 3, '0')) AS insp_log_cd FROM inspection_log i`;
 
 //설비점검등록
-const eqInspInsert = `INSERT INTO inspection_log
-SET ? `;
+const eqInspInsert = `
+  INSERT INTO inspection_log (
+                              insp_log_cd,
+                              eqp_cd,
+                              start_time,
+                              end_time,
+                              insp_reason,
+                              insp_result,
+                              insp_action,
+                              note,
+                              id,
+                              last_insp_dt,
+                              next_insp_dt)
+VALUES (?, ?, ?, ?, ?, 
+        ?, ?, ?, ?, ?,
+        (SELECT DATE_ADD(?, INTERVAL insp_cycle DAY)
+         FROM   equipment
+         WHERE  eqp_cd = ?))`;
 
 //설비점검수정
-const eqInspUpdate = `UPDATE inspection_log
-SET ?
-  WHERE insp_log_cd = ? `;
+const eqInspUpdate = (inspDatas) => {
+  let sql = `UPDATE inspection_log
+    SET ?
+    WHERE insp_log_cd = ? `;
+
+  if (inspDatas[0].end_time) { // end_time 있는 경우에만 쿼리 수정
+    sql.replace('WHERE insp_log_cd = ?', ` ,
+      next_insp_dt = (SELECT DATE_ADD(?, INTERVAL insp_cycle DAY)
+                      FROM   equipment
+                      WHERE  eqp_cd = ?)
+      WHERE insp_log_cd = ? `);
+  }
+
+  return sql;
+};
+
 
 //설비 점검 전체 조회(필터링)
 const eqInspList = (datas) => {
@@ -188,6 +218,7 @@ const eqInspList = (datas) => {
     e.eqp_nm as eqp_nm,
     e.insp_cycle as insp_cycle,
     e.last_insp_dt as last_insp_dt,
+    e.next_insp_dt as next_insp_dt,
     i.start_time as start_time,
     i.end_time as end_time,
     fn_get_codename(i.insp_reason) as insp_reason,
@@ -275,6 +306,7 @@ const eqInspInfo = `SELECT
   e.insp_cycle,
   e.img_path,
   e.last_insp_dt,
+  i.next_insp_dt,
   i.start_time,
   i.insp_type AS insp_type,
   i.insp_reason AS insp_reason,
@@ -284,7 +316,8 @@ const eqInspInfo = `SELECT
   i.end_time,
   i.id,
   i.create_dt,
-  i.update_dt
+  i.update_dt,
+  fn_is_prod_eqp(e.eqp_cd) is_prod
 FROM equipment e
 LEFT JOIN inspection_log i 
   ON e.eqp_cd = i.eqp_cd
@@ -309,6 +342,7 @@ const eqInstListSearch = (searchObj) => {
                       e.model as model,
                       fn_get_codename(e.status) as status,
                       e.last_insp_dt as last_insp_dt, 
+                      e.next_insp_dt as next_insp_dt, 
                       i.start_time as start_time,
                       i.insp_type as insp_type,
                       i.insp_reason as insp_reason,
@@ -424,7 +458,8 @@ const eqDownInfo = `SELECT
   d.id as id,
   d.create_dt as create_dt,
   d.update_dt as update_dt,
-  d.note as note
+  d.note as note,
+  fn_is_prod_eqp(e.eqp_cd) is_prod
 
 FROM equipment e
 LEFT JOIN downtime_log d 
