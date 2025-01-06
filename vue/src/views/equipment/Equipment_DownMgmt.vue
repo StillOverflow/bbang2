@@ -65,8 +65,8 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button :class="isEditMode ? 'btn btn-success mlp10' : 'btn btn-primary mlp10'" @click="isEditMode ? downUpdate() : downInsert()"
-            :disabled="!selectedEqp">
+          <button :class="isEditMode ? 'btn btn-success mlp10' : 'btn btn-primary mlp10'"
+            @click="isEditMode ? downUpdate() : downInsert()" :disabled="!selectedEqp">
             {{ isEditMode ? "수정" : "등록" }}
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm" :disabled="!selectedEqp">
@@ -133,7 +133,7 @@ export default {
         downtime_cd: '',
       },
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
@@ -153,18 +153,19 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
           sortable: true, width: 163,
           filter: 'agTextColumnFilter',
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
-        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
-         },
+        {
+          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
+        },
       ],
       equipData: [],
       leftFields: [
@@ -318,6 +319,17 @@ export default {
         const result = await axios.get(`/api/equip/down/${eqp_cd}`);
         console.log('Result data:', result.data);
         if (result.data) {
+          // 생산중인 설비는 데이터가 불러와지지 않아야 하므로 함수로 컬럼 만들어 판단
+          if (result.data.is_prod == 1) {
+            this.selectedEqp = null;
+            Swal.fire({
+              icon: 'error',
+              title: '비가동등록 불가',
+              text: '해당 설비는 현재 생산중인 설비입니다.',
+            });
+            return;
+          };
+
           this.equipmentData = {
             ...this.equipmentData,
             ...result.data,

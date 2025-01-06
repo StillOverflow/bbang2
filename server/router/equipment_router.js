@@ -193,7 +193,9 @@ router.post('/equip/insp', async (req, res) => {
     const result = await equipmentService.insertInspEq(inspData);
 
     // 결과 반환
-    res.json({ success: true, data: result });
+    if (result.insp_log_cd) {
+      res.json({ success: true, data: result });
+    }
   } catch (err) {
     console.error('점검 등록 실패:', err);
     res.status(500).json({
@@ -433,7 +435,7 @@ router.put('/equip/repair/:repair_cd', async (req, res) => {
   console.log('수신한 repair_cd:', repairLogCd);
   console.log('수정 요청 데이터:', req.body);
 
-  // repair_cd가가 유효한지 확인
+  // repair_cd가 유효한지 확인
   if (!repairLogCd || repairLogCd === 'null' || repairLogCd.trim() === '') {
     return res.status(400).json({
       success: false,

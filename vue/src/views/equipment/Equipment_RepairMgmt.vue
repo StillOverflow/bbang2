@@ -36,7 +36,7 @@
                 </select>
               </template>
 
-              
+
               <template v-else-if="field.value === 'repair_act'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <div class="input-group custom-width">
@@ -76,8 +76,8 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button :class="isEditMode ? 'btn btn-success mlp10' : 'btn btn-primary mlp10'" @click="isEditMode ? repairUpdate() : repairInsert()"
-            :disabled="!selectedEqp">
+          <button :class="isEditMode ? 'btn btn-success mlp10' : 'btn btn-primary mlp10'"
+            @click="isEditMode ? repairUpdate() : repairInsert()" :disabled="!selectedEqp">
             {{ isEditMode ? "수정" : "등록" }}
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm" :disabled="!selectedEqp">
@@ -88,7 +88,7 @@
     </div>
 
     <!-- 모달 -->
-     <!-- 설비 코드 모달 -->
+    <!-- 설비 코드 모달 -->
     <Transition name="fade">
       <Layout :modalCheck="isModal">
         <template v-slot:header>
@@ -111,25 +111,25 @@
       </Layout>
     </Transition>
 
-    
+
     <!-- 거래처 선택 모달 -->
     <Transition name="fade">
-    <Layout :modalCheck="isModal2" >
-      <template v-slot:header>
-        <h5 class="modal-title">거래처 선택</h5>
-        <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
-      </template>
-      <template v-slot:default>
-        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="accDefs"
-          :rowData="accData" :pagination="true" @rowClicked="modalClicked2" @grid-ready="gridFit"
-          overlayNoRowsTemplate="등록된 거래처가 없습니다.">
-        </ag-grid-vue>
-      </template>
-      <template v-slot:footer>
-        <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen2">닫기</button>
-      </template>
-    </Layout>
-  </Transition>
+      <Layout :modalCheck="isModal2">
+        <template v-slot:header>
+          <h5 class="modal-title">거래처 선택</h5>
+          <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
+        </template>
+        <template v-slot:default>
+          <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="accDefs"
+            :rowData="accData" :pagination="true" @rowClicked="modalClicked2" @grid-ready="gridFit"
+            overlayNoRowsTemplate="등록된 거래처가 없습니다.">
+          </ag-grid-vue>
+        </template>
+        <template v-slot:footer>
+          <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen2">닫기</button>
+        </template>
+      </Layout>
+    </Transition>
 
 
   </div>
@@ -171,7 +171,7 @@ export default {
       },
 
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
@@ -191,31 +191,32 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
           sortable: true, width: 163,
           filter: 'agTextColumnFilter',
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
-        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
-         },
+        {
+          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
+        },
       ],
 
 
       accDefs: [
-      { headerName: '거래처 코드', field: 'act_cd', width:200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '거래처 명', field: 'act_nm', width:235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
-        { headerName: '구분', field: 'act_type', width:210, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 코드', field: 'act_cd', width: 200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 명', field: 'act_nm', width: 235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '구분', field: 'act_type', width: 210, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
       ],
 
       equipData: [],
       accData: [],
 
-      
+
       leftFields: [
         { label: '수리 시작 일시', value: 'start_time', type: 'datetime-local' },
         { label: '설비 구분 *', value: 'eqp_type', type: 'text', selectOptions: [] },
@@ -364,14 +365,14 @@ export default {
     //거래처조회
     async getAccList() {
       try {
-            let result = await axios.get('/api/moacc')
-                                    .catch(err => console.log(err));
-            this.accData = result.data; 
-          } catch (error) {
+        let result = await axios.get('/api/moacc')
+          .catch(err => console.log(err));
+        this.accData = result.data;
+      } catch (error) {
         console.error('Error fetching account data:', error);
-					
+
       }
-        },
+    },
 
 
     //수리 조회(최신1건)
