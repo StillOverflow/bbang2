@@ -34,7 +34,7 @@
                             :columnDefs="defectDefs"
                             :rowData="defectData"
                             :pagination="true"
-                            :gridOptinos="gridOptinos"
+                            :gridOptions="gridOptions"
                             @gridReady="onDefGridReady"
                             @rowClicked="defClicked"
                         ></ag-grid-vue>
@@ -53,6 +53,7 @@
                                 신규등록
                             </button>
                         </div>
+                    
                         <!-- 입력 필드 -->
                         <div class="d-flex justify-content-left mb-2">
                             <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder">불량코드 *</div>
@@ -104,7 +105,7 @@
                     </div>
                 </div>
                 <!-- 저장 및 삭제 버튼 -->
-                <div class="text-center">
+                <div class="text-center mtp30">
                     <button
                         type="button"
                         id="submitBtn"
@@ -147,7 +148,7 @@ export default {
     data(){
         return{
             namePd: '',
-            gridOptinos: {
+            gridOptions: {
                 rowSelection: {
                     mode:"singleRow",
                     checkboxes: false,
@@ -182,10 +183,10 @@ export default {
                 this.isUpdated = false; // 신규등록 모드로 전환
             },
             defectDefs:[
-                {headerName: '불량코드' , field: 'def_cd'},
-                {headerName: '불량명' , field: 'def_nm'},
-                {headerName: '불량구분' , field: 'def_type'},
-                {headerName: '불량내용' , field: 'def_detail'},     
+                {headerName: '불량코드' , field: 'def_cd', cellStyle: { textAlign: "center" } },
+                {headerName: '불량명' , field: 'def_nm', cellStyle: { textAlign: "center" } },
+                {headerName: '불량구분' , field: 'def_type', cellStyle: { textAlign: "center" } },
+                {headerName: '불량내용' , field: 'def_detail', cellStyle: { textAlign: "center" } },     
             ],
             defectData:[],
             keyword: '',
@@ -241,6 +242,7 @@ export default {
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
                 text: "자재명, 단위, 자재유형은 필수 입력값입니다.",
+                confirmButtonText: "확인"
             });
             return;        
             }
@@ -251,16 +253,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes!"
+                    confirmButtonText: "확인",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "register!",
-                        text: "Your file has been register.",
-                        icon: "success"
+                        title: "등록완료!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
-                        axios.post(`/api/standard/insertDefct/${this.defInfo.def_cd}`, this.defInfo);
+                        axios.post(`/api/standard/insertDefect/${this.defInfo.def_cd}`, this.defInfo);
                         this.searchDef(); // 목록 갱신
+                        this.defInfo={};
                     }                   
                 });
         },
@@ -270,6 +275,7 @@ export default {
                     icon: "warning",
                     title: "수정할 변경 사항이 없습니다.",
                     text: "수정 후 저장 버튼을 눌러주세요.",
+                    confirmButtonText: "확인"
                 });
                 return; // 작업 중단
             }
@@ -280,16 +286,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, modify!"
+                    confirmButtonText: "수정",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "modify!",
-                        text: "Your file has been modified.",
-                        icon: "success"
+                        title: "수정완료!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
-                    await axios.put(`/api/standard/updateDefInfo/${this.defInfo.def_cd}`, this.defInfo);
-                    this.searchProc(); // 목록 갱신
+                    await axios.put(`/api/standard/updateDefect/${this.defInfo.def_cd}`, this.defInfo);
+                    this.searchDef(); // 목록 갱신
+                    this.defInfo={};
                     }
                     
                 });
@@ -298,15 +307,14 @@ export default {
             const currentTime = new Date();
             const createDate = new Date(this.defInfo.create_dt);
             const timeDifference = (currentTime - createDate) / (24 *1000 * 60 * 60); 
-            console.log(currentTime);
-            console.log(createDate);
-            console.log(timeDifference);
+
             // 1시간 이내인지 확인
             if (timeDifference > 1) {
                 this.$swal({
                     icon: "error",
                     title: "삭제 불가",
                     text: "삭제는 생성 후 1시간 이내에만 가능합니다.",
+                    confirmButtonText: "확인"
                 });
                 return; 
             }
@@ -318,16 +326,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete!"
+                    confirmButtonText: "삭제!",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
-                        title: "delete!",
-                        text: "Your file has been deleted.",
-                        icon: "success"
+                        title: "삭제완료!",
+                        text: "",
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
-                        await axios.delete(`/api/standard/delDefInfo/${this.defInfo.def_cd}`);
+                        await axios.delete(`/api/standard/delDefect/${this.defInfo.def_cd}`);
                         this.searchDef(); // 목록 갱신
+                        this.defInfo={};
                     }
                 });
         },

@@ -205,6 +205,7 @@ const login = (datas) => {
                   HIRE_DT,
                   STATUS,
                   PERMISSION,
+                  fn_get_codename(PERMISSION) AS "PS",
                   m.DPT_CD AS DPT_CD,
                   d.DPT_NM AS DPT_NM
             FROM 

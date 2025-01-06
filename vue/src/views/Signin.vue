@@ -152,6 +152,7 @@ export default {
           this.$session.set('user_cd', result.data.MEM_CD);
           this.$session.set('user_nm', result.data.NAME);
           this.$session.set('user_dpt', result.data.DPT_CD);
+          this.$session.set('user_psnm', result.data.PS);
           this.$session.set('user_ps', result.data.PERMISSION);
           this.$session.set('user_st', result.data.STATUS);
           this.$router.push({ name : 'Dashboard'});   

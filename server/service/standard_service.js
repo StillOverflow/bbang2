@@ -28,7 +28,6 @@ const findBomByPc = async (prd_cd) => {
 };
 //BOM등록
 const createBom = async (bomInfo) => {
-  //console.log(bomInfo,' bomInfo');
 
   let result = await mariadb.query("bomInsert", bomInfo);
   if (result.affectedRows > 0) {
@@ -46,6 +45,25 @@ const deleteBom = async (prd_cd, mat_cd) => {
     return { result: "fail" };
   }
 };
+//bom자재사용량 업데이트
+const updateBomUsage = async(updateInfo)=>{
+  let resultArr = [];
+  for (const obj of updateInfo) {
+    let datas = [obj.usage, obj.mat_cd, obj.prd_cd];
+    let result = await mariadb.query("updateBom", datas);
+    
+    if (result.affectedRows > 0) {
+        resultArr.push("success");
+    } else {
+        resultArr.push("fail");
+    }
+  }
+  if(resultArr.includes('fail')){    
+    return 'fail';
+  }else{
+    return 'success';
+  } 
+}
 
 //-----------------공정흐름도-------------------
 //제품목록 조회(사용여부 포함)
@@ -151,25 +169,7 @@ const updateProSeqBYtrans = async (prdCd, transQuery) => {
 };
 
 //공정흐름도만 추가
-// const insertProcFlow = async (procFlowData, prd_cd) => {
-//   return await mariadb.transOpen(async () => {
-//     // 공정흐름 코드 시퀀스 생성
-//     const seqResult = await mariadb.transQuery("procFlowSeq");
-//     const procFlowCode = seqResult[0].seq;
-//     procFlowData["PROC_FLOW_CD"] = procFlowCode;
 
-//     // 공정흐름 등록
-//     const result = await mariadb.transQuery("insertProcFlow", procFlowData);
-//     await updateProSeqBYtrans(prd_cd)
-//     if (result.affectedRows <= 0) {
-//       await mariadb.rollback();
-//       return { result: "fail" };
-//     }
-
-//     await mariadb.commit();
-//     return { result: "success" };
-//   });
-// };
 const insertProcFlow = async (procFlows) => {
   return await mariadb.transOpen(async () => {
     for (const procFlow of procFlows) {
@@ -564,6 +564,7 @@ module.exports = {
   findBomByPc,
   createBom,
   deleteBom,
+  updateBomUsage,
   
   //공정흐름도
   searchPrdUsage,

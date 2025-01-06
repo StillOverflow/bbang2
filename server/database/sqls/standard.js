@@ -70,6 +70,13 @@ and mat_cd = ?
 `;
 
 //bom자재 업데이트
+const updateBom =
+`
+UPDATE bom
+SET \`usagE\` = ?
+WHERE mat_cd = ?
+and prd_cd = ?
+`;
 //--------------공정흐름도-----------------
 //선택할 제품조회
 const selectPrd = `
@@ -462,6 +469,7 @@ matSearch,
 bomlist,
 bomInsert,
 bomDel,
+updateBom,
 
 //공정흐름도
 selectPrd,

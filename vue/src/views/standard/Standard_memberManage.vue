@@ -24,7 +24,7 @@
                             :columnDefs="memberDefs"
                             :rowData="memberData"
                             :pagination="true"
-                            :gridOptinos="gridOptinos"
+                            :gridOptions="gridOptions"
                             @gridReady="onMemGridReady"
                             @rowClicked="memClicked">
                         </ag-grid-vue>
@@ -38,7 +38,7 @@
 
                         <div class="d-flex justify-content-left mb-2">
                             <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 35%; font-size: 16px; text-align: right; padding-right: 15px;">사원코드 *</div>
-                            <div class="input-group mb-3" style="width: 45%;">
+                            <div class="input-group mb-3" style="width: 25%;">
                                 <input type="text" class="form-control" v-model="memInfo.mem_cd" style="height: 41px; background-color: rgb(236, 236, 236);" maxlength="10" disabled />
                             </div>
                             <div class="col-lg-3 text-center mb-2 mt-2 fw-bolder" style="width: 15%; font-size: 16px; text-align: right; padding-right: 15px;">ID *</div>
@@ -131,8 +131,8 @@
                     </div>
 
                     <div class="text-center mt-3">
-                        <button type="button" id="submitBtn" class="btn btn-success ms-2 saveBtn" @click="isUpdated ? memUpdate() : memInsert()">저장</button>
-                    </div>
+                        <button type="button" id="submitBtn" class="btn btn-success ms-2 mt-3" @click="isUpdated ? memUpdate() : memInsert()">저장</button>
+                    </div>                 
                 </div>
             </div>
         </div>
@@ -161,7 +161,7 @@ export default {
         return{
             isNewMode: false,
             namePd: '',
-            gridOptinos: {
+            gridOptions: {
                 rowSelection: {
                     mode:"singleRow",
                     checkboxes: false,
@@ -219,13 +219,13 @@ export default {
                 this.isNewMode = true;
             },
             memberDefs:[
-                {headerName: 'id' , field: 'id'},
-                {headerName: '사원명' , field: 'name'},
-                {headerName: '부서' , field: 'dpt_cd'},
-                {headerName: '휴대폰' , field: 'phone'},     
-                {headerName: '입사일' , field: 'hire_dt', valueFormatter: this.$comm.dateFormatter},     
-                {headerName: '상태정보' , field: 'status'}, 
-                {headerName: '권한' , field: 'permission'},
+                {headerName: 'id' , field: 'id', cellStyle: { textAlign: "center" } },
+                {headerName: '사원명' , field: 'name', cellStyle: { textAlign: "center" } },
+                {headerName: '부서' , field: 'dpt_cd', cellStyle: { textAlign: "center" } },
+                {headerName: '휴대폰' , field: 'phone', cellStyle: { textAlign: "center" } },     
+                {headerName: '입사일' , field: 'hire_dt', valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: "center" } },     
+                {headerName: '상태정보' , field: 'status', cellStyle: { textAlign: "center" } }, 
+                {headerName: '권한' , field: 'permission', cellStyle: { textAlign: "center" } },
             ],
             memberData:[],
             keyword: '',
@@ -277,9 +277,6 @@ export default {
                 const status = await axios.get('/api/comm/codeList/MS');
                 const dpt_cd = await axios.get('/api/standard/dptSelect');
 
-                console.log(this.selectedData.selectOptions.dpt_cd);
-                console.log(dpt_cd.data);
-
                 this.selectedData.selectOptions={
                     gender: gender.data,
                     permission: permission.data,
@@ -296,13 +293,13 @@ export default {
             this.memInfo.mem_cd = params.data.mem_cd;
             this.memInfo.id = params.data.id;
             this.memInfo.name = params.data.name;
-            this.memInfo.birth = this.matchDate(params.data.birth);
+            this.memInfo.birth = this.matchDate_null(params.data.birth);
             this.memInfo.gender = this.matchCode(this.selectedData.selectOptions.gender, params.data.gender);
             this.memInfo.dpt_cd = this.matchDptCode(this.selectedData.selectOptions.dpt_cd, params.data.dpt_cd);
             this.memInfo.phone = params.data.phone;
             this.memInfo.email = params.data.email;
             this.memInfo.hire_dt = this.matchDate(params.data.hire_dt);
-            this.memInfo.quit_dt = this.matchDate(params.data.quit_dt);
+            this.memInfo.quit_dt = this.matchDate_null(params.data.quit_dt);
             this.memInfo.addr = params.data.addr;
             this.memInfo.permission = this.matchCode(this.selectedData.selectOptions.permission, params.data.permission);
             this.memInfo.status = this.matchCode(this.selectedData.selectOptions.status, params.data.status);
@@ -319,22 +316,28 @@ export default {
             const match = options.find((opt) => opt.dpt_nm == value || opt.dpt_cd == value); //코드나 이름에 벨류가 있는지 확인
             return match ? match.dpt_cd : ''; // 있으면 코드 반환 없으면 공백
         },
-        matchDate(value){
-            const date = new Date(value);
-            return date.toISOString().split('T')[0];
-        },
+        // matchDate(value){
+        //     const date = new Date(value);
+        //     return date.toISOString().split('T')[0];
+        // },
         onMemGridReady(params){
             params.api.sizeColumnsToFit();
             this.gridApi = params.api;
         },
+        matchDate(value) {
+        return this.$comm.dateFormatter({ value });
+        },
+        matchDate_null(value) {
+        return this.$comm.dateFormatter_returnNull({ value });
+        },
         
         async memInsert(){
-            console.log(this.memInfo)
             if(!this.memInfo.name || !this.memInfo.gender || !this.memInfo.hire_dt || !this.memInfo.permission ){
                 this.$swal({
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
                 text: "사원명",
+                confirmButtonText: "확인"
             });
             return;        
             }
@@ -346,15 +349,18 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes!"
+                    confirmButtonText: "확인",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
                         title: "등록완료",
-                        icon: "success"
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
                         await axios.post(`/api/standard/insertMember`, this.memInfo);
                         this.searchMem(); // 목록 갱신
+                        this.memInfo={};
                     }         
                               
                 });
@@ -365,6 +371,7 @@ export default {
                     icon: "warning",
                     title: "수정할 변경 사항이 없습니다.",
                     text: "수정 후 저장 버튼을 눌러주세요.",
+                    confirmButtonText: "확인"
                 });
                 return; // 작업 중단
             }
@@ -375,15 +382,18 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, modify!"
+                    confirmButtonText: "수정",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
                         title: "수정완료!",
-                        icon: "success"
+                        icon: "success",
+                        confirmButtonText: "확인"
                         });
                     await axios.put(`/api/standard/updateMember/${this.memInfo.mem_cd}`, this.memInfo);
                     this.searchMem(); // 목록 갱신
+                    this.memInfo={};
                     }
                     
                 });
@@ -396,15 +406,19 @@ export default {
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: "Yes, delete!"
+                    confirmButtonText: "삭제",
+                    cancelButtonText: "취소"
                 }).then(async(result) => {
                     if (result.isConfirmed) {
                         this.$swal({
                         title: "삭제완료",
-                        icon: "success"
+                        icon: "success",
+                        text: "",
+                        confirmButtonText: "확인"
                         });
                         await axios.delete(`/api/standard/delMember/${this.memInfo.mem_cd}`);
                         this.searchMem(); // 목록 갱신
+                        this.memInfo={};
                     }
                 });
         },

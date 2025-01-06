@@ -54,11 +54,21 @@ const closeMenu = () => {
         <ul class="navbar-nav justify-content-end">
           <li class="nav-item d-flex align-items-center">
             <template v-if="this.$session.exists() == true">
+              <span 
+              class="px-0 nav-link font-weight-bold text-white d-sm-inline"
+              >
+                <i class="fa fa-user"></i>
+                {{this.$session.get('user_psnm')}} {{this.$session.get('user_nm')}}님
+              </span>
+            </template>
+            
+          </li>
+          <li class="nav-item d-flex align-items-center ps-3">
+            <template v-if="this.$session.exists() == true">
               <button @click="logout"
               class="px-0 nav-link font-weight-bold text-white"
               >
-                <i class="fa fa-user" :class="isRTL ? 'ms-sm-2' : 'me-sm-2'"></i>
-                <span class="d-sm-inline d-none">개쩌는{{this.$session.get('user_nm')}}님</span>
+                <span class="d-sm-inline d-none">로그아웃</span>
               </button>
             </template>
             <template v-else>
@@ -67,7 +77,7 @@ const closeMenu = () => {
               class="px-0 nav-link font-weight-bold text-white"
               >
                 <i class="fa fa-user" :class="isRTL ? 'ms-sm-2' : 'me-sm-2'"></i>
-                <span class="d-sm-inline d-none">LogIn</span>
+                <span class="d-sm-inline d-none">로그인</span>
               </router-link>
             </template>
             

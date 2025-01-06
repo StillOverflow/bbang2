@@ -45,6 +45,12 @@ router.delete("/standard/bom/:prd_cd/:mat_cd", async (req, res) => {
   let delBom = await standardService.deleteBom(prdCd, matCd);
   res.send(delBom);
 });
+//bom사용량 업데이트
+router.put("/standard/updateBomUsage",async(req, res)=>{
+  let info = req.body;
+  let result = await standardService.updateBomUsage(info);
+  res.send(result);
+})
 
 //-----------------공정흐름도-------------------
 
@@ -213,7 +219,6 @@ router.get('/standard/process', async(req,resp)=>{
 router.post('/standard/insertProcess/:prefix', async (req, res) => {
   let processs = req.body;
   let preFix = req.params.prefix // 클라이언트에서 prefix 전달
-  console.log('prefix=>',preFix);
   let result = await standardService.insertProcess(processs, preFix);
   res.send(result);
 });
