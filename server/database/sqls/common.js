@@ -67,7 +67,7 @@ const memList = (data) => {
     query += ` WHERE ` + conditions.join(' AND ');
   }
   
-  query += ` ORDER BY id, name`; // 정렬
+  query += ` ORDER BY name, id `; // 정렬
 
   return query; // 합체한 쿼리 전체
 };
