@@ -13,12 +13,13 @@ const listOrder = async() => {
 };
 
 //주문서조회-거래처, 날짜 따로 검색
-const searchOrder = async (search, std, etd) => {
+const searchOrder = async (search, std, etd, not_status) => {
     try {
         let searchObj = {
             search,
             std,
-            etd
+            etd,
+            not_status
         }
         const list = await mariadb.query('orderSearch', searchObj);
         return list;
