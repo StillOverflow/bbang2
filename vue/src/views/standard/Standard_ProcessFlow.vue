@@ -442,7 +442,7 @@ export default {
         this.prowFlowApi.applyTransaction({
           add: [saveBom],
         });
-
+        
         //실제넘기는값
         const saveRealModal = {
           prd_cd: this.selectProData,
@@ -451,8 +451,6 @@ export default {
           temp_id:tempId
         };
         this.saveModal.push(saveRealModal);
-        console.log(saveBom);
-        console.log(saveRealModal);
       }
       this.isModal = !this.isModal;
     },
@@ -581,7 +579,6 @@ export default {
       const renderedNodes = this.prowFlowApi.getRenderedNodes();//드래그한 공정흐름도불러오기
       this.procFlowData = renderedNodes.map((obj, idx) => { //새롭게 배치
         obj.data.proc_seq = idx + 1; // 순서 재정렬(1번부터)
-        console.log(this.procFlowData);
         return obj.data;
       });
     },
@@ -695,12 +692,6 @@ export default {
       }));
       // 공정 흐름도 등록 API 호출
       await axios.post(`/api/standard/flow/${this.selectProData}`, data);
-      const updatedProcFlow = this.procFlowData.map((obj) => ({
-            proc_flow_cd: obj.proc_flow_cd,
-            proc_seq: obj.proc_seq,
-          }));
-
-          await axios.put(`/api/standard/updateFlowSeq`, updatedProcFlow);
       }
 
 
