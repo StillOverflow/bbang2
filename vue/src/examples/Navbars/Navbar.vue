@@ -54,7 +54,7 @@ const closeMenu = () => {
         <ul class="navbar-nav justify-content-end">
           <li class="nav-item d-flex align-items-center">
             <template v-if="this.$session.exists() == true">
-              <span @click="logout"
+              <span
               class="px-0 nav-link font-weight-bold text-white d-sm-inline"
               >
                 <i class="fa fa-user"></i>
