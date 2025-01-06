@@ -6,7 +6,7 @@
         <div class="row">
           <div class="col-3 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">지시서 코드</div>
           <div class="input-group w-30">
-            <input class="form-control" type="text" v-model="inst_cd" placeholder="생산지시서 코드를 검색해주세요" style="height: 41px;">
+            <input class="form-control" type="text" v-model="inst_cd" placeholder="생산지시서 코드를 검색해주세요" style="height: 41px;" v-on:keyup.enter="searchOrder">
             <button class="btn btn-warning mb-3" type="button" @click="searchOrder"><i class="fa-solid fa-magnifying-glass"></i></button>
           </div>
         </div>
@@ -31,7 +31,7 @@
           :gridOptions="gridOptions" overlayNoRowsTemplate="등록된 지시서가 없습니다.">
         </ag-grid-vue>
         <div class="center">
-          <button class="btn btn-danger mtp30" @click="PlanCancel" v-if="this.$session.get('user_ps') == 'H01'">DELETE</button>
+          <button class="btn btn-danger mtp30" @click="InstCancel" v-if="this.$session.get('user_ps') == 'H01'">삭제</button>
           <button class="btn btn-outline-success mlp10 mtp30" @click="excelDownload()"><i
               class="fa-regular fa-file-excel"></i> EXCEL</button>
         </div>
@@ -77,7 +77,7 @@ export default {
           field: 'detailed',
           cellRenderer: (params) => {
               const button = document.createElement('button');
-              button.innerText = 'DETAILED';
+              button.innerText = '상세보기';
               button.className = 'btn btn-warning btn-xsm';
               button.addEventListener('click', () => {
                   this.$router.push({ name: 'Produce_InstView' , query : { inst_cd : params.data.INST_CD}});
@@ -128,14 +128,15 @@ export default {
       selected = this.myApi.getSelectedNodes();
 
       selected.forEach((val) => { 
-        delArr.push("'"+val.data.PROD_PLAN_CD+"'");
-      });            
+        delArr.push("'"+val.data.INST_CD+"'");
+      });      
+
       let result = await axios.delete(`/api/inst/`, {params:delArr})
                               .catch(err => console.log(err));
       if(result.data == 'success'){
         this.$swal({
             icon: "success",
-            title: "선택한 지시서를 삭제하였습니다.",
+            title: "삭제완료",
         })
         .then(() => {
             this.getInstList();

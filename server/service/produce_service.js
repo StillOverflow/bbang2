@@ -50,7 +50,7 @@ const planInsert = async (values) => {
       values[1].forEach((val) => { // 헤더 시퀀스값 추가
           val["PROD_PLAN_CD"] = mySeq;
       });
-      console.log(values[1]);
+      
       let dtl_res = await mariadb.transQuery('planDtlInsert', values[1]);
       
       if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0){ // 모두 성공했는지 판단
@@ -130,12 +130,12 @@ const instInsert = async (values) => {
       await mariadb.query('instDelete', values);
 
       // 헤더 시퀀스 nextval 얻기
-      let seq_res = await mariadb.transQuery('instSeq');
+      let seq_res = await mariadb.transQuery('instSeq');      
       let mySeq = seq_res[0].seq;
               
       // 헤더 삽입
-      values[0]["inst_cd"] = mySeq;      
-      
+      values[0]["inst_cd"] = mySeq;            
+
       let header_res = await mariadb.transQuery('instInsert', values[0]);
       
       // 디테일 삽입
@@ -157,14 +157,13 @@ const instInsert = async (values) => {
       let i = 0;
       for (const obj of values[2]){   
         let mat_res =  await mariadb.transQuery('instMatInsert', [obj.inst_cd, obj.PROC_FLOW_CD]);
-           
 
         if(mat_res.affectedRows > 0){                                       
           i++;
         }
       }
 
-      let plan_res = await mariadb.transQuery('planUpdate', [{STATUS:'Z02'}, values]); //계획서 상태 수정
+      await mariadb.transQuery('planUpdate', [{STATUS:'Z02'}, values]); //계획서 상태 수정
       
       if(header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && flow_res.affectedRows > 0 && i > 0){ // 모두 성공했는지 판단
         await mariadb.commit();
@@ -181,7 +180,7 @@ const instInsert = async (values) => {
 const deleteInst = async (values)=>{
   let del_res = await mariadb.query('instDelete', values);
 
-  if(del_res.affectedRows > 0 && header_res.affectedRows > 9){ // 모두 성공했는지 판단
+  if(del_res.affectedRows > 0){ // 모두 성공했는지 판단
     await mariadb.commit();
     return 'success';
   } else {

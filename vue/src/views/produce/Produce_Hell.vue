@@ -40,8 +40,7 @@
               </ag-grid-vue>
             </template>
             <template v-slot:footer>
-              <button type="button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
-              <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
+              <button type="button" class="btn btn-secondary" @click="modalOpen">닫기</button>
             </template>
           </Layout>
         <!--생산지시서 검색모달[E]-->
@@ -522,7 +521,8 @@ export default {
               showCancelButton: true,
               confirmButtonColor: "#3085d6",
               cancelButtonColor: "#d33",
-              confirmButtonText: "Yes, delete it!"
+              confirmButtonText: "예",
+              cancelButtonText: "아니요"
             }).then(async(result) => {
               if (result.isConfirmed) {
                 let matArr = [];
@@ -576,7 +576,8 @@ export default {
               showCancelButton: true,
               confirmButtonColor: "#3085d6",
               cancelButtonColor: "#d33",
-              confirmButtonText: "Yes, delete it!"
+              confirmButtonText: "예",
+              cancelButtonText: "아니요"
             }).then(async(result) => {
               if (result.isConfirmed) {
 
