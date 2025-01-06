@@ -36,6 +36,17 @@
                 </select>
               </template>
 
+              
+              <template v-else-if="field.value === 'repair_act'">
+                <label class="form-control-label">{{ field.label }}</label>
+                <div class="input-group custom-width">
+                  <input v-model="equipmentData[field.value]" :type="field.type" class="form-control" readonly />
+                  <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen2(field.value)">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                  </button>
+                </div>
+              </template>
+
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
@@ -65,18 +76,19 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success mlp10" @click="isEditMode ? repairUpdate() : repairInsert()"
+          <button :class="isEditMode ? 'btn btn-success mlp10' : 'btn btn-primary mlp10'" @click="isEditMode ? repairUpdate() : repairInsert()"
             :disabled="!selectedEqp">
-            {{ isEditMode ? "UPDATE" : "SAVE" }}
+            {{ isEditMode ? "수정" : "등록" }}
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm" :disabled="!selectedEqp">
-            RESET
+            초기화
           </button>
         </div>
       </div>
     </div>
 
     <!-- 모달 -->
+     <!-- 설비 코드 모달 -->
     <Transition name="fade">
       <Layout :modalCheck="isModal">
         <template v-slot:header>
@@ -91,13 +103,35 @@
             overlayNoRowsTemplate="등록된 설비가 없습니다."></ag-grid-vue>
         </template>
         <template v-slot:footer>
-          <button type="button" class="btn btn-secondary" @click="modalOpen">
-            Cancel
+          <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen">
+            닫기
           </button>
 
         </template>
       </Layout>
     </Transition>
+
+    
+    <!-- 거래처 선택 모달 -->
+    <Transition name="fade">
+    <Layout :modalCheck="isModal2" >
+      <template v-slot:header>
+        <h5 class="modal-title">거래처 선택</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="accDefs"
+          :rowData="accData" :pagination="true" @rowClicked="modalClicked2" @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 거래처가 없습니다.">
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen2">닫기</button>
+      </template>
+    </Layout>
+  </Transition>
+
+
   </div>
 </template>
 
@@ -117,6 +151,7 @@ export default {
       previewImage: require('@/assets/img/blank_img.png'),
       selectedFile: null,
       isModal: false,
+      isModal2: false,
       equipInfo: {},
       equipmentData: {
         eqp_cd: '',
@@ -134,10 +169,14 @@ export default {
         id: '',
         repair_cd: '',
       },
+
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 120 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
-          headerName: '설비 구분', field: 'eqp_type', sortable: true, width: 130, valueFormatter: (params) => {
+          headerName: '설비 구분',
+          field: 'eqp_type',
+          filter: 'agTextColumnFilter',
+          sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
               R02: '분할기',
@@ -152,21 +191,31 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '설비명', field: 'eqp_nm', sortable: true, width: 130 },
-        { headerName: '모델명', field: 'model', sortable: true, width: 130 },
         {
-          headerName: '설비상태', field: 'status', sortable: true, width: 130, valueFormatter: (params) => {
-            // 상태 코드에 따른 이름 변환
-            const statusMap = {
-              S01: '가동',
-              S02: '비가동',
-            };
-            return statusMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값 반환
-          },
+          headerName: '설비명',
+          field: 'eqp_nm',
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
       ],
+
+
+      accDefs: [
+      { headerName: '거래처 코드', field: 'act_cd', width:200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 명', field: 'act_nm', width:235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '구분', field: 'act_type', width:210, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+      ],
+
       equipData: [],
+      accData: [],
+
+      
       leftFields: [
         { label: '수리 시작 일시', value: 'start_time', type: 'datetime-local' },
         { label: '설비 구분 *', value: 'eqp_type', type: 'text', selectOptions: [] },
@@ -210,6 +259,15 @@ export default {
 
     modalOpen() {
       this.isModal = !this.isModal;
+    },
+
+    modalOpen2() {
+      this.isModal2 = !this.isModal2;
+    },
+
+    modalClicked2(params) {
+      this.equipmentData.repair_act = params.data.act_cd;
+      this.isModal2 = false;
     },
 
     async modalClicked(params) {
@@ -302,6 +360,19 @@ export default {
       const result = await axios.get(`/api/equip`).catch((err) => console.log(err));
       this.equipData = result.data; // 서버가 실제로 보낸 데이터
     },
+
+    //거래처조회
+    async getAccList() {
+      try {
+            let result = await axios.get('/api/moacc')
+                                    .catch(err => console.log(err));
+            this.accData = result.data; 
+          } catch (error) {
+        console.error('Error fetching account data:', error);
+					
+      }
+        },
+
 
     //수리 조회(최신1건)
     // 설비 단건 조회
@@ -476,6 +547,8 @@ export default {
   created() {
     this.resetForm(); // 초기화 호출
     this.getEquipList();
+    this.getAccList();
+
     this.$store.dispatch('breadCrumb', { title: '설비 수리 관리' });
 
     // this.equipmentData.start_time = this.currentDateTime;
@@ -520,15 +593,15 @@ export default {
 
 <style scoped>
 .fade-enter-from {
-  transform: translateY(-1000px);
+  opacity: 0;
 }
 
 .fade-enter-active {
-  transition: all 0.5s;
+  transition: all 0.7s;
 }
 
 .fade-enter-to {
-  transform: translateY(0px);
+  opacity: 1;
 }
 
 .fade-leave-from {

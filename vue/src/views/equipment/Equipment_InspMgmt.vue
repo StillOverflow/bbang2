@@ -74,12 +74,12 @@
 
         <!-- 버튼 -->
         <div class="text-center mt-3">
-          <button class="btn btn-success mlp10" @click="isEditMode ? inspUpdate() : inspInsert()"
+          <button :class="isEditMode ? 'btn btn-success mlp10' : 'btn btn-primary mlp10'" @click="isEditMode ? inspUpdate() : inspInsert()"
             :disabled="!selectedEqp">
-            {{ isEditMode ? "UPDATE" : "SAVE" }}
+            {{ isEditMode ? "수정" : "등록" }}
           </button>
           <button class="btn btn-secondary mlp10" @click="resetForm" :disabled="!selectedEqp">
-            RESET
+            초기화
           </button>
         </div>
       </div>
@@ -100,11 +100,8 @@
             overlayNoRowsTemplate="등록된 설비가 없습니다."></ag-grid-vue>
         </template>
         <template v-slot:footer>
-          <button type="button" class="btn btn-secondary" @click="modalOpen">
-            Cancel
-          </button>
-          <button type="button" class="btn btn-primary" @click="modalOpen">
-            OK
+          <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen">
+            닫기
           </button>
         </template>
       </Layout>
@@ -147,10 +144,14 @@ export default {
         id: '',
         insp_log_cd: '',
       },
+
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 120 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
-          headerName: '설비 구분', field: 'eqp_type', sortable: true, width: 130, valueFormatter: (params) => {
+          headerName: '설비 구분',
+          field: 'eqp_type',
+          filter: 'agTextColumnFilter',
+          sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
               R02: '분할기',
@@ -165,16 +166,21 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '설비명', field: 'eqp_nm', sortable: true, width: 130 },
-        { headerName: '모델명', field: 'model', sortable: true, width: 130 },
         {
-          headerName: '마지막 점검일', field: 'last_insp_dt', sortable: true, width: 130, valueFormatter: (params) => {
-            if (!params.value) return ''; // 값이 없을 경우 빈 문자열 반환
-            return params.value.split('T')[0]; // T로 나눈 뒤 첫 번째 부분만 반환
-          },
+          headerName: '설비명',
+          field: 'eqp_nm',
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
       ],
+
+
       equipData: [],
       leftFields: [
         { label: '점검 시작 일시', value: 'start_time', type: 'datetime-local' },
@@ -483,6 +489,11 @@ export default {
 
       const alwaysDisabled = ['eqp_type', 'eqp_nm', 'model', 'insp_cycle', 'last_insp_dt', 'id'];
 
+      // 수정 모드일 때 시작시간 비활성화
+      if (this.isEditMode && fieldName === 'start_time') {
+        return true;
+      }
+
       // 등록 모드와 수정 모드에 따른 비활성화 처리
       if (!this.isEditMode) {
         return alwaysDisabled.includes(fieldName); // 등록 모드에서 특정 필드 비활성화
@@ -536,15 +547,15 @@ export default {
 
 <style scoped>
 .fade-enter-from {
-  transform: translateY(-1000px);
+  opacity: 0;
 }
 
 .fade-enter-active {
-  transition: all 0.5s;
+  transition: all 0.7s;
 }
 
 .fade-enter-to {
-  transform: translateY(0px);
+  opacity: 1;
 }
 
 .fade-leave-from {

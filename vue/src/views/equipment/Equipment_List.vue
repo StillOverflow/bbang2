@@ -104,15 +104,33 @@ export default {
       },
       rowData: [], // ag-grid의 데이터
       columnDefs: [
-        { field: 'eqp_cd', headerName: '설비코드', sortable: true },
-        { field: 'eqp_type', headerName: '설비구분', sortable: true },
-        { field: 'eqp_nm', headerName: '설비명', sortable: true },
-        { field: 'model', headerName: '모델', sortable: true },
-        { field: 'create_dt', headerName: '등록일', sortable: true, valueFormatter: this.$comm.dateFormatter },
-        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter },
+        { field: 'eqp_cd', headerName: '설비코드', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_type', headerName: '설비구분', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_nm', headerName: '설비명', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'model', headerName: '모델', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'create_dt', headerName: '등록일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         { field: 'id', headerName: '담당자 ID', sortable: true },
-        { field: 'status', headerName: '설비상태', sortable: true },
-        { field: 'is_use', headerName: '사용유무', sortable: true },
+        { field: 'status', headerName: '설비 상태', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellRenderer: (params) => {
+            if (params.value === '비가동') {
+              return `<i class="fa-solid fa-circle text-danger"></i> ${params.value}`;
+            } else if (params.value === '가동') {
+              return `<i class="fa-solid fa-circle text-success"></i> ${params.value}`;
+            }
+            return params.value; // 상태가 비가동/가동이 아닐 경우
+          }, 
+        },
+        { field: 'is_use', headerName: '사용유무', sortable: true , cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', 
+          cellRenderer: (params) => {
+            if (params.value === '사용가능') {
+              return `<span style="color: RoyalBlue ">${params.value}</span>`;
+            } else if (params.value === '사용불가') {
+              return `<span style="color: #E41B17  ">${params.value}</span>`;
+            }
+            return params.value;
+          },
+        },
 
       ],
 
@@ -152,9 +170,12 @@ export default {
     async fetchCommonCodes() {
       try {
 
-        const eqpTypeResponse = await axios.get('/api/comm/codeList/EQ');
-        const isUseResponse = await axios.get('/api/comm/codeList/EU');
-        const statusResponse = await axios.get('/api/comm/codeList/ES');
+        // 비동기적으로 데이터 가져오기
+        const [eqpTypeResponse, isUseResponse, statusResponse] = await Promise.all([
+          axios.get('/api/comm/codeList/EQ'),
+          axios.get('/api/comm/codeList/EU'),
+          axios.get('/api/comm/codeList/ES'),
+        ]);
 
         this.equipmentData.selectOptions.EQP_TYPE = [
           { comm_dtl_cd: null, comm_dtl_nm: '전체' }, // "전체" 추가
@@ -219,11 +240,15 @@ export default {
       try {
         // 현재 날짜 생성
         var today = new Date();
-        today = this.$comm.dateFormatter(today);
+        today = this.$comm.getMyDay(today);
 
         // 선택된 데이터 가져오기
         let selectedNodes = this.myApi.getSelectedNodes(); // 선택된 행 데이터 가져오기
         let selectedData;
+
+        const formatDate = (date) => {
+         return date ? this.$comm.getMyDay(new Date(date)) : '';
+       };
 
         if (selectedNodes.length > 0) {
           // 선택된 데이터가 있을 경우
@@ -232,8 +257,8 @@ export default {
             '설비구분': item?.eqp_type,
             '설비명': item?.eqp_nm,
             '모델': item?.model,
-            '등록일': item?.create_dt,
-            '최종점검일': item?.last_insp_dt,
+            '등록일': formatDate(item?.create_dt),
+            '최종점검일': formatDate(item?.last_insp_dt),
             '담당자 ID': item?.id,
             '설비상태': item?.status,
             '사용유무': item?.is_use,
@@ -245,8 +270,8 @@ export default {
             '설비구분': item?.eqp_type,
             '설비명': item?.eqp_nm,
             '모델': item?.model,
-            '등록일': item?.create_dt,
-            '최종점검일': item?.last_insp_dt,
+            '등록일': formatDate(item?.create_dt),
+            '최종점검일': formatDate(item?.last_insp_dt),
             '담당자 ID': item?.id,
             '설비상태': item?.status,
             '사용유무': item?.is_use,
@@ -265,6 +290,50 @@ export default {
         // 엑셀 파일 생성 및 다운로드
         const workBook = XLSX.utils.book_new();
         const workSheet = XLSX.utils.json_to_sheet(selectedData);
+
+        /*
+       // 열 너비 자동 조정
+       const colWidths = Object.keys(selectedData[0]).map(key => {
+          // 최대 길이 계산 (셀의 실제 길이에 약간의 보정값 추가)
+          const maxLength = Math.max(
+            ...selectedData.map(row => (row[key] ? row[key].toString().length : 0)),
+            key.length // 컬럼 헤더 길이 포함
+          );
+          return { wch: maxLength + 5 }; // 여유 공간 추가 (보정값 +5)
+        });
+
+        workSheet['!cols'] = colWidths; // 열 너비 설정
+       */
+
+        // 열 너비 자동 조정 (문자 유형에 따라 여유 공간 조정)
+        const colWidths = Object.keys(selectedData[0]).map(key => {
+          // 최대 길이 계산 (셀의 실제 길이에 약간의 보정값 추가)
+          const maxLength = Math.max(
+            ...selectedData.map(row => {
+              const cellValue = row[key] ? row[key].toString() : '';
+              const koreanCharCount = (cellValue.match(/[\u3131-\uD79D]/g) || []).length;
+              const englishCharCount = (cellValue.match(/[a-zA-Z]/g) || []).length;
+              const numberCharCount = (cellValue.match(/[0-9]/g) || []).length;
+              const otherCharCount = cellValue.length - koreanCharCount - englishCharCount - numberCharCount;
+
+              // 문자 유형별 폭 계산
+              return (
+                koreanCharCount * 2 + // 한글은 2배 길이
+                englishCharCount * 1 + // 영문자는 1배 길이
+                numberCharCount * 0.75 + // 숫자는 0.75배 길이
+                otherCharCount * 1 // 기타 문자는 기본 길이
+              );
+            }),
+            key.length // 컬럼 헤더 길이 포함
+          );
+
+          // 문자 유형별 여유 공간 추가
+          const padding = maxLength > 15 ? 2 : maxLength > 10 ? 3 : 4; // 길이에 따라 동적 여유 공간
+          return { wch: Math.ceil(maxLength + padding) }; // 열 너비 설정
+        });
+
+        workSheet['!cols'] = colWidths; // 계산된 열 너비 적용
+
         XLSX.utils.book_append_sheet(workBook, workSheet, '설비정보조회');
         XLSX.writeFile(workBook, `설비정보조회_${today}.xlsx`);
       } catch (error) {

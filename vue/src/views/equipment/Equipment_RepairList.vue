@@ -106,21 +106,22 @@
   </div>
 
   <!--검색모달[S]-->
-  <Layout :modalCheck="isModal">
-    <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
-      <h5 class="modal-title">설비 코드 검색</h5>
-      <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
-    </template>
-    <template v-slot:default>
-      <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="equipDefs"
-        :rowData="equipData" @rowClicked="modalClicked" @grid-ready="gridFit" overlayNoRowsTemplate="등록된 설비가 없습니다.">
-      </ag-grid-vue>
-    </template>
-    <template v-slot:footer>
-      <button type=" button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
-      <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
-    </template>
-  </Layout>
+  <Transition name="fade">
+    <Layout :modalCheck="isModal">
+      <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
+        <h5 class="modal-title">설비 코드 검색</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalOpen">×</button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px;" :columnDefs="equipDefs"
+          :rowData="equipData" @rowClicked="modalClicked" @grid-ready="gridFit" overlayNoRowsTemplate="등록된 설비가 없습니다.">
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type=" button" class="btn btn-secondary mx-auto" @click="modalOpen">닫기</button>
+      </template>
+    </Layout>
+  </Transition>
   <!--검색모달[E]-->
 
 </template>
@@ -144,10 +145,11 @@ export default {
 
       //모달 설비 목록
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 163 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
+          filter: 'agTextColumnFilter',
           sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
@@ -163,13 +165,18 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true, width: 163
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '모델명', field: 'model', sortable: true, width: 163 },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
       ],
 
       equipData: [],
@@ -188,35 +195,53 @@ export default {
       },
       rowData: [], // ag-grid의 데이터
       columnDefs: [
-        { field: 'eqp_cd', headerName: '설비코드', sortable: true },
-        { field: 'eqp_type', headerName: '설비구분', sortable: true },
-        { field: 'eqp_nm', headerName: '설비명', sortable: true },
-        { field: 'status', headerName: '설비상태', sortable: true },
-        { field: 'repair_reason', headerName: '수리사유', sortable: true },
-        { field: 'repair_parts', headerName: '수리부품', sortable: true },
-        { field: 'repair_act', headerName: '수리업체', sortable: true },
-        { field: 'note', headerName: '비고', sortable: true },
-        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter },
-        { field: 'id', headerName: '등록인 ID', sortable: true },
+        { field: 'eqp_cd', headerName: '설비코드', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_type', headerName: '설비구분', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_nm', headerName: '설비명', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'repair_reason', headerName: '수리사유', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'repair_parts', headerName: '수리부품', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'repair_act', headerName: '수리업체', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'note', headerName: '비고', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'id', headerName: '등록인 ID', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
           field: 'start_time',
           headerName: '수리시작일시',
           sortable: true,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
           valueFormatter: (params) => this.formatDateTime(params.value), width: 250
         },
         {
           field: 'end_time',
           headerName: '수리종료일시',
           sortable: true,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
           valueFormatter: (params) => this.formatDateTime(params.value), width: 250
         },
-
+        /*
+        { field: 'status', headerName: '설비 상태', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellRenderer: (params) => {
+            if (params.value === '비가동') {
+              return `<i class="fa-solid fa-circle text-danger"></i> ${params.value}`;
+            } else if (params.value === '가동') {
+              return `<i class="fa-solid fa-circle text-success"></i> ${params.value}`;
+            }
+            return params.value; // 상태가 비가동/가동이 아닐 경우
+          }, 
+        },
+        */
       ],
 
       gridOptions: {
         pagination: true,
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+        getRowStyle: (params) => {
+        if (!params.data.end_time) {
+          return { background: '#ffcccc' }; // 종료시간이 없는 행
+        }
+        return null;
+      },
         /*
         rowSelection: {
           mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
@@ -364,13 +389,24 @@ export default {
     //엑셀 함수
     excelDownload() {
       try {
-        // 현재 날짜 생성
+        // 현재 날짜 생성(엑셀 파일명 용도)
         var today = new Date();
-        today = this.$comm.dateFormatter(today);
+        today = this.$comm.getMyDay(today);
 
         // 선택된 데이터 가져오기
         let selectedNodes = this.myApi.getSelectedNodes(); // 선택된 행 데이터 가져오기
         let selectedData;
+
+        // 날짜 포맷 함수 (YYYY-MM-DD)
+        const formatDate = (date) => {
+          return date ? this.$comm.getMyDay(new Date(date)) : ''; 
+        };
+
+        // 날짜 포맷 함수 (시분 포함)
+        const formatDateTime = (date) => {
+          return date ? this.$comm.getDatetimeMin(new Date(date)) : '';
+        };
+
 
         if (selectedNodes.length > 0) {
           // 선택된 데이터가 있을 경우
@@ -382,11 +418,11 @@ export default {
             '수리사유': item?.repair_reason,
             '수리부품': item?.repair_parts,
             '수리업체': item?.repair_act,
-            '최종점검일': item?.last_insp_dt,
+            '최종점검일': formatDate(item?.last_insp_dt),
             '비고': item?.note,
             '등록인ID': item?.id,
-            '수리시작일시': item?.start_time,
-            '수리종료일시': item?.end_time,
+            '수리시작일시': formatDateTime(item?.start_time),
+            '수리종료일시': formatDateTime(item?.end_time),
           }));
         } else {
           // 선택된 데이터가 없으면 전체 데이터를 사용
@@ -398,11 +434,11 @@ export default {
             '수리사유': item?.repair_reason,
             '수리부품': item?.repair_parts,
             '수리업체': item?.repair_act,
-            '최종점검일': item?.last_insp_dt,
+            '최종점검일': formatDate(item?.last_insp_dt),
             '비고': item?.note,
             '등록인ID': item?.id,
-            '비가동시작일시': item?.start_time,
-            '비가동종료일시': item?.end_time,
+            '수리시작일시': formatDateTime(item?.start_time),
+            '수리종료일시': formatDateTime(item?.end_time),
           }));
         }
 
@@ -418,6 +454,37 @@ export default {
         // 엑셀 파일 생성 및 다운로드
         const workBook = XLSX.utils.book_new();
         const workSheet = XLSX.utils.json_to_sheet(selectedData);
+
+          // 열 너비 자동 조정 (문자 유형에 따라 여유 공간 조정)
+          const colWidths = Object.keys(selectedData[0]).map(key => {
+          // 최대 길이 계산 (셀의 실제 길이에 약간의 보정값 추가)
+          const maxLength = Math.max(
+            ...selectedData.map(row => {
+              const cellValue = row[key] ? row[key].toString() : '';
+              const koreanCharCount = (cellValue.match(/[\u3131-\uD79D]/g) || []).length;
+              const englishCharCount = (cellValue.match(/[a-zA-Z]/g) || []).length;
+              const numberCharCount = (cellValue.match(/[0-9]/g) || []).length;
+              const otherCharCount = cellValue.length - koreanCharCount - englishCharCount - numberCharCount;
+
+              // 문자 유형별 폭 계산
+              return (
+                koreanCharCount * 2 + // 한글은 2배 길이
+                englishCharCount * 1 + // 영문자는 1배 길이
+                numberCharCount * 0.75 + // 숫자는 0.75배 길이
+                otherCharCount * 1 // 기타 문자는 기본 길이
+              );
+            }),
+            key.length // 컬럼 헤더 길이 포함
+          );
+
+          // 문자 유형별 여유 공간 추가
+          const padding = maxLength > 15 ? 2 : maxLength > 10 ? 3 : 4; // 길이에 따라 동적 여유 공간
+          return { wch: Math.ceil(maxLength + padding) }; // 열 너비 설정
+        });
+
+        workSheet['!cols'] = colWidths; // 계산된 열 너비 적용
+
+
         XLSX.utils.book_append_sheet(workBook, workSheet, '설비 수리 조회');
         XLSX.writeFile(workBook, `설비 수리 조회_${today}.xlsx`);
       } catch (error) {
@@ -436,17 +503,15 @@ export default {
 
 <style scoped lang="scss">
 .fade-enter-from {
-  /* opacity: 0; */
-  transform: translateY(-1000px);
+  opacity: 0;
 }
 
 .fade-enter-active {
-  transition: all 0.5s;
+  transition: all 0.7s;
 }
 
 .fade-enter-to {
-  /* opacity: 1; */
-  transform: translateY(0px);
+  opacity: 1;
 }
 
 .fade-leave-from {

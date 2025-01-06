@@ -34,6 +34,17 @@
                   </option>
                 </select>
               </template>
+
+              <template v-else-if="field.value == 'pur_act'||field.value == 'mfg_act'" >
+                <label class="form-control-label">{{ field.label }}</label>
+                <div class="input-group custom-width">
+                  <input v-model="equipmentData[field.value]" :type="field.type" class="form-control " readonly />
+                  <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen3(field.value)">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+              </div>
+              </template>
+
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
@@ -54,10 +65,23 @@
                   </option>
                 </select>
               </template>
+
+              <template v-else-if="field.value == 'id'" >
+                <label class="form-control-label">{{ field.label }}</label>
+                <div class="input-group custom-width">
+                <input v-model="equipmentData[field.value]" :type="field.type" class="form-control "
+                readonly />
+                  <button class="btn btn-warning" id="button-addon2" type="button" @click="modalOpen2">
+                <i class="fa-solid fa-magnifying-glass"></i>
+              </button>
+              </div>
+              </template>
+              
+              
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :disabled="isFieldDisabled(field.value)" />
+                  :disabled="isFieldDisabled(field.value)"  />
               </template>
             </div>
           </div>
@@ -66,13 +90,13 @@
         <!-- 버튼 -->
         <div class="text-center mt-3">
           <button v-if="isEditMode" class="btn btn-success mlp10" @click="equipUpdate">
-            SAVE
+            수정
           </button>
-          <button v-if="!isEditMode" class="btn btn-success mlp10" @click="equipInsert">
-            SAVE
+          <button v-if="!isEditMode" class="btn btn-primary mlp10" @click="equipInsert">
+            등록
           </button>
-          <button v-if="!isEditMode" class="btn btn-secondary mlp10" @click="resetForm">
-            RESET
+          <button class="btn btn-secondary mlp10" @click="resetForm">
+            초기화
           </button>
         </div>
       </div>
@@ -80,6 +104,7 @@
   </div>
 
   <!--모달-->
+    <!-- 설비 코드 모달 -->
   <Transition name="fade">
     <Layout :modalCheck="isModal">
       <template v-slot:header>
@@ -96,15 +121,52 @@
         </ag-grid-vue>
       </template>
       <template v-slot:footer>
-        <button type="button" class="btn btn-secondary" @click="modalOpen">
-          Cancel
-        </button>
-        <button type="button" class="btn btn-primary" @click="modalOpen">
-          OK
+        <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen">
+          닫기
         </button>
       </template>
     </Layout>
   </Transition>
+
+    <!-- 담당자 선택 모달 -->
+    <Transition name="fade">
+    <Layout :modalCheck="isModal2">
+      <template v-slot:header>
+        <h5 class="modal-title">담당자 선택</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalOpen2">×</button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="memDefs"
+          :rowData="memData" :pagination="true" @rowClicked="modalClicked2" @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 담당자가 없습니다.">
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen2">닫기</button>
+      </template>
+    </Layout>
+  </Transition>
+
+    <!-- 거래처 선택 모달 -->
+    <Transition name="fade">
+    <Layout :modalCheck="isModal3">
+      <template v-slot:header>
+        <h5 class="modal-title">거래처 선택</h5>
+        <button type="button" aria-label="Close" class="close" @click="modalOpen3">×</button>
+      </template>
+      <template v-slot:default>
+        <ag-grid-vue class="ag-theme-alpine" style="width: 100%; height: 400px" :columnDefs="accDefs"
+          :rowData="accData" :pagination="true" @rowClicked="modalClicked3" @grid-ready="gridFit"
+          overlayNoRowsTemplate="등록된 거래처가 없습니다.">
+        </ag-grid-vue>
+      </template>
+      <template v-slot:footer>
+        <button type="button" class="btn btn-secondary mx-auto" @click="modalOpen3">닫기</button>
+      </template>
+    </Layout>
+  </Transition>
+
+
 </template>
 
 <script>
@@ -121,6 +183,7 @@ export default {
       selectedEqp: '',
       previewImage: require('@/assets/img/blank_img.png'), // 이미지 미리보기 경로
       selectedFile: null, // 선택한 파일
+      targetField: '', // Modal3 거래처 어떤 필드를 채울지 구분
       equipInfo: {},
       equipmentData: {
         //이미지 경로
@@ -145,10 +208,11 @@ export default {
       },
 
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', sortable: true, width: 163 },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
+          filter: 'agTextColumnFilter',
           sortable: true, width: 163, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
@@ -164,16 +228,35 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true, width: 163
+          sortable: true, width: 163,
+          filter: 'agTextColumnFilter',
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
         },
-        { headerName: '모델명', field: 'model', sortable: true, width: 163 },
+        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+         },
+      ],
+
+      memDefs: [
+        { headerName: '담당자 ID', field: 'ID',width:200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' }},
+        { headerName: '담당자 명', field: 'name',width:235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '부서', field: 'dpt_nm',width:210, filter: 'agTextColumnFilter' , cellStyle: { textAlign: 'center' }},
+      ],
+
+      accDefs: [
+      { headerName: '거래처 코드', field: 'act_cd', width:200, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '거래처 명', field: 'act_nm', width:235, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
+        { headerName: '구분', field: 'act_type', width:210, filter: 'agTextColumnFilter', cellStyle: { textAlign: 'center' } },
       ],
 
       equipData: [],
+      memData: [],
+      accData: [],
 
       leftFields: [
         {
@@ -191,17 +274,19 @@ export default {
         { label: '점검주기 (일)', value: 'insp_cycle', type: 'number' },
       ],
       rightFields: [
-        { label: '적정 온도', value: 'opt_temp', type: 'text' },
-        { label: '적정 습도', value: 'opt_humid', type: 'text' },
-        { label: '적정 RPM', value: 'opt_rpm', type: 'text' },
-        { label: '적정 속도', value: 'opt_speed', type: 'text' },
-        { label: '적정 전력량', value: 'opt_power', type: 'text' },
-        { label: 'UPH', value: 'uph', type: 'text' },
-        { label: '설비상태', value: 'is_use', type: 'text', selectOptions: [] },
+        { label: '적정 온도 (°C)', value: 'opt_temp', type: 'text' },
+        { label: '적정 습도 (%)', value: 'opt_humid', type: 'text' },
+        { label: '적정 RPM (분당 회전수)', value: 'opt_rpm', type: 'text' },
+        { label: '적정 속도 (m/s)', value: 'opt_speed', type: 'text' },
+        { label: '적정 전력량 (kW)', value: 'opt_power', type: 'text' },
+        { label: 'UPH (Unit Per Hour)', value: 'uph', type: 'text' },
+        { label: '사용유무', value: 'is_use', type: 'text', selectOptions: [] },
         { label: '설비담당자', value: 'id', type: 'text' },
       ],
 
       isModal: false,
+      isModal2: false,
+      isModal3: false,
     };
   },
   methods: {
@@ -212,10 +297,29 @@ export default {
     modalOpen() {
       this.isModal = !this.isModal;
     },
+    modalOpen2() {
+      this.isModal2 = !this.isModal2;
+    },
+    modalOpen3(field) {
+      this.targetField = field;  // 어떤 필드를 설정할지 지정
+      this.isModal3 = !this.isModal3;
+    },
     modalClicked(params) {
       this.getEquipInfo(params.data.eqp_cd);
       this.selectedEqp = params.data.eqp_cd;
       this.isModal = !this.isModal;
+    },
+    modalClicked2(params) {
+      this.equipmentData.id = params.data.ID;
+      this.isModal2 = false;
+    },
+    modalClicked3(params) {
+      if (this.targetField === 'pur_act') { 
+        this.equipmentData.pur_act = params.data.act_cd; // 구매업체
+      } else if (this.targetField === 'mfg_act') {
+        this.equipmentData.mfg_act = params.data.act_cd; // 제조업체
+      } 
+      this.isModal3 = false;
     },
 
 
@@ -307,6 +411,27 @@ export default {
         .catch((err) => console.log(err));
       this.equipData = result.data; // 서버가 실제로 보낸 데이터
     },
+
+    //멤버조회
+    async getMemList() {
+            let result = await axios.get('/api/momem')
+                                    .catch(err => console.log(err));
+            this.memData = result.data; 
+            console.log(this.memData);
+        },
+
+    //거래처조회
+    async getAccList() {
+      try {
+            let result = await axios.get('/api/moacc')
+                                    .catch(err => console.log(err));
+            this.accData = result.data; 
+          } catch (error) {
+        console.error('Error fetching account data:', error);
+					
+      }
+        },
+
 
     isFieldDisabled(fieldName) {
       // 특정 필드 비활성화 조건
@@ -430,6 +555,8 @@ export default {
 
   created() {
     this.getEquipList();
+    this.getMemList();
+    this.getAccList();
 
     // 페이지 제목 저장
     this.$store.dispatch('breadCrumb', { title: '설비 관리' });
@@ -480,17 +607,15 @@ export default {
 
 <style scoped>
 .fade-enter-from {
-  /* opacity: 0; */
-  transform: translateY(-1000px);
+  opacity: 0;
 }
 
 .fade-enter-active {
-  transition: all 0.5s;
+  transition: all 0.7s;
 }
 
 .fade-enter-to {
-  /* opacity: 1; */
-  transform: translateY(0px);
+  opacity: 1;
 }
 
 .fade-leave-from {
