@@ -114,7 +114,6 @@ const updateOrders = async (updateInfo) => {
                 order_qty: val.order_qty,
                 note: val.note
             }
-            console.log("service",obj);
             let insertRes = await mariadb.query('orderUpdateInsert', [obj]); 
 
             if(insertRes.affectedRows > 0){
@@ -136,7 +135,6 @@ const updateOrders = async (updateInfo) => {
 //주문서 수정
 const updateOrder = async (odtNo, updateInfo) => {
     let datas = [updateInfo, odtNo];
-    console.log("service",datas);
     let update = await mariadb.query('orderUpdate', datas);
 
     if(update.affectedRows > 0){ // 모두 성공했는지 판단
@@ -244,7 +242,6 @@ const insertPrdOut = async (values) => {
 
     //출고등록시 주문서 상태변환
     let orderStautsPrdOut = await mariadb.query('orderStautsPrdOut', samples.order_cd);
-    console.log("serviceStatus",samples.order_cd)
     
     if(prdOut.affectedRows > 0 && 
        prdOutDtl.affectedRows > 0 && 
@@ -276,7 +273,6 @@ const listLotDtlOutPrd = async (no) => {
 const deleteOutPrd = async (no) => {
     try {
         let del = await mariadb.query('prdOutDelete',no);
-        console.log("제품삭제서비스",del)
         if(del.affectedRows > 0){ 
             return {"result" : "success"};
         } else {
@@ -291,7 +287,6 @@ const deleteOutPrd = async (no) => {
 const statusDeleteOutPrd = async (no) => {
     try {
         let ocd = await mariadb.query('prdOutDeleteStatus', no);
-        console.log("제품삭제상태서비스",ocd)
         if(ocd.affectedRows > 0){ 
             return {"result" : "success"};
         } else {
@@ -408,7 +403,6 @@ const updatePrdOutEnd = async (updateInfo) => {
 //출고 완료 확인
 const endOutPrd = async (no) => {
     let list = await mariadb.query('prdOutEnd', no);
-    console.log("출고서비스 ",list)
     return list;
 }
 
@@ -462,7 +456,6 @@ const InsertPrdReturn = async (values) => {
 
     let seq = (await mariadb.query('productReturnSeq'))[0].prd_return_cd;
 
-    console.log(values[0]);
     let samples = values[0]; 
     samples.seq = seq; 
     
@@ -508,8 +501,6 @@ const listLotDtlReturn = async (no) => {
 //반품 제품 삭제
 const deleteReturn = async (no) => {
     let del = await mariadb.query('returnDelete',no);
-
-    console.log(del);
 
     if(del.affectedRows > 0){ 
         return {"result" : "success"};
@@ -588,8 +579,7 @@ const  deleteUpdateReturn = async (no) => {
 const insertUpdateReturn = async (values) => {
 
     let return_dtl = await mariadb.query('returnUpdateInsert', values); 
-    console.log("service",return_dtl);
-
+    
     if(return_dtl.affectedRows > 0){
 
         return {"result" : "success"};

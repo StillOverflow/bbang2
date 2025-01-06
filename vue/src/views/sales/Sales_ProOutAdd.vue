@@ -7,7 +7,7 @@
 </style>
 
 <template>
-  <div class="py-4 container-fluid">
+  <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
       <div class="card">
 
           <!-- 출고 테이블 부분 -->
@@ -63,7 +63,7 @@
                   </div>
               </div>
               
-              <div class="row" v-if="this.isdetail == true &&  this.prdEndStatusJ03 == false && (this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' )" >
+              <div class="row" v-if="this.isdetail == true &&  this.prdEndStatusJ03 == false && (this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' ))" >
                 <div class="col-6 col-lg-2"></div>
                 <div class="col-6 col-lg-1 text-center mt-2 fw-bolder" :style="t_overflow">
                 출고구분
@@ -79,46 +79,62 @@
           </div>
 
             <div class="alert alert-light alert-dismissible fade show"
-             v-if="this.isdetail == true && (this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' )">
+             v-if="this.isdetail == true && (this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' ) )">
                 <strong>출고완료 선택 후 UPDATE 하면 출고완료가 되며 수정/삭제 불가합니다.</strong>
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
+            <!--경고/알림-->
+            <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
+            <symbol id="exclamation-triangle-fill" viewBox="0 0 16 16">
+            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+            </symbol>
+            </svg>
+            <div class="alert alert-danger d-flex align-items-center" role="alert"
+            v-if="this.isdetail == true && (this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' ) )">
+            <svg class="bi flex-shrink-0 me-2" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+            <div>출고완료 선택 후 수정을 누르면 출고완료가 되고, 수정/삭제가 불가능합니다.</div>
+            </div> 
+
+            
+
           <!-- 출고디테일 테이블 부분 -->
           <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <p></p>
+                    <div class="col-md-5">
+                        <p class="fw-bolder">제품 목록</p>
                         <ag-grid-vue style="width:100%; height: 350px;"
                         class="ag-theme-alpine"
                         :columnDefs="OLDefs"
                         :rowData="OLData"
                         @grid-ready="gridFit"
+                        :gridOptions="sellgridOptions"
                         overlayNoRowsTemplate="주문서를 조회 하여주세요.">
                         </ag-grid-vue>
                     </div>
-                    <div class="col-md-6">
-                        <p></p>
+                    <div class="col-md-7">
+                        <p class="fw-bolder">제품별 LOT</p>
                         <ag-grid-vue style="width:100%; height: 350px;"
                         class="ag-theme-alpine"
                         :columnDefs="proOutDefs"
                         :rowData="proOutData"
                         @grid-ready="gridFit"
+                        :gridOptions="newgridOptions"
                         overlayNoRowsTemplate="제품의 LOT를 선택해주세요.">
                         </ag-grid-vue>
                     </div>
                 </div>
 
                 <div class="center " v-if="this.isdetail == false"> <!--등록페이지-->
-                    <button class="btn btn-primary mtp30" @click="prdOutInsert">SUBMIT</button>
-                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
+                    <button class="btn btn-primary mtp30" @click="prdOutInsert">등록</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">초기화</button>
                 </div>
                 <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
                     <div v-if="this.prdEndStatusJ03 == false">
-                        <button v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' "
-                         class="btn btn-primary mtp30" @click="prdOutUpdate">UPDATE</button>
-                        <button v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' "
-                         class="btn btn-secondary mlp10 mtp30" @click="prdOutDelete">DELETE</button>
+                        <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' ) "
+                         class="btn btn-success mtp30" @click="prdOutUpdate">수정</button>
+                        <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' ) "
+                         class="btn btn-secondary mlp10 mtp30" @click="prdOutDelete">삭제</button>
                     </div>
                 </div>
           </div>
@@ -182,8 +198,8 @@
           </ag-grid-vue>
       </template>
       <template v-slot:footer>
-          <button  type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
-          <button  type="button" class="btn btn-primary" @click="modalClicked3">OK</button>
+          <button  type="button" class="btn btn-secondary" @click="modalOpen3">취소</button>
+          <button  type="button" class="btn btn-primary" @click="modalClicked3">저장</button>
       </template>
   </Layout>
 </template>
@@ -221,7 +237,7 @@ export default {
             //셀렉트박스
             selected2: "",
             selectList: [
-                { name: "출고지시.", value: "" },
+                { name: "출고지시", value: "" },
                 { name: "출고완료", value: "prdOutEnd" },
             ],
 
@@ -235,12 +251,13 @@ export default {
 
             OLDefs: [
                 {headerName: '주문상세코드', field: 'order_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
-                {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }},
-                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
+                {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" },width: 190},
+                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }, width: 250},
                 {
                     headerName: '주문 수량', 
                     field: 'order_qty', 
-                    cellStyle: { textAlign: "center" },
+                    width: 190,
+                    cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -249,7 +266,7 @@ export default {
                 {
                     headerName: '기출고수량', 
                     field: 'prd_out_qty', 
-                    cellStyle: { textAlign: "center" },
+                    cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -258,7 +275,7 @@ export default {
                 {
                     headerName: '미출고수량', 
                     field: 'no_qty', 
-                    cellStyle: { textAlign: "center" },
+                    cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -266,13 +283,14 @@ export default {
                 },
                 {
                     headerName: 'LOT보기' ,
-                    field: 'lotlist', 
+                    field: 'lotlist',
+                    width: 200, 
                     cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         if( this.prdEndStatusJ03 == false  ){
-                            if(this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3'){
+                            if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
                                 const button = document.createElement('button');
-                                button.innerText = 'SEARCH';
+                                button.innerText = '상세보기';
                                 button.className = 'btn btn-warning btn-xsm';
                                 button.addEventListener('click', () => {                                
                                         this.modalOpen3(); //LOT모달 오픈
@@ -284,10 +302,31 @@ export default {
                                 return button;
                             }                            
                         }
+                        if( this.isdetail == false ){
+                            const button = document.createElement('button');
+                            button.innerText = '상세보기';
+                            button.className = 'btn btn-warning btn-xsm';
+                            button.addEventListener('click', () => {                                
+                                    this.modalOpen3(); //LOT모달 오픈
+                                    this.prd_cd = params.data.prd_cd //선택한 행에 제품명 담기
+                                    this.getOutLotList(); //단건조회로 보내기
+
+                                    this.odtCd = params.data.order_dtl_cd //등록할 때 필요한 코드 변수에 담기                                
+                            });
+                            return button;
+                        }
                     }
                  },
             ],
             OLData: [ ],
+
+            sellgridOptions: {
+                rowSelection: {
+                    mode:"singleRow",
+                    checkboxes: false,
+                    enableClickSelection: true,
+                }
+            },
 
             proDefs: [
                 {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }, hide: true},
@@ -295,7 +334,7 @@ export default {
                 {
                     headerName: '제품 수량', 
                     field: 'stock', 
-                    cellStyle: { textAlign: "center" },
+                    cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -315,14 +354,14 @@ export default {
             proOutDefs: [
                 {headerName: '출고상세코드', field: 'prd_out_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
                 {headerName: '주문상세코드', field: 'order_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
-                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }},
+                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" },width: 300},
                 {headerName: '제품코드', field: 'prd_cd', cellStyle: { textAlign: "center" }, hide: true},
                 {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
                 {headerName: '유통기한', field: 'exp_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
                 {
                     headerName: '제품 수량', 
                     field: 'stock', 
-                    cellStyle: { textAlign: "center" },
+                    cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -331,8 +370,8 @@ export default {
                 {
                     headerName: '출고 수량', 
                     field: 'prd_out_qty', 
-                    editable: true, 
-                    cellStyle: { textAlign: "center" }, 
+                    editable: this.sessionEditable, 
+                    cellStyle: { textAlign: "right" }, 
                     cellDataType: 'number',
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
@@ -340,43 +379,74 @@ export default {
                     },
                     cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
                 },
-                {headerName: '비고', field: 'note', editable: true, cellStyle: { textAlign: "center" }},
+                {headerName: '비고', field: 'note', editable: this.sessionEditable, cellStyle: { textAlign: "center" }},
                 {
                     headerName: '삭제' ,
                     field: 'delete', 
+                    width: 150,
                     cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
-                        const button = document.createElement('button');
-                        button.innerText = 'DELETE';
-                        button.className = 'btn btn-danger btn-xsm';
-                        button.addEventListener('click', () => {
-                            // 상세 페이지 일떄
-                            if(this.isdetail == true){
-                                if(this.prdEndStatusJ03 == false){ //상세 페이지에서 출고완료가 안되었을때
-                                    //한 행에 관한 단건 딜리트 메소드
+                        //상세 페이지이면서 출고완료가 안되었을때
+                        if(this.isdetail == true && this.prdEndStatusJ03 == false){
+                            if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
+                                const button = document.createElement('button');
+                                button.innerText = '삭제';
+                                button.className = 'btn btn-danger btn-xsm';
+                                button.addEventListener('click', () => {
                                     this.prd_out_dtl_cd = params.data.prd_out_dtl_cd;
                                     this.prd_lot_cd = params.data.prd_lot_cd;
                                     this.prd_out_qty = params.data.prd_out_qty;
                                     this.prdOutListDelete();
-
+    
                                     this.proOutData = this.proOutData.filter(row => row !== params.data);
-                                }
-                            }else{// 상세 페이지가 아니라 등록 페이지 일때
-                                this.proOutData = this.proOutData.filter(row => row !== params.data);
+                                });
+                                return button;
                             }
-                        });
-                        return button;
+                        }
+                        //등록 페이지일때
+                        if(this.isdetail == false){
+                            const button = document.createElement('button');
+                            button.innerText = '삭제';
+                            button.className = 'btn btn-danger btn-xsm';
+                            button.addEventListener('click', () => {
+                                this.proOutData = this.proOutData.filter(row => row !== params.data);
+                            });
+                            return button;
+                        }                        
                     }
                 },
             ],
             proOutData: [],
 
+             //출고수량에 음수 못 넣게 하기
+             newgridOptions: {
+                    onCellValueChanged: (params) => {
+                    if (params.colDef.field === 'prd_out_qty') {
+                        const prdOutQty = params.data.prd_out_qty || 0;
+
+                        //음수 못 넣게 하기
+                        if (prdOutQty < 0) {
+                            this.$swal({
+                                icon: "error",
+                                title: "다시 입력 해주세요.",
+                                text: "출고 수량은 음수가 될 수 없습니다.",
+                            });
+                            params.node.setData({
+                                ...params.data,
+                                prd_out_qty: params.oldValue ?? 0,
+                            });
+                            params.api.refreshCells({ force: true });
+                        }
+                    }
+                },
+            },
+
             ordDefs: [
-                {headerName: '주문서 코드', field: 'order_cd', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter' },
-                {headerName: '거래처 명', field: 'act_nm', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter' },
-                {headerName: '거래처 코드', field: 'act_cd', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter' },
-                {headerName: '주문 일자', field: 'order_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
-                {headerName: '납기 일자', field: 'due_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
+                {headerName: '주문서 코드', field: 'order_cd', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter', width: 130 },
+                {headerName: '거래처 명', field: 'act_nm', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter', width: 130 },
+                {headerName: '거래처 코드', field: 'act_cd', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter', width: 130 },
+                {headerName: '주문 일자', field: 'order_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter, width: 130},
+                {headerName: '납기 일자', field: 'due_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter, width: 130},
             ],
             ordData: [],
             memDefs: [
@@ -425,6 +495,17 @@ export default {
         this.getMemList();
     },
     methods: {
+        modalCloseFunc() {
+            if(this.asModal){
+                this.asModal = !this.asModal;
+            }
+            if(this.msModal){
+                this.msModal = !this.msModal;
+            }
+            if(this.psModal){
+                this.psModal = !this.psModal;
+            }
+        },
         modalOpen() {
             this.asModal = !this.asModal;
         },
@@ -489,13 +570,24 @@ export default {
             }
             return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
         },
+        //입력창을 조건따라 넣고 안넣고 하기
+        sessionEditable(){
+            if(this.isdetail == true){  //수정 페이지 이면서 관리자랑 영업팀장은 입력가능
+                if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
+                    return true
+                }
+            } else if(this.isdetail == false){  //등록 페이지 일때 입력가능
+                return true
+            }else{
+                return false;
+            }
+        },
 
         //출고완료인지 확인
         async prdOutEndStatus() {
             let result = await axios.get(`/api/sales/prdOutEndStatus/${this.order_code}`)
                                     .catch(err => console.log("출고확인",err));
             if(result.data[0].status == 'J03'){
-                console.log("드디어")
                 this.prdEndStatusJ03 = true;
             }else{
                 this.prdEndStatusJ03 = false;
@@ -506,16 +598,19 @@ export default {
         async prdOutDtlList(selectNo) {
             let result = await axios.get(`/api/sales/prdOutDtlList/${selectNo}`)
                                     .catch(err => console.log("PODListError",err));
+            
             this.POHead = result.data;
-
+            // 상단 헤더
             this.prdOutHeadList();
-            //주문서코드 따라 나오는 주문서목록은 등록이나 상세나 똑같기 때문에 여기서도 선언
-            this.getOutOrdList();
-            //상세조회 디테일(lot)
-            this.prdOutDtlLotList(selectNo);
-
+            
             //출고완료체크
             this.prdOutEndStatus();
+
+            //주문서코드 따라 나오는 주문서목록은 등록이나 상세나 똑같기 때문에 여기서도 선언(왼쪽)
+            this.getOutOrdList();
+            
+            //상세조회 디테일(lot)
+            this.prdOutDtlLotList(selectNo);
         },
         prdOutHeadList(){
             document.getElementById('acc_name').value = this.POHead[0].act_nm;
@@ -631,28 +726,22 @@ export default {
                     });
             });
 
-            console.log("출고디테일",insertPrdOutDtl);
-
             insertPrdOut.push({
                 order_cd: this.order_code,
                 act_cd: document.getElementById('acc_code').value,
                 ID: document.getElementById('mem_id').value,
 
             });
-            console.log("출고테이블",insertPrdOut);
 
             let insertPrdOutArr = [...insertPrdOut, insertPrdOutDtl ];   //첫번째가 헤드, 두번째가 디테일, 세번째 업데이트
-            console.log("합친거",insertPrdOutArr);
 
             let result = await axios.post('/api/sales/prdOut', insertPrdOutArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
                                 .catch(err => console.log("axios에러",err));
-            console.log(result.data.result);
-            console.log(result.data);
 
             if(result.data.result == 'success'){
                 this.$swal({
                     icon: "success",
-                    title: "등록에 성공 하였습니다.",
+                    title: "등록완료!.",
                     text: "출고 제품 목록으로 이동합니다.",
                 })
                 .then(() => {
@@ -702,13 +791,12 @@ export default {
             if(updateResult.data.result == 'success'){
 
                 if(this.selected2 == 'prdOutEnd') {
-                    console.log("출고")
                     updateStatus = await axios.put(`/api/sales/prdOutEndUpdates`,upObj)
                                         .catch(err => console.log("updateAxiosError",err));
                     if(updateStatus.data.result == 'success') {
                         this.$swal({
-                        title: "Update!",
-                        text: "GO to ProductOut List",
+                        title: "수정완료!",
+                        text: "출고 제품 목록으로 이동합니다",
                         icon: "success"
                         }).then(result =>{
                             if(result){
@@ -719,8 +807,8 @@ export default {
                 };
 
                 this.$swal({
-                title: "Update!",
-                text: "GO to ProductOut List",
+                title: "수정완료!",
+                text: "출고 제품 목록으로 이동합니다",
                 icon: "success"
                 }).then(result =>{
                     if(result){
@@ -767,8 +855,8 @@ export default {
                                 this.resetForm(); // 초기화
                             
                                 this.$swal({
-                                title: "DELETE!",
-                                text: "GO to ProductOut List",
+                                title: "삭제완료!",
+                                text: "출고 제품 목록으로 이동합니다",
                                 icon: "success"
                                 }).then(result =>{
                                     if(result){

@@ -7,7 +7,7 @@
               <div class="d-flex justify-content-center align-items-center text-center">
                   <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">제품명</div>
                   <div class="col-6 col-lg-4 mb-2">
-                      <input class="form-control " type="text" v-model="search" />         
+                      <input class="form-control " type="text" placeholder="제품 이름을 입력 해주세요." v-model="search" v-on:keyup.enter="searchForm" />         
                   </div>
                   <div class="col-lg-2">
                       <button type="button" class="btn btn-warning m-2" @click="searchForm">
@@ -22,7 +22,7 @@
           <!-- 제품 재고 조회 -->
           <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
+                    <div class="col-md-5">
                         <p></p>
                         <ag-grid-vue style="width:100%; height: 550px;"
                         class="ag-theme-alpine"
@@ -30,10 +30,11 @@
                         :rowData="PALData"
                         :pagination="true"
                         @grid-ready="gridFit"
+                        :gridOptions="gridOptions"
                         overlayNoRowsTemplate="제품 재고가 없습니다.">
                         </ag-grid-vue>
                     </div>
-                    <div class="col-md-6">
+                    <div class="col-md-7">
                         <p></p>
                         <ag-grid-vue style="width:100%; height: 550px;"
                         class="ag-theme-alpine"
@@ -59,6 +60,14 @@ export default {
     name: 'App',
     data() {
         return {
+            gridOptions: {
+                rowSelection: {
+                    mode:"singleRow",
+                    checkboxes: false,
+                    enableClickSelection: true,
+                }
+            },
+
             //제품 재고 조회
             PALDefs: [
                 {field: 'prd_cd', headerName: '제품코드', cellStyle: { textAlign: "center" }},
@@ -97,7 +106,7 @@ export default {
                     cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
-                        button.innerText = 'DETAILED';
+                        button.innerText = '상세보기';
                         button.className = 'btn btn-warning btn-xsm';
                         button.addEventListener('click', () => {
                             
@@ -113,7 +122,7 @@ export default {
             //제품 lot별 조회
             PDLDefs: [
                 {field: 'prd_nm', headerName: '제품명', cellStyle: { textAlign: "center" }},
-                {field: 'prd_lot_cd', headerName: 'LOT', cellStyle: { textAlign: "center" }},
+                {field: 'prd_lot_cd', headerName: 'LOT', cellStyle: { textAlign: "center" }, width: 300},
                 {
                   field: 'stock', 
                   headerName: '재고수량', 

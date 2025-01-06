@@ -53,7 +53,6 @@ router.get('/sales/orderDtlList/:no', async (req, res) => {
 //주문서 삭제
 router.delete('/sales/orderDelete/:del', async (req, res) => {
     let del = req.params.del;
-    console.log("router",del)
     let ordDel = await salesService.deleteOrder(del);
     res.send(ordDel);
 });
@@ -83,7 +82,6 @@ router.put('/sales/orderUpdate/:no', async (req, res) => {
 //주문서 수정을 위한 삭제
 router.delete('/sales/orderUpdateDelete/:del', async (req, res) => {
     let del = req.params.del;
-    console.log("router",del)
     let ordDel = await salesService.deleteUpdateOrder(del);
     res.send(ordDel);
 });
@@ -135,7 +133,6 @@ router.get('/sales/lot/:no', async (req, res) => {
 //출고 등록
 router.post('/sales/prdOut', async (req, resp) => {
     let values = req.body; // 객체 또는 배열로 값을 받을 수 있음
-    console.log(values);
     let result = await salesService.insertPrdOut(values);
     resp.send(result);
 });
@@ -157,14 +154,12 @@ router.get('/sales/prdOutDtlLotList/:no', async (req, res) => {
 //출고 제품 삭제
 router.delete('/sales/prdOutDelete/:del', async (req, res) => {
     let del = req.params.del;
-    console.log("제품삭제라우터",del)
     let outDel = await salesService.deleteOutPrd(del);
     res.send(outDel);
 });
 //출고 제품 삭제시 상태 원복
 router.put('/sales/prdOutDeleteStatus/:del', async (req, res) => {
     let ocd = req.params.del;
-    console.log("제품상태라우터",ocd)
     let ocdSt = await salesService.statusDeleteOutPrd(ocd);
     res.send(ocdSt);
 });
@@ -197,7 +192,6 @@ router.put('/sales/prdOutEndUpdates', async (req, res) => {
 //출고 완료 확인
 router.get('/sales/prdOutEndStatus/:no', async (req, res) => {
     let odc = req.params.no;
-    console.log("출고라우터",odc)
     let info = await salesService.endOutPrd(odc);
     res.send(info); 
 });
@@ -315,7 +309,6 @@ router.delete('/sales/returnUpdateDelete/:del', async (req, res) => {
 //반품 수정을 위한 등록
 router.post('/sales/returnUpdateInsert', async (req, resp) => {
     let values = req.body; 
-    console.log("router",values);
     let result = await salesService.insertUpdateReturn(values);
     resp.send(result);
 });
