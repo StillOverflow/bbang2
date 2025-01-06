@@ -34,7 +34,7 @@
             <!-- 제품 테이블 ag-gird -->
             <ag-grid-vue
               class="ag-theme-alpine my-4"
-              style="width: 100%; height: 683px"
+              style="width: 100%; height: 783px"
               :columnDefs="productDefs"
               :rowData="productData"
               :pagination="true"
@@ -50,7 +50,7 @@
           <div class="col-md-6" style="height: auto">
             <!-- 자재 목록 -->
             <h4 class="mb-3 text-center">자재 목록</h4>
-            <div class="mb-3" >
+            <!-- <div class="mb-3" >
               <label class="me-2 align-self-center" style="font-size: 18px; font-weight: bold;">자재명</label>
               <input
                 type="text"
@@ -61,14 +61,14 @@
               />
               <button class="btn btn-warning mb-0 ms-2"  @click="searchMtl" ><i class="fa-solid fa-magnifying-glass"></i></button>
               
-            </div>
+            </div> -->
             <div class="col-13 text-end">
               
             </div>
             <!-- 자재 테이블 ag-gird -->
             <ag-grid-vue
-              class="ag-theme-alpine my-4"
-              style="width: 100%; height: 300px"
+              class="ag-theme-alpine my-4 mb-0"
+              style="width: 100%; height: 425px"
               :columnDefs="materialDefs"
               :rowData="materialData"
               :pagination="true"
@@ -187,12 +187,8 @@ export default {
 
       // 자재 테이블 컬럼명
       materialDefs: [
-        {
-          headerName: "자재코드",
-          field: "mat_cd",
-          sortable: true,
-        },
-        { headerName: "자재명", field: "mat_nm", sortable: true , cellStyle: { textAlign: "center" } },
+        {headerName: "자재코드", field: "mat_cd", sortable: true, filter: true ,floatingFilter: true , },
+        { headerName: "자재명", field: "mat_nm", sortable: true , cellStyle: { textAlign: "center" } , filter: true ,floatingFilter: true ,},
         { headerName: "구분", field: "type", sortable: true, cellStyle: { textAlign: "center" }  },
         {
           headerName: "BOM양",
@@ -219,13 +215,9 @@ export default {
 
       // BOM 테이블 정의
       bomDefs: [
-        {
-          headerName: "제품코드",
-          field: "prd_cd",
-          sortable: true,
-        },
+        {headerName: "제품코드", field: "prd_cd", sortable: true,},
         { headerName: "자재코드", field: "mat_cd", sortable: true, cellStyle: { textAlign: "center" }  },
-        { headerName: "자재명", field: "mat_nm", sortable: true, cellStyle: { textAlign: "center" }  },
+        { headerName: "자재명", field: "mat_nm", sortable: true, cellStyle: { textAlign: "center" } },
         { headerName: "BOM양", field: "usage", sortable: true ,editable: true,
         cellStyle: {textAlign: "right"},
         cellValueChanged: this.cellValueMtlChanged},

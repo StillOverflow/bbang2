@@ -278,8 +278,8 @@ export default {
                         confirmButtonText: "확인"
                         });
                         axios.post('/api/standard/product', this.prdInfo);
-                        this.searchPrd();
-                        this.prdInfo={};
+                       this.prdInfo={}; 
+                       this.searchPrd();
                     }                   
                 });
         },
