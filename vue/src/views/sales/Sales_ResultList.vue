@@ -7,7 +7,7 @@
               <div class="d-flex justify-content-center align-items-center text-center">
                   <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">거래처 명</div>
                   <div class="col-6 col-lg-5 mb-2">
-                      <input class="form-control " type="text" v-model="search" />         
+                      <input class="form-control " type="text" placeholder="거래처 이름을 입력 해주세요." v-model="search" v-on:keyup.enter="searchForm" />         
                   </div>
               </div>
               <div class="d-flex justify-content-center align-items-center text-center">
@@ -37,7 +37,8 @@
                   :columnDefs="columnDefs"
                   :rowData="rowData"
                   :pagination="true"
-                  @grid-ready="gridFit">
+                  @grid-ready="gridFit"
+                  overlayNoRowsTemplate="반품 제품이 없습니다.">
               </ag-grid-vue>
               </div>
       </div>
@@ -80,7 +81,7 @@ export default {
                   cellStyle: { textAlign: "center" },
                   cellRenderer: (params) => {
                       const button = document.createElement('button');
-                      button.innerText = 'DETAILED';
+                      button.innerText = '상세보기';
                       button.className = 'btn btn-warning btn-xsm';
                       button.addEventListener('click', () => {
                           

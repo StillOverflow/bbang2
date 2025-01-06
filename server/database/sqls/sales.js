@@ -94,7 +94,7 @@ values.forEach((obj) => {
 //주문서 상세(헤드부분)
 const orderDtlList =
 `
-SELECT a.act_nm, o.act_cd, o.id, m.name, o.order_dt, o.due_dt
+SELECT a.act_nm, o.act_cd, o.id, m.name, o.order_dt, o.due_dt, o.status
 FROM \`order\` o JOIN account a ON o.act_cd = a.act_cd
 					JOIN member m ON o.id = m.id
 WHERE order_cd = ?
@@ -165,12 +165,14 @@ SELECT d.prd_out_cd,
        a.act_nm, 
        m.name, 
        p.prd_out_dt, 
-       sum(d.prd_out_qty) AS prd_out_qty
+       sum(d.prd_out_qty) AS prd_out_qty,
+       (SELECT comm_dtl_nm FROM common_detail WHERE comm_dtl_cd = o.status) AS status
 FROM product_out p JOIN  product_out_detail d ON p.prd_out_cd = d.prd_out_cd 
                    JOIN account a ON p.act_cd = a.act_cd
                    JOIN member m ON p.id = m.id
+                   JOIN \`order\` o ON p.order_cd = o.order_cd
 GROUP BY d.prd_out_cd
-ORDER BY p.prd_out_cd DESC;
+ORDER BY p.prd_out_cd DESC
 `;
 
 //출고제품조회-거래처, 날짜 따로 검색

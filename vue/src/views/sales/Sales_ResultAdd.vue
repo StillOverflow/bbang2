@@ -1,7 +1,7 @@
 <!-- 반품제품등록 -->
 
 <template>
-  <div class="py-4 container-fluid">
+  <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
       <div class="card">
 
           <!-- 반품 테이블 부분 -->
@@ -52,18 +52,19 @@
           <!-- 반품디테일 테이블 부분 -->
           <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6">
-                        <p></p>
+                    <div class="col-md-4">
+                        <p class="fw-bolder">제품 목록</p>
                         <ag-grid-vue style="width:100%; height: 350px;"
                         class="ag-theme-alpine"
                         :columnDefs="POLDefs"
                         :rowData="POLData"
+                        :gridOptions="sellgridOptions"
                         @grid-ready="gridFit"
                         overlayNoRowsTemplate="출고제품을 조회 하여주세요.">
                         </ag-grid-vue>
                     </div>
-                    <div class="col-md-6">
-                        <p></p>
+                    <div class="col-md-8">
+                        <p class="fw-bolder">제품별 LOT</p>
                         <ag-grid-vue style="width:100%; height: 350px;"
                         class="ag-theme-alpine"
                         :columnDefs="prdRTDefs"
@@ -76,14 +77,14 @@
                 </div>
 
                 <div class="center " v-if="this.isdetail == false"> <!--등록페이지-->
-                    <button class="btn btn-primary mtp30" @click="prdReturnInsert">SUBMIT</button>
-                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">RESET</button>
+                    <button class="btn btn-primary mtp30" @click="prdReturnInsert">등록</button>
+                    <button class="btn btn-secondary mlp10 mtp30" @click="resetForm">초기화</button>
                 </div>
                 <div class="center " v-if="this.isdetail == true"> <!--상세페이지-->
                     <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
-                     class="btn btn-primary mtp30" @click="returnUpdate">UPDATE</button>
+                     class="btn btn-success mtp30" @click="returnUpdate">수정</button>
                     <button v-if="this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )"
-                     class="btn btn-secondary mlp10 mtp30" @click="prdReturnDelete">DELETE</button>
+                     class="btn btn-secondary mlp10 mtp30" @click="prdReturnDelete">삭제</button>
                 </div>
           </div>
       </div>
@@ -145,8 +146,8 @@
           </ag-grid-vue>
       </template>
       <template v-slot:footer>
-          <button  type="button" class="btn btn-secondary" @click="modalOpen3">Cancel</button>
-          <button  type="button" class="btn btn-primary" @click="modalClicked3">OK</button>
+          <button  type="button" class="btn btn-secondary" @click="modalOpen3">취소</button>
+          <button  type="button" class="btn btn-primary" @click="modalClicked3">저장</button>
       </template>
   </Layout>
 </template>
@@ -194,7 +195,7 @@ export default {
                 {
                     headerName: '제품 출고 수량', 
                     field: 'prd_out_qty', 
-                    cellStyle: { textAlign: "center" },
+                    cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -208,7 +209,7 @@ export default {
                         //등록 페이지
                         if(this.isdetail == false){
                             const button = document.createElement('button');
-                            button.innerText = 'SEARCH';
+                            button.innerText = '상세보기';
                             button.className = 'btn btn-warning btn-xsm';
                             button.addEventListener('click', () => {
                                 this.modalOpen3(); //LOT모달 오픈
@@ -222,7 +223,7 @@ export default {
                             //관리자랑 영업팀장만 검색할 수 있다
                             if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
                                 const button = document.createElement('button');
-                                button.innerText = 'SEARCH';
+                                button.innerText = '상세보기';
                                 button.className = 'btn btn-warning btn-xsm';
                                 button.addEventListener('click', () => {
                                     this.modalOpen3(); //LOT모달 오픈
@@ -237,19 +238,28 @@ export default {
             ],
             POLData: [ ],
 
+            sellgridOptions: {
+                rowSelection: {
+                    mode:"singleRow",
+                    checkboxes: false,
+                    enableClickSelection: true,
+                }
+            },
+
             returnLotDefs: [
-                {headerName: '출고상세코드', field: 'prd_out_dtl_cd', cellStyle: { textAlign: "center" }},
-                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }},
-                {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }},
-                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
+                {headerName: '출고상세코드', field: 'prd_out_dtl_cd', cellStyle: { textAlign: "center" }, width: 120},
+                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }, width: 180},
+                {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }, width: 120},
+                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }, width: 120},
                 {
                     headerName: '출고 수량', 
                     field: 'prd_out_qty', 
-                    cellStyle: { textAlign: "center" },
+                    cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
-                    },
+                    }, 
+                    width: 120
                 },
                 
             ],
@@ -264,11 +274,11 @@ export default {
                 {headerName: '반품상세코드', field: 'prd_return_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
                 {headerName: '출고상세코드', field: 'prd_out_dtl_cd', cellStyle: { textAlign: "center" }, hide: true},
                 {headerName: '제품코드', field: 'prd_cd', cellStyle: { textAlign: "center" }},
-                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }},
+                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }, width: 250},
                 {
                     headerName: '출고 수량', 
                     field: 'prd_out_qty', 
-                    cellStyle: { textAlign: "center" },
+                    cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
@@ -277,8 +287,8 @@ export default {
                 {
                     headerName: '반품 수량', 
                     field: 'prd_return_qty', 
-                    editable: true, 
-                    cellStyle: { textAlign: "center" }, 
+                    editable: this.sessionEditable, 
+                    cellStyle: { textAlign: "right" }, 
                     cellDataType: 'number',
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
@@ -286,16 +296,17 @@ export default {
                     },
                     cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
                 },
-                {headerName: '반품사유', field: 'note', cellStyle: { textAlign: "center" }, editable: true},
+                {headerName: '반품사유', field: 'note', cellStyle: { textAlign: "center" }, editable: this.sessionEditable},
                 {
                     headerName: '삭제' ,
                     field: 'delete', 
+                    width: 150,
                     cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         //등록 페이지
                         if(this.isdetail == false){
                             const button = document.createElement('button');
-                            button.innerText = 'DELETE';
+                            button.innerText = '삭제';
                             button.className = 'btn btn-danger btn-xsm';
                             button.addEventListener('click', () => {
                                 //행만 삭제
@@ -308,7 +319,7 @@ export default {
                             //관리자랑 영업팀장만 삭제할 수 있다
                             if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
                                 const button = document.createElement('button');
-                                button.innerText = 'DELETE';
+                                button.innerText = '삭제';
                                 button.className = 'btn btn-danger btn-xsm';
                                 button.addEventListener('click', () => {                                    
                                     //한 행에 관한 단건 딜리트 메소드
@@ -367,11 +378,11 @@ export default {
             },
 
             prdOutDefs: [
-                {headerName: '출고 코드', field: 'prd_out_cd', cellStyle: { textAlign: "center" }},
-                {headerName: '거래처 코드', field: 'act_cd', cellStyle: { textAlign: "center" }},
-                {headerName: '거래처 명', field: 'act_nm', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter' },
-                {headerName: '출고 담당자', field: 'name', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter'},
-                {headerName: '출고 일자', field: 'prd_out_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
+                {headerName: '출고 코드', field: 'prd_out_cd', cellStyle: { textAlign: "center" }, width: 100},
+                {headerName: '거래처 코드', field: 'act_cd', cellStyle: { textAlign: "center" }, width: 120},
+                {headerName: '거래처 명', field: 'act_nm', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter' , width: 130},
+                {headerName: '출고 담당자', field: 'name', cellStyle: { textAlign: "center" }, filter: 'agTextColumnFilter', width: 150},
+                {headerName: '출고 일자', field: 'prd_out_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter, width: 150},
             ],
             prdOutData: [],
             memDefs: [
@@ -418,6 +429,17 @@ export default {
         this.getMemList();
     },
     methods: {
+        modalCloseFunc() {
+            if(this.asModal){
+                this.asModal = !this.asModal;
+            }
+            if(this.msModal){
+                this.msModal = !this.msModal;
+            }
+            if(this.psModal){
+                this.psModal = !this.psModal;
+            }
+        },
         modalOpen() {
             this.asModal = !this.asModal;
         },
@@ -479,6 +501,18 @@ export default {
                 return `<span style="color: gray; font-style: italic;">숫자만 입력하세요.</span>`;
             }
             return params.value.toLocaleString ? params.value.toLocaleString() : params.value; // 값이 있으면 그대로 표시
+        },
+        //입력창을 조건따라 넣고 안넣고 하기
+        sessionEditable(){
+            if(this.isdetail == true){  //수정 페이지 이면서 관리자랑 영업팀장은 입력가능
+                if(this.$session.get('user_ps') == 'H01' || (this.$session.get('user_ps') == 'H02' && this.$session.get('user_dpt') == 'DPT3' )){
+                    return true
+                }
+            } else if(this.isdetail == false){  //등록 페이지 일때 입력가능
+                return true
+            }else{
+                return false;
+            }
         },
 
         //상세조회 반품제품 헤드부분
@@ -611,8 +645,6 @@ export default {
                     note: obj.note,
                 });
             });
-            
-            console.log("반품디테일",insertReturnDtl);
 
             insertReturn.push({
                 prd_out_cd: this.prdOut_code,
@@ -620,20 +652,16 @@ export default {
                 ID: this.mem_id,
 
             });
-            console.log("반품테이블",insertReturn);
 
             let insertReturnArr = [...insertReturn, insertReturnDtl ];   //첫번째가 헤드, 두번째가 디테일, 세번째 업데이트
-            console.log("합친거",insertReturnArr);
 
             let result = await axios.post('/api/sales/prdReturn', insertReturnArr)   //배열은 , 붙여서 보냄(객체가 + 붙여서 넘김)
                                 .catch(err => console.log("axios에러",err));
-            console.log(result.data.result);
-            console.log(result.data);
 
             if(result.data.result == 'success'){
                 this.$swal({
                     icon: "success",
-                    title: "등록에 성공 하였습니다.",
+                    title: "등록완료!",
                     text: "등록한 반품제품은 목록에서 확인 해주세요.",
                 })
                 .then(() => {
@@ -675,8 +703,8 @@ export default {
                         this.resetForm(); // 초기화
                         
                         this.$swal({
-                        title: "DELETE!",
-                        text: "GO to Return List",
+                        title: "삭제완료!",
+                        text: "반품 제품 목록으로 이동합니다.",
                         icon: "success"
                         }).then(result =>{
                             if(result){
@@ -717,8 +745,8 @@ export default {
                                         .catch(err => console.log("updateAxiosError",err));       
             if(updateResult.data.result == 'success'){
                 this.$swal({
-                title: "Update!",
-                text: "GO to return List",
+                title: "수정완료!",
+                text: "반품 제품 목록으로 이동합니다",
                 icon: "success"
                 }).then(result =>{
                     if(result){
