@@ -75,9 +75,9 @@ const matOrderInsert = async(values)=> {
 
         let headerResult = await mariadb.query('insertOrderHeader', [values[i][1].header]);
         console.log("headerResult => ", headerResult.affectedRows);
-        console.log("values.detail.length => ", values[1].detail.length)
-        
-        for(let j = 0; j < values.detail.length; j++) {
+        console.log("values.detail.length => ", values[i][1].detail.length)
+
+        for(let j = 0; j < values[i][1].detail.length; j++) {
             let ordDtlSeq = await mariadb.query('getOrderDetailSeq');
 
             values[i][1].detail[j].mat_order_cd = ordDtlSeq[0].seq;
