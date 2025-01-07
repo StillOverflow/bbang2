@@ -299,7 +299,7 @@ const statusChange = async (no, datas) => {
     no: no
   }
 
-  let result = await mariadb.query('statusChage', obj);
+  let result = await mariadb.query('statusChange', obj);
 
   if (result.affectedRows > 0) {
     await mariadb.commit();
