@@ -140,6 +140,19 @@ const getMaterialOrderDetail = `
       mat_nm
 `
 
+// 자재 발주서등록
+// 발주서 다음 시퀀스 읽어오기
+const getOrderSeq = `
+   SELECT CONCAT('ORD', LPAD(nextval(mat_order_seq), 3, '0')) AS seq
+   FROM dual
+`
+
+// 발주서 헤더 등록
+const insertOrderHeader = `
+   INSERT INTO material_order
+   SET ?
+`
+
 //! ----------------------------------- 자재 입고관리 -----------------------------------
 // 자재 입고전 대기목록 조회
 const getMaterialBeforeIn = `
@@ -179,14 +192,8 @@ const materialLotSeq = `
    FROM material_in;
 ` 
 
-// 자재 입고 등록
 const insertMaterial = `
-   INSERT INTO material_in
-   SET ?
-`
-
-// 자재발주서 디테일 상태변환
-const updateMatOrderDtlStatus = `
+   CALL insert_material_in(?, ?, ?, ?, ?, ?, ?) 
 `
 
 
@@ -363,13 +370,17 @@ module.exports = {
    produceHeadPlanList,         // 미지시 생산계획서 조회
    planListSearch,              // 미지시 생산계획서 검색
    getPlanMaterialStock,        // 미지시 생산 계획서에 대한 자재 재고 조회
+
    getMaterialOrder,            // 발주서 헤더 조회
    getMaterialOrderDetail,      // 발주서 디테일 조회
+   
+   // 자재 발주서 등록
+   getOrderSeq,                 // 발주서 시퀀스
+   insertOrderHeader,           // 발주서 헤더 등록
 
    getMaterialBeforeIn,         // 자재 입고전 대기목록
    materialLotSeq,              // LOT seq값
    insertMaterial,              // 자재 등록
-   updateMatOrderDtlStatus,     // 자재 발주서 디테일 상태변환
 
    getMaterialStockList,        // 제품 총 재고
    getMaterialStockLotList,     // 제품 LOT별 재고

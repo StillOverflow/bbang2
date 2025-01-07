@@ -387,7 +387,6 @@
 
       filterRowData.value = materialStockData.value.filter((data) => {
          let newDate =  new Date(data.exp_dt).setHours(0, 0, 0, 0);
-         console.log(materialType.value)
          return (
             data.mat_lot_cd &&(!lotKeyword.value || data.mat_lot_cd.includes(lotKeyword.value)) &&
             data.act_nm && (!actKeyword.value || data.act_nm.includes(actKeyword.value)) &&
@@ -527,8 +526,7 @@
          { headerName: '담당자번호', field: 'mgr_tel', sortable: true, },
       ],
 
-      onRowClicked : (event) => {
-         console.log("거래처 모달 데이터 클릭 -> ", event)
+      onRowClicked : () => {
          accountModalOpen();  // 거래처 조회 모달
       },
       
