@@ -410,11 +410,22 @@ export default {
         //서버 응답처리
         let addRes = result.data; // 서버에서 반환된 응답 처리
         if (addRes.success) {
-          Swal.fire({
+          await Swal.fire({
             icon: 'success',
             title: '등록 완료',
             text: '점검 데이터가 등록되었습니다.',
           });
+
+          // 검사 결과가 X03(부적합)일 경우 추가 메시지 출력
+          if (this.equipmentData.insp_result === 'X03') {
+            await Swal.fire({
+            icon: 'info',
+            title: '비가동 확인 필요',
+            text: '※부적합 판정으로 인해 비가동 종료가 되지 않았습니다.',
+          });
+          }
+
+
           this.selectedEqp = '';
           this.equipmentData = {};
           this.selectedFile = null;
