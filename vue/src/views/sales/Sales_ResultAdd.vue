@@ -661,7 +661,7 @@ export default {
             if(result.data.result == 'success'){
                 this.$swal({
                     icon: "success",
-                    title: "등록완료!",
+                    title: "등록완료",
                     text: "등록한 반품제품은 목록에서 확인 해주세요.",
                 })
                 .then(() => {
@@ -703,7 +703,7 @@ export default {
                         this.resetForm(); // 초기화
                         
                         this.$swal({
-                        title: "삭제완료!",
+                        title: "삭제완료",
                         text: "반품 제품 목록으로 이동합니다.",
                         icon: "success"
                         }).then(result =>{
@@ -745,7 +745,7 @@ export default {
                                         .catch(err => console.log("updateAxiosError",err));       
             if(updateResult.data.result == 'success'){
                 this.$swal({
-                title: "수정완료!",
+                title: "수정완료",
                 text: "반품 제품 목록으로 이동합니다",
                 icon: "success"
                 }).then(result =>{
