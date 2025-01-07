@@ -3,7 +3,7 @@
       <div class="container-fluid">
          <div class="card">
             <!-- //! 생산 완료된 지시서 조회 -->
-            <div class="card-body p-5 pt-5">
+            <div class="card-body p-4">
                <div class="row" @keydown="keyEventHandler($event)">
                   <div class="col-3">
                      <div class="row">

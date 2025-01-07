@@ -92,8 +92,18 @@
                         <input class="form-control" type="date" :min="startDt" v-model="lastDt" />
                      </div>
                   </div>
+
+                  <!-- 버튼박스 -->
+                  <div class="d-flex justify-content-center align-items-center mt-4 text-center">
+                     <button type="button" class="btn btn-warning me-2" @click="searchFilterFunc">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                     </button>
+                     <button type="button" class="btn btn-secondary me-2" @click="resetBtnFunc">
+                        <i class="fa-solid fa-rotate"></i>
+                     </button>
+                  </div>
                </div>
-               <div class="card-body p-5 py-4">
+               <div class="card-body p-4">
                   <div class="alert alert-info" role="alert">
                      <i class="fa-solid fa-circle-info me-2"></i>
                      담당자는 더블클릭 시 수정이 가능합니다.
@@ -101,7 +111,7 @@
                   <ag-grid-vue
                      class="ag-theme-alpine"
                      style="width: 100%; height: 500px;"
-                     :rowData="beforeInData"
+                     :rowData="filterRowData"
                      :pagination="true"
                      :gridOptions="beforeInOptions"
                      @cellEditingStarted="cellEditingStartedEvent"
@@ -164,10 +174,36 @@ import { AgGridVue } from 'ag-grid-vue3';
    let searchResults = ref([]);  // 드롭다운 박스에 나타날 데이터(자재 검색 결과)
    let matName = ref('');        // 자재명
 
+   let filterRowData = ref([]);            // 필터한 데이터 담을곳
+   let startDt = ref('');                   // 시작 날짜
+   let lastDt = ref('');                    // 종료 날짜
+   const searchFilterFunc = () => {
+      let start_dt =  new Date(startDt.value).setHours(0, 0, 0, 0);
+      let last_dt =  new Date(lastDt.value).setHours(0, 0, 0, 0);
+
+      filterRowData.value = beforeInData.value.filter((data) => {
+         let newDate =  new Date(data.mat_int_dt).setHours(0, 0, 0, 0);
+         
+         return (
+            data.mat_nm &&(!searchKeyword.value || data.mat_nm.includes(searchKeyword.value)) &&
+            (!start_dt || newDate >= start_dt) && (!last_dt || newDate <= last_dt)
+         )
+
+      });
+   }
+
+   const resetBtnFunc = () => {
+      startDt.value = ''      // 시작 날짜
+      lastDt.value = ''       // 종료 날짜
+      searchKeyword.value = ''   // 자재명
+
+      filterRowData.value = beforeInData.value;
+   } 
+
 //! ---------------------------------------- Vue Hook ----------------------------------------
    // created와 비슷~~
    onBeforeMount(() => {
-      store.dispatch('breadCrumb', { title: '입고 관리' });  // 페이지 제목 설정
+      store.dispatch('breadCrumb', { title: '자재 입고 관리' });  // 페이지 제목 설정
 
       getMaterialBeforeIn();  // 입고 대기목록 함수 실행
       userName.value = instance.proxy.$session.get('user_nm') || '';
@@ -179,6 +215,7 @@ import { AgGridVue } from 'ag-grid-vue3';
       try {
          const result = await axios.get('/api/material/beforeIn');
          beforeInData.value = result.data || [];
+         filterRowData.value = beforeInData.value;
 
       } catch (err) {
          beforeInData.value = [];
@@ -228,15 +265,17 @@ import { AgGridVue } from 'ag-grid-vue3';
       try {
          // 서버에 데이터 전송
          const result = await axios.post('/api/material/in', materialArr);
-         // TODO 등록 처리가 되었을 때 알림창 뜨게하는 조건걸기
-         console.log(result.data)
-         // 요청 성공 처리
-         Swal.fire({
-            icon: 'success',
-            title: '등록 성공',
-            text: '자재 정보가 성공적으로 등록되었습니다.',
-         });
+         
+         if(result.data.insertResults.length > 0) {
+            Swal.fire({
+               icon: 'success',
+               title: '등록 성공',
+               text: '자재 정보가 성공적으로 등록되었습니다.',
+            });
 
+            getMaterialBeforeIn();
+         }
+         // 요청 성공 처리
       } catch (err) {
          // 요청 실패 처리
          Swal.fire({
@@ -503,7 +542,6 @@ import { AgGridVue } from 'ag-grid-vue3';
       },
    }
 
-   let matObj = ref({});
    // 자재 모달 데이터
    const materialGridOptions = {
       columnDefs : [
@@ -551,8 +589,7 @@ import { AgGridVue } from 'ag-grid-vue3';
             return;
          }
 
-         matObj.value = { 'mat_nm' : event.data.mat_nm };
-         beforeInGridRendered.value.stopEditing();  // 편집 종료
+         searchKeyword.value = event.data.mat_nm;
          materialModalOpen(); // 자재조회 모달
       },
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
@@ -573,7 +610,7 @@ import { AgGridVue } from 'ag-grid-vue3';
             hide: true,
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+               return params.value ? `<span style="color: #000; font-size: 17px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
          { 
@@ -582,7 +619,7 @@ import { AgGridVue } from 'ag-grid-vue3';
             cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+               return params.value ? `<span style="color: #000; font-size: 14px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
          {
@@ -591,7 +628,7 @@ import { AgGridVue } from 'ag-grid-vue3';
             cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+               return params.value ? `<span style="color: #000; font-size: 14px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
          {
@@ -602,10 +639,10 @@ import { AgGridVue } from 'ag-grid-vue3';
          {
             headerName: '단위',
             field: 'unit',
-            cellClass: "text-right",
+            cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+               return params.value ? `<span style="color: #000; font-size: 14px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
          {
@@ -614,13 +651,13 @@ import { AgGridVue } from 'ag-grid-vue3';
             cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+               return params.value ? `<span style="color: #000; font-size: 14px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
          {
             headerName: '수량',
             field: 'pass_qty',
-            cellClass: "text-center",
+            cellClass: "text-right",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
                if(params.value) {
@@ -633,7 +670,7 @@ import { AgGridVue } from 'ag-grid-vue3';
 
                   return formattedNumber; // DOM 노드 반환
                } else {
-                  return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+                  return params.value ? `<span style="color: #000; font-size: 14px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
                }
             },
          },

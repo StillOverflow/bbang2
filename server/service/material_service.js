@@ -33,11 +33,17 @@ const getMaterialBeforeIn = async() => {
     return list;
 };
 
+// 자재 입고 조회
+const getMaterialInList = async() => {
+    let list = await mariadb.query('getMaterialInList');
+
+    return list;
+};
+
 // 자재 입고 등록
 const materialInsert = async(values) => {
     const results = [];
-    const procedureResults = []; // 프로시저 결과를 저장할 배열
-    console.log("values => ", values)
+
     for(let i = 0; i < values.length; i++) {
         // let seq = await mariadb.query('materialLotSeq');
         // values[i].mat_lot_cd = seq[0].seq;
@@ -46,7 +52,7 @@ const materialInsert = async(values) => {
         results.push(result);
     }
 
-    return { insertResults : results, procedureResults };
+    return { insertResults : results };
 };
 
 
@@ -67,6 +73,8 @@ const getMaterialOrderDetail = async(code) => {
 
 // 자재 발주서 관리
 const matOrderInsert = async(values)=> {
+    const headerResults = [];
+    const detailResults = [];
 
     for(let i = 0; i < values.length; i++) {
         let ordSeq = await mariadb.query('getOrderSeq');
@@ -74,23 +82,21 @@ const matOrderInsert = async(values)=> {
         values[i][1].header.mat_order_cd = ordSeq[0].seq;
 
         let headerResult = await mariadb.query('insertOrderHeader', [values[i][1].header]);
-        console.log("headerResult => ", headerResult.affectedRows);
+        headerResults.push(headerResult);
         
         for(let j = 0; j < values[i][1].details.length; j++) {
-            console.log("values[i][1].details => ", values[i][1].details)
 
             let ordDtlSeq = await mariadb.query('getOrderDetailSeq');
-            console.log('ordDtlSeq => ', ordDtlSeq);
 
             values[i][1].details[j].mat_order_cd = ordSeq[0].seq;
             values[i][1].details[j].mat_order_dtl_cd = ordDtlSeq[0].seq;
 
-            let detailResult = await mariadb.query('insertOrderDetail', [values[i][1].details]);
-            console.log("detailResult => ", detailResult);
+            let detailResult = await mariadb.query('insertOrderDetail', [values[i][1].details[j]]);
+            detailResults.push(detailResult);
         }
     }
     
-    // return list;
+    return { headerResults, detailResults };
 } 
 
 
@@ -132,7 +138,6 @@ const getProduceInstruction = async(searchObj) => {
 
 // 지시서에 대한 자재 출고 내역 getMaterialOutForProduction
 const getMaterialOutForProduction = async(data) => {
-    console.log("service searchObj => ", data)
     let list = await mariadb.query('getMaterialOutForProduction', data);
     return list;
 }
@@ -148,6 +153,7 @@ module.exports = {
     matOrderInsert,              // 자재 발주서 관리(등록)
 
     getMaterialBeforeIn,         // 자재 입고전 대기목록
+    getMaterialInList,           // 자재 입고 목록
     materialInsert,              // 자재 입고 등록
 
     getMaterialStockList,        // 자재 재고 조회

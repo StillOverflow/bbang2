@@ -208,15 +208,28 @@ export default {
         <ul class="navbar-nav detail Material_list" :class="urlCompare('materials') == true ? '' : 'dnone'">
           
           <li class="nav-item">
-            <sidenav-item to="/materials/order/list"
-              :class="getRoute() === 'MaterialsOrderList' ? 'active' : ''"
-              :navText="'자재 발주서 조회'">
+            <sidenav-item to="/materials/stock/list" 
+              :class="getRoute() === 'MaterialsStockList' ? 'active' : ''"
+              :navText="'자재 재고 조회'">
+            </sidenav-item>
+          </li>
+          <li class="nav-item">
+            <sidenav-item to="/materials/lotStock/list" 
+              :class="getRoute() === 'MaterialsLotStockList' ? 'active' : ''"
+              :navText="'LOT별 자재 재고 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
             <sidenav-item to="/materials/planStock/list"
               :class="getRoute() === 'MaterialsPlanStockList' ? 'active' : ''"
               :navText="'미지시 계획서 자재 조회'">
+            </sidenav-item>
+          </li>
+
+          <li class="nav-item">
+            <sidenav-item to="/materials/order/list"
+              :class="getRoute() === 'MaterialsOrderList' ? 'active' : ''"
+              :navText="'자재 발주서 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
@@ -238,19 +251,7 @@ export default {
               :navText="'자재 입고 관리'">
             </sidenav-item>
           </li>
-
-          <li class="nav-item">
-            <sidenav-item to="/materials/stock/list" 
-              :class="getRoute() === 'MaterialsStockList' ? 'active' : ''"
-              :navText="'자재 재고 조회'">
-            </sidenav-item>
-          </li>
-          <li class="nav-item">
-            <sidenav-item to="/materials/lotStock/list" 
-              :class="getRoute() === 'MaterialsLotStockList' ? 'active' : ''"
-              :navText="'자재 LOT별 재고 조회'">
-            </sidenav-item>
-          </li>
+          
           <li class="nav-item">
             <sidenav-item to="/materials/out/list" 
               :class="getRoute() === 'MaterialsOutList' ? 'active' : ''"

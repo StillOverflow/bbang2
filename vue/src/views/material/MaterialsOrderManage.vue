@@ -2,7 +2,7 @@
 <template>
    <div class="py-4 container-fluid" @keydown.esc="modalCloseFunc">
       <div class="card">      
-         <div class="card-header bg-light">
+         <div class="card-header bg-light p-5">
             
          </div><!-- 거래처조회 모달[S]-->
          <Layout :modalCheck="isAccountModal">
@@ -195,6 +195,7 @@
        // Vuex 데이터를 가져와 풀어서 orderFormData에 직접 할당
    const getVueDataSetOrderFormData = () => {
       let vuexData = store.getters["materialStore/getMaterials"]; // Vuex 데이터 가져오기
+      
       if (!vuexData) {
          return;
       };
@@ -304,7 +305,14 @@
       
       // orderFormGrid 데이터 전체를 들고와서 그리드 api 내장함수인 forEachNode를 사용
       orderFormGridRendered.value.forEachNode(item => {
-         const key = item.data.act_cd; // 거래처 코드 기준으로 그룹화=
+         const key = item.data.act_cd; // 거래처 코드 기준으로 그룹화
+         // act_cd 값이 유효한지 확인
+
+         if (!key || key.trim() === '') {
+            console.warn('Invalid act_cd:', item.data);
+            return; // 빈 키를 건너뜁니다.
+         }
+
          if (!newOrderData.has(key)) {
             newOrderData.set(key, {
                header: {
@@ -324,8 +332,7 @@
             mat_order_cd : null,
          });
       });
-
-      console.log("newOrderData => ",  Array.from(newOrderData));
+      
       orderInsert(Array.from(newOrderData));
 
    }
@@ -416,12 +423,17 @@
 
    // 계획서 등록 
    const orderInsert = async (orderArr) => {
-      console.log("orderInsert => ", orderArr);
       try {
          const result = await axios.post(`/api/material/order`, orderArr);
 
-         memberModalData.value = result.data || [];
-
+         if(result.data.headerResults.length > 0 && result.data.detailResults.length > 0) {
+            Swal.fire({
+               icon: 'success',
+               title: '등록 성공',
+               text: '자재 정보가 성공적으로 등록되었습니다.',
+            });
+            orderFormData.value = [];
+         }
       } catch (err) {
          memberModalData.value = [];
          
@@ -464,6 +476,7 @@
          materialGridRendered.value.sizeColumnsToFit(); // 저장된 API로 크기 조정
       }
    };
+
    // 담당자 모달
    const memberModalOpen = (keyword) => {
       isMemberModal.value = !isMemberModal.value;
@@ -543,7 +556,6 @@
          actObj.value = {};
       }
       
-      console.log("params => ", memberObj.value)
       // 모달 -> 사원 정보를 편집이 종료되는 시점에 셀에 뿌려주기
       if(memberObj.value && memberObj.value.name) {
          params.node.setDataValue("id", memberObj.value.id);
