@@ -331,11 +331,12 @@ const prodResultUpdate = `
   WHERE  prod_result_cd = ?
 `;
 
-// 완제품 검사 이후 해당 생산지시서의 상태를 Z03(완료)로 변경
+// 완제품 검사 이후 해당 생산지시서(디테일)의 상태를 Z03(완료)로 변경
 const prodInstUpdate = `
-  UPDATE prod_inst
+  UPDATE prod_inst_dtl
   SET    status = 'Z03'
   WHERE  inst_cd = ?
+    AND  prd_cd = ?
 `;
 
 // 완제품 검사 이후 합격량만큼 제품 입고
