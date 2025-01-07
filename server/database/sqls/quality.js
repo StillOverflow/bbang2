@@ -245,7 +245,7 @@ const testWaitMatList = `
          fn_get_materialname(d.mat_cd) target_nm,
          d.mat_qty order_qty, -- 총발주량
          (d.mat_qty - IFNULL((SELECT SUM(mat_qty)
-		                          FROM   test_material_in
+		                          FROM   material_in
 							                WHERE  mat_order_cd = d.mat_order_cd
 							                AND    mat_cd = d.mat_cd), 0)) yet_qty, -- 미입고량
          o.create_dt -- 발주일자

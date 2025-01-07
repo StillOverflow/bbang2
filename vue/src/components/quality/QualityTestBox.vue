@@ -380,8 +380,8 @@
             },
             inputLabel: `적합범위 : ${passMin + percent} ~ ${passMax + percent}`,
             showCancelButton: true,
-            cancelButtonText: 'CLOSE',
-            confirmButtonText: 'SAVE',
+            cancelButtonText: '닫기',
+            confirmButtonText: '저장',
             confirmButtonColor: '#2dce89',
             inputValidator: (value) => {
               if(!value){
