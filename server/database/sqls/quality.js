@@ -334,7 +334,8 @@ const prodResultUpdate = `
 // 완제품 검사 이후 해당 생산지시서(디테일)의 상태를 Z03(완료)로 변경
 const prodInstUpdate = `
   UPDATE prod_inst_dtl
-  SET    status = 'Z03'
+  SET    status = 'Z03',
+         pass_qty = ?
   WHERE  inst_cd = ?
     AND  prd_cd = ?
 `;
