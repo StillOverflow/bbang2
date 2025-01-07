@@ -56,16 +56,13 @@
                     
                         <!-- 입력 필드 -->
                         <div class="d-flex justify-content-left mb-2">
-                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder">불량코드 *</div>
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder">불량코드</div>
                             <div class="input-group mb-3 w-50">
                                 <input
                                     type="text"
                                     class="form-control"
                                     v-model="defInfo.def_cd"
-                                    :style="{ backgroundColor: isUpdated ? 'rgb(236, 236, 236)' : 'white' }"
-                                    maxlength="2"
-                                    :disabled="isUpdated"
-                                />
+                                    style="height: 41px; background-color: rgb(236, 236, 236);" readonly/>
                             </div>
                         </div>
                         <div class="d-flex justify-content-left mb-2">
@@ -160,7 +157,7 @@ export default {
                 def_type : '',
                 def_detail:'',
                 note:'',
-                create_dt:''
+                //create_dt:''
             },
             isUpdated : false,
             
@@ -237,11 +234,11 @@ export default {
         },
         
         async defInsert(){
-            if(!this.defInfo.def_nm || !this.defInfo.eqp_type){
+            if(!this.defInfo.def_nm || !this.defInfo.def_type){
                 this.$swal({
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
-                text: "자재명, 단위, 자재유형은 필수 입력값입니다.",
+                text: "",
                 confirmButtonText: "확인"
             });
             return;        
@@ -263,8 +260,8 @@ export default {
                         icon: "success",
                         confirmButtonText: "확인"
                         });
-                        axios.post(`/api/standard/insertDefect/${this.defInfo.def_cd}`, this.defInfo);
-                        this.searchDef(); // 목록 갱신
+                        axios.post(`/api/standard/insertDefect`, this.defInfo);
+                        await this.searchDef(); // 목록 갱신
                         this.defInfo={};
                     }                   
                 });

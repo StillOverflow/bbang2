@@ -191,7 +191,7 @@ export default {
                 location:'',
                 act_addr:'',
                 note:'',
-                create_dt:''
+                //create_dt:''
             },
             isUpdated : false,
             
@@ -256,7 +256,7 @@ export default {
         autoBusinessNo() {
         let inputValue = this.actInfo.business_no;
 
-        inputValue = inputValue.replace(/[^0-8]/g, '');
+        inputValue = inputValue.replace(/[^0-9]/g, '');
 
         if (inputValue.length > 3 && inputValue.charAt(3) !== '-') {
             inputValue = inputValue.slice(0, 3) + '-' + inputValue.slice(3);
@@ -271,7 +271,7 @@ export default {
         autoSeparateTel(){
         let inputValue = this.actInfo.act_tel;
 
-        inputValue = inputValue.replace(/[^0-8]/g, '');
+        inputValue = inputValue.replace(/[^0-9]/g, '');
 
         if (inputValue.length > 3 && inputValue.charAt(3) !== '-') {
             inputValue = inputValue.slice(0, 3) + '-' + inputValue.slice(3);
@@ -343,7 +343,7 @@ export default {
                 this.$swal({
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
-                text: "거래처명, 거래처유형은 필수 입력값입니다.",
+                text: "",
             });
             return;        
             }

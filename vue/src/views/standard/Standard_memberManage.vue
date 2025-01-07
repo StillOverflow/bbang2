@@ -336,7 +336,7 @@ export default {
                 this.$swal({
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
-                text: "사원명",
+                text: "",
                 confirmButtonText: "확인"
             });
             return;        

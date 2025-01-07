@@ -88,7 +88,7 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-left mb-2">
-                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고</div>
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">안전재고 *</div>
                             <div class="input-group mb-3 w-50">
                                 <input type="number" class="form-control" v-model="prdInfo.safe_stk" style="height: 41px;" />
                             </div>
@@ -158,7 +158,7 @@ export default {
                 safe_stk : '',
                 exp_range:'',
                 note:'',
-                create_dt:''
+                //create_dt:''
             },
             isUpdated : false,
             
@@ -255,7 +255,7 @@ export default {
                 this.$swal({
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
-                text: "자재명, 단위, 자재유형은 필수 입력값입니다.",
+                text: "",
             });
             return;        
             }
@@ -278,8 +278,8 @@ export default {
                         confirmButtonText: "확인"
                         });
                         axios.post('/api/standard/product', this.prdInfo);
-                       this.prdInfo={}; 
-                       this.searchPrd();
+                        await this.searchPrd();
+                        this.prdInfo={}; 
                     }                   
                 });
         },
@@ -311,7 +311,7 @@ export default {
                         confirmButtonText: "확인"
                         });
                     await axios.put(`/api/standard/updateProduct/${this.prdInfo.prd_cd}`, this.prdInfo);
-                    this.searchPrd(); // 목록 갱신
+                    await this.searchPrd(); // 목록 갱신
                     this.prdInfo={};
                     }
                     
@@ -349,7 +349,7 @@ export default {
                         confirmButtonText: "확인"
                         });
                         await axios.delete(`/api/standard/delProduct/${this.prdInfo.prd_cd}`);
-                        this.searchPrd(); // 목록 갱신
+                        await this.searchPrd(); // 목록 갱신
                         this.prdInfo={};
                     }
                 });

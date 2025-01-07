@@ -404,6 +404,8 @@ const processSelect = async(datas)=>{
 //공정등록
 const insertProcess = async (procInfo, prefix) => {
   // prefix 전달하여 새로운 코드 생성
+  prefix = prefix.toUpperCase();
+
   let new_proc_cd = (await mariadb.query('getProcCd', prefix))[0].proc_cd;
   procInfo.proc_cd = new_proc_cd;
 
