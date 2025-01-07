@@ -242,6 +242,16 @@
       let result = year + '-' + month + '-' + day;
       return result;
    }
+
+   // 날짜타입변환
+   const convertDatetime = (isoString) => {
+      const date = new Date(isoString);
+      const yyyy = date.getFullYear();
+      const mm = String(date.getMonth() + 1).padStart(2, '0'); // 월 (0부터 시작하므로 +1)
+      const dd = String(date.getDate()).padStart(2, '0');
+
+      return `${yyyy}-${mm}-${dd}`;
+   };
    
    const orderFormGrid = (params) => {
       orderFormGridRendered.value = params.api; // API 객체 저장
@@ -288,29 +298,35 @@
       orderFormGridRendered.value.applyTransaction( { add : [newObj] } );
    };
 
+   // 저장 버튼
    const orderSaveBtnFunc = () => {
-      const groupedData = new Map();
-
+      const newOrderData = new Map();
+      
       // orderFormGrid 데이터 전체를 들고와서 그리드 api 내장함수인 forEachNode를 사용
       orderFormGridRendered.value.forEachNode(item => {
          const key = item.data.act_cd; // 거래처 코드 기준으로 그룹화=
-         if (!groupedData.has(key)) {
-            groupedData.set(key, {
+         if (!newOrderData.has(key)) {
+            newOrderData.set(key, {
                header: {
+                  mat_order_cd : null,
                   act_cd: item.data.act_cd,
-               },
+               }, 
                details: []
             });
          }
          // 디테일 데이터 추가
-         groupedData.get(key).details.push({
+         newOrderData.get(key).details.push({
             mat_cd: item.data.mat_cd,
             mat_nm: item.data.mat_nm,
-            delivery_dt: item.data.delivery_dt || "defaultDate",
-            mat_qty: item.data.mat_qty || "defaultQty", // NULL 처리
+            delivery_dt: convertDatetime(item.data.delivery_dt),
+            mat_qty: item.data.mat_qty, // NULL 처리
             unit: item.data.unit
          });
       });
+
+      console.log("newOrderData => ",  Array.from(newOrderData));
+      orderInsert(Array.from(newOrderData));
+
    }
 
    // 그리드 데이터 초기화
@@ -381,10 +397,30 @@
       }
    };
 
+   // 사원조회
    const getMember = async (keyword) => {
       try {
          const result = await axios.get(`/api/comm/member`, { params : {'dpt_cd' : 'DPT5', 'name' : String(keyword).trim() } })
          memberModalData.value = result.data || [];
+      } catch (err) {
+         memberModalData.value = [];
+         
+         Swal.fire({
+            icon: "error",
+            title: "API 요청 오류:",
+            text: err.message || err
+         });
+      }
+   }
+
+   // 계획서 등록 
+   const orderInsert = async (orderArr) => {
+      console.log("orderInsert => ", orderArr);
+      try {
+         const result = await axios.post(`/api/material/order`, orderArr);
+
+         memberModalData.value = result.data || [];
+
       } catch (err) {
          memberModalData.value = [];
          

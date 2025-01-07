@@ -190,7 +190,7 @@ import { AgGridVue } from 'ag-grid-vue3';
          });
       }
    }
-
+   // 사원조회
    const getMember = async () => {
       try {
          const result = await axios.get(`/api/comm/member`, { params : {'dpt_cd' : 'DPT5' } })
@@ -223,22 +223,22 @@ import { AgGridVue } from 'ag-grid-vue3';
       }
    };
 
+   // 자재 입고 등록
    const insertMaterial = async (materialArr) => {
       try {
          // 서버에 데이터 전송
          const result = await axios.post('/api/material/in', materialArr);
-
+         // TODO 등록 처리가 되었을 때 알림창 뜨게하는 조건걸기
+         console.log(result.data)
          // 요청 성공 처리
-         console.log("API 요청 성공result => ", result);
-         console.log("API 요청 성공 result.data => ", result.data);
-         // Swal.fire({
-         //    icon: 'success',
-         //    title: '등록 성공',
-         //    text: '자재 정보가 성공적으로 등록되었습니다.',
-         // });
+         Swal.fire({
+            icon: 'success',
+            title: '등록 성공',
+            text: '자재 정보가 성공적으로 등록되었습니다.',
+         });
+
       } catch (err) {
          // 요청 실패 처리
-         console.error("API 요청 실패:", err);
          Swal.fire({
             icon: 'error',
             title: '등록 실패',
@@ -261,6 +261,7 @@ import { AgGridVue } from 'ag-grid-vue3';
       matName.value = name; // 자재명
    };
 
+   // 날짜타입변환
    const convertDatetime = (isoString) => {
       const date = new Date(isoString);
       const yyyy = date.getFullYear();
@@ -682,7 +683,6 @@ import { AgGridVue } from 'ag-grid-vue3';
             },
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               console.log(params.value);
                if(params.value != undefined && params.value != '') {
                   return `<span style="color: #000; font-size: 13px">${params.value}</span>`
                } else {

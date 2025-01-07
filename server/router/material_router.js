@@ -14,11 +14,11 @@ router.get('/material/planList/search/', async (req, res) => {
    try {
       let startDt = req.query.startDt;
       let endDt = req.query.endDt;
-   
       let result = await materialService.planListSearch(startDt, endDt);
+
       res.send(result);
    } catch (error) {
-      console.error(error);
+      throw err;
    }
 });
 
@@ -44,19 +44,26 @@ router.get("/material/orderDetailList/:code", async (req, res) => {
    res.send(result);
 });
 
+// 자재 발주서 등록
+router.post("/material/order", async (req, res) => {
+   console.log(req.body)
+   let result = await materialService.matOrderInsert(req.body);
+   // res.send(result);
+});
+
 //! ------------------------------ 자재 입고관리 ------------------------------
 // 입고 대기목록
 router.get("/material/beforeIn", async (req, res) => {
    let result = await materialService.getMaterialBeforeIn();
+
    res.send(result);
 });
 
 // 자재 입고 등록
 router.post("/material/in", async (req, res) => {
-   console.log("req.body => ", req.body);
    let result = await materialService.materialInsert(req.body);
+
    res.send(result);
-   console.log("router result => ",result)
 });
 
 //! ------------------------------ 자재 재고 조회------------------------------

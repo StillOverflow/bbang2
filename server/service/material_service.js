@@ -23,7 +23,7 @@ const planListSearch = async (startDt, endDt) => {
 const getPlanMaterialStock = async(code)=> {
     let list = await mariadb.query('getPlanMaterialStock', code);
     return list;
-} 
+};
 
 //! ------------------------------ 자재 입고관리 ------------------------------
 // 자재 입고 조회
@@ -31,23 +31,23 @@ const getMaterialBeforeIn = async() => {
     let list = await mariadb.query('getMaterialBeforeIn');
 
     return list;
-}
+};
 
 // 자재 입고 등록
 const materialInsert = async(values) => {
     const results = [];
     const procedureResults = []; // 프로시저 결과를 저장할 배열
-    console.log("values.length => ", values.length)
+    console.log("values => ", values)
     for(let i = 0; i < values.length; i++) {
-        let seq = await mariadb.query('materialLotSeq');
-        values[i].mat_lot_cd = seq[0].seq;
+        // let seq = await mariadb.query('materialLotSeq');
+        // values[i].mat_lot_cd = seq[0].seq;
 
-        let result = await mariadb.query('insertMaterial', values[i]);
+        let result = await mariadb.query('insertMaterial', [values[i].mat_cd, values[i].mat_qty, values[i].mat_stock, values[i].exp_dt, values[i].id, values[i].test_rec_cd, values[i].mat_order_cd]);
         results.push(result);
     }
 
     return { insertResults : results, procedureResults };
-}
+};
 
 
 //! ------------------------------ 자재 발주관리 ------------------------------
@@ -56,14 +56,33 @@ const getMaterialOrder = async(code)=> {
     let list = await mariadb.query('getMaterialOrder', code);
 
     return list;
-} 
+};
 
 // 자재 발주서 디테일 조회
 const getMaterialOrderDetail = async(code) => {
     let list = await mariadb.query('getMaterialOrderDetail', code);
 
     return list;
-}
+};
+
+// 자재 발주서 관리
+const matOrderInsert = async(values)=> {
+    let ordSeq = await mariadb.query('getOrderSeq');
+    console.log(ordSeq);
+
+    for(let i = 0; i < values.length; i++) {
+        //let headerResult = await mariadb.query('insertOrderHeader')
+        console.log("service values header => ", values[i][0].header);
+    }
+    
+    for(let i = 0; i < values.length; i++) {
+        console.log("service values details => ", values[i][1].details);
+    }
+    
+    // let list = await mariadb.query('matOrderInsert', code);
+    // return list;
+} 
+
 
 //! ------------------------------ 자재 재고조회 ------------------------------
 // 자재 재고 조회
@@ -116,6 +135,7 @@ module.exports = {
 
     getMaterialOrder,            // 자재 발주서 헤더 조회
     getMaterialOrderDetail,      // 자재 발주서 디테일 조회
+    matOrderInsert,              // 자재 발주서 관리(등록)
 
     getMaterialBeforeIn,         // 자재 입고전 대기목록
     materialInsert,              // 자재 입고 등록
