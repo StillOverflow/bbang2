@@ -410,7 +410,6 @@ export default {
             '최종점검일': formatDate(item?.last_insp_dt),
             '점검사유': item?.insp_reason,
             '점검판정': item?.insp_result,
-            '조치사항': item?.insp_action,
             '점검담당자ID': item?.id,
             '점검시작일시': formatDateTime(item?.start_time),
             '점검종료일시': formatDateTime(item?.end_time),
@@ -425,7 +424,6 @@ export default {
             '최종점검일': formatDate(item?.last_insp_dt),
             '점검사유': item?.insp_reason,
             '점검판정': item?.insp_result,
-            '조치사항': item?.insp_action,
             '점검담당자ID': item?.id,
             '점검시작일시': formatDateTime(item?.start_time),
             '점검종료일시': formatDateTime(item?.end_time)
