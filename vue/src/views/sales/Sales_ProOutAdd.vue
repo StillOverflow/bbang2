@@ -331,18 +331,19 @@ export default {
 
             proDefs: [
                 {headerName: '제품 코드', field: 'prd_cd', cellStyle: { textAlign: "center" }, hide: true},
-                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }},
+                {headerName: '제품 이름', field: 'prd_nm', cellStyle: { textAlign: "center" }, width: 110},
                 {
                     headerName: '제품 수량', 
                     field: 'stock', 
+                    width: 110,
                     cellStyle: { textAlign: "right" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
                         return new Intl.NumberFormat().format(params.value); // 천 단위 콤마 추가
                     },
                 },
-                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" }},
-                {headerName: '유통기한', field: 'exp_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter},
+                {headerName: 'LOT', field: 'prd_lot_cd', cellStyle: { textAlign: "center" },width:210},
+                {headerName: '유통기한', field: 'exp_dt', cellStyle: { textAlign: "center" }, valueFormatter: this.$comm.dateFormatter, width:150},
             ],
             lotMo: "",
             proData: [],
