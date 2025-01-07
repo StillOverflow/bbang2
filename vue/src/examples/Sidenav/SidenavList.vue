@@ -1,13 +1,13 @@
 <script setup>
-import { computed } from 'vue';
+// import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { useStore } from 'vuex';
+// import { useStore } from 'vuex';
 
 import SidenavItem from './SidenavItem.vue';
 import SidenavCard from './SidenavCard.vue';
 
-const store = useStore();
-const isRTL = computed(() => store.state.isRTL);
+// const store = useStore();
+// const isRTL = computed(() => store.state.isRTL);
 
 const getRoute = () => {
   const route = useRoute();
@@ -542,7 +542,7 @@ export default {
           </li>
         </ul>
 
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <sidenav-item to="/grid" :class="getRoute() === 'grid' ? 'active' : ''" :navText="'💚그리드&버튼예시💨💨'">
             <template v-slot:icon>
               <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
@@ -566,7 +566,7 @@ export default {
               <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
             </template>
           </sidenav-item>
-        </li>
+        </li> -->
 
         <!--
         <li class="nav-item">
