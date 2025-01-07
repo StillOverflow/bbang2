@@ -140,8 +140,8 @@ const getMaterialOrderDetail = `
       mat_nm
 `
 
-// 자재 발주서등록
-// 발주서 다음 시퀀스 읽어오기
+//? 자재 발주서등록
+// 발주서 헤더 다음 시퀀스 읽어오기
 const getOrderSeq = `
    SELECT CONCAT('ORD', LPAD(nextval(mat_order_seq), 3, '0')) AS seq
    FROM dual
@@ -150,6 +150,18 @@ const getOrderSeq = `
 // 발주서 헤더 등록
 const insertOrderHeader = `
    INSERT INTO material_order
+   SET ?
+`
+
+// 발주서 디테일 다음 시퀀스 읽어오기
+const getOrderDetailSeq = `
+   SELECT CONCAT('ORDDTL', LPAD(nextval(mat_order_dtl_seq), 3, '0')) AS seq
+   FROM   dual
+`
+
+// 발주서 디테일 등록
+const insertOrderDetail = `
+   INSERT INTO material_order_detail
    SET ?
 `
 
@@ -373,10 +385,12 @@ module.exports = {
 
    getMaterialOrder,            // 발주서 헤더 조회
    getMaterialOrderDetail,      // 발주서 디테일 조회
-   
+
    // 자재 발주서 등록
    getOrderSeq,                 // 발주서 시퀀스
    insertOrderHeader,           // 발주서 헤더 등록
+   getOrderDetailSeq, // 발주서 디테일 다음 시퀀스 읽어오기
+   insertOrderDetail, // 발주서 디테일 등록
 
    getMaterialBeforeIn,         // 자재 입고전 대기목록
    materialLotSeq,              // LOT seq값
