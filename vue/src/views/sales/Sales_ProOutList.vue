@@ -32,7 +32,7 @@
             <!-- 출고목록 -->
                 <div class="card-body" style="position: relative; height: 550px;">
                 <ag-grid-vue
-                    style="width: 100%; height: 100%;"
+                    style="width: 100%; height: 90%;"
                     class="ag-theme-alpine"
                     :columnDefs="columnDefs"
                     :rowData="rowData"
@@ -40,6 +40,9 @@
                     @grid-ready="gridFit"
                     overlayNoRowsTemplate="출고 제품이 없습니다.">
                 </ag-grid-vue>
+                <div class="center mt-3">
+                    <button class="center btn btn-outline-success mlp10 mtp30" @click="excelDownload()"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
+                </div>
                 </div>
         </div>
     </div>
@@ -48,6 +51,7 @@
 <script>
 import axios from 'axios';
 import { AgGridVue } from "ag-grid-vue3";
+import * as XLSX from 'xlsx';
 
 export default {
     name: 'App',
@@ -136,7 +140,34 @@ export default {
           this.edt = '';
           this.search = '';
           this.searchForm();
-      }
+      },
+
+      //엑셀
+      excelDownload() {
+            // 현재 날짜 생성(엑셀 파일명 용도)
+            var today = new Date();
+            today = this.$comm.dateFormatter(today);
+
+            // 날짜 포맷 함수 (YYYY-MM-DD)
+            const formatDate = (date) => {
+            return date ? this.$comm.getMyDay(new Date(date)) : ''; 
+            };
+
+            const selectedData = this.rowData.map(item => ({
+                '출고코드': item.prd_out_cd,
+                '거래처코드': item.act_cd,
+                '거래처이름': item.act_nm,
+                '담당자': item.name,
+                '출고일자': formatDate(item.prd_out_dt),
+                '출고수량': Intl.NumberFormat().format(item.prd_out_qty),
+                '출고상태': item.status,
+            }));
+
+            const workBook = XLSX.utils.book_new()
+            const workSheet = XLSX.utils.json_to_sheet(selectedData)
+            XLSX.utils.book_append_sheet(workBook, workSheet, 'example')
+            XLSX.writeFile(workBook, `출고제품_${today}.xlsx`); 
+        },
 
   }
 }
