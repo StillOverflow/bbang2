@@ -105,7 +105,6 @@ const insertInspEq = async (inspData) => {
       inspData.end_time,
       inspData.insp_reason,
       inspData.insp_result,
-      inspData.insp_action,
       inspData.note,
       inspData.id,
 
@@ -176,9 +175,14 @@ const updateInspEq = async (inspData) => {
     const now = new Date();
     inspData.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
     inspData.last_insp_dt = inspData.end_time;
+    let updateData = [inspLogCd];
+
+    if (inspData.end_time) { // end_time 있을 때는 쿼리가 달라짐
+      updateData = [inspData.end_time, inspData.eqp_cd, inspLogCd];
+    }
 
     // SQL 실행
-    const result = await mariadb.transQuery('eqInspUpdate', [inspData, inspLogCd]);
+    const result = await mariadb.transQuery('eqInspUpdate', [inspData, ...updateData]);
 
     let eqpResult = null;
     let dtResult = null;
@@ -197,7 +201,7 @@ const updateInspEq = async (inspData) => {
     }
 
     if ((!inspData.end_time && result.affectedRows > 0) ||
-      (inspData.end_time && eqpResult.affectedRows > 0 && dtResult.affectedRows > 0)) { // 모두 성공했는지 판단
+      (inspData.end_time && result.affectedRows > 0 && eqpResult.affectedRows > 0 && dtResult.affectedRows > 0)) { // 모두 성공했는지 판단
       await mariadb.commit();
       return { success: true, message: '점검 정보 수정 성공' };
     } else {

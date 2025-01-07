@@ -50,7 +50,6 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :min="currentDateTime ? formattedStartTime : null" @change="validateStartTime"
                   :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
@@ -67,8 +66,8 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :min="equipmentData.start_time || currentDateTime" :readonly="!selectedEqp"
-                  :disabled="isFieldDisabled(field.value)" @change="validateEnDown" />
+                  :min="equipmentData.start_time" :readonly="!selectedEqp" :disabled="isFieldDisabled(field.value)"
+                  @change="validateEnDown" />
               </template>
             </div>
           </div>
@@ -326,6 +325,18 @@ export default {
         });
         this.equipmentData.end_time = '';
       }
+
+
+      if (this.isEditMode && this.equipmentData.end_time > this.currentDateTime) {
+        Swal.fire({
+          icon: 'error',
+          title: '유효성 검사 실패',
+          text: '종료시간 현재 시간 이전으로 설정해야 합니다.',
+        });
+        this.equipmentData.end_time = '';
+        return;
+      }
+      this.equipmentData.is_repair = 'A01'; // 수리여부:Y
     },
 
     // 공통코드 가져오기
@@ -503,6 +514,10 @@ export default {
         repair_act: '',
         note: '',
       };
+      if (this.selectedEqp) {
+        this.equipmentData.repair_reason = 'Y03';
+        this.equipmentData.is_repair = 'A02';
+      }; //수리사유:기타,수리여부:N
 
       this.equipmentData = {
         ...this.equipmentData,

@@ -104,14 +104,15 @@ export default {
       },
       rowData: [], // ag-grid의 데이터
       columnDefs: [
-        { field: 'eqp_cd', headerName: '설비코드', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'eqp_type', headerName: '설비구분', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'eqp_nm', headerName: '설비명', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'model', headerName: '모델', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'create_dt', headerName: '등록일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_cd', headerName: '설비코드', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'eqp_type', headerName: '설비구분', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'eqp_nm', headerName: '설비명', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'model', headerName: '모델', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'create_dt', headerName: '등록일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter_returnNull, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         { field: 'id', headerName: '담당자 ID', sortable: true },
-        { field: 'status', headerName: '설비 상태', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+        {
+          field: 'status', headerName: '설비 상태', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
           cellRenderer: (params) => {
             if (params.value === '비가동') {
               return `<i class="fa-solid fa-circle text-danger"></i> ${params.value}`;
@@ -119,9 +120,10 @@ export default {
               return `<i class="fa-solid fa-circle text-success"></i> ${params.value}`;
             }
             return params.value; // 상태가 비가동/가동이 아닐 경우
-          }, 
+          },
         },
-        { field: 'is_use', headerName: '사용유무', sortable: true , cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', 
+        {
+          field: 'is_use', headerName: '사용유무', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
           cellRenderer: (params) => {
             if (params.value === '사용가능') {
               return `<span style="color: RoyalBlue ">${params.value}</span>`;
@@ -247,8 +249,8 @@ export default {
         let selectedData;
 
         const formatDate = (date) => {
-         return date ? this.$comm.getMyDay(new Date(date)) : '';
-       };
+          return date ? this.$comm.getMyDay(new Date(date)) : '';
+        };
 
         if (selectedNodes.length > 0) {
           // 선택된 데이터가 있을 경우

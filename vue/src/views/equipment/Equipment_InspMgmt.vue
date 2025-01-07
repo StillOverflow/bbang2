@@ -26,7 +26,7 @@
           <!-- 왼쪽 입력란 -->
           <div class="col-lg-5 col-md-5 col-sm-12">
             <div v-for="(field, index) in leftFields" :key="index" class="mb-2">
-              <template v-if="field.value == 'eqp_type' || field.value == 'insp_type' || field.value == 'insp_reason'">
+              <template v-if="field.value == 'eqp_type' || field.value == 'insp_reason'">
                 <label class="form-control-label">{{ field.label }}</label>
                 <select class="form-select custom-width" v-model="equipmentData[field.value]"
                   :disabled="isFieldDisabled(field.value)">
@@ -39,7 +39,6 @@
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :min="currentDateTime ? formattedStartTime : null" @change="validateStartTime"
                   :disabled="isFieldDisabled(field.value)" />
               </template>
             </div>
@@ -57,16 +56,17 @@
                 <label class="form-control-label">{{ field.label }}</label>
                 <select class="form-select custom-width" v-model="equipmentData[field.value]"
                   :disabled="isFieldDisabled(field.value)">
-                  <option v-for="(opt, idx) in field.selectOptions" :key="idx" :value="opt.item">
+                  <option v-for="(opt, idx) in field.selectOptions" :key="idx" :value="opt.item"
+                    :hidden="opt.name == '판정전' && equipmentData.end_time != ''">
                     {{ opt.name }}
                   </option>
                 </select>
               </template>
+
               <template v-else>
                 <label class="form-control-label">{{ field.label }}</label>
                 <input v-model="equipmentData[field.value]" :type="field.type" class="form-control custom-width"
-                  :min="equipmentData.start_time || currentDateTime" :readonly="!selectedEqp"
-                  :disabled="isFieldDisabled(field.value)" @change="validateEnDown" />
+                  :min="equipmentData.start_time" :disabled="isFieldDisabled(field.value)" @change="validateEnDown" />
               </template>
             </div>
           </div>
@@ -133,13 +133,11 @@ export default {
         start_time: '',
         eqp_type: '',
         eqp_nm: '',
-        insp_type: '',
         last_insp_dt: '',
         insp_reason: '',
         insp_cycle: '',
         end_time: '',
         insp_result: '',
-        insp_action: '',
         note: '',
         id: '',
         insp_log_cd: '',
@@ -187,7 +185,6 @@ export default {
         { label: '점검 시작 일시', value: 'start_time', type: 'datetime-local' },
         { label: '설비 구분 *', value: 'eqp_type', type: 'text' },
         { label: '설비명 *', value: 'eqp_nm', type: 'text' },
-        { label: '점검 구분', value: 'insp_type', type: 'text' },
         { label: '점검 사유 *', value: 'insp_reason', type: 'text' },
         { label: '마지막 점검일', value: 'last_insp_dt', type: 'date' },
         { label: '점검주기 (일)', value: 'insp_cycle', type: 'number' },
@@ -195,7 +192,6 @@ export default {
       rightFields: [
         { label: '점검 종료 일시', value: 'end_time', type: 'datetime-local' },
         { label: '점검 판정', value: 'insp_result', type: 'text' },
-        { label: '조치 사항', value: 'insp_action', type: 'text' },
         { label: '비고', value: 'note', type: 'textarea' },
         { label: '점검담당자', value: 'id', type: 'text' },
       ],
@@ -288,7 +284,22 @@ export default {
           text: '종료시간은 시작시간 이후로 설정해야 합니다.',
         });
         this.equipmentData.end_time = '';
+        return;
       }
+
+      if (this.isEditMode && this.equipmentData.end_time > this.currentDateTime) {
+        Swal.fire({
+          icon: 'error',
+          title: '유효성 검사 실패',
+          text: '종료시간 현재 시간 이전으로 설정해야 합니다.',
+        });
+        this.equipmentData.end_time = '';
+        return;
+      }
+
+      this.equipmentData.insp_result = 'X02'; //점검결과: 적합 
+      this.equipmentData.is_insp = 'A01'; // 점검여부: Y
+
     },
 
     // 공통코드 가져오기
@@ -384,9 +395,9 @@ export default {
           eqp_cd: this.equipmentData.eqp_cd,
           start_time: this.equipmentData.start_time ? this.formatDate(this.equipmentData.start_time) : null,
           end_time: this.equipmentData.end_time ? this.formatDate(this.equipmentData.end_time) : null,
+          last_insp_dt: this.equipmentData.last_insp_dt || '',
           insp_reason: this.equipmentData.insp_reason || '',
           insp_result: this.equipmentData.insp_result || '',
-          insp_action: this.equipmentData.insp_action || '',
           note: this.equipmentData.note || '',
           id: this.equipmentData.id,
         };
@@ -402,9 +413,10 @@ export default {
             title: '등록 완료',
             text: '점검 데이터가 등록되었습니다.',
           });
-
-          this.isEditMode = true; // 등록 후 수정 모드로 전환
-          this.equipmentData.insp_log_cd = result.data.insp_log_cd; // 새로 생성된 insp_log_cd 설정
+          this.selectedEqp = '';
+          this.equipmentData = {};
+          this.selectedFile = null;
+          this.previewImage = require('@/assets/img/blank_img.png');
         }
       } catch (err) {
         Swal.fire({
@@ -437,7 +449,6 @@ export default {
           insp_log_cd: this.equipmentData.insp_log_cd, // 수정 요청에 필요한 insp_log_cd 추가
           insp_reason: this.equipmentData.insp_reason || '',
           insp_result: this.equipmentData.insp_result || '',
-          insp_action: this.equipmentData.insp_action || '',
           note: this.equipmentData.note || '',
           id: this.equipmentData.id,
         };
@@ -452,6 +463,7 @@ export default {
             title: '수정 완료',
             text: '점검 데이터가 수정되었습니다.',
           });
+          this.getInspListOne(this.selectedEqp);
         }
       } catch (err) {
         Swal.fire({
@@ -467,9 +479,6 @@ export default {
         start_time: '',
         end_time: '',
         insp_reason: '',
-        insp_type: '',
-        insp_result: '',
-        insp_action: '',
         note: '',
       };
 
@@ -477,6 +486,11 @@ export default {
         ...this.equipmentData,
         ...resetFields, // 초기화된 데이터 병합
       };
+      if (this.selectedEqp) {
+        this.equipmentData.insp_result = 'X01';
+        this.equipmentData.insp_reason = 'W05';
+        this.equipmentData.is_insp = 'A02';
+      }; //판정전 , 점검사유:기타, 점검여부: N
 
       // 선택된 설비 코드 초기화
       this.selectedEqp = this.equipmentData.eqp_cd;
@@ -534,12 +548,6 @@ export default {
         name: item.comm_dtl_nm,
       }));
 
-    });
-    this.getComm('EI').then((result) => {
-      this.leftFields.find((field) => field.value === 'insp_type').selectOptions = result.map((item) => ({
-        item: item.comm_dtl_cd,
-        name: item.comm_dtl_nm,
-      }));
     });
     this.getComm('EX').then((result) => {
       this.leftFields.find((field) => field.value === 'insp_reason').selectOptions = result.map((item) => ({

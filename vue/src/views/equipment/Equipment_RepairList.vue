@@ -145,7 +145,7 @@ export default {
 
       //모달 설비 목록
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
@@ -165,18 +165,19 @@ export default {
             }; // 코드와 이름 매핑
             return eqpTypeMap[params.value] || params.value; // 매핑된 이름 반환, 없으면 원래 값
           },
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
         {
           headerName: '설비명',
           field: 'eqp_nm',
           sortable: true, width: 163,
           filter: 'agTextColumnFilter',
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
-        { headerName: '모델명', field: 'model', filter: 'agTextColumnFilter',sortable: true, width: 163,
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
-         },
+        {
+          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 163,
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
+        },
       ],
 
       equipData: [],
@@ -195,27 +196,27 @@ export default {
       },
       rowData: [], // ag-grid의 데이터
       columnDefs: [
-        { field: 'eqp_cd', headerName: '설비코드', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'eqp_type', headerName: '설비구분', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'eqp_nm', headerName: '설비명', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'repair_reason', headerName: '수리사유', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'repair_parts', headerName: '수리부품', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'repair_act', headerName: '수리업체', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'note', headerName: '비고', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
-        { field: 'id', headerName: '등록인 ID', sortable: true, cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center', },
+        { field: 'eqp_cd', headerName: '설비코드', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'eqp_type', headerName: '설비구분', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'eqp_nm', headerName: '설비명', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'repair_reason', headerName: '수리사유', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'repair_parts', headerName: '수리부품', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'repair_act', headerName: '수리업체', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'note', headerName: '비고', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatte_returnNull, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'id', headerName: '등록인 ID', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           field: 'start_time',
           headerName: '수리시작일시',
           sortable: true,
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
           valueFormatter: (params) => this.formatDateTime(params.value), width: 250
         },
         {
           field: 'end_time',
           headerName: '수리종료일시',
           sortable: true,
-          cellStyle: { textAlign: 'center' },headerClass: 'ag-header-center',
+          cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
           valueFormatter: (params) => this.formatDateTime(params.value), width: 250
         },
         /*
@@ -237,11 +238,11 @@ export default {
         paginationAutoPageSize: true, // 표시할 수 있는 행을 자동으로 조절함.
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
         getRowStyle: (params) => {
-        if (!params.data.end_time) {
-          return { background: '#ffcccc' }; // 종료시간이 없는 행
-        }
-        return null;
-      },
+          if (!params.data.end_time) {
+            return { background: '#ffcccc' }; // 종료시간이 없는 행
+          }
+          return null;
+        },
         /*
         rowSelection: {
           mode: 'multiRow', // 하나만 선택하게 할 때는 singleRow
@@ -399,7 +400,7 @@ export default {
 
         // 날짜 포맷 함수 (YYYY-MM-DD)
         const formatDate = (date) => {
-          return date ? this.$comm.getMyDay(new Date(date)) : ''; 
+          return date ? this.$comm.getMyDay(new Date(date)) : '';
         };
 
         // 날짜 포맷 함수 (시분 포함)
@@ -455,8 +456,8 @@ export default {
         const workBook = XLSX.utils.book_new();
         const workSheet = XLSX.utils.json_to_sheet(selectedData);
 
-          // 열 너비 자동 조정 (문자 유형에 따라 여유 공간 조정)
-          const colWidths = Object.keys(selectedData[0]).map(key => {
+        // 열 너비 자동 조정 (문자 유형에 따라 여유 공간 조정)
+        const colWidths = Object.keys(selectedData[0]).map(key => {
           // 최대 길이 계산 (셀의 실제 길이에 약간의 보정값 추가)
           const maxLength = Math.max(
             ...selectedData.map(row => {
