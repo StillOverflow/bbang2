@@ -78,10 +78,8 @@ const eqAllListSearch = (searchObj) => {
                       fn_get_codename(e.status) as status,
                       e.last_insp_dt as last_insp_dt, 
                       i.start_time as start_time,
-                      i.insp_type as insp_type,
                       i.insp_reason as insp_reason,
                       i.insp_result as insp_result,
-                      i.insp_action as insp_action,
                       i.note as note,
                       i.end_time as end_time,
                       e.id as id,
@@ -180,13 +178,12 @@ const eqInspInsert = `
                               end_time,
                               insp_reason,
                               insp_result,
-                              insp_action,
                               note,
                               id,
                               last_insp_dt,
                               next_insp_dt)
-VALUES (?, ?, ?, ?, ?, 
-        ?, ?, ?, ?, ?,
+VALUES (?, ?, ?, ?, ?,
+        ?, ?, ?, ?,
         (SELECT DATE_ADD(?, INTERVAL insp_cycle DAY)
          FROM   equipment
          WHERE  eqp_cd = ?))`;
@@ -197,12 +194,14 @@ const eqInspUpdate = (inspDatas) => {
     SET ?
     WHERE insp_log_cd = ? `;
 
+  console.log(":::::::::::insp:", inspDatas[0].end_time);
   if (inspDatas[0].end_time) { // end_time 있는 경우에만 쿼리 수정
-    sql.replace('WHERE insp_log_cd = ?', ` ,
+    sql = sql.replace('WHERE insp_log_cd = ?', ` ,
       next_insp_dt = (SELECT DATE_ADD(?, INTERVAL insp_cycle DAY)
                       FROM   equipment
                       WHERE  eqp_cd = ?)
       WHERE insp_log_cd = ? `);
+    console.log('sql::::', sql);
   }
 
   return sql;
@@ -222,9 +221,7 @@ const eqInspList = (datas) => {
     i.start_time as start_time,
     i.end_time as end_time,
     fn_get_codename(i.insp_reason) as insp_reason,
-    fn_get_codename(i.insp_type) as insp_type,
     fn_get_codename(i.insp_result) as insp_result,
-    i.insp_action as insp_action,
     i.note as note,
     i.id as id
   
@@ -279,10 +276,8 @@ const eqInspListOne = `SELECT
   e.img_path as img_path,
   e.last_insp_dt as last_insp_dt,
   i.start_time as start_time,
-  i.insp_type as insp_type,
   i.insp_reason as insp_reason,
   i.insp_result as insp_result,
-  i.insp_action as insp_action,
   i.note as note,
   i.end_time as end_time,
   i.id as id,
@@ -311,10 +306,8 @@ const eqInspInfo = `SELECT
   e.last_insp_dt,
   i.next_insp_dt,
   i.start_time,
-  i.insp_type AS insp_type,
   i.insp_reason AS insp_reason,
   i.insp_result AS insp_result,
-  i.insp_action,
   i.note,
   i.end_time,
   i.id,
@@ -347,10 +340,8 @@ const eqInstListSearch = (searchObj) => {
                       e.last_insp_dt as last_insp_dt, 
                       e.next_insp_dt as next_insp_dt, 
                       i.start_time as start_time,
-                      i.insp_type as insp_type,
                       i.insp_reason as insp_reason,
                       i.insp_result as insp_result,
-                      i.insp_action as insp_action,
                       i.note as note,
                       i.end_time as end_time,
                       e.id as id,
@@ -507,8 +498,8 @@ FROM equipment e
 
   // 설비비가동조회 조건
 
-      // insp_log_cd가 있는 설비만
-      queryArr.push(`d.downtime_cd IS NOT NULL`);
+  // insp_log_cd가 있는 설비만
+  queryArr.push(`d.downtime_cd IS NOT NULL`);
 
   // 설비명 검색
   if (datas.eqp_nm) queryArr.push(`e.eqp_nm LIKE '%${datas.eqp_nm}%'`);
@@ -665,8 +656,8 @@ FROM equipment e
 
   // 설비점검조회 조건
 
-    // insp_log_cd가 있는 설비만
-    queryArr.push(`r.repair_cd IS NOT NULL`);
+  // insp_log_cd가 있는 설비만
+  queryArr.push(`r.repair_cd IS NOT NULL`);
 
   // 설비명 검색
   if (datas.eqp_nm) queryArr.push(`e.eqp_nm LIKE '%${datas.eqp_nm}%'`);
