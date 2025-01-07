@@ -195,7 +195,7 @@ const testRecInsert = async (valueObj) => {
             update_res = await mariadb.transQuery('prodResultUpdate', [header.def_qty, header.pass_qty, header.refer_cd]);
             if(isLast){ // 완제품검사의 경우
                 // 마지막 공정까지 끝났으므로 생산지시서(디테일) 상태 완료로 업데이트
-                update_inst_res = await mariadb.transQuery('prodInstUpdate', [instCd, header.target_cd]);
+                update_inst_res = await mariadb.transQuery('prodInstUpdate', [header.pass_qty, instCd, header.target_cd]);
                 
                 // 완제품을 제품LOT입고처리
                 let values = [header.target_cd, header.pass_qty, header.pass_qty, header.target_cd, instCd, headerSeq];
