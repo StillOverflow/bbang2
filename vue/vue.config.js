@@ -1,7 +1,9 @@
 const { defineConfig } = require('@vue/cli-service')
 const server = 'http://localhost:3000';
+var path = require("path");
 
 module.exports = defineConfig({
+  outputDir : path.resolve("../server/public"),
   transpileDependencies: true,
   // cors => prosy setting
   devServer : {
