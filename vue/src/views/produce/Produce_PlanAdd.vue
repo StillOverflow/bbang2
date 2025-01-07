@@ -13,13 +13,22 @@
         </div>
 
         <p for="example-text-input" class="text-sm font-weight-bolder">생산기간 <em class="point-red">*</em></p>
-        <div class="row">
+        <div class="row mb-3">
           <div class="col col-lg-2">
             <input class="form-control" type="date" v-model="START_DT">
           </div>
           <div class="col col-sm-1 text-center mt-2 fw-bolder" :style="t_overflow">~</div>         
           <div class="col col-lg-2">
             <input class="form-control" type="date" v-model="END_DT">
+          </div>
+        </div>
+
+        <p for="example-text-input" class="text-sm font-weight-bolder">계획서 진행상태</p>
+        <div class="row">
+          <div class="col col-lg-2 col-3">
+            <select class="form-select" v-model="selected_list">
+              <option v-for="(opt, idx) in selectes" :key="idx" :value="opt.comm_dtl_cd">{{opt.comm_dtl_nm}}</option>
+            </select>
           </div>
         </div>
       </div>
@@ -112,6 +121,7 @@ export default {
         this.getPlanInfo(selectNo);     
         this.isUpdated = true;      
     }
+    this.getStatus();
   },
   computed : {
       orderDtlCount(){
@@ -121,6 +131,8 @@ export default {
   data() {
     return {
       isModal: false,
+      selected_list:'',
+      selectes: [],
 
       //모달 계획서 목록 
       orderDefs: [
@@ -188,6 +200,16 @@ export default {
          .catch(err => console.log("실패",err));           
   },  
   methods: {
+    async getStatus() {
+      let arr = await this.$comm.getComm("PS");
+
+      if(!this.planInfo){
+        this.selected_list = 'Z01';
+      }
+      this.selectes = arr;
+      
+    },
+
     productGrid(params){ // '선택목록' @grid-ready 시 매개변수 속성으로 자동 접근
       params.api.sizeColumnsToFit();
       this.productApi = params.api;
@@ -242,6 +264,8 @@ export default {
                               .catch(err => console.log(err));
       this.planInfo = result.data[0];
       this.order_cd = this.planInfo.ORDER_CD; 
+
+      this.selected_list = this.planInfo.STATUS; 
       this.START_DT = this.$comm.getMyDay(this.planInfo.START_DT);
       this.END_DT =  this.$comm.getMyDay(this.planInfo.END_DT);
 
@@ -316,7 +340,7 @@ export default {
       let insertPlan = []; //생산지시서
       insertPlan.push({
         ORDER_CD: this.order_cd, 
-        STATUS: 'Z01',
+        STATUS: this.selected_list,
         START_DT: this.START_DT,
         END_DT: this.END_DT
       });

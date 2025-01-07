@@ -55,6 +55,7 @@
                 <th class="text-center text-uppercase text-ser opacity-7">지시량</th>
                 <th class="text-center text-uppercase text-ser opacity-7">기지시량</th>
                 <th class="text-center text-uppercase text-ser opacity-7">미지시량</th>
+                <th class="text-center text-uppercase text-ser opacity-7">상태</th>
                 <th class="text-center text-uppercase text-ser opacity-7"></th>
               </tr>
             </thead>   
@@ -68,6 +69,7 @@
                   <td>{{ val.TOTAL_QTY }}</td>
                   <td>{{ val.PRD_OUT_QTY }}</td>
                   <td>{{ val.TOTAL_QTY-val.PRD_OUT_QTY }}</td>
+                  <td :class="val.ACT_TYPE == '완료' ? 'text-primary' : 'text-secondary'">{{ val.ACT_TYPE == '완료' ? '완료' : '미완료' }}</td>
                   <td><button class="btn btn-dark btn-sm" @click="getResultList(val);">선택하기</button></td>
                 </tr>
               </template>
@@ -85,7 +87,7 @@
         <div class="row">
           <!--공정목록-->
           <div class="col-7">
-            <p class="text-uppercase text-lg font-weight-bolder">2. <span>{{ this.prdInfo.PRD_NM ? '\"'+this.prdInfo.PRD_NM+'\"': '제품' }}</span> 공정목록</p>
+            <h5 class="modal-title mb-3">2. <span>{{ this.prdInfo.PRD_NM ? '['+this.prdInfo.PRD_NM+']': '제품' }}</span> 공정목록</h5>
             <div class="table-responsive produce">
               <table class="table">
                 <thead class="table-secondary">
@@ -136,7 +138,7 @@
 
           
           <div class="col-5">
-            <p class="text-uppercase text-lg font-weight-bolder">3. <span>{{ this.resultInfo.PROC_NM ? '\"'+this.resultInfo.PROC_NM+'\"': '' }}</span> 공정 설정</p>
+            <h5 class="modal-title mb-3">3. <span>{{ this.resultInfo.PROC_NM ? '['+this.resultInfo.PROC_NM+']': '' }}</span> 공정 설정</h5>
             <div class="progress-bx">
               <template v-if="this.resultInfo.PROD_RESULT_CD">
                 <!--공정설정-->      
@@ -302,11 +304,10 @@ export default {
       resultAble: false,
       
       instDefs: [
-        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
-        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true, width: 120 },
-        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, width: 120 },
-        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
-        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
+        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120, cellStyle: {textAlign: "center"}},
+        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true, width: 120, cellStyle: {textAlign: "center"} },
+        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: {textAlign: "center"}},
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, cellStyle: {textAlign: "center"}},
       ],
       instData: [],
 
@@ -395,7 +396,7 @@ export default {
 
     //지시서 제품 리스트
     async getInstDtlList(inst_cd) {
-      
+      console.log(`/api/inst/dtl/${inst_cd}`);
       let result = await axios.get(`/api/inst/dtl/${inst_cd}`)
                               .catch(err => console.log(err));
       this.instDtlData = result.data;
@@ -409,7 +410,7 @@ export default {
         mat.MAT_USE_QTY = "";
       }else{
         matEle.classList.add("dnone");
-        mat.result_qty = ((parseFloat(mat.MAT_QTY) - parseFloat(mat.MAT_USE_QTY)) /parseFloat(mat.MAT_QTY)) * 100;      
+        mat.result_qty = Math.round(((parseFloat(mat.MAT_QTY) - parseFloat(mat.MAT_USE_QTY)) /parseFloat(mat.MAT_QTY)) * 100,2);      
       }
     },
 
@@ -577,6 +578,8 @@ export default {
                 if(result.data == 'success'){
                   this.resultAble = false;
                   this.resultInfo.START_TIME = this.$comm.getDatetimeMin(obj.START_TIME);
+                  this.getResultList(this.resultInfo);
+                  this.equ_radio = this.resultInfo.EQP_CD;
                   this.getResultInfo(this.resultInfo.PROD_RESULT_CD);
                   await axios.put(`/api/progress/status/${this.resultInfo.INST_CD}`, {STATUS:'Z02'})
                              .catch(err => console.log(err));
@@ -612,8 +615,10 @@ export default {
                                       .catch(err => console.log(err));
 
                 if(result.data == 'success'){
+                  this.getResultList(this.resultInfo);
                   this.resultInfo.END_TIME = this.$comm.getDatetimeMin(obj.END_TIME);
                   this.resultInfo.STATUS = 'Z03';
+                  this.equ_radio = this.resultInfo.EQP_CD;
                   this.getResultInfo(this.resultInfo.PROD_RESULT_CD);
                 }
               }

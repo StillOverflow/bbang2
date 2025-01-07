@@ -10,6 +10,7 @@ const planSelect = (datas) => {
                   START_DT, 
                   END_DT, 
                   CREATE_DT,
+                  STATUS,
                   (SELECT 
                       COUNT(PROD_PLAN_QTY) 
                   FROM 
@@ -146,7 +147,7 @@ const instList = (datas) => {
   let query =
  `SELECT INST_CD,
         PROD_PLAN_CD,
-        fn_get_codename(STATUS) as ACT_TYPE,
+        (SELECT fn_get_codename(STATUS) FROM prod_plan where PROD_PLAN_CD=pi.PROD_PLAN_CD) as PLAN_STATUS,
         WORK_DT,
         CREATE_DT,
         (SELECT COUNT(*) FROM prod_inst_dtl WHERE INST_CD=PI.INST_CD) AS PRD_CNT
@@ -156,7 +157,7 @@ const instList = (datas) => {
 
   // 거래처조회 조건
   if (datas.INST_CD) searchOrder.push(`INST_CD LIKE UPPER('%${datas.INST_CD}%')`);
-  if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
+  //if (datas.STATUS) searchOrder.push(`STATUS = UPPER('${datas.STATUS}')`);
 
   if (searchOrder.length > 0) {
     query += ` WHERE ` + searchOrder.join(' AND ');
@@ -176,10 +177,11 @@ const instDelete = (datas) => {
   //공정실적, 사용자재, 지시서 헤더/디테일 동시삭제
   let sql =
       `DELETE PROD_INST, prod_inst_dtl, prod_result, proc_mat FROM 
-		  PROD_INST PROD_INST JOIN prod_inst_dtl prod_inst_dtl ON prod_inst.INST_CD=prod_inst_dtl.INST_CD
-		  							      JOIN prod_result prod_result ON prod_inst.INST_CD=prod_result.INST_CD
-									        JOIN proc_mat proc_mat ON prod_inst.INST_CD=proc_mat.INST_CD
-        WHERE PROD_INST.STATUS='Z01' and PROD_INST.INST_CD IN `;
+		    PROD_INST PROD_INST JOIN prod_plan prod_plan ON prod_inst.PROD_PLAN_CD=prod_plan.PROD_PLAN_CD
+							    	 JOIN prod_inst_dtl prod_inst_dtl ON prod_inst.INST_CD=prod_inst_dtl.INST_CD
+		  					       JOIN prod_result prod_result ON prod_inst.INST_CD=prod_result.INST_CD
+							       JOIN proc_mat proc_mat ON prod_inst.INST_CD=proc_mat.INST_CD
+        WHERE prod_plan.STATUS!='Z03' and PROD_INST.INST_CD IN `;
 
   let delArr = [];
   delArr.push(Object.values(datas));
@@ -196,7 +198,7 @@ SELECT
     INST_DTL_CD,
 		pi.INST_CD AS INST_CD, 
 		pi.ORDER_CD AS ORDER_CED, 
-		STATUS, 
+		fn_get_codename(STATUS) as ACT_TYPE,
 		PRD_CD, 
     (SELECT PRD_NM 
       FROM product 
