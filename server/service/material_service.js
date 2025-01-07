@@ -67,16 +67,18 @@ const getMaterialOrderDetail = async(code) => {
 
 // 자재 발주서 관리
 const matOrderInsert = async(values)=> {
-    let ordSeq = await mariadb.query('getOrderSeq');
-    console.log(ordSeq);
 
     for(let i = 0; i < values.length; i++) {
-        //let headerResult = await mariadb.query('insertOrderHeader')
-        console.log("service values header => ", values[i][0].header);
+        let ordSeq = await mariadb.query('getOrderSeq');
+        values[i][1].header.mat_order_cd = ordSeq[0].seq;
+        console.log("service values header => ", values[i][1]);
+
+        let headerResult = await mariadb.query('insertOrderHeader', [values[i][1].header]);
+        console.log("headerResult => ", headerResult.affectedRows)
     }
     
     for(let i = 0; i < values.length; i++) {
-        console.log("service values details => ", values[i][1].details);
+        //console.log("service values details => ", values[i][1].details);
     }
     
     // let list = await mariadb.query('matOrderInsert', code);

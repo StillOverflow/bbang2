@@ -320,7 +320,8 @@
             mat_nm: item.data.mat_nm,
             delivery_dt: convertDatetime(item.data.delivery_dt),
             mat_qty: item.data.mat_qty, // NULL 처리
-            unit: item.data.unit
+            unit: item.data.unit,
+            mat_order_cd : null,
          });
       });
 
