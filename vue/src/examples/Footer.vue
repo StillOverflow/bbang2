@@ -13,7 +13,7 @@ const store = useStore();
           >
             ©
             {{ new Date().getFullYear() }}, made with
-            <i class="fa fa-heart"></i> by Team <b>"🥨 빵돌2 빵순2의 으라차차 우당탕탕 으쌰으쌰 빵만들기 대작전 🍞"</b>
+            <i class="fa fa-heart"></i> by Team <b>"🥨 빵돌2 빵순2 🍞"</b>
             for Yedam <b>MES Project</b>
             <!-- ©
             {{ new Date().getFullYear() }}, made with

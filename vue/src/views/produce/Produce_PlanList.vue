@@ -82,7 +82,6 @@ export default {
       myColApi: null,
       radios: [],
       selected_radio:'',
-      selected_list:'',
       
       planDefs: [
         { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 100,cellStyle: {textAlign: "center"} },
