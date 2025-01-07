@@ -203,7 +203,7 @@ export default {
         { field: 'repair_parts', headerName: '수리부품', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         { field: 'repair_act', headerName: '수리업체', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         { field: 'note', headerName: '비고', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
-        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatte_returnNull, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter_returnNull, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         { field: 'id', headerName: '등록인 ID', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           field: 'start_time',
