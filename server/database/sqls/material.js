@@ -187,26 +187,6 @@ const insertMaterial = `
 
 // 자재발주서 디테일 상태변환
 const updateMatOrderDtlStatus = `
-   UPDATE material_order_detail a
-      LEFT JOIN (
-         SELECT 
-            mat_order_cd, 
-            mat_cd, 
-            sum(mat_qty) AS total_in_qty
-         FROM 
-            material_in
-         WHERE 
-            mat_order_cd = ?
-         GROUP BY
-            mat_order_cd, 
-            mat_cd
-      ) b ON a.mat_cd = b.mat_cd
-   SET a.STATUS = CASE 
-                     WHEN IFNULL(b.total_in_qty, 0) > 1 AND IFNULL(b.total_in_qty, 0) < a.mat_qty THEN 'L02' -- 일부만 입고되었으면 입고중
-                     WHEN IFNULL(b.total_in_qty, 0) = a.mat_qty THEN 'L03' -- 발주 수량과 동일하면 입고완료
-                     ELSE a.STATUS                              -- 기본 상태 유지
-                  END
-   WHERE a.mat_order_cd = ?
 `
 
 

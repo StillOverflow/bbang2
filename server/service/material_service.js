@@ -44,8 +44,6 @@ const materialInsert = async(values) => {
 
         let result = await mariadb.query('insertMaterial', values[i]);
         results.push(result);
-
-        
     }
 
     return { insertResults : results, procedureResults };
