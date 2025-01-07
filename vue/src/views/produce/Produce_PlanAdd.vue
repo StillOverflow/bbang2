@@ -23,14 +23,16 @@
           </div>
         </div>
 
-        <p for="example-text-input" class="text-sm font-weight-bolder">계획서 진행상태</p>
-        <div class="row">
-          <div class="col col-lg-2 col-3">
-            <select class="form-select" v-model="selected_list">
-              <option v-for="(opt, idx) in selectes" :key="idx" :value="opt.comm_dtl_cd">{{opt.comm_dtl_nm}}</option>
-            </select>
+        <template v-if="isUpdated">
+          <p for="example-text-input" class="text-sm font-weight-bolder">계획서 진행상태</p>
+          <div class="row">
+            <div class="col col-lg-2 col-3">
+              <select class="form-select" v-model="selected_list">
+                <option v-for="(opt, idx) in selectes" :key="idx" :value="opt.comm_dtl_cd">{{opt.comm_dtl_nm}}</option>
+              </select>
+            </div>
           </div>
-        </div>
+        </template>
       </div>
 
        <!--검색모달[S]-->
@@ -173,6 +175,7 @@ export default {
             cellStyle: {textAlign: "center"},
             cellRenderer: this.placeholderRenderer, // Placeholder 기능 추가
         },
+        {headerName: '현 생산량', field: 'PASS_QTY', valueFormatter:this.$comm.currencyFormatter, cellStyle: {textAlign: "center"}},
         {headerName: '현 재고', field: 'in_cnt', valueFormatter:this.$comm.currencyFormatter, cellStyle: {textAlign: "center"}}
       ],
       orderDtlData: [],

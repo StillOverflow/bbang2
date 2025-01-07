@@ -92,10 +92,10 @@ router.get('/inst/:no/flow', async (req,res)=>{
   })
 
  //제품 공정별 자재 조회
-router.get('/inst/:no/mat', async (req,res)=>{
-    let prodNo = req.params.no;
-    let info = await produceService.findInstMatFlow(prodNo);
-    res.send(info);
+router.get('/progress/mat', async (req,res)=>{
+    let info = req.query;    
+    let result = await produceService.findInstMatFlow(info);
+    res.send(result);
   })
 
   /* ------------------------생산공정------------------------- */

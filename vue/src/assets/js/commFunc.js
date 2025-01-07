@@ -172,6 +172,11 @@ export default {
     return Number(params.value).toLocaleString();
   },
 
+  //빈 컬럼 표기
+  defaultFormatter(params) {
+    return params.value == null ? "-" : params.value;
+  },    
+
 
 
 

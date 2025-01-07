@@ -117,8 +117,9 @@ const findInstFlow = async (no) => {
 }
 
 //지시서 제품 공정별 자재 조회
-const findInstMatFlow = async (no) => {
-  let list = await mariadb.query('instProcMtList', no);
+const findInstMatFlow = async (values) => {
+  console.log(values);
+  let list = await mariadb.query('instProcMtList', values);
   return list;
 }
 
