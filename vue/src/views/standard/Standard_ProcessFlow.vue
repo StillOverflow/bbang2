@@ -660,18 +660,6 @@ export default {
     
     //저장
     async save() {
-            //공정흐름삭제
-      if (this.deleteModal.length > 0) {
-        for (const bom of this.deleteModal) {
-          await axios.delete(`/api/standard/flow/${bom.proc_flow_cd}/${this.selectProData}`);
-        }
-      }
-      //공정별 자재 삭제
-      if (this.deleteProwMtlData.length > 0) {
-        for (const bom of this.deleteProwMtlData) {
-          await axios.delete(`/api/standard/flowMtl/${bom.proc_mat_flow_cd}`);
-        }
-      }
       //업데이트 대상에서 삭제데이터 제외
       const updatedMaterials = this.procFlowMtlData.filter((material) => !this.deleteProwMtlData
       .some((deleted) => deleted.proc_mat_flow_cd == material.proc_mat_flow_cd))
@@ -682,7 +670,6 @@ export default {
       if (updatedMaterials.length > 0) {
         await axios.put('/api/standard/updateFlowMatUsage', updatedMaterials);
       }
-
       //드래그-----------------------------
         // 공정 흐름 순서 업데이트
         try {
@@ -696,6 +683,19 @@ export default {
           console.error("공정 흐름 순서 업데이트 실패:", error);
         }
       //드래거----------------------------------------
+
+      //공정흐름삭제
+      if (this.deleteModal.length > 0) {
+        for (const bom of this.deleteModal) {
+          await axios.delete(`/api/standard/flow/${bom.proc_flow_cd}/${this.selectProData}`);
+        }
+      }
+      //공정별 자재 삭제
+      if (this.deleteProwMtlData.length > 0) {
+        for (const bom of this.deleteProwMtlData) {
+          await axios.delete(`/api/standard/flowMtl/${bom.proc_mat_flow_cd}`);
+        }
+      }
 
 //------------------------------------저장---------------------------------------
     // // 다중 공정 흐름도 추가 + 자재 추가
