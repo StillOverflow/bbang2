@@ -46,7 +46,9 @@ router.get("/material/orderDetailList/:code", async (req, res) => {
 
 // 자재 발주서 등록
 router.post("/material/order", async (req, res) => {
-   console.log(req.body)
+   
+   console.log(req.body);
+   console.log("req.body => ", req.body[0][1].details[0])
    let result = await materialService.matOrderInsert(req.body);
    // res.send(result);
 });

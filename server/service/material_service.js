@@ -75,21 +75,21 @@ const matOrderInsert = async(values)=> {
 
         let headerResult = await mariadb.query('insertOrderHeader', [values[i][1].header]);
         console.log("headerResult => ", headerResult.affectedRows);
-        console.log("values.detail.length => ", values[i][1].detail.length)
+        
+        for(let j = 0; j < values[i][1].details.length; j++) {
+            console.log("values[i][1].details => ", values[i][1].details)
 
-        for(let j = 0; j < values[i][1].detail.length; j++) {
             let ordDtlSeq = await mariadb.query('getOrderDetailSeq');
+            console.log('ordDtlSeq => ', ordDtlSeq);
 
-            values[i][1].detail[j].mat_order_cd = ordDtlSeq[0].seq;
-            console.log("detail => ", values[i][1].detail[j])
+            values[i][1].details[j].mat_order_cd = ordSeq[0].seq;
+            values[i][1].details[j].mat_order_dtl_cd = ordDtlSeq[0].seq;
+
+            let detailResult = await mariadb.query('insertOrderDetail', [values[i][1].details]);
+            console.log("detailResult => ", detailResult);
         }
     }
     
-    for(let i = 0; i < values.length; i++) {
-        //console.log("service values details => ", values[i][1].details);
-    }
-    
-    // let list = await mariadb.query('matOrderInsert', code);
     // return list;
 } 
 

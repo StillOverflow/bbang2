@@ -7,12 +7,12 @@ const sqlList = require("./sql.js");
 // createPool (자동 커밋)
 
 const connectionPool = mariadb.createPool({
-  host: process.env.HOST,
-  port: process.env.PORT,
-  user: process.env.USER,
-  password: process.env.PWD,
-  database: process.env.DB,
-  connectionLimit: process.env.LIMIT,
+  host: process.env.MB_HOST,
+  port: process.env.MB_PORT,
+  user: process.env.MB_USER,
+  password: process.env.MB_PWD,
+  database: process.env.MB_DB,
+  connectionLimit: process.env.MB_LIMIT,
 
   trace: true, // log
   permitSetMultiParamEntries: true, // parameter가 객체일 경우 escape작업
@@ -47,13 +47,13 @@ const query = (alias, values) => {
 
 // 다중 작업 시
 // createConnection (다중 작업에서 트랜잭션 제어 가능)
-const connection = mariadb.createConnection({
-  host: process.env.HOST,
-  port: process.env.PORT,
-  user: process.env.USER,
-  password: process.env.PWD,
-  database: process.env.DB,
-  connectionLimit: process.env.LIMIT,
+const connection = mariadb.createPool({
+  host: process.env.MB_HOST,
+  port: process.env.MB_PORT,
+  user: process.env.MB_USER,
+  password: process.env.MB_PWD,
+  database: process.env.MB_DB,
+  connectionLimit: process.env.MB_LIMIT,
 
   trace: true, // log
   permitSetMultiParamEntries: true, // parameter가 객체일 경우 escape작업

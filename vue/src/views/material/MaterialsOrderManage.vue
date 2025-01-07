@@ -244,8 +244,8 @@
    }
 
    // 날짜타입변환
-   const convertDatetime = (isoString) => {
-      const date = new Date(isoString);
+   const convertDatetime = (value) => {
+      const date = new Date(value);
       const yyyy = date.getFullYear();
       const mm = String(date.getMonth() + 1).padStart(2, '0'); // 월 (0부터 시작하므로 +1)
       const dd = String(date.getDate()).padStart(2, '0');
@@ -316,11 +316,11 @@
          }
          // 디테일 데이터 추가
          newOrderData.get(key).details.push({
+            mat_order_dtl_cd: null,
             mat_cd: item.data.mat_cd,
-            mat_nm: item.data.mat_nm,
+            id: item.id || instance.proxy.$session.get('user_id'),
             delivery_dt: convertDatetime(item.data.delivery_dt),
-            mat_qty: item.data.mat_qty, // NULL 처리
-            unit: item.data.unit,
+            mat_qty: item.data.mat_qty || 0, // NULL 처리
             mat_order_cd : null,
          });
       });
@@ -543,9 +543,12 @@
          actObj.value = {};
       }
       
+      console.log("params => ", memberObj.value)
       // 모달 -> 사원 정보를 편집이 종료되는 시점에 셀에 뿌려주기
-      if(member_name.value) {
-         params.node.setDataValue("id", member_name.value);
+      if(memberObj.value && memberObj.value.name) {
+         params.node.setDataValue("id", memberObj.value.id);
+         params.node.setDataValue("name", memberObj.value.name);
+         memberObj.value = {};
       }
    }
    
@@ -553,10 +556,10 @@
    // 주문서 그리드 option
    const orderModalGridOptions = {
       columnDefs : [
-         { headerName: '발주서 코드', field: 'mat_order_cd', sortable: true },
-         { headerName: '발주상태', field: 'status', sortable: true  },
-         { headerName: '담당자', field: 'id', sortable: true  },
-         { headerName: '거래처명', field: 'act_cd', sortable: true, },
+         { headerName: '발주서 코드', field: 'mat_order_cd', sortable: true, cellClass: "text-center", },
+         { headerName: '발주상태', field: 'status', sortable: true, cellClass: "text-center", },
+         { headerName: '담당자', field: 'id', sortable: true, cellClass: "text-center", },
+         { headerName: '거래처명', field: 'act_cd', sortable: true, cellClass: "text-center", },
       ],
       
       pagination: true,
@@ -579,11 +582,11 @@
    // 거래처 검색 모달 옵션
    const accountModalGridOptions = {
       columnDefs : [
-         { headerName: '거래처코드', field: 'act_cd', sortable: true },
-         { headerName: '거래처명', field: 'act_nm', sortable: true  },
-         { headerName: '거래처 구분', field: 'act_type', sortable: true  },
-         { headerName: '담당자', field: 'mgr_nm', sortable: true, },
-         { headerName: '담당자번호', field: 'mgr_tel', sortable: true, },
+         { headerName: '거래처코드', field: 'act_cd', sortable: true, cellClass: "text-center", },
+         { headerName: '거래처명', field: 'act_nm', sortable: true, cellClass: "text-center",  },
+         { headerName: '거래처 구분', field: 'act_type', sortable: true, cellClass: "text-center",  },
+         { headerName: '담당자', field: 'mgr_nm', sortable: true, cellClass: "text-center", },
+         { headerName: '담당자번호', field: 'mgr_tel', sortable: true, cellClass: "text-center", },
       ],
       
       pagination: true,
@@ -632,14 +635,17 @@
          { 
             headerName: '자재코드', 
             field: 'mat_cd',
+            cellClass: "text-center",
          },
          {
             headerName: '자재명',
             field: 'mat_nm',
+            cellClass: "text-center",
          },
          {
             headerName: '단위',
             field: 'unit',
+            cellClass: "text-center",
          },
       ],
 
@@ -681,7 +687,7 @@
    }
 
    // member 모달에 row클릭 시 
-   let member_name = ref('');
+   let memberObj = ref({});
    const memberModalGridOptions = {
       columnDefs : [
          { 
@@ -746,9 +752,8 @@
             });
             return;
          }
-
-         member_name.value = event.data.name;
-         memberModalGridRendered.value.stopEditing();  // 편집 종료
+         memberObj.value = { 'id' : event.data.id, 'name' : event.data.name };
+         orderFormGridRendered.value.stopEditing();  // 편집 종료
          memberModalOpen();  // 거래처 조회 모달
       },
    }
@@ -859,8 +864,19 @@
             },
          },
          { 
-            headerName: '담당자', 
+            headerName: '아이디', 
             field: 'id', 
+            sortable: true,
+            cellClass: "text-center",
+            hide: true,
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? `<span style="color: #000; font-size: 13px">${params.value}</span>` : instance.proxy.$session.get('user_id');
+            },
+         },
+         { 
+            headerName: '담당자', 
+            field: 'name', 
             sortable: true,
             cellClass: "text-center",
             editable: true,   // 편집 가능
@@ -904,6 +920,7 @@
 
                const span = document.createElement("span");
                span.textContent = formattedDate;
+
                return span; // DOM 노드 반환
             },
          },
