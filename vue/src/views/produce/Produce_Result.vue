@@ -94,11 +94,10 @@ export default {
       instDtlData: [],
 
       instDefs: [
-        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120 },
-        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true, width: 120 },
-        { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, width: 120 },
-        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, width: 150  },
-        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, width: 150 },
+        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120, cellStyle: {textAlign: "center"} },
+        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true, width: 120, cellStyle: {textAlign: "center"}},
+        { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: {textAlign: "center"}},
+        { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, cellStyle: {textAlign: "center"}},
       ],
       instData: [],
 

@@ -89,8 +89,8 @@
                       <td>{{ Dtl.prd_cd }}</td>
                       <td>{{ Dtl.prd_nm }}</td>
                       <td>{{ Dtl.order_qty }}</td>
-                      <td><span :class="Dtl.flow_cnt > 0 ? 'text-primary' : 'text-secondary'"> {{ Dtl.flow_cnt > 0 ? "설정됨" : "미설정" }}</span></td>
-                      <td><span :class="Dtl.mtl_cnt > 0 ? 'text-primary' : 'text-secondary'"> {{ Dtl.mtl_cnt > 0 ? "설정됨" : "미설정" }}</span></td>
+                      <td><span :class="Dtl.flow_cnt > 0 ? 'text-primary' : 'text-secondary'"><b> {{ Dtl.flow_cnt > 0 ? "설정됨" : "미설정" }}</b></span></td>
+                      <td><span :class="Dtl.mtl_cnt > 0 ? 'text-primary' : 'text-secondary'"><b> {{ Dtl.mtl_cnt > 0 ? "설정됨" : "미설정" }}</b></span></td>
                       <td><button @click="prdClicked(Dtl.prd_cd)" class="btn btn-sm btn-warning">SELECT</button></td>
                     </tr>
                   </template>
@@ -197,8 +197,6 @@ export default {
       planFlowData: [],
       prd_cd: "",
       instInfo: [],
-      chkArr : [],
-
 
       /* 모달 계획서 목록 */
       planDefs: [
@@ -315,11 +313,20 @@ export default {
       let result = await axios.get(`/api/inst/${prd_cd}/flow`)
                               .catch(err => console.log(err));                              
       this.planFlowData = result.data;
-      this.flowArr = result.data;      
-      if(!this.chkArr.includes(this.flowArr)){
-        this.chkArr.push(this.flowArr);
+
+      const chkArr = new Map();
+
+      const key = prd_cd;
+      if (!chkArr.has(key)) {
+        chkArr.set(key, {
+            details: []
+        });
       }
-      console.log(this.chkArr);
+      // 디테일 데이터 추가
+      chkArr.get(key).details.push(
+        this.planFlowData
+      );
+      console.log(chkArr)
     },
 
     //공정설정 리스트 드래그 시 이벤트 (공정 순서 재정렬)
@@ -343,7 +350,6 @@ export default {
       insertInst.push({
         PROD_PLAN_CD: this.plan_cd, 
         ORDER_CD: this.order_cd, 
-        STATUS: 'Z01',
         WORK_DT: this.work_dt
       });
       let insertPrd = [];  //생산지시서 제품

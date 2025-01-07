@@ -345,7 +345,7 @@
       try {
          const result = await axios.get(`/api/material/produceInstruction`, { params : { 'startDt' : startDt.value, 'endDt' : endDt.value, 'status' : selectedStatus.value } });
          instructionsData.value = result.data || [];
-         console.log("result.data => ", result.data)
+
          if(result.data.length > 0) {
             instCode.value = result.data[0].inst_cd || "";
             getMaterialOutForProduction(instCode.value);
@@ -353,6 +353,7 @@
             instCode.value = "";
             getMaterialOutForProduction(instCode.value);
          }
+         
       } catch (err) {
          instructionsData.value = [];
          

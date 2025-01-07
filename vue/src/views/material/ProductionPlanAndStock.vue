@@ -310,7 +310,7 @@
       try {
          const response = await axios.get('/api/material/planList');
          prodPlanListData.value = response.data || [];
-         console.log(response.data);
+         
          if (prodPlanListData.value.length > 0) {
             prodPlanCode.value = prodPlanListData.value[0].prod_plan_cd;
             planToMaterialStkStock(prodPlanListData.value[0].prod_plan_cd); // 데이터 로드

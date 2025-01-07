@@ -70,11 +70,12 @@ export default {
 
             //제품 재고 조회
             PALDefs: [
-                {field: 'prd_cd', headerName: '제품코드', cellStyle: { textAlign: "center" }},
-                {field: 'prd_nm', headerName: '제품명', cellStyle: { textAlign: "center" }},
+                {field: 'prd_cd', headerName: '제품코드', cellStyle: { textAlign: "center" },width: 100},
+                {field: 'prd_nm', headerName: '제품명', cellStyle: { textAlign: "center" },width: 150},
                 {
                   field: 'stock', 
                   headerName: '총재고수량', 
+                  width: 140,
                   cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
@@ -84,6 +85,7 @@ export default {
                 {
                   field: 'prd_qty', 
                   headerName: '총입고수량', 
+                  width: 140,
                   cellStyle: { textAlign: "center" },
                     valueFormatter: (params) => {
                         if (params.value == null || params.value === '') return '';
@@ -103,6 +105,7 @@ export default {
                 {
                     headerName: '상세' ,
                     field: 'detailed', 
+                    width: 100,
                     cellStyle: { textAlign: "center" },
                     cellRenderer: (params) => {
                         const button = document.createElement('button');
