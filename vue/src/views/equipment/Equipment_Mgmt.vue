@@ -211,12 +211,12 @@ export default {
       },
 
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 160, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
           filter: 'agTextColumnFilter',
-          sortable: true, width: 163, valueFormatter: (params) => {
+          sortable: true, width: 160, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
               R02: '분할기',
@@ -236,12 +236,12 @@ export default {
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true, width: 163,
+          sortable: true, width: 160,
           filter: 'agTextColumnFilter',
           cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
         {
-          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 163,
+          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 161,
           cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
       ],
@@ -274,8 +274,8 @@ export default {
         { label: '구매일자', value: 'pur_dt', type: 'date' },
         { label: '구매업체', value: 'pur_act', type: 'text' },
         { label: '제조업체', value: 'mfg_act', type: 'text' },
-        { label: '교체주기 (년)', value: 'repl_cycle', type: 'text' },
         { label: '점검주기 (일)', value: 'insp_cycle', type: 'text' },
+        { label: '교체주기 (년)', value: 'repl_cycle', type: 'text' },
       ],
       rightFields: [
         { label: '적정 온도 (°C)', value: 'opt_temp', type: 'text' },
@@ -573,7 +573,10 @@ export default {
             'success'
           );
           // 상태 초기화 및 등록 모드 전환
-          this.resetForm(); // 입력 필드 초기화
+          this.selectedEqp = '';
+          this.equipmentData = {};
+          this.selectedFile = null;
+          this.previewImage = require('@/assets/img/blank_img.png');
         } else {
           this.$swal('수정 실패', response.data.message, 'error');
         }

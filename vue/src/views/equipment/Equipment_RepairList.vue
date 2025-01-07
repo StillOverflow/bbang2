@@ -258,7 +258,7 @@ export default {
   },
   created() {
     // 페이지 제목 저장
-    this.$store.dispatch('breadCrumb', { title: '설비 수리 조회' });
+    this.$store.dispatch('breadCrumb', { title: '설비수리조회' });
     // 공통코드 및 초기 데이터 가져오기
     this.fetchCommonCodes();
     this.fetchFilteredEquip();
@@ -458,7 +458,7 @@ export default {
 
         // 열 너비 자동 조정 (문자 유형에 따라 여유 공간 조정)
         const colWidths = Object.keys(selectedData[0]).map(key => {
-          // 최대 길이 계산 (셀의 실제 길이에 약간의 보정값 추가)
+          // 최대 길이 계산 (셀 실제 길이에 보정값 추가)
           const maxLength = Math.max(
             ...selectedData.map(row => {
               const cellValue = row[key] ? row[key].toString() : '';

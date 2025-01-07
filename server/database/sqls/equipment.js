@@ -453,7 +453,21 @@ const eqDownInfo = `SELECT
   d.create_dt as create_dt,
   d.update_dt as update_dt,
   d.note as note,
-  fn_is_prod_eqp(e.eqp_cd) is_prod
+  fn_is_prod_eqp(e.eqp_cd) is_prod,
+   EXISTS (
+    SELECT 1
+    FROM inspection_log i
+    WHERE i.eqp_cd = e.eqp_cd 
+      AND i.start_time <= NOW() 
+      AND i.end_time > NOW()
+  ) AS is_insp,
+   EXISTS (
+    SELECT 1
+    FROM repair_log r
+    WHERE r.eqp_cd = e.eqp_cd 
+      AND r.start_time <= NOW() 
+      AND r.end_time > NOW()
+  ) AS is_repair
 
 FROM equipment e
 LEFT JOIN downtime_log d 

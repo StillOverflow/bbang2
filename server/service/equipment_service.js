@@ -60,6 +60,7 @@ const updateEq = async (eqInfo) => {
 
     // 현재 시간 추가 (MySQL 형식으로 변환)
     const now = new Date();
+    now.setHours(now.getHours() + 9);  // 9시간 더하기 (UTC -> KST 변환)
     eqInfo.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
 
     // SQL 실행 (UPDATE ... SET ? WHERE eqp_cd = ?)
@@ -92,7 +93,7 @@ const updateEq = async (eqInfo) => {
 // };
 
 
-// 점검 등록 (트랜잭션 적용 버전)
+// 점검 등록 (트랜젝션 적용 버전)
 const insertInspEq = async (inspData) => {
   let result = await mariadb.transOpen(async () => {
 
@@ -173,6 +174,7 @@ const updateInspEq = async (inspData) => {
 
     // 현재 시간 추가 (MySQL 형식으로 변환)
     const now = new Date();
+    now.setHours(now.getHours() + 9);  // 9시간 더하기 (UTC -> KST 변환)
     inspData.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
     inspData.last_insp_dt = inspData.end_time;
     let updateData = [inspLogCd];
@@ -254,6 +256,7 @@ const updateDownEq = async (downData) => {
 
     // 현재 시간 추가 (MySQL 형식으로 변환)
     const now = new Date();
+    now.setHours(now.getHours() + 9);  // 9시간 더하기 (UTC -> KST 변환)
     downData.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
 
     // SQL 실행
@@ -315,7 +318,11 @@ const insertRepairEq = async (repairData) => {
     let repairResult = await mariadb.transQuery('eqRepairInsert', repairData);
 
     let new_downtime_cd = (await mariadb.query('getDownCd'))[0].downtime_cd;
-    let dtData = { downtime_cd: new_downtime_cd, eqp_cd: repairData.eqp_cd, start_time: repairData.start_time, end_time: repairData.end_time, id: repairData.id };
+    let dtData = { downtime_cd: new_downtime_cd,
+                   eqp_cd: repairData.eqp_cd,
+                   start_time: repairData.start_time,
+                   end_time: repairData.end_time,
+                   id: repairData.id };
     dtData['downtime_reason'] = 'U03';
     let dtResult = await mariadb.transQuery('eqDownInsert', dtData);
 
@@ -357,7 +364,7 @@ const insertRepairEq = async (repairData) => {
 //   }
 // };
 
-
+//수리 수정
 const updateRepairEq = async (repairData) => {
   let result = await mariadb.transOpen(async () => {
 
@@ -366,6 +373,7 @@ const updateRepairEq = async (repairData) => {
 
     // 현재 시간 추가 (MySQL 형식으로 변환)
     const now = new Date();
+    now.setHours(now.getHours() + 9);  // 9시간 더하기 (한국표준시 변환)
     repairData.update_dt = now.toISOString().slice(0, 19).replace('T', ' '); // "YYYY-MM-DD HH:MM:SS"
 
     // SQL 실행

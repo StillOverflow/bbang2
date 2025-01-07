@@ -110,7 +110,7 @@ export default {
         { field: 'model', headerName: '모델', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         { field: 'create_dt', headerName: '등록일', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         { field: 'last_insp_dt', headerName: '최종점검일', sortable: true, valueFormatter: this.$comm.dateFormatter_returnNull, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
-        { field: 'id', headerName: '담당자 ID', sortable: true },
+        { field: 'id', headerName: '담당자 ID', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           field: 'status', headerName: '설비 상태', sortable: true, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
           cellRenderer: (params) => {

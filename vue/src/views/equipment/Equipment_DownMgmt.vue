@@ -178,7 +178,7 @@ export default {
       rightFields: [
         { label: '비가동 종료 일시', value: 'end_time', type: 'datetime-local' },
         { label: '비고', value: 'note', type: 'textarea' },
-        { label: '등록인 ID', value: 'id', type: 'text' },
+        { label: '등록인 ID*', value: 'id', type: 'text' },
       ],
     };
   },
@@ -329,6 +329,24 @@ export default {
             });
             return;
           };
+          if (result.data.is_insp == 1) {
+            this.selectedEqp = null;
+            Swal.fire({
+              icon: 'error',
+              title: '비가동등록 불가',
+              text: '해당 설비는 현재 점검중인 설비입니다.',
+            });
+            return;
+          };
+          if (result.data.is_repair == 1) {
+            this.selectedEqp = null;
+            Swal.fire({
+              icon: 'error',
+              title: '비가동등록 불가',
+              text: '해당 설비는 현재 수리중인 설비입니다.',
+            });
+            return;
+          };
 
           this.equipmentData = {
             ...this.equipmentData,
@@ -388,6 +406,10 @@ export default {
             title: '등록 완료',
             text: '비가동 데이터가 등록되었습니다.',
           });
+          this.selectedEqp = '';
+          this.equipmentData = {};
+          this.selectedFile = null;
+          this.previewImage = require('@/assets/img/blank_img.png');
         }
       } catch (err) {
         Swal.fire({
@@ -437,7 +459,10 @@ export default {
           });
 
           if (isOperational) {
-            this.resetForm(); // 가동으로 전환된 경우 폼 초기화
+            this.selectedEqp = '';
+            this.equipmentData = {};
+            this.selectedFile = null;
+            this.previewImage = require('@/assets/img/blank_img.png');
           }
 
         }
@@ -467,6 +492,10 @@ export default {
         ...this.equipmentData,
         ...resetFields, // 초기화된 데이터 병합
       };
+
+      if (this.selectedEqp) {
+        this.equipmentData.downtime_reason = 'U05';
+      }; //비가동사유:기타
 
       // 선택된 설비 코드 초기화
       this.selectedEqp = this.equipmentData.eqp_cd;

@@ -144,12 +144,12 @@ export default {
 
       //모달 설비 목록
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 160, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
           filter: 'agTextColumnFilter',
-          sortable: true, width: 163, valueFormatter: (params) => {
+          sortable: true, width: 160, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
               R02: '분할기',
@@ -169,12 +169,12 @@ export default {
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true, width: 163,
+          sortable: true, width: 160,
           filter: 'agTextColumnFilter',
           cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
         {
-          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 163,
+          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 161,
           cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
       ],
