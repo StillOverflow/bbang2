@@ -236,6 +236,9 @@ const eqInspList = (datas) => {
 
   // 설비점검조회 조건
 
+  // insp_log_cd가 있는 설비만
+  queryArr.push(`i.insp_log_cd IS NOT NULL`);
+
   // 설비명 검색
   if (datas.eqp_nm) queryArr.push(`e.eqp_nm LIKE '%${datas.eqp_nm}%'`);
   // 점검 시작일
@@ -504,6 +507,9 @@ FROM equipment e
 
   // 설비비가동조회 조건
 
+      // insp_log_cd가 있는 설비만
+      queryArr.push(`d.downtime_cd IS NOT NULL`);
+
   // 설비명 검색
   if (datas.eqp_nm) queryArr.push(`e.eqp_nm LIKE '%${datas.eqp_nm}%'`);
   // 비가동 시작일
@@ -658,6 +664,9 @@ FROM equipment e
   const queryArr = [];
 
   // 설비점검조회 조건
+
+    // insp_log_cd가 있는 설비만
+    queryArr.push(`r.repair_cd IS NOT NULL`);
 
   // 설비명 검색
   if (datas.eqp_nm) queryArr.push(`e.eqp_nm LIKE '%${datas.eqp_nm}%'`);
