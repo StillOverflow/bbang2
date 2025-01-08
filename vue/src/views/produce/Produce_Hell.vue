@@ -224,6 +224,7 @@
                       <th class="text-center text-uppercase text-ser opacity-7" width="15%"> 제품코드 </th>
                       <th class="text-center text-uppercase text-ser opacity-7" width="15%"> 자재명 </th>
                       <th class="text-center text-uppercase text-ser opacity-7" width="15%"> 지시량 </th>
+                      <th class="text-center text-uppercase text-ser opacity-7" width="30%"> 현재고 </th>
                       <th class="text-center text-uppercase text-ser opacity-7" width="30%"> 실투여량 </th>
                       <th class="text-center text-uppercase text-ser opacity-7" width="20%"> 잔여 </th>
                     </tr>
@@ -234,6 +235,7 @@
                         <td>{{ mat.MAT_CD }}</td>
                         <td>{{ mat.MAT_NM }}</td>
                         <td>{{ mat.MAT_QTY }}</td>
+                        <td>{{ mat.MAT_STOCK }}</td>
                         <td class="row">
                           <input type="number" class="form-control col-8 w-80" v-model.number="mat.MAT_USE_QTY" @keyup="matHandle(mat)">
                           <span class="col-1">{{ mat.UNIT }}</span>
@@ -503,10 +505,10 @@ export default {
       let matArr = [];
 
       this.matData.forEach((obj) => {
-        matArr.push({
-          INST_MAT_CD: obj.INST_MAT_CD,
-          MAT_USE_QTY: obj.MAT_USE_QTY
-        });
+          matArr.push({
+            INST_MAT_CD: obj.INST_MAT_CD,
+            MAT_USE_QTY: obj.MAT_USE_QTY
+          });
       });
 
       let result = await axios.put(`/api/progress/mat`, matArr)
@@ -566,13 +568,15 @@ export default {
                 };
 
                 this.matData.forEach((val) => {
-                  matArr.push({
-                    INST_MAT_CD: val.INST_MAT_CD,
-                    MAT_CD: val.MAT_CD,
-                    MAT_QTY: val.MAT_QTY,
-                    MAT_USE_QTY: val.MAT_USE_QTY,
-                    PROD_RESULT_CD: this.resultInfo.PROD_RESULT_CD
-                  });
+                  if(obj.MAT_STOCK > 1){
+                    matArr.push({
+                      INST_MAT_CD: val.INST_MAT_CD,
+                      MAT_CD: val.MAT_CD,
+                      MAT_QTY: val.MAT_QTY,
+                      MAT_USE_QTY: val.MAT_USE_QTY,
+                      PROD_RESULT_CD: this.resultInfo.PROD_RESULT_CD
+                    });
+                  }
                 });
                 
                 startArr = [obj, matArr];
