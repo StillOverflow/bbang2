@@ -202,15 +202,14 @@ const testRecInsert = async (valueObj) => {
                 insert_prd_res = await mariadb.transQuery('prodIn', values);
             }
         }
-
         // 성공여부 판단
-        if((!isMat && dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && update_res.affectedRows > 0) ||
-            (!isMat && header_res.affectedRows > 0 && update_res.affectedRows > 0) ||
+        if((!isLast && !isMat && dtl.length > 0 && header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && update_res.affectedRows > 0) ||
+            (!isLast && !isMat &&header_res.affectedRows > 0 && update_res.affectedRows > 0) ||
             // 완제품 검사인 경우
-            (isLast && update_inst_res.affectedRows > 0 && insert_prd_res.affectedRows > 0 && dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && update_res.affectedRows > 0) ||
+            (isLast && dtl.length > 0 && update_inst_res.affectedRows > 0 && insert_prd_res.affectedRows > 0 && header_res.affectedRows > 0 && dtl_res.affectedRows > 0 && update_res.affectedRows > 0) ||
             (isLast && update_inst_res.affectedRows > 0 && insert_prd_res.affectedRows > 0 && header_res.affectedRows > 0 && update_res.affectedRows > 0) ||
             // 자재 검사인 경우
-            (isMat && dtl_res != null && header_res.affectedRows > 0 && dtl_res.affectedRows > 0) || 
+            (isMat && dtl.length > 0 && header_res.affectedRows > 0 && dtl_res.affectedRows > 0) || 
             (isMat && header_res.affectedRows > 0)){
             await mariadb.commit();
             return 'success';

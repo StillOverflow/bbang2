@@ -341,7 +341,7 @@
                                  .catch(err => console.log(err));
         }
         if(testLists.data[0]){
-          if(target == 'P02') this.proc_qu_std_cd = testLists.data[0].qu_std_cd;
+          if(type == 'P02') this.proc_qu_std_cd = testLists.data[0].qu_std_cd;
           this.target_qu_std_cd = testLists.data[0].qu_std_cd;
         }
         
@@ -557,7 +557,7 @@
         } else {
           headerObj.target_type = isLast ? 'P03' : 'P02'; // 제품 마지막 공정에서의 검사는 P03(완제품검사)으로 입력
         }
-
+      
         let result = await axios.post('/api/quality/rec', {header: headerObj, dtl: dtlArr, inst_cd: target.inst_cd})
                                 .catch(err => console.log(err));
 
