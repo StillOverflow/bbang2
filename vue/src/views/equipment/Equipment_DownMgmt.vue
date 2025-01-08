@@ -213,8 +213,6 @@ export default {
 
     async modalClicked(params) {
 
-      console.log('Row Data:', params.data);
-
       this.selectedEqp = params.data.eqp_cd;
 
       try {
@@ -226,12 +224,9 @@ export default {
 
         // 세션에서 비가동 등록인 ID 가져오기
         const sessionId = this.$session.get('user_id');
-        console.log('모달 클릭 시 가져온 세션 ID:', sessionId);
 
         // 항상 세션 ID로 덮어쓰기
         this.equipmentData.id = sessionId;
-
-        console.log('Updated equipmentData:', this.equipmentData);
 
         // 이미지 처리
         this.previewImage = this.equipmentData.img_path
@@ -317,7 +312,6 @@ export default {
 
       try {
         const result = await axios.get(`/api/equip/down/${eqp_cd}`);
-        console.log('Result data:', result.data);
         if (result.data) {
           // 생산중인 설비는 데이터가 불러와지지 않아야 하므로 함수로 컬럼 만들어 판단
           if (result.data.is_prod == 1) {
@@ -380,7 +374,6 @@ export default {
 
         // 세션에서 비가동 등록인 ID 가져오기
         const sessionId = this.$session.get('user_id');
-        console.log('등록 시 가져온 세션 ID:', sessionId);
 
         this.equipmentData.id = sessionId; // 기존 값을 무시하고 세션 ID로 덮어쓰기
 
@@ -421,14 +414,10 @@ export default {
     },
     async downUpdate() {
 
-      console.log('Updating data:', this.equipmentData); // 데이터 출력
-
-
       try {
 
         // 세션에서 비가동 등록인 ID 가져오기
         const sessionId = this.$session.get('user_id');
-        console.log('수정 시 가져온 세션 ID:', sessionId);
 
         const isOperational = !!this.equipmentData.end_time; // 종료일시가 있으면 가동으로 변경
 
@@ -446,8 +435,6 @@ export default {
           note: this.equipmentData.note || '',
           id: this.equipmentData.id,
         };
-
-        console.log('보낼 데이터:', obj);
 
         const result = await axios.put(`/api/equip/down/${this.equipmentData.downtime_cd}`, obj);
 
@@ -543,8 +530,6 @@ export default {
 
     // 세션에서 비가동 등록인 ID 가져오기
     const sessionId = this.$session.get('user_id');
-    console.log('Created에서 가져온 세션 ID:', sessionId);
-
 
     //설비구분
     this.getComm('EQ').then((result) => {

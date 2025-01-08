@@ -107,7 +107,6 @@ router.get('/quality/defect', async (req, resp) => {
 router.post('/quality/rec', async (req, resp) => {
   let valueObj = req.body; // 객체로 값을 받음. {header: ..., dtl: [...]} 형태
   let result = await qualityService.testRecInsert(valueObj);
-  console.log('트랜잭션 결과: ' + result);
   resp.send(result);
 });
 
