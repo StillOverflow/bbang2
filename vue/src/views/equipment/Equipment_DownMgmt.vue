@@ -528,9 +528,6 @@ export default {
     // this.equipmentData.start_time = this.currentDateTime;
 
 
-    // 세션에서 비가동 등록인 ID 가져오기
-    const sessionId = this.$session.get('user_id');
-
     //설비구분
     this.getComm('EQ').then((result) => {
       const field = this.leftFields.find((field) => field.value === 'eqp_type');

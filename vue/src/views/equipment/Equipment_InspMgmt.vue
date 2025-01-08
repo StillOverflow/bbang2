@@ -547,12 +547,6 @@ export default {
     // this.equipmentData.start_time = this.currentDateTime;
 
 
-    // 세션에서 점검 담당자 ID 가져오기
-    const sessionId = this.$session.get('user_id');
-    console.log('Created에서 가져온 세션 ID:', sessionId);
-
-
-
     this.getComm('EQ').then((result) => {
       this.leftFields.find((field) => field.value === 'eqp_type').selectOptions = result.map((item) => ({
         item: item.comm_dtl_cd,

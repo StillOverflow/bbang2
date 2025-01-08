@@ -41,13 +41,13 @@ const query = (alias, values) => {
       }
     });
   })
-  .catch(err => console.log(err));
+    .catch(err => console.log(err));
 };
 
 
 // 다중 작업 시
 // createConnection (다중 작업에서 트랜잭션 제어 가능)
-const connection = mariadb.createPool({
+const connection = mariadb.createConnection({
   host: process.env.MB_HOST,
   port: process.env.MB_PORT,
   user: process.env.MB_USER,
@@ -69,7 +69,7 @@ const connection = mariadb.createPool({
 // 트랜잭션 오픈
 const transOpen = (callback) => { // 콜백함수 형식으로 서비스에서 호출 후 내부에서 작업
   return new Promise((resolve, reject) => {
-    try{
+    try {
       connection.beginTransaction(async () => {
         console.log('TRANSACTION OPEN!!');
         let result = await callback();
@@ -79,36 +79,36 @@ const transOpen = (callback) => { // 콜백함수 형식으로 서비스에서 �
       reject(err); // beginTransaction 자체가 오류난 경우 에러 반환
     }
   })
-  .catch(err => console.log(err));
+    .catch(err => console.log(err));
 };
 
 // 개별 쿼리 함수 (트랜잭션 안에서 실행)
-const transQuery = (alias, values) => { 
+const transQuery = (alias, values) => {
   return new Promise((resolve, reject) => {
-      let selected = sqlList[alias];
-  
-      // 동적인 쿼리(sqls/...js 파일에서 해당 내용이 함수 형태일 때) 추가작업
-      let executeSql = typeof selected == 'string' ? selected : selected(values);
-      console.log(executeSql);
-  
-      connection.query(executeSql, values, (err, results) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(results);
-        }
-      });
+    let selected = sqlList[alias];
+
+    // 동적인 쿼리(sqls/...js 파일에서 해당 내용이 함수 형태일 때) 추가작업
+    let executeSql = typeof selected == 'string' ? selected : selected(values);
+    console.log(executeSql);
+
+    connection.query(executeSql, values, (err, results) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve(results);
+      }
+    });
   })
-  .catch(err => {
-    console.log(err); 
-    return false; // 오류 시 뭐라도 리턴해줘야 서비스에서 .affectedRows 등 판단할 때 오류 안 남.
-  });
+    .catch(err => {
+      console.log(err);
+      return false; // 오류 시 뭐라도 리턴해줘야 서비스에서 .affectedRows 등 판단할 때 오류 안 남.
+    });
 };
 
 // 수동 커밋
 const commit = () => {
-  connection.commit((err) => { 
-    if(err){ // 커밋 도중 오류 시 전체 롤백
+  connection.commit((err) => {
+    if (err) { // 커밋 도중 오류 시 전체 롤백
       connection.rollback(() => console.log(err));
     }
     console.log('COMMIT!!');

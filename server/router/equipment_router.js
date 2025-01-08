@@ -381,8 +381,6 @@ router.post('/equip/repair', async (req, res) => {
   try {
     const repairData = req.body; // 클라이언트로부터 받은 데이터
 
-    console.log('repairData :', repairData);
-
     // undefined, "null", 빈 문자열인 필드 제거
     Object.keys(repairData).forEach((key) => {
       if (

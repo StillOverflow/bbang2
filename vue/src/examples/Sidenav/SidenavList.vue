@@ -72,7 +72,7 @@ export default {
               :navText="'주문서 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' ">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3'">
             <sidenav-item to="/Sales_OrderAdd" :class="getRoute() === 'Sales_OrderAdd' ? 'active' : ''"
               :navText="'주문서 등록'">
             </sidenav-item>
@@ -82,7 +82,7 @@ export default {
               :navText="'출고제품 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' ">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3'">
             <sidenav-item to="/Sales_ProOutAdd" :class="getRoute() === 'Sales_ProOutAdd' ? 'active' : ''"
               :navText="'출고제품 등록'">
             </sidenav-item>
@@ -92,7 +92,7 @@ export default {
               :navText="'반품제품 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3' ">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01' || this.$session.get('user_dpt') == 'DPT3'">
             <sidenav-item to="/Sales_ResultAdd" :class="getRoute() === 'Sales_ResultAdd' ? 'active' : ''"
               :navText="'반품제품 등록'">
             </sidenav-item>
@@ -206,59 +206,51 @@ export default {
           </a>
         </li>
         <ul class="navbar-nav detail Material_list" :class="urlCompare('materials') == true ? '' : 'dnone'">
-          
+
           <li class="nav-item">
-            <sidenav-item to="/materials/stock/list" 
-              :class="getRoute() === 'MaterialsStockList' ? 'active' : ''"
+            <sidenav-item to="/materials/stock/list" :class="getRoute() === 'MaterialsStockList' ? 'active' : ''"
               :navText="'자재 재고 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/materials/lotStock/list" 
-              :class="getRoute() === 'MaterialsLotStockList' ? 'active' : ''"
+            <sidenav-item to="/materials/lotStock/list" :class="getRoute() === 'MaterialsLotStockList' ? 'active' : ''"
               :navText="'LOT별 자재 재고 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
             <sidenav-item to="/materials/planStock/list"
-              :class="getRoute() === 'MaterialsPlanStockList' ? 'active' : ''"
-              :navText="'미지시 계획서 자재 조회'">
+              :class="getRoute() === 'MaterialsPlanStockList' ? 'active' : ''" :navText="'미지시 계획서 자재 조회'">
             </sidenav-item>
           </li>
 
           <li class="nav-item">
-            <sidenav-item to="/materials/order/list"
-              :class="getRoute() === 'MaterialsOrderList' ? 'active' : ''"
+            <sidenav-item to="/materials/order/list" :class="getRoute() === 'MaterialsOrderList' ? 'active' : ''"
               :navText="'자재 발주서 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/materials/order/manage" 
-              :class="getRoute() === 'MaterialsOrderManage' ? 'active' : ''"
+            <sidenav-item to="/materials/order/manage" :class="getRoute() === 'MaterialsOrderManage' ? 'active' : ''"
               :navText="'자재 발주서 관리'">
             </sidenav-item>
           </li>
-          
+
           <li class="nav-item">
-            <sidenav-item to="/materials/in/list" 
-              :class="getRoute() === 'MaterialsInList' ? 'active' : ''"
+            <sidenav-item to="/materials/in/list" :class="getRoute() === 'MaterialsInList' ? 'active' : ''"
               :navText="'자재 입고 조회'">
             </sidenav-item>
           </li>
           <li class="nav-item">
-            <sidenav-item to="/materials/in/manage" 
-              :class="getRoute() === 'MaterialsInManage' ? 'active' : ''"
+            <sidenav-item to="/materials/in/manage" :class="getRoute() === 'MaterialsInManage' ? 'active' : ''"
               :navText="'자재 입고 관리'">
             </sidenav-item>
           </li>
-          
+
           <li class="nav-item">
-            <sidenav-item to="/materials/out/list" 
-              :class="getRoute() === 'MaterialsOutList' ? 'active' : ''"
+            <sidenav-item to="/materials/out/list" :class="getRoute() === 'MaterialsOutList' ? 'active' : ''"
               :navText="'자재 출고 조회'">
             </sidenav-item>
           </li>
-<!--           
+          <!--           
           <li class="nav-item">
             <sidenav-item to="/Material_list7" :class="getRoute() === 'Material_list7' ? 'active' : ''"
               :navText="'자재 재고 조정'">
@@ -325,7 +317,7 @@ export default {
               :navText="'설비 정보 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Equipment_Mgmt" :class="getRoute() === 'Equipment_Mgmt' ? 'active' : ''"
               :navText="'설비 등록 관리'">
             </sidenav-item>
@@ -335,7 +327,7 @@ export default {
               :navText="'설비 점검 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Equipment_InspMgmt" :class="getRoute() === 'Equipment_InspMgmt' ? 'active' : ''"
               :navText="'설비 점검 관리'">
             </sidenav-item>
@@ -345,7 +337,7 @@ export default {
               :navText="'설비 수리 조회'">
             </sidenav-item>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="this.$session.get('user_ps') == 'H01'">
             <sidenav-item to="/Equipment_RepairMgmt" :class="getRoute() === 'Equipment_RepairMgmt' ? 'active' : ''"
               :navText="'설비 수리 관리'">
             </sidenav-item>
@@ -548,26 +540,25 @@ export default {
             <template v-slot:icon>
               <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
             </template>
-          </sidenav-item>
-        </li>
+</sidenav-item>
+</li>
 
-        <li class="nav-item">
-          <sidenav-item to="/tables" :class="getRoute() === 'tables' ? 'active' : ''"
-            :navText="isRTL ? 'الجداول' : 'Tables'">
-            <template v-slot:icon>
+<li class="nav-item">
+  <sidenav-item to="/tables" :class="getRoute() === 'tables' ? 'active' : ''" :navText="isRTL ? 'الجداول' : 'Tables'">
+    <template v-slot:icon>
               <i class="ni ni-calendar-grid-58 text-warning text-sm opacity-10"></i>
             </template>
-          </sidenav-item>
-        </li>
+  </sidenav-item>
+</li>
 
-        <li class="nav-item">
-          <sidenav-item to="/billing" :class="getRoute() === 'billing' ? 'active' : ''"
-            :navText="isRTL ? 'الفواتیر' : 'Billing'">
-            <template v-slot:icon>
+<li class="nav-item">
+  <sidenav-item to="/billing" :class="getRoute() === 'billing' ? 'active' : ''"
+    :navText="isRTL ? 'الفواتیر' : 'Billing'">
+    <template v-slot:icon>
               <i class="ni ni-credit-card text-success text-sm opacity-10"></i>
             </template>
-          </sidenav-item>
-        </li> -->
+  </sidenav-item>
+</li> -->
 
         <!--
         <li class="nav-item">
