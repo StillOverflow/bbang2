@@ -424,13 +424,13 @@ export default {
 
       try {
         if (!this.equipmentData.id) {
-        Swal.fire({
-          icon: 'error',
-          title: '입력 오류',
-          text: '등록인 ID는 필수입니다.',
-        });
-        return;
-      }
+          Swal.fire({
+            icon: 'error',
+            title: '입력 오류',
+            text: '등록인 ID는 필수입니다.',
+          });
+          return;
+        }
 
         // 세션에서 비가동 등록인 ID 가져오기
         const sessionId = this.$session.get('user_id');
@@ -472,7 +472,7 @@ export default {
       }
     },
     async repairUpdate() {
-        if (!this.equipmentData.id) {
+      if (!this.equipmentData.id) {
         Swal.fire({
           icon: 'error',
           title: '입력 오류',
@@ -584,11 +584,6 @@ export default {
     this.$store.dispatch('breadCrumb', { title: '설비 수리 관리' });
 
     // this.equipmentData.start_time = this.currentDateTime;
-
-
-    // 세션에서 수리 등록인 ID 가져오기
-    const sessionId = this.$session.get('user_id');
-    console.log('Created에서 가져온 세션 ID:', sessionId);
 
 
     //설비구분

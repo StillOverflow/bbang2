@@ -461,7 +461,6 @@ export default {
       let result = await axios.get('/api/momem')
         .catch(err => console.log(err));
       this.memData = result.data;
-      console.log(this.memData);
     },
 
     //거래처조회

@@ -318,11 +318,13 @@ const insertRepairEq = async (repairData) => {
     let repairResult = await mariadb.transQuery('eqRepairInsert', repairData);
 
     let new_downtime_cd = (await mariadb.query('getDownCd'))[0].downtime_cd;
-    let dtData = { downtime_cd: new_downtime_cd,
-                   eqp_cd: repairData.eqp_cd,
-                   start_time: repairData.start_time,
-                   end_time: repairData.end_time,
-                   id: repairData.id };
+    let dtData = {
+      downtime_cd: new_downtime_cd,
+      eqp_cd: repairData.eqp_cd,
+      start_time: repairData.start_time,
+      end_time: repairData.end_time,
+      id: repairData.id
+    };
     dtData['downtime_reason'] = 'U03';
     let dtResult = await mariadb.transQuery('eqDownInsert', dtData);
 
