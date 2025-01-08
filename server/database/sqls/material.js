@@ -372,7 +372,7 @@ const getMaterialOutForProduction = (data) => {
          a.mat_out_qty,                           -- 출고량
          a.mat_out_dt,                            -- 출고날짜
          fn_get_codename(b.category) AS category, -- 자재 카테고리
-         fn_get_codename(b.\`type\`) AS type,       -- 자재 구분
+         fn_get_codename(b.\`type\`) AS type,     -- 자재 구분
          mat_lot_cd                               -- 자재 lot
       FROM   
          material_out_detail a                    -- 자재 출고 디테일 테이블

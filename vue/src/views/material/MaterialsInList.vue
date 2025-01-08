@@ -201,7 +201,9 @@
                      </div>
                   </template>
                </Layout>
-
+               <div class="text-right mb-3">
+                  <button class="btn btn-outline-success" @click="excelDownload"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
+               </div>
                <ag-grid-vue
                   class="ag-theme-alpine"
                   style="width: 100%; height: 700px;"
@@ -211,9 +213,7 @@
                   @firstDataRendered="materialInGridRendered"
                   @grid-size-changed="onGridSizeChanged"
                />
-               <div class="text-center mt-3 mb-2">
-                  <button class="btn btn-outline-success" @click="excelDownload"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
-               </div>
+               
             </div>
          </div>
          </div>
@@ -691,6 +691,9 @@
             }
             return false;
          },
+      },
+      rowSelection: {
+         enableClickSelection: true,
       },
 
       pagination: true,

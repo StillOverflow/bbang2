@@ -570,7 +570,7 @@
       columnDefs : [
          { headerName: '발주서 코드', field: 'mat_order_cd', sortable: true, cellClass: "text-center", },
          { headerName: '발주상태', field: 'status', sortable: true, cellClass: "text-center", },
-         { headerName: '담당자', field: 'id', sortable: true, cellClass: "text-center", },
+         { headerName: '담당자', field: 'name', sortable: true, cellClass: "text-center", },
          { headerName: '거래처명', field: 'act_cd', sortable: true, cellClass: "text-center", },
       ],
       

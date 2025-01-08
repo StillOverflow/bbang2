@@ -299,11 +299,11 @@
          },
          { 
             headerName: '담당자번호', 
-            field: 'id', 
+            field: 'phone', 
             sortable: true,
             cellClass: "text-center",
-            cellRenderer: () => {
-               return '담당자 번호 없음';
+            cellRenderer: (params) => {
+               return params.value ? `<span style="color: #000; font-size: 14px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">담당자 번호 없음</span>`;
             },
          },
          { 
@@ -311,11 +311,16 @@
             field: 'name', 
             sortable: true,
             cellClass: "text-center",
-            cellRenderer: () => {
-               return '담당자 없음';
+            cellRenderer: (params) => {
+               return params.value ? `<span style="color: #000; font-size: 14px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">담당자 없음</span>`;
             },
          },
       ],
+      rowSelection: {
+         mode:"singleRow",
+         checkboxes: false,
+         enableClickSelection: true,
+      },
       overlayNoRowsTemplate: `<span class="text-danger">데이터가 없습니다.</span>`, // 데이터 없음 메시지
    };
 
