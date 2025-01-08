@@ -290,29 +290,10 @@ const instFlowInsert = (obj) => { // 배열 형식으로 받아야 함.
 };
 
 
-
-// 공정흐름 시퀀스 조회
-const instMatSeq = 
-`SELECT CONCAT('IM', LPAD(IFNULL(MAX(SUBSTR(pm.INST_MAT_CD, -3)) + 1, 1), 3, '0')) AS seq FROM proc_mat pm`;
-
-// 공정별 자재 입력
-const instMatInsert = (values) => { 
-  let sql = 
-  `INSERT INTO
-    proc_mat (
-      INST_MAT_CD
-      ,INST_CD
-      ,PROC_FLOW_CD
-      ,MAT_CD
-      ,MAT_QTY
-      ,MAT_USE_QTY
-      ,UNIT
-    )
-
-  SELECT 
-      '${values.INST_MAT_CD}',
-      '${values.INST_CD}',
-      pf.PROC_FLOW_CD AS 'PROC_FLOW_CD',
+//공정별 자재조회
+const procMatList =
+`SELECT 
+      pf.PROC_FLOW_CD AS PROC_FLOW_CD,
       pf.MAT_CD AS MAT_CD,
       pf.MAT_QTY AS MAT_QTY,
       pf.MAT_QTY AS MAT_USE_QTY,
@@ -321,10 +302,24 @@ const instMatInsert = (values) => {
         proc_flow_mtl pf
       JOIN 
         (SELECT MAT_CD, MAT_NM, fn_get_codename(UNIT) AS UNIT FROM material) m on pf.MAT_CD=m.MAT_CD
-        where pf.PROC_FLOW_CD = '${values.PROC_FLOW_CD}'
+        where pf.PROC_FLOW_CD = ?`;
+
+
+// 공정별 자재 시퀀스 조회
+const instMatSeq = 
+`SELECT CONCAT('IM', LPAD(IFNULL(MAX(SUBSTR(pm.INST_MAT_CD, -3)) + 1, 1), 3, '0')) AS seq FROM proc_mat pm`;
+
+// 공정별 자재 입력
+const instMatInsert = (obj) => { 
+  let sql = 
+  `INSERT INTO proc_mat 
+      ( INST_MAT_CD, INST_CD, PROC_FLOW_CD, MAT_CD, MAT_QTY, MAT_USE_QTY, UNIT )
+    VALUES 
   `;
-  console.log("☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★");
-  console.log(sql);
+
+  sql += `('${obj.INST_MAT_CD}', '${obj.INST_CD}', '${obj.PROC_FLOW_CD}', '${obj.MAT_CD}', '${obj.MAT_QTY}', '${obj.MAT_USE_QTY}', '${obj.UNIT}'), `;
+
+  sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
   return sql;
   
@@ -427,7 +422,8 @@ const instProcMtList = (values) => {
         MAT_QTY,   
         MAT_USE_QTY,
         (SELECT MAT_NM FROM material where MAT_CD=pf.MAT_CD) AS MAT_NM,
-        UNIT
+        UNIT,
+        IFNULL((SELECT SUM(MAT_STOCK)  FROM material_in WHERE MAT_CD=pf.MAT_CD),0) AS MAT_STOCK
     FROM
       proc_mat pf
     where pf.INST_CD = '${values.INST_CD}' and pf.PROC_FLOW_CD = '${values.PROC_FLOW_CD}'
@@ -480,6 +476,7 @@ const matLotInsert = (obj) => { // 배열 형식으로 받아야 함.
           '${obj.MAT_CD}', 
           '${obj.PROD_RESULT_CD}'), `;
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
+
   return sql;
 };
 
@@ -530,6 +527,7 @@ module.exports = {
 
     instProcList,
     instProcMtList,
+    procMatList,
     instMatSeq,
     instMatInsert,
     instMatUpdate,
