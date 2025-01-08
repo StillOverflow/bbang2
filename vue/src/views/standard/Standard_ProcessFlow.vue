@@ -625,7 +625,7 @@ export default {
         return obj.data;
       });
     },
-//------------------------------드래그 실험-------------------------------------
+//------------------------------업데이트 셀변화-------------------------------------
     cellValueMtlChanged(params)  { 
         const updatedMaterial = params.data;
 
