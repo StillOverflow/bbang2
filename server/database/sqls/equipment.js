@@ -194,14 +194,12 @@ const eqInspUpdate = (inspDatas) => {
     SET ?
     WHERE insp_log_cd = ? `;
 
-  console.log(":::::::::::insp:", inspDatas[0].end_time);
   if (inspDatas[0].end_time) { // end_time 있는 경우에만 쿼리 수정
     sql = sql.replace('WHERE insp_log_cd = ?', ` ,
       next_insp_dt = (SELECT DATE_ADD(?, INTERVAL insp_cycle DAY)
                       FROM   equipment
                       WHERE  eqp_cd = ?)
       WHERE insp_log_cd = ? `);
-    console.log('sql::::', sql);
   }
 
   return sql;
@@ -540,8 +538,6 @@ FROM equipment e
 
   sql += ` order by eqp_cd asc, d.start_time desc`; // 정렬
 
-  console.log('Generated SQL:', sql); // SQL 쿼리 출력
-
   return sql;
 
 };
@@ -697,8 +693,6 @@ FROM equipment e
   }
 
   sql += ` order by eqp_cd asc, r.start_time desc`; // 정렬
-
-  console.log('Generated SQL:', sql); // SQL 쿼리 출력
 
   return sql;
 

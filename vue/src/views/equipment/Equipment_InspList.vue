@@ -280,8 +280,6 @@ export default {
       this.selectedEqp = params.data.eqp_cd;
       this.isModal = false;
 
-      console.log('선택된 설비 코드:', this.selectedEqp); // 선택된 코드 확인
-
       // 선택된 설비 코드로 필터링
       this.fetchFilteredEquip(this.start_datetime, this.end_datetime, this.selectedEqp);
     },
@@ -342,8 +340,6 @@ export default {
         };
         const result = await axios.get('/api/equipList/insp', { params: obj });
 
-        console.log('API 요청 파라미터:', obj);
-
         if (result.data) {
           //배열데이터 처리
           this.rowData = result.data.map((item) => ({
@@ -366,7 +362,6 @@ export default {
     },
     // 조회 버튼 클릭 시 실행
     searchEquipments: debounce(function () {
-      console.log("startDT => ", this.start_datetime);
       this.fetchFilteredEquip(this.start_datetime, this.end_datetime, this.selectedEqp);
     }, 300), // 300ms 딜레이 설정
 

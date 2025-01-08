@@ -130,7 +130,6 @@ router.put(
   '/equip/:eqp_cd',
   upload.single('selectedFile'),
   async (req, res) => {
-    console.log('수정 요청 데이터:', req.body);
     const eqpCd = req.params.eqp_cd; // URL에서 설비 코드 추출
 
     try {
@@ -177,8 +176,6 @@ router.post('/equip/insp', async (req, res) => {
   try {
     const inspData = req.body; // 클라이언트로부터 받은 데이터
 
-    console.log('inspData :', inspData);
-
     // undefined, "null", 빈 문자열인 필드 제거
     Object.keys(inspData).forEach((key) => {
       if (
@@ -207,12 +204,8 @@ router.post('/equip/insp', async (req, res) => {
 
 // 점검수정
 router.put('/equip/insp/:insp_log_cd', async (req, res) => {
-  console.log('수정 요청 데이터:', req.body);
 
   const inspLogCd = req.params.insp_log_cd; // URL에서 점검 코드 추출
-
-  console.log('수신한 insp_log_cd:', inspLogCd);
-  console.log('수정 요청 데이터:', req.body);
 
   // insp_log_cd가 유효한지 확인
   if (!inspLogCd || inspLogCd === 'null' || inspLogCd.trim() === '') {
@@ -237,8 +230,6 @@ router.put('/equip/insp/:insp_log_cd', async (req, res) => {
       // 실제 null 값은 유지하여 명시적으로 처리 가능
     });
 
-    console.log('최종 업데이트 데이터:', eqInspInfo);
-
     // 서비스 호출
     const result = await equipmentService.updateInspEq(eqInspInfo);
 
@@ -262,7 +253,6 @@ router.put('/equip/insp/:insp_log_cd', async (req, res) => {
 router.get('/equipList/insp', async (req, res) => {
   try {
     let searchList = req.query;
-    console.log("router query => ", searchList)
     let result = await equipmentService.findInspEq(searchList);
     res.send(result);
   } catch (err) {
@@ -285,8 +275,6 @@ router.get('/equip/insp/:no', async (req, res) => {
 router.post('/equip/down', async (req, res) => {
   try {
     const downData = req.body; // 클라이언트로부터 받은 데이터
-
-    console.log('downData :', downData);
 
     // undefined, "null", 빈 문자열인 필드 제거
     Object.keys(downData).forEach((key) => {
@@ -314,12 +302,8 @@ router.post('/equip/down', async (req, res) => {
 
 // 비가동수정
 router.put('/equip/down/:downtime_cd', async (req, res) => {
-  console.log('수정 요청 데이터:', req.body);
 
   const downLogCd = req.params.downtime_cd; // URL에서 점검 코드 추출
-
-  console.log('수신한 downtime_cd:', downLogCd);
-  console.log('수정 요청 데이터:', req.body);
 
   // downtime_cd가 유효한지 확인
   if (!downLogCd || downLogCd === 'null' || downLogCd.trim() === '') {
@@ -343,8 +327,6 @@ router.put('/equip/down/:downtime_cd', async (req, res) => {
       }
       // 실제 null 값은 유지하여 명시적으로 처리 가능
     });
-
-    console.log('최종 업데이트 데이터:', eqDownInfo);
 
     // 서비스 호출
     const result = await equipmentService.updateDownEq(eqDownInfo);
@@ -382,7 +364,6 @@ router.get('/equip/down/:no', async (req, res) => {
 router.get('/equipList/down', async (req, res) => {
   try {
     let searchList = req.query;
-    console.log("받은 쿼리 파라미터 => ", searchList)
     let result = await equipmentService.findDownEq(searchList);
     res.send(result);
   } catch (err) {
@@ -399,8 +380,6 @@ router.get('/equipList/down', async (req, res) => {
 router.post('/equip/repair', async (req, res) => {
   try {
     const repairData = req.body; // 클라이언트로부터 받은 데이터
-
-    console.log('repairData :', repairData);
 
     // undefined, "null", 빈 문자열인 필드 제거
     Object.keys(repairData).forEach((key) => {
@@ -428,12 +407,8 @@ router.post('/equip/repair', async (req, res) => {
 
 // 수리 수정
 router.put('/equip/repair/:repair_cd', async (req, res) => {
-  console.log('수정 요청 데이터:', req.body);
 
   const repairLogCd = req.params.repair_cd; // URL에서 점검 코드 추출
-
-  console.log('수신한 repair_cd:', repairLogCd);
-  console.log('수정 요청 데이터:', req.body);
 
   // repair_cd가 유효한지 확인
   if (!repairLogCd || repairLogCd === 'null' || repairLogCd.trim() === '') {
@@ -457,8 +432,6 @@ router.put('/equip/repair/:repair_cd', async (req, res) => {
       }
       // 실제 null 값은 유지하여 명시적으로 처리 가능
     });
-
-    console.log('최종 업데이트 데이터:', eqRepairInfo);
 
     // 서비스 호출
     const result = await equipmentService.updateRepairEq(eqRepairInfo);
@@ -497,7 +470,6 @@ router.get('/equip/repair/:no', async (req, res) => {
 router.get('/equipList/repair', async (req, res) => {
   try {
     let searchList = req.query;
-    console.log("받은 쿼리 파라미터 => ", searchList)
     let result = await equipmentService.findRepairEq(searchList);
     res.send(result);
   } catch (err) {
