@@ -239,76 +239,92 @@ ORDER BY PROC_SEQ`;
 
 /* 지시서 등록[S] */
 
-// 시퀀스 조회
-const instSeq = `
-  SELECT CONCAT('PI', LPAD(nextval(inst_seq), 3,'0')) seq
-  FROM dual
-`;
+// 헤더 시퀀스 조회
+const instSeq = 
+`SELECT CONCAT('PI', LPAD(IFNULL(MAX(SUBSTR(pi.INST_CD, -3)) + 1, 1), 3, '0')) AS seq FROM prod_inst pi`;
 
 // 헤더 입력
 const instInsert = `
   INSERT INTO PROD_INST SET ?
 `;
 
+// 디테일 시퀀스 조회
+const instDtlSeq = 
+`SELECT CONCAT('PID', LPAD(IFNULL(MAX(SUBSTR(pid.INST_DTL_CD, -3)) + 1, 1), 3, '0')) AS seq FROM prod_inst_dtl pid`;
+
 // 디테일 입력
-const instDtlInsert = (values) => { // 배열 형식으로 받아야 함.
+const instDtlInsert = (obj) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT PROD_INST_DTL
       (INST_DTL_CD, INST_CD,PRD_CD, TOTAL_QTY)
     VALUES 
   `;
 
-  values.forEach((obj) => {
-    sql += `(CONCAT('PID', LPAD(nextval(inst_dtl_seq), 3,'0')), '${obj.inst_cd}', '${obj.prd_cd}', '${obj.total_qty}'), `;
-  });
+  sql += `('${obj.inst_dtl_cd}', '${obj.inst_cd}', '${obj.prd_cd}', '${obj.total_qty}'), `;
+
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
   return sql;
 };
 
+
+
+// 공정흐름 시퀀스 조회
+const instFlowSeq = 
+`SELECT CONCAT('PRS', LPAD(IFNULL(MAX(SUBSTR(pr.PROD_RESULT_CD, -3)) + 1, 1), 3, '0')) AS seq FROM PROD_RESULT pr`;
+
 // 공정흐름 입력
-const instFlowInsert = (values) => { // 배열 형식으로 받아야 함.
+const instFlowInsert = (obj) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT PROD_RESULT
       (PROD_RESULT_CD, INST_CD, PRD_CD, PROC_FLOW_CD, PROC_CD, STEP)
     VALUES 
   `;
 
-  values.forEach((obj) => {
-    sql += `(CONCAT('PRS', LPAD(nextval(result_seq), 3,'0')), '${obj.inst_cd}', '${obj.PRD_CD}', '${obj.PROC_FLOW_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
-  });
+  sql += `('${obj.prod_result_cd}', '${obj.inst_cd}', '${obj.PRD_CD}', '${obj.PROC_FLOW_CD}', '${obj.PROC_CD}', '${obj.STEP}'), `;
+ 
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
   
   return sql;
 };
 
-// 공정별 자재 입력
-const instMatInsert = 
-`INSERT INTO
-  proc_mat (
-    INST_MAT_CD
-    ,INST_CD
-    ,PROC_FLOW_CD
-    ,MAT_CD
-    ,MAT_QTY
-    ,MAT_USE_QTY
-    ,UNIT
-  )
 
-SELECT 
-    CONCAT('IM', LPAD(nextval(inst_mat_seq), 3,'0')) AS 'INST_MAT_CD',
-    (SELECT INST_CD FROM prod_inst WHERE inst_cd=?),
-    pf.PROC_FLOW_CD AS 'PROC_FLOW_CD',
-    pf.MAT_CD AS MAT_CD,
-    pf.MAT_QTY AS MAT_QTY,
-    pf.MAT_QTY AS MAT_USE_QTY,
-    UNIT AS 'UNIT'
-  FROM
-      proc_flow_mtl pf
-    JOIN 
-      (SELECT MAT_CD, MAT_NM, fn_get_codename(UNIT) AS UNIT FROM material) m on pf.MAT_CD=m.MAT_CD
-      where pf.PROC_FLOW_CD = ?
-`;
+
+// 공정흐름 시퀀스 조회
+const instMatSeq = 
+`SELECT CONCAT('IM', LPAD(IFNULL(MAX(SUBSTR(pm.INST_MAT_CD, -3)) + 1, 1), 3, '0')) AS seq FROM proc_mat pm`;
+
+// 공정별 자재 입력
+const instMatInsert = (values) => { 
+  let sql = 
+  `INSERT INTO
+    proc_mat (
+      INST_MAT_CD
+      ,INST_CD
+      ,PROC_FLOW_CD
+      ,MAT_CD
+      ,MAT_QTY
+      ,MAT_USE_QTY
+      ,UNIT
+    )
+
+  SELECT 
+      '${values.INST_MAT_CD}',
+      (SELECT INST_CD FROM prod_inst WHERE inst_cd='${values.INST_CD}'),
+      pf.PROC_FLOW_CD AS 'PROC_FLOW_CD',
+      pf.MAT_CD AS MAT_CD,
+      pf.MAT_QTY AS MAT_QTY,
+      pf.MAT_QTY AS MAT_USE_QTY,
+      UNIT AS 'UNIT'
+    FROM
+        proc_flow_mtl pf
+      JOIN 
+        (SELECT MAT_CD, MAT_NM, fn_get_codename(UNIT) AS UNIT FROM material) m on pf.MAT_CD=m.MAT_CD
+        where pf.PROC_FLOW_CD = '${values.PROC_FLOW_CD}'
+  `;
+
+  return sql;
+}
 /* 지시서 등록[E] */
 
 
@@ -497,13 +513,16 @@ module.exports = {
     instSeq,
     instInsert,
     instDelete,
+    instDtlSeq,
     instDtlInsert,
+    instFlowSeq,
     instFlowInsert,
     instCusFlow,
     instCusEqu,
 
     instProcList,
     instProcMtList,
+    instMatSeq,
     instMatInsert,
     instMatUpdate,
 
