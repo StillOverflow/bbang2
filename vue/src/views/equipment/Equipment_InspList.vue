@@ -144,12 +144,12 @@ export default {
 
       //모달 설비 목록
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 160, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
           filter: 'agTextColumnFilter',
-          sortable: true, width: 163, valueFormatter: (params) => {
+          sortable: true, width: 160, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
               R02: '분할기',
@@ -169,12 +169,12 @@ export default {
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true, width: 163,
+          sortable: true, width: 160,
           filter: 'agTextColumnFilter',
           cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
         {
-          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 163,
+          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 161,
           cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
       ],
@@ -410,7 +410,6 @@ export default {
             '최종점검일': formatDate(item?.last_insp_dt),
             '점검사유': item?.insp_reason,
             '점검판정': item?.insp_result,
-            '조치사항': item?.insp_action,
             '점검담당자ID': item?.id,
             '점검시작일시': formatDateTime(item?.start_time),
             '점검종료일시': formatDateTime(item?.end_time),
@@ -425,7 +424,6 @@ export default {
             '최종점검일': formatDate(item?.last_insp_dt),
             '점검사유': item?.insp_reason,
             '점검판정': item?.insp_result,
-            '조치사항': item?.insp_action,
             '점검담당자ID': item?.id,
             '점검시작일시': formatDateTime(item?.start_time),
             '점검종료일시': formatDateTime(item?.end_time)

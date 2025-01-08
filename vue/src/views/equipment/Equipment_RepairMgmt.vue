@@ -228,7 +228,7 @@ export default {
         { label: '수리 종료 일시', value: 'end_time', type: 'datetime-local' },
         { label: '수리 부품', value: 'repair_parts', type: 'text' },
         { label: '비고', value: 'note', type: 'textarea' },
-        { label: '등록인 ID', value: 'id', type: 'text' },
+        { label: '등록인 ID *', value: 'id', type: 'text' },
       ],
     };
   },
@@ -397,7 +397,7 @@ export default {
           this.equipmentData = {
             ...this.equipmentData,
             ...result.data,
-            repair_cd: result.data.repair_cd || this.equipmentData.repair_cd, // repair_cd 업데이트
+            repair_cd: result.data.repair_cd, // 덮어쓰지 않도록
             start_time: result.data.start_time ? this.formatDate(result.data.start_time) : this.equipmentData.start_time,
             end_time: result.data.end_time ? this.formatDate(result.data.end_time) : this.equipmentData.end_time,
           };
@@ -423,6 +423,14 @@ export default {
     async repairInsert() {
 
       try {
+        if (!this.equipmentData.id) {
+        Swal.fire({
+          icon: 'error',
+          title: '입력 오류',
+          text: '등록인 ID는 필수입니다.',
+        });
+        return;
+      }
 
         // 세션에서 비가동 등록인 ID 가져오기
         const sessionId = this.$session.get('user_id');
@@ -464,6 +472,14 @@ export default {
       }
     },
     async repairUpdate() {
+        if (!this.equipmentData.id) {
+        Swal.fire({
+          icon: 'error',
+          title: '입력 오류',
+          text: '등록인 ID는 필수입니다.',
+        });
+        return;
+      }
 
       try {
 

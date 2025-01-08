@@ -143,13 +143,14 @@ export default {
         insp_log_cd: '',
       },
 
+
       equipDefs: [
-        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 163, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
+        { headerName: '설비 코드', field: 'eqp_cd', filter: 'agTextColumnFilter', sortable: true, width: 160, cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center', },
         {
           headerName: '설비 구분',
           field: 'eqp_type',
           filter: 'agTextColumnFilter',
-          sortable: true, width: 163, valueFormatter: (params) => {
+          sortable: true, width: 160, valueFormatter: (params) => {
             const eqpTypeMap = {
               R01: '배합기',
               R02: '분할기',
@@ -169,16 +170,15 @@ export default {
         {
           headerName: '설비명',
           field: 'eqp_nm',
-          sortable: true, width: 163,
+          sortable: true, width: 160,
           filter: 'agTextColumnFilter',
           cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
         {
-          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 163,
+          headerName: '모델명', field: 'model', filter: 'agTextColumnFilter', sortable: true, width: 161,
           cellStyle: { textAlign: 'center' }, headerClass: 'ag-header-center',
         },
       ],
-
 
       equipData: [],
       leftFields: [
@@ -193,7 +193,7 @@ export default {
         { label: '점검 종료 일시', value: 'end_time', type: 'datetime-local' },
         { label: '점검 판정', value: 'insp_result', type: 'text' },
         { label: '비고', value: 'note', type: 'textarea' },
-        { label: '점검담당자', value: 'id', type: 'text' },
+        { label: '점검담당자 *', value: 'id', type: 'text' },
       ],
     };
   },
@@ -272,6 +272,7 @@ export default {
         });
         this.equipmentData.start_time = ''; // input 필드 초기화
       }
+
     },
 
     // 종료시간 유효성 검사
@@ -339,6 +340,7 @@ export default {
     //점검조회(최신1건)
     // 설비 단건 조회
     async getInspListOne(eqp_cd) {
+
 
       try {
         const result = await axios.get(`/api/equip/insp/${eqp_cd}`);
@@ -408,11 +410,22 @@ export default {
         //서버 응답처리
         let addRes = result.data; // 서버에서 반환된 응답 처리
         if (addRes.success) {
-          Swal.fire({
+          await Swal.fire({
             icon: 'success',
             title: '등록 완료',
             text: '점검 데이터가 등록되었습니다.',
           });
+
+          // 검사 결과가 X03(부적합)일 경우 추가 메시지 출력
+          if (this.equipmentData.insp_result === 'X03') {
+            await Swal.fire({
+            icon: 'info',
+            title: '비가동 확인 필요',
+            text: '※부적합 판정으로 인해 비가동 종료가 되지 않았습니다.',
+          });
+          }
+
+
           this.selectedEqp = '';
           this.equipmentData = {};
           this.selectedFile = null;
@@ -436,6 +449,9 @@ export default {
         // 세션에서 점검 담당자 ID 가져오기
         const sessionId = this.$session.get('user_id');
         console.log('수정 시 가져온 세션 ID:', sessionId);
+
+        const isOperational = !!this.equipmentData.end_time; // 종료일시가 있으면 가동으로 변경
+
 
         // 기존 ID가 없을 경우에만 세션 ID를 설정
         if (!this.equipmentData.id && sessionId) {
@@ -463,7 +479,14 @@ export default {
             title: '수정 완료',
             text: '점검 데이터가 수정되었습니다.',
           });
-          this.getInspListOne(this.selectedEqp);
+
+          if (isOperational) {
+            this.selectedEqp = '';
+            this.equipmentData = {};
+            this.selectedFile = null;
+            this.previewImage = require('@/assets/img/blank_img.png');
+          }
+
         }
       } catch (err) {
         Swal.fire({
