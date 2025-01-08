@@ -46,15 +46,22 @@ router.get("/material/orderDetailList/:code", async (req, res) => {
 
 // 자재 발주서 등록
 router.post("/material/order", async (req, res) => {
-   console.log(req.body)
    let result = await materialService.matOrderInsert(req.body);
-   // res.send(result);
+
+   res.send(result);
 });
 
 //! ------------------------------ 자재 입고관리 ------------------------------
 // 입고 대기목록
 router.get("/material/beforeIn", async (req, res) => {
    let result = await materialService.getMaterialBeforeIn();
+
+   res.send(result);
+});
+
+// 자재 입고 목록
+router.get("/material/in", async (req, res) => {
+   let result = await materialService.getMaterialInList();
 
    res.send(result);
 });
@@ -98,7 +105,7 @@ router.get("/material/stockLotList", async (req, res) => {
 // 생산중이거나 완료된건에 대한 상산 계획서 조회
 router.get("/material/produceInstruction", async (req, res) => {
    let result = await materialService.getProduceInstruction(req.query);
-   console.log("result => ", result)
+
    res.send(result);
 });
 

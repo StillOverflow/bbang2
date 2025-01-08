@@ -3,44 +3,13 @@
       <div class="row" @keydown="keyEventHandler($event)">
          <div class="col-12">
          <div class="card">
-            <div class="card-header bg-light ps-5 ps-md-4">
+            <div class="card-header bg-light p-5">
 
                <!-- //& 검색 박스 ~~ -->
                <div class="d-flex justify-content-center align-items-center mb-3">
                   <div class="col-lg-1 text-left fw-bolder">LOT 코드</div>
                   <div class="col-lg-7">
                      <input class="form-control " type="text" v-model="lotKeyword" />        
-                  </div>
-               </div>
-               
-               <!-- //& 거래처명으로 검색하기 -->
-               <div class="d-flex justify-content-center align-items-center mb-3">
-                  <div class="col-lg-1 text-left fw-bolder">거래처명</div>
-                  <div class="col-lg-7 searchInputBox">
-                     <!-- 입력 필드 -->
-                     <div class="input-group">
-                        <input type="text" class="form-control" v-model="actKeyword" autocomplete="off" @input="inputChange" placeholder="거래처명을 입력하세요"/>
-                        <button type="button" id="button-addon3" @click="accountModalOpen" class="btn btn-warning">
-                           <i class="fa-solid fa-magnifying-glass"></i>
-                        </button>
-                     </div>
-
-                     <!-- 드롭다운 리스트 -->
-                     <div v-if="!isHidden" class="dropdownBox">
-                        <div v-if="accountArr.length">
-                           <button 
-                              v-for="(item, index) in materialArr" 
-                              :key="index" 
-                              class="dropdown-item materialBtn" 
-                              :class="{ active: index === selectedIndex }" 
-                              :data-matCode="item.mat_cd"
-                              @click="onClickMatNm(item.mat_cd, item.mat_nm)"
-                           >
-                              {{ item.mat_nm }}
-                           </button>
-                        </div>
-                        <div v-else class="dropdown-item text-left fw-bolder" style="color: #2bce89">결과 없음</div>
-                     </div>
                   </div>
                </div>
                
@@ -169,7 +138,7 @@
                </div>
             </div>
 
-            <div class="card-body px-0 pt-0 pb-2">
+            <div class="card-body p-4">
                <!-- //& 거래처 모달창 -->
                <Layout :modalCheck="isAccModal">
                   <template v-slot:header> <!-- <template v-slot:~> 이용해 slot의 각 이름별로 불러올 수 있음. -->
@@ -217,7 +186,9 @@
                      </div>
                   </template>
                </Layout>
-
+               <div class="text-right mb-3">
+                  <button class="btn btn-outline-success" @click="excelDownload"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
+               </div>
                <ag-grid-vue
                   class="ag-theme-alpine"
                   style="width: 100%; height: 700px;"
@@ -228,10 +199,6 @@
                   @firstDataRendered="materialStockGridRendered"
                   @grid-size-changed="onGridSizeChanged"
                />
-
-               <div class="text-right mt-3 mb-2">
-                  <button class="btn btn-outline-success" @click="excelDownload"><i class="fa-regular fa-file-excel"></i> EXCEL</button>
-               </div>
             </div>
          </div>
          </div>
@@ -274,7 +241,7 @@
 //! ---------------------------------------- Vue Hook ----------------------------------------
    // created와 비슷~~
    onBeforeMount(() => {
-      store.dispatch('breadCrumb', { title: '자재별 재고 조회' });  // 페이지 제목 설정
+      store.dispatch('breadCrumb', { title: 'LOT별 자재 재고 조회' });  // 페이지 제목 설정
       getCategory();  // 카테고리
       getType();      // 자재유형 
 
@@ -305,20 +272,6 @@
    };
 
 //! ----------------------------------- Event Handler -----------------------------------
-   // 드롭다운 박스에 버튼 클릭 시 input에 입력 & 모달창 자재 클릭시 검색창에 입력
-   const onClickMatNm = (params, code, name, ) => {
-      isHidden.value = true;       // 드롭다운 숨김
-
-      if(params != null) {
-         actKeyword.value = params.data.mat_nm;
-         materialModalOpen(); // 자재조회 모달
-      }
-
-      if(code || name) {
-         actKeyword.value = name;   // 자재명
-      }
-   };
-
    // 아래, 위 방향키 및 엔터 이벤트 핸들러
    let selectedIndex = ref( -1 );
    const keyEventHandler = (event) => {
@@ -360,12 +313,12 @@
             }
          break;
          
-         case "Enter" : {
-            if (document.activeElement) {
-               actKeyword.value = document.activeElement.innerText;
-            }
-            break;
-         }
+         // case "Enter" : {
+         //    if (document.activeElement) {
+         //       actKeyword.value = document.activeElement.innerText;
+         //    }
+         //    break;
+         // }
       }
    };
 
@@ -376,7 +329,6 @@
    let lotKeyword = ref('');
    let startDt = ref('');                   // 시작 날짜
    let lastDt = ref('');                    // 종료 날짜
-   let actKeyword = ref('');                // 거래처명
    let matKeyword = ref('');                // 자재명
 
    let filterRowData = ref([]);            // 필터한 데이터 담을곳
@@ -389,13 +341,11 @@
          let newDate =  new Date(data.exp_dt).setHours(0, 0, 0, 0);
          return (
             data.mat_lot_cd &&(!lotKeyword.value || data.mat_lot_cd.includes(lotKeyword.value)) &&
-            data.act_nm && (!actKeyword.value || data.act_nm.includes(actKeyword.value)) &&
             data.mat_nm && (!matKeyword.value || data.mat_nm.includes(matKeyword.value)) &&
             (!start_dt || newDate >= start_dt) && (!last_dt || newDate <= last_dt) &&
             (!selectedType.value || data.type == selectedType.value) && 
             (!selectedCategory.value || data.category == selectedCategory.value)
          )
-
       });
    }
 
@@ -403,7 +353,6 @@
       lotKeyword.value = ''   // LOT번호
       startDt.value = ''      // 시작 날짜
       lastDt.value = ''       // 종료 날짜
-      actKeyword.value = ''   // 거래처명
       matKeyword.value = ''   // 자재명
 
       filterRowData.value = materialStockData.value;
@@ -516,34 +465,6 @@
       params.api.sizeColumnsToFit
    }
 
-   // 거래처 검색 모달 옵션
-   const accountGridOptions = {
-      columnDefs : [
-         { headerName: '거래처코드', field: 'act_cd', sortable: true },
-         { headerName: '거래처명', field: 'act_nm', sortable: true  },
-         { headerName: '거래처 구분', field: 'act_type', sortable: true  },
-         { headerName: '담당자', field: 'mgr_nm', sortable: true, },
-         { headerName: '담당자번호', field: 'mgr_tel', sortable: true, },
-      ],
-
-      onRowClicked : () => {
-         accountModalOpen();  // 거래처 조회 모달
-      },
-      
-      pagination: true,
-      paginationPageSize: 10,
-      paginationPageSizeSelector: [10, 20, 50, 100],
-      animateRows: false,
-      defaultColDef: {
-         filter: false,
-         flex: 1,
-         minWidth: 10,
-      },
-      
-      suppressMovableColumns: true, // 컬럼 드래그 이동 방지
-      overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
-   }
-
    // 자재 모달 데이터
    const materialGridOptions = {
       columnDefs : [
@@ -568,6 +489,7 @@
             });
             return;
          }
+         matKeyword.value = event.data.mat_nm;
 
          materialModalOpen(); // 자재조회 모달
       },
@@ -694,15 +616,6 @@
                }
                
                
-            },
-         },
-         {
-            headerName: '거래처명',
-            field: 'act_nm',
-            cellClass: "text-center",
-            cellRenderer: (params) => {
-               // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
       ],

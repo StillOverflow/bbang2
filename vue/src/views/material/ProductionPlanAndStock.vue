@@ -2,8 +2,8 @@
    <div class="py-4 container-fluid">
       <div class="row">
          <div class="col-12">
-            <div class="card p-3">
-               <div class="card-header bg-light mb-4">  
+            <div class="card">
+               <div class="card-header bg-light p-5 mb-4">  
                   <div class="d-flex justify-content-center align-items-center text-center">
                      <div class="col-lg-1 text-center mb-2 mt-2 fw-bolder">계획 일자</div>
                      <div class="col-lg-4">
@@ -23,10 +23,12 @@
                      </button>
                   </div>
                </div>
-               <div class="card-action mb-2">
-                  <h5>미지시 계획서 조회</h5>
-               </div>
-               <div class="card-content">
+               
+               <div class="card-content p-4">
+                  <div class="card-action mb-2">
+                     <h5>미지시 계획서 조회</h5>
+                  </div>
+                  
                   <div class="table-responsive">
                      <ag-grid-vue
                         class="ag-theme-alpine"
@@ -45,9 +47,20 @@
       </div>
       <div class="mt-4 row">
          <div class="col-12">
-            <div class="card p-3">
+            <div class="card p-4">
                <div class="card-action mb-2">
                   <h5>{{ prodPlanCode }} 대한 자재조회</h5>
+               </div>
+               <div class="alert alert-info" role="alert">
+
+                  <div class="d-block d-flex justify-content-start align-items-center mb-1">
+                     <i class="fa-solid fa-circle-info me-3" style="font-size: 20px;"></i>
+                     <div>
+                        <p class="m-0" style="font-size: 14px;">1. 미지시 계획서에 대한 총 자재 정보들이 집계되어 출력됩니다.</p>
+                        <p class="m-0" style="font-size: 14px;">2. 필요수량이 재고수량보다 많으면 셀이 빨간색으로 표시됩니다.</p> 
+                     </div>
+                  </div>
+                  
                </div>
                <div class="card-content">
                   <div class="table-responsive">
@@ -191,7 +204,7 @@
             text: err,
          });
       }
-      resetBtn();
+
       planToMaterialStk.value = []; // 자재 재고 그리드 초기화
    };
 
@@ -199,6 +212,8 @@
    const resetBtn = () => {
       startDt.value = '';
       endDt.value = '';
+
+      planToMaterialStkStock();
    }
 
 //! ---------------------------------------- 그리드 이벤트 ----------------------------------------

@@ -2,18 +2,21 @@
 // 미지시 생산 계획서 조회
 const produceHeadPlanList = `
    SELECT
-      prod_plan_cd,
-      order_cd,
-      fn_get_membername(id) AS name,
-      start_dt,
-      end_dt,
-      status,
-      update_dt,
-      create_dt
+      a.prod_plan_cd,
+      a.order_cd,
+      fn_get_membername(a.id) AS name,
+      a.start_dt,
+      a.end_dt,
+      a.status,
+      a.update_dt,
+      a.create_dt,
+      b.phone
    FROM
-      prod_plan
+      prod_plan a
+   LEFT OUTER JOIN
+      member b ON a.id = b.id
    WHERE
-      UPPER(STATUS) = UPPER('Z01')
+      UPPER(a.STATUS) = UPPER('Z01')
 `
 
 // 날짜별로 미지시 생산계획 검색
@@ -100,20 +103,23 @@ const getPlanMaterialStock = `
 `
 
 //! ----------------------------------- 자재 발주관리 -----------------------------------
-// 발주서 조회
 const getMaterialOrder = `
-   SELECT   
-      mat_order_cd,
-      fn_get_codename(status) AS status,
-      fn_get_membername(id) AS id,
-      (SELECT act_nm FROM account a WHERE m.act_cd = a.act_cd) AS act_cd
+   SELECT 
+      md.mat_order_cd,
+      fn_get_codename(m.status) AS status,
+      m.create_dt,
+      fn_get_membername(md.id) AS name,
+      fn_get_accountname(m.act_cd) AS act_cd
    FROM     
       material_order m
+   INNER JOIN
+      material_order_detail md ON m.mat_order_cd = md.mat_order_cd
    WHERE    
-      UPPER(status) <> UPPER('L01')
+      UPPER(m.status) <> UPPER('L01')
+   GROUP BY
+      m.mat_order_cd
    ORDER BY 
-      create_dt DESC
-   
+      m.create_dt DESC, mat_order_cd DESC
 `
 
 // 발주서 디테일 조회
@@ -135,13 +141,13 @@ const getMaterialOrderDetail = `
       INNER JOIN material_order b ON b.mat_order_cd = a.mat_order_cd
       LEFT JOIN material c ON a.mat_cd = c.mat_cd
    WHERE
-      UPPER(b.mat_order_cd) = UPPER( 'ord001' )
+      UPPER(b.mat_order_cd) = UPPER( ? )
    ORDER BY
-      mat_nm
+      delivery_dt DESC, mat_order_dtl_cd DESC
 `
 
-// 자재 발주서등록
-// 발주서 다음 시퀀스 읽어오기
+//? 자재 발주서등록
+// 발주서 헤더 다음 시퀀스 읽어오기
 const getOrderSeq = `
    SELECT CONCAT('ORD', LPAD(nextval(mat_order_seq), 3, '0')) AS seq
    FROM dual
@@ -150,6 +156,18 @@ const getOrderSeq = `
 // 발주서 헤더 등록
 const insertOrderHeader = `
    INSERT INTO material_order
+   SET ?
+`
+
+// 발주서 디테일 다음 시퀀스 읽어오기
+const getOrderDetailSeq = `
+   SELECT CONCAT('ORDDTL', LPAD(nextval(mat_order_dtl_seq), 3, '0')) AS seq
+   FROM   dual
+`
+
+// 발주서 디테일 등록
+const insertOrderDetail = `
+   INSERT INTO material_order_detail
    SET ?
 `
 
@@ -177,6 +195,33 @@ const getMaterialBeforeIn = `
                   FROM material_in mi
                   WHERE mi.test_rec_cd = a.test_rec_cd
                   )
+`
+
+const getMaterialInList = `
+   SELECT   
+      a.mat_order_cd,                          -- 발주서코드
+      fn_get_materialname(a.mat_cd) AS mat_cd,            -- 자재명
+      b.mat_qty AS ord_mat_qty,                -- 발주수량
+      a.mat_qty,                               -- 입고수량
+      fn_get_codename(c.unit) AS unit,         -- 단위
+      fn_get_codename(c.\`type\`) AS type,     -- 자재구분
+      fn_get_codename(c.category) AS category, -- 카테고리
+      a.exp_dt,                                -- 유통기한
+      a.mat_int_dt,                            -- 입고일자
+      (SELECT 
+         fn_get_accountname(act_cd)
+      FROM 
+         material_order 
+      WHERE 
+         mat_order_cd = a.mat_order_cd) AS act_nm -- 거래처명
+   FROM    
+      material_in a -- 자재입고테이블
+   INNER JOIN 
+      material_order_detail b ON a.mat_order_cd = b.mat_order_cd -- 발주서 디테일 테이블
+   LEFT JOIN
+      material c ON a.mat_cd = c.mat_cd    -- 자재 테이블
+   ORDER BY 
+      a.mat_int_dt DESC, a.mat_order_cd DESC
 `
 
 // 자재 LOT 마지막값에서 +1한 값
@@ -215,7 +260,6 @@ const getMaterialStockList = `
    SELECT   
       a.mat_lot_cd,                            -- 자재 LOT
       fn_get_materialname(a.mat_cd) AS mat_nm, -- 자재 코드
-      sum(a.mat_qty) mat_qty,                  -- 입고량
       sum(a.mat_stock) AS mat_stock,           -- 재고량
       a.exp_dt,                                -- 유통기한
       a.mat_int_dt,                            -- 입고일시
@@ -235,8 +279,8 @@ const getMaterialStockList = `
    GROUP BY
       a.mat_cd
    ORDER BY 
-      CAST(SUBSTRING(a.mat_lot_cd, 7) AS UNSIGNED) DESC,
-      b.mat_nm ASC
+      a.mat_int_dt DESC,
+      CAST(SUBSTRING(a.mat_lot_cd, 7) AS UNSIGNED) DESC
 `
 
 // 자재 LOT별 재고조회
@@ -244,8 +288,8 @@ const getMaterialStockLotList = `
    SELECT   
       a.mat_lot_cd,                            -- 자재 LOT
       fn_get_materialname(a.mat_cd) AS mat_nm, -- 자재 코드
-      a.mat_qty mat_qty,                  -- 입고량
-      a.mat_stock AS mat_stock,           -- 재고량
+      a.mat_qty mat_qty,                       -- 입고량
+      a.mat_stock AS mat_stock,                -- 재고량
       a.exp_dt,                                -- 유통기한
       a.mat_int_dt,                            -- 입고일시
       fn_get_membername(a.id) AS name,         -- 담당자
@@ -255,7 +299,7 @@ const getMaterialStockLotList = `
       a.mat_order_cd,                          -- 발주서 코드
       fn_get_codename(b.category) AS category, -- 카테고리
       fn_get_codename(b.unit) AS unit,         -- 단위
-      fn_get_codename(\`type\`) AS TYPE,         -- 자재 구분
+      fn_get_codename(\`type\`) AS type,       -- 자재 구분
       b.safe_stk
    FROM    
       material_in a 
@@ -373,12 +417,15 @@ module.exports = {
 
    getMaterialOrder,            // 발주서 헤더 조회
    getMaterialOrderDetail,      // 발주서 디테일 조회
-   
+
    // 자재 발주서 등록
    getOrderSeq,                 // 발주서 시퀀스
    insertOrderHeader,           // 발주서 헤더 등록
+   getOrderDetailSeq,           // 발주서 디테일 다음 시퀀스 읽어오기
+   insertOrderDetail,           // 발주서 디테일 등록
 
    getMaterialBeforeIn,         // 자재 입고전 대기목록
+   getMaterialInList,           // 자재 입고 목록
    materialLotSeq,              // LOT seq값
    insertMaterial,              // 자재 등록
 
