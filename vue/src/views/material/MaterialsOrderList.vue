@@ -671,6 +671,11 @@
             return false;
          },
       },
+      rowSelection: {
+         mode:"singleRow",
+         checkboxes: false,
+         enableClickSelection: true,
+      },
 
       pagination: true,
       paginationPageSize: 10,
@@ -681,7 +686,7 @@
          flex: 1,
          minWidth: 10,
       },
-      //
+      
       onRowClicked : (event) => {
          if (!event.data) {
             Swal.fire({
@@ -718,7 +723,7 @@
             },
          },
          {
-            headerName: '자재수량',
+            headerName: '발주 수량',
             field: 'mat_qty',
             cellClass: "text-right",
          },
