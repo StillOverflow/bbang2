@@ -74,15 +74,17 @@ const planDelete = (datas) => {
 /* 계획서 등록 [S] */
 
 // 시퀀스 조회
-const planSeq = `
-  SELECT CONCAT('PR', LPAD(nextval(plan_seq), 3,'0')) seq
-  FROM dual
-`;
+const planSeq = 
+`SELECT CONCAT('PR', LPAD(IFNULL(MAX(SUBSTR(pp.PROD_PLAN_CD, -3)) + 1, 1), 3, '0')) AS seq FROM PROD_PLAN pp`;
 
 // 헤더 입력
 const planInsert = `
   INSERT INTO PROD_PLAN SET ?
 `;
+
+// 디테일 시퀀스 조회
+const planDtlSeq = 
+`SELECT CONCAT('PRDTL', LPAD(IFNULL(MAX(SUBSTR(ppd.PROD_PLAN_DTL_CD, -3)) + 1, 1), 3, '0')) AS seq FROM PROD_PLAN_DTL ppd`;
 
 // 디테일 입력
 const planDtlDelete = 
@@ -92,16 +94,15 @@ WHERE PROD_PLAN_CD = ?
 `;
 
 // 디테일 등록
-const planDtlInsert = (values) => { // 배열 형식으로 받아야 함.
+const planDtlInsert = (obj) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT PROD_PLAN_DTL
       (PROD_PLAN_DTL_CD, PROD_PLAN_CD, PRD_CD, PROD_PLAN_QTY)
     VALUES 
   `;
 
-  values.forEach((obj) => {
-    sql += `(CONCAT('PRDTL', LPAD(nextval(plan_dtl_seq), 3,'0')), '${obj.PROD_PLAN_CD}', '${obj.PRD_CD}', '${obj.PROD_PLAN_QTY}'), `;
-  });
+  sql += `('${obj.PROD_PLAN_DTL_CD}', '${obj.PROD_PLAN_CD}', '${obj.PRD_CD}', '${obj.PROD_PLAN_QTY}'), `;
+
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
   return sql;
@@ -310,7 +311,7 @@ const instMatInsert = (values) => {
 
   SELECT 
       '${values.INST_MAT_CD}',
-      (SELECT INST_CD FROM prod_inst WHERE inst_cd='${values.INST_CD}'),
+      '${values.INST_CD}',
       pf.PROC_FLOW_CD AS 'PROC_FLOW_CD',
       pf.MAT_CD AS MAT_CD,
       pf.MAT_QTY AS MAT_QTY,
@@ -322,8 +323,11 @@ const instMatInsert = (values) => {
         (SELECT MAT_CD, MAT_NM, fn_get_codename(UNIT) AS UNIT FROM material) m on pf.MAT_CD=m.MAT_CD
         where pf.PROC_FLOW_CD = '${values.PROC_FLOW_CD}'
   `;
+  console.log("☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★☆★");
+  console.log(sql);
 
   return sql;
+  
 }
 /* 지시서 등록[E] */
 
@@ -456,22 +460,25 @@ FROM
 where MAT_CD = ? 
 `;
 
+
+// 자재출고 시퀀스 조회
+const matLotSeq = 
+`SELECT CONCAT('MOD', LPAD(IFNULL(MAX(SUBSTR(modt.MAT_OUT_DTL_CD, -3)) + 1, 1), 3, '0')) AS seq FROM material_out_detail modt`;
+
 //자재출고 등록
-const matLotInsert = (values) => { // 배열 형식으로 받아야 함.
+const matLotInsert = (obj) => { // 배열 형식으로 받아야 함.
   let sql = `
     INSERT material_out_detail
       (MAT_OUT_DTL_CD, MAT_OUT_DT, MAT_OUT_QTY, MAT_LOT_CD, MAT_CD, PROD_RESULT_CD)
     VALUES 
   `;
 
-  values.forEach((obj) => {
-    sql += `(CONCAT('MOD', LPAD(nextval(mat_out_seq), 3,'0')), 
-            now(), 
-            '${obj.MAT_OUT_QTY}', 
-            '${obj.MAT_LOT_CD}', 
-            '${obj.MAT_CD}', 
-            '${obj.PROD_RESULT_CD}'), `;
-  });
+  sql += `('${obj.MAT_OUT_DTL_CD}', 
+          now(), 
+          '${obj.MAT_OUT_QTY}', 
+          '${obj.MAT_LOT_CD}', 
+          '${obj.MAT_CD}', 
+          '${obj.PROD_RESULT_CD}'), `;
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
   return sql;
 };
@@ -500,6 +507,7 @@ module.exports = {
     planSelect,
     planSearch,
     planSeq,
+    planDtlSeq,
     planInsert,
     planUpdate,
     planDtlInsert,
@@ -529,6 +537,7 @@ module.exports = {
     processStart,
     resultInfo,
     matLotSearch,
+    matLotSeq,
     matLotInsert,
     matLotUpdate,
     statusChange
