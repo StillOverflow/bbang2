@@ -101,6 +101,44 @@ const getPlanMaterialStock = `
    ORDER BY
       b.mat_cd
 `
+//! ----------------------------------- 자재 발주서 조회 -----------------------------------
+// 자재 발주서 헤더 조회
+const getMaterialOrderHeader = `
+   SELECT 
+      mat_order_cd,                      -- 발주서 코드
+      fn_get_codename(status) AS status, -- 발주서 상태 
+      change_dt,                         -- 발주서 상태변화일
+      create_dt,                         -- 등록일
+      update_dt,                         -- 수정
+      act_cd,                              -- 거래처코드
+      fn_get_accountname(act_cd) AS act_nm -- 거래처명
+   FROM 
+      material_order
+   ORDER BY
+      mat_order_cd DESC
+`
+
+// 자재 발주서 디테일 조회
+const getMaterialOrderDtl = `
+   SELECT 
+      mat_order_dtl_cd,                      -- 발주서 디테일코드
+      mat_cd,
+      fn_get_materialname(mat_cd) AS mat_nm, -- 자재명
+      mat_qty,                               -- 발주서 수량
+      fn_get_membername(id) AS name,         -- 담당자
+      delivery_dt,                           -- 납기일
+      create_dt,                             -- 등록일
+      update_dt,                             -- 수정일
+      fn_get_codename(status) AS status,     -- 발주서 상태
+      change_dt,                             -- 상태변환 
+      mat_order_cd                           -- 발주서 헤더코드
+   FROM 
+      material_order_detail                  -- 주문서 디테일
+   WHERE
+      UPPER(mat_order_cd) = UPPER( ? )
+   ORDER BY
+      mat_order_dtl_cd DESC, create_dt DESC
+`
 
 //! ----------------------------------- 자재 발주관리 -----------------------------------
 const getMaterialOrder = `
@@ -115,7 +153,7 @@ const getMaterialOrder = `
    INNER JOIN
       material_order_detail md ON m.mat_order_cd = md.mat_order_cd
    WHERE    
-      UPPER(m.status) <> UPPER('L01')
+      UPPER(m.status) <> UPPER('L01')  -- 입고완료가 아닌 발주서 조회
    GROUP BY
       m.mat_order_cd
    ORDER BY 
@@ -135,11 +173,14 @@ const getMaterialOrderDetail = `
       b.mat_order_cd,
       delivery_dt,
       b.act_cd,
-      fn_get_accountname(act_cd) AS act_nm
+      fn_get_accountname(act_cd) AS act_nm,
+      fn_get_codename(a.status) AS status
    FROM
       material_order_detail a
-      INNER JOIN material_order b ON b.mat_order_cd = a.mat_order_cd
-      LEFT JOIN material c ON a.mat_cd = c.mat_cd
+   INNER JOIN 
+      material_order b ON b.mat_order_cd = a.mat_order_cd
+   LEFT JOIN 
+      material c ON a.mat_cd = c.mat_cd
    WHERE
       UPPER(b.mat_order_cd) = UPPER( ? )
    ORDER BY
@@ -200,7 +241,7 @@ const getMaterialBeforeIn = `
 const getMaterialInList = `
    SELECT   
       a.mat_order_cd,                          -- 발주서코드
-      fn_get_materialname(a.mat_cd) AS mat_cd,            -- 자재명
+      fn_get_materialname(a.mat_cd) AS mat_cd, -- 자재명
       b.mat_qty AS ord_mat_qty,                -- 발주수량
       a.mat_qty,                               -- 입고수량
       fn_get_codename(c.unit) AS unit,         -- 단위
@@ -415,6 +456,11 @@ module.exports = {
    planListSearch,              // 미지시 생산계획서 검색
    getPlanMaterialStock,        // 미지시 생산 계획서에 대한 자재 재고 조회
 
+   // 발주서 조회
+   getMaterialOrderHeader,      // 발주서 조회 페이지 Header 조회
+   getMaterialOrderDtl,         // 발주서 조회 페이지 Detail 조회
+   
+   // 발주서 관리
    getMaterialOrder,            // 발주서 헤더 조회
    getMaterialOrderDetail,      // 발주서 디테일 조회
 

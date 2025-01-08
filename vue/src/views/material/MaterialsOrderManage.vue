@@ -309,8 +309,31 @@
          // act_cd 값이 유효한지 확인
 
          if (!key || key.trim() === '') {
-            console.warn('Invalid act_cd:', item.data);
             return; // 빈 키를 건너뜁니다.
+         }
+
+         if (!item.data.act_nm || item.data.act_nm.trim() == '') {
+            Swal.fire({
+               icon: "warning",
+               title: "거래처를 입력하세요",
+            });
+            return;
+         }
+
+         if (!item.data.mat_qty || isNaN(item.data.mat_qty)) {
+            Swal.fire({
+               icon: "warning",
+               title: "수량을 입력하세요",
+            });
+            return;
+         }
+
+         if (!item.data.delivery_dt || item.data.delivery_dt == '') {
+            Swal.fire({
+               icon: "warning",
+               title: "납기일을 입력하세요",
+            });
+            return;
          }
 
          if (!newOrderData.has(key)) {
@@ -334,7 +357,6 @@
       });
       
       orderInsert(Array.from(newOrderData));
-
    }
 
    // 그리드 데이터 초기화
@@ -430,7 +452,7 @@
             Swal.fire({
                icon: 'success',
                title: '등록 성공',
-               text: '자재 정보가 성공적으로 등록되었습니다.',
+               text: '발주서 등록되었습니다.',
             });
             orderFormData.value = [];
          }

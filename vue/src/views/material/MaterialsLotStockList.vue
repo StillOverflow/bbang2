@@ -621,15 +621,15 @@
       ],
       overlayNoRowsTemplate: `<div style="color: red; text-align: center; font-size: 13px;">데이터가 없습니다.</div>`, // 데이터 없음 메시지
       // row에 규칙추가
-      rowClassRules: {
-         'rowRedStyle': (params) => {
-            if (params.data.safe_stk) { // 부족 수량이 있으면 ~~
+      // rowClassRules: {
+      //    'rowRedStyle': (params) => {
+      //       if (params.data.safe_stk) { // 부족 수량이 있으면 ~~
 
-               return params.data.safe_stk > params.data.mat_stock; // 부족수량이 0 이하일 때 조건 적용하기!
-            }
-            return false;
-         },
-      },
+      //          return params.data.safe_stk > params.data.mat_stock; // 부족수량이 0 이하일 때 조건 적용하기!
+      //       }
+      //       return false;
+      //    },
+      // },
       
       pagination: true,
       paginationPageSize: 10,

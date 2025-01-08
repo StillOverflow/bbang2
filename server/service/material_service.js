@@ -45,9 +45,6 @@ const materialInsert = async(values) => {
     const results = [];
 
     for(let i = 0; i < values.length; i++) {
-        // let seq = await mariadb.query('materialLotSeq');
-        // values[i].mat_lot_cd = seq[0].seq;
-
         let result = await mariadb.query('insertMaterial', [values[i].mat_cd, values[i].mat_qty, values[i].mat_stock, values[i].exp_dt, values[i].id, values[i].test_rec_cd, values[i].mat_order_cd]);
         results.push(result);
     }
@@ -55,6 +52,20 @@ const materialInsert = async(values) => {
     return { insertResults : results };
 };
 
+//! ------------------------------ 자재 발주조회 ------------------------------
+// 발주서 조회 페이지 헤더 조회
+const getMaterialOrderHeader = async()=> {
+    let list = await mariadb.query('getMaterialOrderHeader');
+
+    return list;
+};
+
+// 발주서 조회 페이지 디테일 조회
+const getMaterialOrderDtl = async(code)=> {
+    let list = await mariadb.query('getMaterialOrderDtl', code);
+
+    return list;
+};
 
 //! ------------------------------ 자재 발주관리 ------------------------------
 // 자재 발주서 헤더 조회
@@ -148,10 +159,16 @@ module.exports = {
     planListSearch,              // 미지시 생산계획서 검색
     getPlanMaterialStock,        // 미지시 생산 계획서에 대한 자재 재고 조회
 
+    // 발주서 조회 페이지
+   getMaterialOrderHeader,      // 발주서 조회 페이지 Header 조회
+   getMaterialOrderDtl,         // 발주서 조회 페이지 Detail 조회
+
+    // 발주서 관리 페이지
     getMaterialOrder,            // 자재 발주서 헤더 조회
     getMaterialOrderDetail,      // 자재 발주서 디테일 조회
     matOrderInsert,              // 자재 발주서 관리(등록)
 
+    // 입고관리 페이지
     getMaterialBeforeIn,         // 자재 입고전 대기목록
     getMaterialInList,           // 자재 입고 목록
     materialInsert,              // 자재 입고 등록

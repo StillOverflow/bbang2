@@ -386,7 +386,7 @@
    const searchFilterFunc = () => {
       let start_dt =  new Date(startDt.value).setHours(0, 0, 0, 0);
       let last_dt =  new Date(lastDt.value).setHours(0, 0, 0, 0);
-      console.log(selectedType.value)
+
       filterRowData.value = materialOrderData.value.filter((data) => {
          let newDate =  new Date(data.mat_int_dt).setHours(0, 0, 0, 0);
          
@@ -479,7 +479,7 @@
    // 자재 발주서 헤더조회
    const getMaterialOrderList = async () => {
       try {
-         const result = await axios.get('/api/material/orderList' );
+         const result = await axios.get('/api/material/order/header' );
          materialOrderData.value = result.data || [];
          filterRowData.value = materialOrderData.value
          
@@ -497,10 +497,9 @@
    // 자재 발주서 디테일조회 
    const getMaterialOrderDtlList = async (headerCode) => {
       try {
-         const result = await axios.get(`/api/material/orderDetailList/${ headerCode }` );
+         const result = await axios.get(`/api/material/order/detail/${ headerCode }` );
          materialOrderDtlData.value = result.data || [];
-         filterDtlRowData.value = materialOrderDtlData.value
-         
+         filterDtlRowData.value = materialOrderDtlData.value;
       } catch (err) {
          materialOrderDtlData.value = [];
          
@@ -539,11 +538,38 @@
    // 거래처 검색 모달 옵션
    const accountGridOptions = {
       columnDefs : [
-         { headerName: '거래처코드', field: 'act_cd', sortable: true },
-         { headerName: '거래처명', field: 'act_nm', sortable: true  },
-         { headerName: '거래처 구분', field: 'act_type', sortable: true  },
-         { headerName: '담당자', field: 'mgr_nm', sortable: true, },
-         { headerName: '담당자번호', field: 'mgr_tel', sortable: true, },
+         { 
+            headerName: '거래처코드', 
+            field: 'act_cd', 
+            sortable: true,
+            cellClass: "text-center",
+         },
+         { 
+            headerName: '거래처명', 
+            field: 'act_nm', 
+            sortable: true,
+            cellClass: "text-center",
+         },
+         { 
+            
+            headerName: '거래처 구분', 
+            field: 'act_type', 
+            sortable: true,
+            cellClass: "text-center",
+         },
+         { 
+            
+            headerName: '담당자', 
+            field: 'mgr_nm', 
+            sortable: true,
+            cellClass: "text-center",
+         },
+         { 
+            headerName: '담당자번호', 
+            field: 'mgr_tel', 
+            sortable: true,
+            cellClass: "text-center",
+         },
       ],
 
       onRowClicked : (event) => {
@@ -554,6 +580,7 @@
             });
             return;
          }
+
          actKeyword.value = event.data.act_nm
          accountModalOpen(); // 자재조회 모달
       },
@@ -578,14 +605,17 @@
          { 
             headerName: '자재코드', 
             field: 'mat_cd',
+            cellClass: "text-center",
          },
          {
             headerName: '자재명',
             field: 'mat_nm',
+            cellClass: "text-center",
          },
          {
             headerName: '단위',
             field: 'unit',
+            cellClass: "text-center",
          },
       ],
       onRowClicked : (event) => {
@@ -622,7 +652,7 @@
             cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+               return params.value ?  `<span style="color: #000; font-size: 13px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
          { 
@@ -631,7 +661,7 @@
             cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+               return params.value ?  `<span style="color: #000; font-size: 13px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
          {
@@ -652,12 +682,21 @@
             },
          },
          {
-            headerName: '거래처명',
+            headerName: '거래처코드',
             field: 'act_cd',
             cellClass: "text-center",
             cellRenderer: (params) => {
                // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+               return params.value ?  `<span style="color: #000; font-size: 13px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+            },
+         },
+         {
+            headerName: '거래처명',
+            field: 'act_nm',
+            cellClass: "text-center",
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? `<span style="color: #000; font-size: 13px">${params.value}</span>` : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
       ],
@@ -714,6 +753,15 @@
             },
          },
          { 
+            headerName: '자재코드', 
+            field: 'mat_cd',
+            cellClass: "text-center",
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
+            },
+         },
+         { 
             headerName: '자재명', 
             field: 'mat_nm',
             cellClass: "text-center",
@@ -728,13 +776,9 @@
             cellClass: "text-right",
          },
          {
-            headerName: '거래처명',
-            field: 'act_nm',
+            headerName: '담당자',
+            field: 'name',
             cellClass: "text-center",
-            cellRenderer: (params) => {
-               // 렌더링 시 값이 없을 경우 표시
-               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
-            },
          },
          {
             headerName: '납기일',
@@ -751,6 +795,15 @@
                const span = document.createElement("span");
                span.textContent = formattedDate;
                return span; // DOM 노드 반환
+            },
+         },
+         {
+            headerName: '입고현황',
+            field: 'status',
+            cellClass: "text-center",
+            cellRenderer: (params) => {
+               // 렌더링 시 값이 없을 경우 표시
+               return params.value ? params.value : `<span style="color: #cacaca; font-size: 11px">데이터없음</span>`;
             },
          },
          
@@ -784,7 +837,7 @@
             });
             return;
          }
-         matKeyword.value = event.data.mat_nm
+         matKeyword.value = event.data.mat_nm;
          getMaterialOrderDtlList(event.data.mat_order_cd)
       },
       suppressMovableColumns: true, // 컬럼 드래그 이동 방지

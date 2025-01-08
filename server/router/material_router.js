@@ -29,6 +29,19 @@ router.get("/material/matStockList/:plan_cd", async (req, res) => {
    res.send(result);
 });
 
+//! ------------------------------ 자재 발주서 조회 ------------------------------
+router.get("/material/order/header", async (req, res) => {
+   let result = await materialService.getMaterialOrderHeader();
+   
+   res.send(result);
+});
+
+router.get("/material/order/detail/:code", async (req, res) => {
+   let result = await materialService.getMaterialOrderDtl(req.params.code);
+   
+   res.send(result);
+});
+
 //! ------------------------------ 자재 발주서 관리 ------------------------------
 // 자재 발주서 조회
 router.get("/material/orderList", async (req, res) => {
