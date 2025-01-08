@@ -44,7 +44,7 @@
                         </div>
                         <!-- 입력 필드 -->
                         <div class="d-flex justify-content-left mb-2">
-                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" :style="t_overflow">공정코드 *</div>
+                            <div class="col-6 col-lg-3 text-center mb-2 mt-2 fw-bolder" maxlength="2" :style="t_overflow">공정코드 *</div>
                             <div class="input-group mb-3 w-50">
                                 <input
                                     type="text"
@@ -138,7 +138,7 @@ export default {
                 eqp_type : '',
                 duration:'',
                 note:'',
-                create_dt:''
+                //create_dt:''
 
             },
             isUpdated : false,
@@ -167,6 +167,19 @@ export default {
 
 
     methods:{
+        //글자수
+        valuecheck() {
+            if (this.procInfo.proc_cd.length !== 2) {
+                this.$swal({
+                    icon: "error",
+                    title: "공정코드는 반드시 2글자의 알파벳이어야 합니다!",
+                    confirmButtonText: "확인"
+                });
+                return false;
+            }
+            return true;
+        },
+    //
         newProcess() {
                 this.procInfo = {
                 proc_cd: '', // 자재코드는 신규등록 시 생성됨
@@ -224,10 +237,13 @@ export default {
                 this.$swal({
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
-                text: "자재명, 단위, 자재유형은 필수 입력값입니다.",
+                text: "",
                 confirmButtonText: "확인"
             });
             return;        
+            }
+            if (!this.valuecheck()) {
+                return; // 저장 중단
             }
             this.$swal({
                     title: "등록하시겠습니까?",

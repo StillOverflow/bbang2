@@ -132,8 +132,8 @@ export default {
     components: { AgGridVue },
     created(){
         this.$store.dispatch('breadCrumb', { title: '자재 관리' });
-        this.bringMat();
-        //this.searchMtl();
+        //this.bringMat();
+        this.searchMtl();
         this.fetchCommonCodes();
         let matCd = this.$route.query.mat_cd;
         if(matCd > 0){
@@ -160,7 +160,7 @@ export default {
                 unit : '',
                 safe_stk : '',
                 note:'',
-                create_dt:''
+                //create_dt:''
             },
             isUpdated : false,
             
@@ -267,12 +267,15 @@ export default {
                 this.$swal({
                 icon: "error",
                 title: "필수 입력값을 확인해주세요!",
-                text: "자재명, 단위, 자재유형은 필수 입력값입니다.",
+                text: "",
                 confirmButtonText: "확인"
             });
             return;        
             }
 
+            // if (!this.matInfo.create_dt || this.matInfo.create_dt === '') {
+            //     this.matInfo.create_dt = null; // 빈 문자열 대신 null로 설정
+            // }
             this.$swal({
                     title: "등록하시겠습니까??",
                     text: "",

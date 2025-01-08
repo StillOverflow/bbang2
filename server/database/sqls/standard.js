@@ -400,8 +400,9 @@ const defectSelect = (datas)=>{
 const getDefCd = 
 `
 SELECT 
-CONCAT('DEF', LPAD(IFNULL(MAX(CAST(SUBSTR(def_cd, 4) AS UNSIGNED)) + 1, 1), 3, '0')) AS def_cd
+    CONCAT('DEF', LPAD(IFNULL(MAX(CAST(SUBSTR(def_cd, 4) AS UNSIGNED)) + 1, 1), 3, '0')) AS def_cd
 FROM defect
+WHERE def_cd LIKE 'DEF%'
 `
 
 //불량코드등록
