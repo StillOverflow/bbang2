@@ -240,12 +240,12 @@ const testWaitPrdList = `
 const testWaitMatList = `
   SELECT o.mat_order_cd refer_cd,
          d.mat_order_dtl_cd,
-         fn_get_membername(o.id) name,
+         fn_get_membername(d.id) name,
          d.mat_cd target_cd,
          fn_get_materialname(d.mat_cd) target_nm,
          d.mat_qty order_qty, -- 총발주량
          (d.mat_qty - IFNULL((SELECT SUM(mat_qty)
-		                          FROM   test_material_in
+		                          FROM   material_in
 							                WHERE  mat_order_cd = d.mat_order_cd
 							                AND    mat_cd = d.mat_cd), 0)) yet_qty, -- 미입고량
          o.create_dt -- 발주일자
@@ -258,7 +258,7 @@ const testWaitMatList = `
 
 // 자재 미입고 거래처조회 (모달용)
 const actList = `
-  SELECT a.act_cd,
+  SELECT DISTINCT(a.act_cd),
          fn_get_accountname(a.act_cd) act_nm,
          a.ceo_nm,
          a.act_tel,
