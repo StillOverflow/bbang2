@@ -91,7 +91,7 @@
                       <td>{{ Dtl.order_qty }}</td>
                       <td><span :class="Dtl.flow_cnt > 0 ? 'text-primary' : 'text-secondary'"><b> {{ Dtl.flow_cnt > 0 ? "설정됨" : "미설정" }}</b></span></td>
                       <td><span :class="Dtl.mtl_cnt > 0 ? 'text-primary' : 'text-secondary'"><b> {{ Dtl.mtl_cnt > 0 ? "설정됨" : "미설정" }}</b></span></td>
-                      <td><button @click="prdClicked(Dtl.prd_cd)" class="btn btn-sm btn-warning">SELECT</button></td>
+                      <td><button @click="prdClicked(Dtl.prd_cd)" class="btn btn-sm btn-warning">선택하기</button></td>
                     </tr>
                   </template>
 
@@ -313,20 +313,6 @@ export default {
       let result = await axios.get(`/api/inst/${prd_cd}/flow`)
                               .catch(err => console.log(err));                              
       this.planFlowData = result.data;
-
-      const chkArr = new Map();
-
-      const key = prd_cd;
-      if (!chkArr.has(key)) {
-        chkArr.set(key, {
-            details: []
-        });
-      }
-      // 디테일 데이터 추가
-      chkArr.get(key).details.push(
-        this.planFlowData
-      );
-      console.log(chkArr)
     },
 
     //공정설정 리스트 드래그 시 이벤트 (공정 순서 재정렬)

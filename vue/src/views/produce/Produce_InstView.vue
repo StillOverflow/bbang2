@@ -40,7 +40,7 @@
                     <td>{{ Dtl.prd_cd }}</td>
                     <td>{{ Dtl.prd_nm }}</td>
                     <td>{{ Dtl.order_qty }}</td>
-                    <td><button @click="prdClicked(Dtl.prd_cd)" class="btn btn-sm btn-warning">SELECT</button></td>
+                    <td><button @click="prdClicked(Dtl.prd_cd)" class="btn btn-sm btn-warning">선택하기</button></td>
                   </tr>
                 </tbody>
               </table>
