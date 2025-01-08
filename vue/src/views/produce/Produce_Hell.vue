@@ -112,15 +112,16 @@
                       <template v-for="equ in equData" :key="equ.EQP_CD">
                         <template v-if="equ.EQP_TYPE == flow.EQP_TYPE">
                           <tr class="text-center align-middle sub-tr" :class="equ.use_cnt > 0 ? 'none-select' : ''">
-                            <td width="20%"></td>
+                            <td width="10%"></td>
                             <td width="10%">
                               <div class="form-check col-10 d-flex">
                                 <input class="form-check-input ms-1" type="radio" v-model="equ_radio" :value="equ.EQP_CD" :id="'radio' + equ.EQP_CD">
                               </div>
                             </td>
                             <td width="10%">{{ equ.EQP_CD }}</td>
-                            <td width="30%">{{ equ.EQP_NM }}</td>
-                            <td width="30%">{{ equ.use_cnt > 0 ? '사용중' : '사용가능' }}</td>
+                            <td width="20%">{{ equ.EQP_NM }}</td>
+                            <td width="25%">{{ equ.use_cnt > 0 ? '사용중' : '사용가능' }}</td>  
+                            <td width="15%"></td>
                           </tr>
                         </template>
                       </template>
@@ -388,7 +389,12 @@ export default {
 
     //자재 리스트
     async getMatList() {
-      let result = await axios.get(`/api/inst/${this.resultInfo.PROC_FLOW_CD}/mat`)
+      let obj = {
+        INST_CD : this.resultInfo.INST_CD,
+        PROC_FLOW_CD : this.resultInfo.PROC_FLOW_CD
+      }
+      console.log(obj);
+      let result = await axios.get(`/api/progress/mat`, {params:obj})
                               .catch(err => console.log(err));
       this.matData = result.data;
       this.matCount = this.matData.length;
@@ -396,7 +402,6 @@ export default {
 
     //지시서 제품 리스트
     async getInstDtlList(inst_cd) {
-      console.log(`/api/inst/dtl/${inst_cd}`);
       let result = await axios.get(`/api/inst/dtl/${inst_cd}`)
                               .catch(err => console.log(err));
       this.instDtlData = result.data;

@@ -61,9 +61,10 @@ export default {
 
       instDefs: [
         { headerName: '계획서코드', field: 'PROD_PLAN_CD', sortable: true, width: 120, cellStyle: {textAlign: "center"}},
-        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120, cellStyle: {textAlign: "center"}},
-        { headerName: '생산제품수', field: 'PRD_CNT', sortable: true, cellStyle: {textAlign: "center"}},
         { headerName: '계획서 진행상태', field: 'PLAN_STATUS', sortable: true, cellStyle: {textAlign: "center"} },
+        { headerName: '지시서코드', field: 'INST_CD', sortable: true, width: 120, cellStyle: {textAlign: "center"}},
+        { headerName: '지시제품수', field: 'PRD_CNT', sortable: true, cellStyle: {textAlign: "center"}},        
+        { headerName: '완료제품수', field: 'END_CNT', sortable: true, cellStyle: {textAlign: "center"}},        
         { headerName: '작업일자', field: 'WORK_DT', sortable: true, valueFormatter: this.$comm.dateFormatter, cellStyle: {textAlign: "center"} },
         { headerName: '등록일', field: 'CREATE_DT', valueFormatter: this.$comm.dateFormatter, cellStyle: {textAlign: "center"} },
         {
@@ -91,11 +92,6 @@ export default {
         },
         // row에 규칙추가
         rowClassRules: {
-          'rowIng': (params) => {
-              if (params.data.PLAN_STATUS == '진행중') { 
-                return true;
-              }
-          },
           'rowEnd': (params) => {
               if (params.data.PLAN_STATUS == '완료') { 
                 return true;
@@ -177,9 +173,6 @@ export default {
 </script>
 
 <style>
-.rowIng {
-  background-color: #fff3cd !important; /* 셀 배경 빨간색 */
-}
 .rowEnd {
   background-color: #eee !important; /* 셀 배경 빨간색 */
   color: gray !important;

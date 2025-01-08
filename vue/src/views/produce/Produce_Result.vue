@@ -28,8 +28,7 @@
               </ag-grid-vue>
             </template>
             <template v-slot:footer>
-              <button type="button" class="btn btn-secondary" @click="modalOpen">Cancel</button>
-              <button type="button" class="btn btn-primary" @click="modalOpen">OK</button>
+              <button type="button" class="btn btn-secondary" @click="modalOpen">닫기</button>
             </template>
           </Layout>
         <!--생산지시서 검색모달[E]-->
@@ -135,25 +134,25 @@ export default {
                },
             },
          },        
-        { headerName: '순번', field: 'STEP', sortable: true, width: 120, cellStyle: {textAlign: "center"}},
-        { headerName: '공정명', field: 'PROC_NM', sortable: true, cellStyle: {textAlign: "center"}},
-        { headerName: '담당자', field: 'NAME', cellStyle: {textAlign: "center"}},
-        { headerName: '설비명', field: 'EQP_NM', cellStyle: {textAlign: "center"}},
-        { headerName: '계획량', field: 'TOTAL_QTY', cellStyle: {textAlign: "center"}},
-        { headerName: '지시량', field: 'PROD_QTY', cellStyle: {textAlign: "center"}},
-        { headerName: '불량양', field: 'DEF_QTY', cellStyle: {textAlign: "center"}},
-        { headerName: '불량코드', field: 'CREATE_DT', cellStyle: {textAlign: "center"}},
-        { headerName: '불량상세', field: 'CREATE_DT', cellStyle: {textAlign: "center"}},
+        { headerName: '순번', field: 'STEP', sortable: true, width: 120, cellStyle: {textAlign: "center"}, valueFormatter: this.$comm.defaultFormatter},
+        { headerName: '공정명', field: 'PROC_NM', sortable: true, cellStyle: {textAlign: "center"}, valueFormatter: this.$comm.defaultFormatter},
+        { headerName: '담당자', field: 'NAME', cellStyle: {textAlign: "center"}, valueFormatter: this.$comm.defaultFormatter},
+        { headerName: '설비명', field: 'EQP_NM', cellStyle: {textAlign: "center"}, valueFormatter: this.$comm.defaultFormatter},
+        { headerName: '계획량', field: 'TOTAL_QTY', cellStyle: {textAlign: "center"}, valueFormatter: this.$comm.defaultFormatter},
+        { headerName: '지시량', field: 'PROD_QTY', cellStyle: {textAlign: "center"}, valueFormatter: this.$comm.defaultFormatter},
+        { headerName: '불량양', field: 'DEF_QTY', cellStyle: {textAlign: "center"}, valueFormatter: this.$comm.defaultFormatter},
+        { headerName: '불량코드', field: 'DEF_CD', cellStyle: {textAlign: "center"}, valueFormatter: this.$comm.defaultFormatter},
+        { headerName: '불량상세', field: 'CREATE_DT', cellStyle: {textAlign: "center"}, valueFormatter: this.$comm.defaultFormatter},
         { 
           headerName: '공정시작시간', 
           field: 'START_TIME', 
-          valueFormatter: (params) => this.$comm.getDatetimeMin(params.value)
+          valueFormatter: (params) => params.value == null ? this.$comm.defaultFormatter(params) : this.$comm.getDatetimeMin(params.value)
           , cellStyle: {textAlign: "center"}
         },
         { 
           headerName: '공정종료시간', 
           field: 'END_TIME', 
-          valueFormatter: (params) => this.$comm.getDatetimeMin(params.value)
+          valueFormatter: (params) => params.value == null ? this.$comm.defaultFormatter(params) : this.$comm.getDatetimeMin(params.value)
           , cellStyle: {textAlign: "center"}
         },
         { headerName: '진행상태', field: 'ACT_TYPE', sortable: true, cellStyle: {textAlign: "center"} },
@@ -166,11 +165,13 @@ export default {
         suppressRowTransform: true,
         overlayNoRowsTemplate: '표시할 값이 없습니다.', // 표시할 행이 없을 때 적용할 메세지'
         suppressMovableColumns: true, // 컬럼 드래그 이동 방지
+        valueFormatter: params => params.value == null ? this.$comm.defaultFormatter(params) : `${params.value}`,
+
+
       }
     };
   },
   methods: {
-    
     modalOpen() { //지시서 모달
       this.isModal = !this.isModal;
       this.getInstList();

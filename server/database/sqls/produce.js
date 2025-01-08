@@ -134,7 +134,11 @@ const planDtlList =
             ON pi.INST_CD=pid.INST_CD 
          WHERE pi.PROD_PLAN_CD = pp.prod_plan_cd AND pid.PRD_CD = pp.prd_cd) AS reg_cnt,
          (SELECT COUNT(*) FROM process_flow where prd_cd=pp.PRD_CD) AS flow_cnt,
-         (SELECT COUNT(*) FROM proc_flow_mtl where prd_cd=pp.PRD_CD) AS mtl_cnt
+         (SELECT COUNT(*) FROM proc_flow_mtl where prd_cd=pp.PRD_CD) AS mtl_cnt,
+          IFNULL((SELECT sum(PASS_QTY)
+            FROM prod_inst pi left join prod_inst_dtl pid
+            on PI.INST_CD=pid.INST_CD 
+          WHERE pi.prod_plan_cd=pp.prod_plan_cd AND PRD_CD=pp.PRD_CD),0) AS PASS_QTY
 FROM 
         PROD_PLAN_DTL pp JOIN PRODUCT p ON pp.PRD_CD = p.PRD_CD
 WHERE PROD_PLAN_CD = ? `;
@@ -150,7 +154,8 @@ const instList = (datas) => {
         (SELECT fn_get_codename(STATUS) FROM prod_plan where PROD_PLAN_CD=pi.PROD_PLAN_CD) as PLAN_STATUS,
         WORK_DT,
         CREATE_DT,
-        (SELECT COUNT(*) FROM prod_inst_dtl WHERE INST_CD=PI.INST_CD) AS PRD_CNT
+        (SELECT COUNT(*) FROM prod_inst_dtl WHERE INST_CD=PI.INST_CD) AS PRD_CNT,
+        (SELECT COUNT(*) FROM prod_inst_dtl WHERE INST_CD=PI.INST_CD ANd STATUS='Z03') AS END_CNT
         FROM PROD_INST pi`;
 
  const searchOrder = [];
@@ -324,7 +329,7 @@ let sql =
   fn_get_codename(pr.STATUS) as ACT_TYPE,
   fn_get_codename(pr.QUE_STATUS) as QUE_ACT_TYPE
 FROM 
-  PROD_RESULT pr`;
+  PROD_RESULT pr LEFT join (SELECT REFER_CD, DEF_CD FROM quality_test_record) qt on pr.PROD_RESULT_CD=qt.REFER_CD `;
 
  const searchOrder = [];
 
@@ -394,18 +399,21 @@ FROM equipment WHERE eqp_type = ?
 `;
 
 //커스텀된 공정흐름별 자재목록 조회
-const instProcMtList =
-`SELECT 
-    INST_MAT_CD,
-    MAT_CD,
-    MAT_QTY,   
-    MAT_USE_QTY,
-    (SELECT MAT_NM FROM material where MAT_CD=pf.MAT_CD) AS MAT_NM,
-    UNIT
-FROM
-  proc_mat pf
-where pf.PROC_FLOW_CD = ?  
-`;
+const instProcMtList = (values) => {
+  let sql = 
+    `SELECT 
+        INST_MAT_CD,
+        MAT_CD,
+        MAT_QTY,   
+        MAT_USE_QTY,
+        (SELECT MAT_NM FROM material where MAT_CD=pf.MAT_CD) AS MAT_NM,
+        UNIT
+    FROM
+      proc_mat pf
+    where pf.INST_CD = '${values.INST_CD}' and pf.PROC_FLOW_CD = '${values.PROC_FLOW_CD}'
+    `;
+    return sql;
+}
 
 //커스텀된 공정흐름별 자재사용량 등록
 const instMatUpdate =
@@ -441,7 +449,7 @@ const matLotInsert = (values) => { // 배열 형식으로 받아야 함.
   `;
 
   values.forEach((obj) => {
-    sql += `(CONCAT('MOD', LPAD(nextval(result_seq), 3,'0')), 
+    sql += `(CONCAT('MOD', LPAD(nextval(mat_out_seq), 3,'0')), 
             now(), 
             '${obj.MAT_OUT_QTY}', 
             '${obj.MAT_LOT_CD}', 
@@ -466,7 +474,7 @@ WHERE MAT_LOT_CD = ? `;
 let sql = `
   UPDATE 
     prod_inst a INNER JOIN prod_plan b ON a.PROD_PLAN_CD=b.PROD_PLAN_CD
-    SET a.STATUS='${values.STATUS}', b.STATUS='${values.STATUS}'
+    SET b.STATUS='${values.STATUS}'
     WHERE INST_CD = '${values.no}'
 `;
 return sql;
