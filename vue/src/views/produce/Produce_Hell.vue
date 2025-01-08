@@ -66,9 +66,9 @@
                 :key="val.INST_DTL_CD">
                   <td>{{ val.PRD_CD }}</td>
                   <td>{{ val.PRD_NM }}</td>
-                  <td>{{ val.TOTAL_QTY }}</td>
-                  <td>{{ val.PRD_OUT_QTY }}</td>
-                  <td>{{ val.TOTAL_QTY-val.PRD_OUT_QTY }}</td>
+                  <td>{{ this.$comm.getCurrency(val.TOTAL_QTY) }}</td>
+                  <td>{{ this.$comm.getCurrency(val.PRD_OUT_QTY) }}</td>
+                  <td>{{ val.TOTAL_QTY-val.PRD_OUT_QTY > 1 ? this.$comm.getCurrency(val.TOTAL_QTY-val.PRD_OUT_QTY) : 0}}</td>
                   <td :class="val.ACT_TYPE == '완료' ? 'text-primary' : 'text-secondary'">{{ val.ACT_TYPE == '완료' ? '완료' : '미완료' }}</td>
                   <td><button class="btn btn-dark btn-sm" @click="getResultList(val);">선택하기</button></td>
                 </tr>
@@ -235,7 +235,7 @@
                         <td>{{ mat.MAT_CD }}</td>
                         <td>{{ mat.MAT_NM }}</td>
                         <td>{{ mat.MAT_QTY }}</td>
-                        <td>{{ mat.MAT_STOCK }}</td>
+                        <td>{{ mat.MAT_STOCK > 1 ? this.$comm.getCurrency(mat.MAT_STOCK) : 0 }}</td>
                         <td class="row">
                           <input type="number" class="form-control col-8 w-80" v-model.number="mat.MAT_USE_QTY" @keyup="matHandle(mat)">
                           <span class="col-1">{{ mat.UNIT }}</span>
@@ -359,7 +359,7 @@ export default {
         })
       }else{
         this.getInstDtlList(params.data.INST_CD);
-        this.inst_cd= params.data.INST_CD;        
+        this.inst_cd= params.data.INST_CD;    
       }
     },
     modalClicked2(params) {
@@ -395,7 +395,6 @@ export default {
         INST_CD : this.resultInfo.INST_CD,
         PROC_FLOW_CD : this.resultInfo.PROC_FLOW_CD
       }
-      console.log(obj);
       let result = await axios.get(`/api/progress/mat`, {params:obj})
                               .catch(err => console.log(err));
       this.matData = result.data;
@@ -441,7 +440,7 @@ export default {
       }
       let result = await axios.get('/api/progress/result', {params:obj})
                               .catch(err => console.log(err));
-
+                              this.equData = '';
       this.flowData = result.data;
       this.equ_radio = result.data.EQP_CD;
     },
@@ -477,7 +476,8 @@ export default {
 
     //공정관리화면 노출
     showProcess(){
-      if(this.resultInfo.LAST_STATUS != 'Z03' && this.resultInfo.LAST_STATUS != '0'){
+
+      if((this.resultInfo.LAST_STATUS != 'Z03' && this.resultInfo.LAST_STATUS != '0') || (this.resultInfo.LAST_QUE_STATUS != 'Y' && this.resultInfo.LAST_QUE_STATUS != '0')){
         this.$swal({
           icon: "error",
           title: "이전 공정이 완료되지 않았습니다.",
@@ -521,21 +521,31 @@ export default {
 
     //공정 시작/종료
     async process(mode){
-      
-      if (!this.equ_radio) {
-        this.$swal({
-          icon: "error",
-          title: "사용할 설비를 선택해주세요",
-        });
-        return;
-      }else if (!this.resultInfo.ID) {
-        this.$swal({
-          icon: "error",
-          title: "공정 담당자를 선택해주세요",
-        });
-        return;
-      }else{
-        if(mode == "start"){
+      this.matEmpty = this.matData.findIndex((item) => item.MAT_STOCK < 1);
+
+
+      if(mode == "start"){
+          
+        if (!this.equ_radio) {
+          this.$swal({
+            icon: "error",
+            title: "사용할 설비를 선택해주세요",
+          });
+          return;
+        }else if (!this.resultInfo.ID) {
+          this.$swal({
+            icon: "error",
+            title: "공정 담당자를 선택해주세요",
+          });
+          return;
+        }else if (this.matEmpty > 0) {
+          this.$swal({
+            icon: "error",
+            title: "재고가 부족한 자재가 있습니다.",
+            text : "자재 실사용량의 현재고를 확인해주세요"
+          });
+          return;
+        }else{
           
           if(this.resultAble == false){
             this.$swal({
@@ -568,7 +578,7 @@ export default {
                 };
 
                 this.matData.forEach((val) => {
-                  if(obj.MAT_STOCK > 1){
+                  if(val.MAT_STOCK > 0){
                     matArr.push({
                       INST_MAT_CD: val.INST_MAT_CD,
                       MAT_CD: val.MAT_CD,
@@ -578,7 +588,6 @@ export default {
                     });
                   }
                 });
-                
                 startArr = [obj, matArr];
 
                 let result = await axios.put(`/api/progress/start/${this.resultInfo.PROD_RESULT_CD}`, startArr)
@@ -592,49 +601,47 @@ export default {
                   this.getResultInfo(this.resultInfo.PROD_RESULT_CD);
                   await axios.put(`/api/progress/status/${this.resultInfo.INST_CD}`, {STATUS:'Z02'})
                              .catch(err => console.log(err));
-                }              
-              }
-            })
-          }
-          
-        }else{
-          if(this.resultInfo.STATUS == 'Z03'){
-            this.$swal({
-              title: "진행 완료된 공정입니다.",
-              icon: "error",
-            })
-          }else{
-            this.$swal({
-              title: "해당 공정을 종료하시겠습니까?",
-              icon: "question",
-              showCancelButton: true,
-              confirmButtonColor: "#3085d6",
-              cancelButtonColor: "#d33",
-              confirmButtonText: "예",
-              cancelButtonText: "아니요"
-            }).then(async(result) => {
-              if (result.isConfirmed) {
-
-                let obj = {
-                  STATUS : 'Z03',
-                  END_TIME: this.$comm.getDateTime()
-                };
-
-                let result =await axios.put(`/api/progress/end/${this.resultInfo.PROD_RESULT_CD}`, obj)
-                                      .catch(err => console.log(err));
-
-                if(result.data == 'success'){
-                  this.getResultList(this.resultInfo);
-                  this.resultInfo.END_TIME = this.$comm.getDatetimeMin(obj.END_TIME);
-                  this.resultInfo.STATUS = 'Z03';
-                  this.equ_radio = this.resultInfo.EQP_CD;
-                  this.getResultInfo(this.resultInfo.PROD_RESULT_CD);
-                }
+                }           
               }
             })
           }
         }
-      
+      }else{
+        if(this.resultInfo.STATUS == 'Z03'){
+          this.$swal({
+            title: "진행 완료된 공정입니다.",
+            icon: "error",
+          })
+        }else{
+          this.$swal({
+            title: "해당 공정을 종료하시겠습니까?",
+            icon: "question",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "예",
+            cancelButtonText: "아니요"
+          }).then(async(result) => {
+            if (result.isConfirmed) {
+
+              let obj = {
+                STATUS : 'Z03',
+                END_TIME: this.$comm.getDateTime()
+              };
+
+              let result =await axios.put(`/api/progress/end/${this.resultInfo.PROD_RESULT_CD}`, obj)
+                                    .catch(err => console.log(err));
+
+              if(result.data == 'success'){
+                this.getResultList(this.resultInfo);
+                this.resultInfo.END_TIME = this.$comm.getDatetimeMin(obj.END_TIME);
+                this.resultInfo.STATUS = 'Z03';
+                this.equ_radio = this.resultInfo.EQP_CD;
+                this.getResultInfo(this.resultInfo.PROD_RESULT_CD);
+              }
+            }
+          })
+        }
       }
     }   
   } 

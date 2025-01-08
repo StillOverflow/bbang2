@@ -30,7 +30,7 @@ const planSelect = (datas) => {
     query += ` WHERE ` + searchOrder.join(' AND ');
   }
 
-  query += ` order by create_dt desc`;
+  query += ` order by PROD_PLAN_CD desc`;
 
   return query; // 쿼리 통합
 };
@@ -168,6 +168,8 @@ const instList = (datas) => {
   if (searchOrder.length > 0) {
     query += ` WHERE ` + searchOrder.join(' AND ');
   }
+
+  query += ` order by INST_CD desc`;
   
   return query; // 합체한 쿼리 전체
 };

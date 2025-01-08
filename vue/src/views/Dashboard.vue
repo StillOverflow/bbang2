@@ -1,13 +1,67 @@
 <script setup>
+import axios from 'axios';
+import { shallowRef, onBeforeMount, ref } from 'vue';
+
 import MiniStatisticsCard from "@/examples/Cards/MiniStatisticsCard.vue";
 import GradientLineChart from "@/examples/Charts/GradientLineChart.vue";
-import Carousel from "./components/Carousel.vue";
-import CategoriesList from "./components/CategoriesList.vue";
 
 import US from "@/assets/img/icons/flags/US.png";
 import DE from "@/assets/img/icons/flags/DE.png";
 import GB from "@/assets/img/icons/flags/GB.png";
 import BR from "@/assets/img/icons/flags/BR.png";
+
+const todayOd = ref(''); 
+const todayProdIn = ref(''); 
+const todayProdQty = ref(''); 
+const todayProdOut = ref(''); 
+
+const dptData = shallowRef([]);
+
+onBeforeMount(() => {
+  dateFormat();
+  topInfo();
+  dptList();
+});
+
+const dateFormat = (value) => {
+    let date = value == null ? new Date() : new Date(value);
+
+    let year = date.getFullYear();
+    let month = ('0' + (date.getMonth() + 1)).slice(-2);
+    let day = ('0' + date.getDate()).slice(-2);
+
+    let result = year + '-' + month + '-' + day;
+    return result;
+  };
+
+// 상단 갯수
+const topInfo = async () => {
+  try {
+    let obj = {
+      TODAY : dateFormat()
+    }
+    const result = await axios.get('/api/comm/dashboard/top', {params:obj});
+    console.log(result.data[0].PRD_IN_QTY);
+    todayOd.value = result.data[0].ORDER_QTY;
+    todayProdIn.value = result.data[0].PRD_IN_QTY;
+    todayProdQty.value = result.data[0].PROD_QTY;
+    todayProdOut.value = result.data[0].PRD_OUT_QTY;
+
+  } catch (err) {
+    console.log(err);
+  }
+}
+
+// 부서
+const dptList = async () => {
+  try {
+    const result = await axios.get('/api/comm/dashboard/dpt');
+    dptData.value = result.data || [];
+
+  } catch (err) {
+    console.log(err);
+  }
+}
 
 const sales = {
   us: {
@@ -47,8 +101,9 @@ const sales = {
         <div class="row">
           <div class="col-lg-3 col-md-6 col-12">
             <mini-statistics-card
-              title="Today's Money"
-              value="$53,000"
+              title="금일 주문량"
+              v-model="todayOd"
+              value=""
               description="<span
                 class='text-sm font-weight-bolder text-success'
                 >+55%</span> since yesterday"
@@ -61,7 +116,8 @@ const sales = {
           </div>
           <div class="col-lg-3 col-md-6 col-12">
             <mini-statistics-card
-              title="Today's Users"
+              title="금일 생산량"
+              v-model="todayProdIn"
               value="2,300"
               description="<span
                 class='text-sm font-weight-bolder text-success'
@@ -75,7 +131,8 @@ const sales = {
           </div>
           <div class="col-lg-3 col-md-6 col-12">
             <mini-statistics-card
-              title="New Clients"
+              title="가동중인 공정"
+              v-model="todayProdQty"
               value="+3,462"
               description="<span
                 class='text-sm font-weight-bolder text-danger'
@@ -89,8 +146,9 @@ const sales = {
           </div>
           <div class="col-lg-3 col-md-6 col-12">
             <mini-statistics-card
-              title="Sales"
-              value="$103,430"
+              title="금일 출고제품양"
+              v-model="todayProdOut"
+              value=""
               description="<span
                 class='text-sm font-weight-bolder text-success'
                 >+5%</span> than last month"
@@ -108,9 +166,9 @@ const sales = {
             <div class="card z-index-2">
               <gradient-line-chart
                 id="chart-line"
-                title="Sales Overview"
+                title="월간 생산량"
                 description="<i class='fa fa-arrow-up text-success'></i>
-      <span class='font-weight-bold'>4% more</span> in 2021"
+      <span class='font-weight-bold'>4% more</span> in 2025"
                 :chart="{
                   labels: [
                     'Apr',
@@ -133,16 +191,11 @@ const sales = {
               />
             </div>
           </div>
-          <div class="col-lg-5">
-            <carousel />
-          </div>
-        </div>
-        <div class="row mt-4">
-          <div class="col-lg-7 mb-lg-0 mb-4">
+          <div class="col-lg-5 mb-lg-0 mb-4">
             <div class="card">
               <div class="p-3 pb-0 card-header">
                 <div class="d-flex justify-content-between">
-                  <h6 class="mb-2">Sales by Country</h6>
+                  <h6 class="mb-2">부서별 사원수</h6>
                 </div>
               </div>
               <div class="table-responsive">
@@ -185,38 +238,6 @@ const sales = {
                 </table>
               </div>
             </div>
-          </div>
-          <div class="col-lg-5">
-            <categories-list
-              :categories="[
-                {
-                  icon: {
-                    component: 'ni ni-mobile-button',
-                    background: 'dark',
-                  },
-                  label: 'Devices',
-                  description: '250 in stock <strong>346+ sold</strong>',
-                },
-                {
-                  icon: {
-                    component: 'ni ni-tag',
-                    background: 'dark',
-                  },
-                  label: 'Tickets',
-                  description: '123 closed <strong>15 open</strong>',
-                },
-                {
-                  icon: { component: 'ni ni-box-2', background: 'dark' },
-                  label: 'Error logs',
-                  description: '1 is active <strong>40 closed</strong>',
-                },
-                {
-                  icon: { component: 'ni ni-satisfied', background: 'dark' },
-                  label: 'Happy Users',
-                  description: '+ 430',
-                },
-              ]"
-            />
           </div>
         </div>
       </div>

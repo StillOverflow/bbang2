@@ -302,7 +302,7 @@ export default {
             if ( this.orderDtlData.some((obj) => obj.prd_cd === val.data.prd_cd)){ //이미 추가된 제품일 경우
               this.$swal({
                 icon: "error",
-                title: "존재하는 자재가 있습니다.",
+                title: "존재하는 제품이 있습니다.",
                 text: "다시 선택해주세요",
               });
             }else{

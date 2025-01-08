@@ -55,4 +55,26 @@ router.get('/comm/login', async (req, res) => {
   res.send(result);
 });
 
+
+/* ---------------대시보드 -------------- */
+// 상단 갯수
+router.get('/comm/dashboard/top', async (req, res) => {
+  let date = req.query;
+  let List = await commonService.dashBoardTop(date);
+  res.send(List);
+});
+
+// 부서별 사원 수
+router.get('/comm/dashboard/dpt', async (req, res) => {
+  let List = await commonService.dashBoardDpt();
+  res.send(List);
+});
+
+// 월간 생산량
+router.get('/comm/dashboard/stats', async (req, res) => {
+  let date = req.query;
+  let List = await commonService.dashBoardStats(date);
+  res.send(List);
+});
+
 module.exports = router;
