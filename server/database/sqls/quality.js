@@ -253,7 +253,7 @@ const testWaitMatList = `
                             ON o.mat_order_cd = d.mat_order_cd
   WHERE  o.status != 'L01' -- 입고완료되지 않은 내역
     AND  o.act_cd = ?
-  ORDER  BY refer_cd, target_nm
+  ORDER  BY create_dt DESC, target_nm
 `;
 
 // 자재 미입고 거래처조회 (모달용)
@@ -267,6 +267,7 @@ const actList = `
   FROM   material_order o JOIN account a
                             ON o.act_cd = a.act_cd
   WHERE  o.status != 'L01'
+  ORDER  BY o.create_dt DESC, act_nm
 `;
 
 // 타입별 불량조회 (모달용)

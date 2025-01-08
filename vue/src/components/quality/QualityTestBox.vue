@@ -506,7 +506,14 @@
         let isLast = target.is_last == 1;
 
         // 유효성 검사
-        if(this.def_qty > 0 && !this.def_cd){ // 불량양이 있는데 불량코드를 선택하지 않은 경우
+        if(this.total_qty <= 0){
+          this.$swal(
+            '입고량 미입력',
+            `입고량이 입력되지 않았습니다.`,
+            'warning'
+          );
+          return;
+        } else if(this.def_qty > 0 && !this.def_cd){ // 불량양이 있는데 불량코드를 선택하지 않은 경우
           this.$swal(
             '불량명 미선택',
             `불량명을 선택하지 않았습니다.`,
