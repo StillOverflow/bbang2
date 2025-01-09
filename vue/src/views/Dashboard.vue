@@ -1,21 +1,12 @@
 <script setup>
 import axios from 'axios';
-import { shallowRef, onBeforeMount, ref } from 'vue';
+import { shallowRef, onBeforeMount } from 'vue';
 
 import MiniStatisticsCard from "@/examples/Cards/MiniStatisticsCard.vue";
 import GradientLineChart from "@/examples/Charts/GradientLineChart.vue";
 
-import US from "@/assets/img/icons/flags/US.png";
-import DE from "@/assets/img/icons/flags/DE.png";
-import GB from "@/assets/img/icons/flags/GB.png";
-import BR from "@/assets/img/icons/flags/BR.png";
-
-const todayOd = ref(''); 
-const todayProdIn = ref(''); 
-const todayProdQty = ref(''); 
-const todayProdOut = ref(''); 
-
 const dptData = shallowRef([]);
+const topInfoArr = shallowRef([]);
 
 onBeforeMount(() => {
   dateFormat();
@@ -41,11 +32,9 @@ const topInfo = async () => {
       TODAY : dateFormat()
     }
     const result = await axios.get('/api/comm/dashboard/top', {params:obj});
-    console.log(result.data[0].PRD_IN_QTY);
-    todayOd.value = result.data[0].ORDER_QTY;
-    todayProdIn.value = result.data[0].PRD_IN_QTY;
-    todayProdQty.value = result.data[0].PROD_QTY;
-    todayProdOut.value = result.data[0].PRD_OUT_QTY;
+    
+    topInfoArr.value = result.data[0];
+    console.log( topInfoArr.value);
 
   } catch (err) {
     console.log(err);
@@ -63,36 +52,6 @@ const dptList = async () => {
   }
 }
 
-const sales = {
-  us: {
-    country: "United States",
-    sales: 2500,
-    value: "$230,900",
-    bounce: "29.9%",
-    flag: US,
-  },
-  germany: {
-    country: "Germany",
-    sales: "3.900",
-    value: "$440,000",
-    bounce: "40.22%",
-    flag: DE,
-  },
-  britain: {
-    country: "Great Britain",
-    sales: "1.400",
-    value: "$190,700",
-    bounce: "23.44%",
-    flag: GB,
-  },
-  brasil: {
-    country: "Brasil",
-    sales: "562",
-    value: "$143,960",
-    bounce: "32.14%",
-    flag: BR,
-  },
-};
 </script>
 <template>
   <div class="py-4 container-fluid">
@@ -102,7 +61,7 @@ const sales = {
           <div class="col-lg-3 col-md-6 col-12">
             <mini-statistics-card
               title="금일 주문량"
-              v-model="todayOd"
+              v-model="topInfoArr.ORDER_QTY"
               value=""
               description="<span
                 class='text-sm font-weight-bolder text-success'
@@ -117,8 +76,8 @@ const sales = {
           <div class="col-lg-3 col-md-6 col-12">
             <mini-statistics-card
               title="금일 생산량"
-              v-model="todayProdIn"
-              value="2,300"
+              v-model="topInfoArr.PRD_IN_QTY"
+              value=""
               description="<span
                 class='text-sm font-weight-bolder text-success'
                 >+3%</span> since last week"
@@ -132,7 +91,7 @@ const sales = {
           <div class="col-lg-3 col-md-6 col-12">
             <mini-statistics-card
               title="가동중인 공정"
-              v-model="todayProdQty"
+              v-model="topInfoArr.PROD_QTY"
               value="+3,462"
               description="<span
                 class='text-sm font-weight-bolder text-danger'
@@ -147,7 +106,7 @@ const sales = {
           <div class="col-lg-3 col-md-6 col-12">
             <mini-statistics-card
               title="금일 출고제품양"
-              v-model="todayProdOut"
+              v-model="topInfoArr.PRD_OUT_QTY"
               value=""
               description="<span
                 class='text-sm font-weight-bolder text-success'
@@ -201,36 +160,33 @@ const sales = {
               <div class="table-responsive">
                 <table class="table align-items-center">
                   <tbody>
-                    <tr v-for="(sale, index) in sales" :key="index">
+                    <tr v-for="(val, index) in dptData" :key="index">
                       <td class="w-30">
                         <div class="px-2 py-1 d-flex align-items-center">
-                          <div>
-                            <img :src="sale.flag" alt="Country flag" />
-                          </div>
                           <div class="ms-4">
                             <p class="mb-0 text-xs font-weight-bold">
-                              Country:
+                              부서명:
                             </p>
-                            <h6 class="mb-0 text-sm">{{ sale.country }}</h6>
+                            <h6 class="mb-0 text-sm">{{ val.DPT_NM }}</h6>
                           </div>
                         </div>
                       </td>
                       <td>
                         <div class="text-center">
-                          <p class="mb-0 text-xs font-weight-bold">Sales:</p>
-                          <h6 class="mb-0 text-sm">{{ sale.sales }}</h6>
+                          <p class="mb-0 text-xs font-weight-bold">부서코드:</p>
+                          <h6 class="mb-0 text-sm">{{ val.DPT_CD }}</h6>
                         </div>
                       </td>
                       <td>
                         <div class="text-center">
-                          <p class="mb-0 text-xs font-weight-bold">Value:</p>
-                          <h6 class="mb-0 text-sm">{{ sale.value }}</h6>
+                          <p class="mb-0 text-xs font-weight-bold">부서장:</p>
+                          <h6 class="mb-0 text-sm">{{ val.MGR_NM }}</h6>
                         </div>
                       </td>
-                      <td class="text-sm align-middle">
-                        <div class="text-center col">
-                          <p class="mb-0 text-xs font-weight-bold">Bounce:</p>
-                          <h6 class="mb-0 text-sm">{{ sale.bounce }}</h6>
+                      <td>
+                        <div class="text-center">
+                          <p class="mb-0 text-xs font-weight-bold">사원수:</p>
+                          <h6 class="mb-0 text-sm">{{ val.MEM_CNT }}</h6>
                         </div>
                       </td>
                     </tr>

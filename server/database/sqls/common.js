@@ -237,10 +237,12 @@ const dashBoardDpt =
   SELECT 
     d.DPT_CD AS DPT_CD,
     DPT_NM,
+    (SELECT NAME FROM member WHERE id=d.mgr_id) AS MGR_NM,
     MEM_CNT
   FROM 
   department d JOIN (SELECT ID, DPT_CD, COUNT(DPT_CD) AS MEM_CNT FROM member GROUP BY DPT_CD) m
-  on d.DPT_CD=m.DPT_CD;
+  on d.DPT_CD=m.DPT_CD
+  order BY mem_cnt DESC
 `;
 
 
