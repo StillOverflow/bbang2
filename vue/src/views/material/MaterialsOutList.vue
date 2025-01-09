@@ -569,6 +569,12 @@
          },
       ],
 
+      rowSelection: {
+         mode:"singleRow",
+         checkboxes: false,
+         enableClickSelection: true,
+      },
+
       pagination: true,
       paginationPageSize: 10,
       paginationPageSizeSelector: [10, 20, 50, 100],
@@ -653,17 +659,17 @@
             cellClass: "text-center",
          },
          { 
-            headerName: '단위', 
-            field: 'unit',
-            cellClass: "text-center",
-         },
-         { 
             headerName: '출고량', 
             field: 'mat_out_qty',
             cellClass: "text-right",
             cellRenderer: (params) => {
                return params.value ? params.value.toLocaleString() : "0";
             },
+         },
+         { 
+            headerName: '단위', 
+            field: 'unit',
+            cellClass: "text-center",
          },
          {
             headerName: '출고날짜',
