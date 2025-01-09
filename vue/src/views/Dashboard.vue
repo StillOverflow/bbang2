@@ -6,7 +6,7 @@ import GradientLineChart from "@/examples/Charts/GradientLineChart.vue";
 
 const dptData = shallowRef([]);
 const topInfoArr = shallowRef([]);
-const monthArr = shallowRef(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12' ]);
+const monthArr = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12' ];
 const prdData = shallowRef([]);
 
 onBeforeMount(() => {
@@ -62,13 +62,12 @@ const dptList = async () => {
 // 월간 생산량
 const monthProd = async () => {
   try {
-    const result = await axios.get('/api/comm/dashboard/stats');
-    for(let i=0; i<12; i++){
-      if(result.data[i].TOTAL_QTY > 0) prdData.value.push(result.data[i].TOTAL_QTY);
+    let result = await axios.get('/api/comm/dashboard/stats');
+
+    for(let i=0; i<monthArr.length; i++) {
+      if(result.data[i]) prdData.value.push(Number(result.data[i].TOTAL_QTY));
       else prdData.value.push(0);
-    }; 
-    console.log(prdData.value);
-    
+    }
 
   } catch (err) {
     console.log(err);
@@ -159,7 +158,7 @@ const monthProd = async () => {
                     datasets: [
                       {
                         label: 'Mobile Apps',
-                        data: [200, 300, 400, 200, 150, 570, 150, 468, 266, 756, 541, 341],
+                        data: prdData,
                       },
                     ],
                   }" />
