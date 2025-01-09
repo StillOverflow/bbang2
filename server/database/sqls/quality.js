@@ -227,9 +227,10 @@ const testWaitPrdList = `
          fn_get_proc_nm(proc_cd) proc_nm,
          prod_qty total_qty,
          CASE WHEN step = (SELECT COUNT(*) 
-                           FROM   process_flow
-                           WHERE  prd_cd = r.prd_cd) THEN 1
-                                                   ELSE 0 END is_last, -- 마지막 공정인지 여부
+                           FROM   prod_result
+                           WHERE  prd_cd = r.prd_cd
+                             AND  inst_cd = r.inst_cd) THEN 1
+              ELSE 0 END is_last, -- 마지막 공정인지 여부
          end_time -- 공정 완료시점 시간
   FROM   prod_result r
   WHERE  status = 'Z03'
@@ -451,7 +452,7 @@ const testRecList = (valueObj) => {
        ${isDef == 'false' ? "AND  r.def_cd IS NULL" : ""} -- 불량이 발생하지 않은 내역
        ${!yetDefect ? "" : "AND r.def_cd IS NOT NULL AND r.def_status IS NULL"} -- 불량이 발생했지만 처리되지 않은 내역
     ${!name ? "" : "HAVING  name LIKE '%" + name + "%' OR complete_name LIKE '%" + name + "%' "} -- alias는 WHERE절 이후에 적용되므로, JOIN 시 HAVING에서 써야 함.
-    ORDER BY r.test_dt DESC
+    ORDER BY r.test_dt DESC, r.test_rec_cd DESC
   `;
 };
 
