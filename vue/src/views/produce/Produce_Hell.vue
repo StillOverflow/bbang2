@@ -477,7 +477,7 @@ export default {
     //공정관리화면 노출
     showProcess(){
 
-      if((this.resultInfo.LAST_STATUS != 'Z03' && this.resultInfo.LAST_STATUS != '0') || (this.resultInfo.LAST_QUE_STATUS != 'Y' && this.resultInfo.LAST_QUE_STATUS != '0')){
+      if((this.resultInfo.LAST_STATUS != 'Z03' && this.resultInfo.LAST_STATUS != '0') || (this.resultInfo.LAST_QUE_STATUS != 'A01' && this.resultInfo.LAST_QUE_STATUS != '0')){
         this.$swal({
           icon: "error",
           title: "이전 공정이 완료되지 않았습니다.",

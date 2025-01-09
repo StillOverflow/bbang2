@@ -64,10 +64,10 @@ const dashBoardDpt = async () => {
 };
 
 // 월간 생산량
-const dashBoardStats = async (values) => {
-  let dateArr = values.TODAY.split("-");
-  let result = await mariadb.query('dashBoardStats', dateArr[0]);  
-  return result;
+const dashBoardStats = async () => {
+  let list = await mariadb.query('dashBoardStats');  
+  
+  return list;
 };
 
 module.exports = {

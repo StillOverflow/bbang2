@@ -222,7 +222,7 @@ const login = (datas) => {
 const dashBoardTop = (date) => {
   let sql = `
               SELECT 
-              IFNULL((SELECT sum(od.ORDER_QTY) FROM \`order\` o JOIN order_detail od ON o.ORDER_CD=od.ORDER_CD WHERE YEAR(CREATE_DT) = '${date.year}' AND MONTH(CREATE_DT) = '01' AND DAY(CREATE_DT) = '${date.day}'),0) AS ORDER_QTY,
+              IFNULL((SELECT sum(od.ORDER_QTY) FROM \`order\` o JOIN order_detail od ON o.ORDER_CD=od.ORDER_CD WHERE YEAR(CREATE_DT) = '${date.year}' AND MONTH(CREATE_DT) = '${date.month}' AND DAY(CREATE_DT) = '${date.day}'),0) AS ORDER_QTY,
               IFNULL((SELECT sum(PRD_QTY) FROM product_in WHERE YEAR(PRD_IN_DT) = '${date.year}' AND MONTH(PRD_IN_DT) = '${date.month}' AND DAY(PRD_IN_DT) = '${date.day}'),0) AS PRD_IN_QTY,
               IFNULL((SELECT COUNT(*) FROM prod_result WHERE START_TIME IS NOT NULL AND END_TIME IS NULL ),0) AS PROD_QTY,
               IFNULL((SELECT SUM(PRD_OUT_QTY) FROM product_out po JOIN product_out_detail pod ON po.PRD_OUT_CD=pod.PRD_OUT_CD WHERE YEAR(PRD_OUT_DT) = '${date.year}' AND MONTH(PRD_OUT_DT) = '${date.month}' AND DAY(PRD_OUT_DT) = '${date.day}'),0) AS PRD_OUT_QTY
@@ -248,15 +248,13 @@ const dashBoardDpt =
 
 // 월간 생산량
 const dashBoardStats = 
-`
-  SELECT 
-    *
-    ,YEAR(PRD_IN_DT) AS YEAR
-    ,month(PRD_IN_DT) AS MONTH
-  FROM 
-    product_in WHERE YEAR(PRD_IN_DT) = ?
-  GROUP BY month(PRD_IN_DT)
-`;
+          `
+            SELECT 
+              IFNULL(SUM(PRD_QTY),0) AS TOTAL_QTY
+            FROM 
+              product_in WHERE YEAR(PRD_IN_DT) = YEAR(now())
+            GROUP BY month(PRD_IN_DT)
+          `;
 
 module.exports = {
   findCommList,

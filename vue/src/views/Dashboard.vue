@@ -2,39 +2,46 @@
 import axios from 'axios';
 import { shallowRef, onBeforeMount } from 'vue';
 
-import MiniStatisticsCard from "@/examples/Cards/MiniStatisticsCard.vue";
 import GradientLineChart from "@/examples/Charts/GradientLineChart.vue";
 
 const dptData = shallowRef([]);
 const topInfoArr = shallowRef([]);
+const monthArr = shallowRef(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12' ]);
+const prdData = shallowRef([]);
 
 onBeforeMount(() => {
+  getCurrency();
   dateFormat();
   topInfo();
   dptList();
+  monthProd();
 });
 
+const getCurrency = (num) => {
+  if (!num) return '0';
+  return Number(num).toLocaleString();
+};
+
 const dateFormat = (value) => {
-    let date = value == null ? new Date() : new Date(value);
+  let date = value == null ? new Date() : new Date(value);
 
-    let year = date.getFullYear();
-    let month = ('0' + (date.getMonth() + 1)).slice(-2);
-    let day = ('0' + date.getDate()).slice(-2);
+  let year = date.getFullYear();
+  let month = ('0' + (date.getMonth() + 1)).slice(-2);
+  let day = ('0' + date.getDate()).slice(-2);
 
-    let result = year + '-' + month + '-' + day;
-    return result;
-  };
+  let result = year + '-' + month + '-' + day;
+  return result;
+};
 
 // 상단 갯수
 const topInfo = async () => {
   try {
     let obj = {
-      TODAY : dateFormat()
+      TODAY: dateFormat()
     }
-    const result = await axios.get('/api/comm/dashboard/top', {params:obj});
-    
+    const result = await axios.get('/api/comm/dashboard/top', { params: obj });
+
     topInfoArr.value = result.data[0];
-    console.log( topInfoArr.value);
 
   } catch (err) {
     console.log(err);
@@ -52,6 +59,22 @@ const dptList = async () => {
   }
 }
 
+// 월간 생산량
+const monthProd = async () => {
+  try {
+    const result = await axios.get('/api/comm/dashboard/stats');
+    for(let i=0; i<12; i++){
+      if(result.data[i].TOTAL_QTY > 0) prdData.value.push(result.data[i].TOTAL_QTY);
+      else prdData.value.push(0);
+    }; 
+    console.log(prdData.value);
+    
+
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 </script>
 <template>
   <div class="py-4 container-fluid">
@@ -59,95 +82,87 @@ const dptList = async () => {
       <div class="col-lg-12">
         <div class="row">
           <div class="col-lg-3 col-md-6 col-12">
-            <mini-statistics-card
-              title="금일 주문량"
-              v-model="topInfoArr.ORDER_QTY"
-              value=""
-              description="<span
-                class='text-sm font-weight-bolder text-success'
-                >+55%</span> since yesterday"
-              :icon="{
-                component: 'ni ni-money-coins',
-                background: 'bg-gradient-primary',
-                shape: 'rounded-circle',
-              }"
-            />
+            <div class="mb-3 card" modelvalue="1">
+              <div class="p-3 card-body">
+                <div class="d-flex flex-row-reverse justify-content-between">
+                  <div class="text-center shadow icon icon-shape bg-gradient-success rounded-circle"><i
+                      class="text-lg opacity-10 ni ni-paper-diploma" aria-hidden="true"></i></div>
+                  <div class="">
+                    <div class="numbers">
+                      <p class="mb-0 text-sm text-uppercase font-weight-bold">금일 주문량</p>
+                      <h5 class="mb-0 font-weight-bolder undefined">{{getCurrency(topInfoArr.ORDER_QTY)}}건<span
+                          class="text-sm font-weight-bolder text-success"></span></h5>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="col-lg-3 col-md-6 col-12">
-            <mini-statistics-card
-              title="금일 생산량"
-              v-model="topInfoArr.PRD_IN_QTY"
-              value=""
-              description="<span
-                class='text-sm font-weight-bolder text-success'
-                >+3%</span> since last week"
-              :icon="{
-                component: 'ni ni-world',
-                background: 'bg-gradient-danger',
-                shape: 'rounded-circle',
-              }"
-            />
+            <div class="mb-3 card" modelvalue="1">
+              <div class="p-3 card-body">
+                <div class="d-flex flex-row-reverse justify-content-between">
+                  <div class="text-center shadow icon icon-shape bg-gradient-success rounded-circle"><i
+                      class="text-lg opacity-10 ni ni-paper-diploma" aria-hidden="true"></i></div>
+                  <div class="">
+                    <div class="numbers">
+                      <p class="mb-0 text-sm text-uppercase font-weight-bold">금일생산량</p>
+                      <h5 class="mb-0 font-weight-bolder undefined">{{getCurrency(topInfoArr.PRD_IN_QTY)}}건<span
+                          class="text-sm font-weight-bolder text-success"></span></h5>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="col-lg-3 col-md-6 col-12">
-            <mini-statistics-card
-              title="가동중인 공정"
-              v-model="topInfoArr.PROD_QTY"
-              value="+3,462"
-              description="<span
-                class='text-sm font-weight-bolder text-danger'
-                >-2%</span> since last quarter"
-              :icon="{
-                component: 'ni ni-paper-diploma',
-                background: 'bg-gradient-success',
-                shape: 'rounded-circle',
-              }"
-            />
+            <div class="mb-3 card" modelvalue="1">
+              <div class="p-3 card-body">
+                <div class="d-flex flex-row-reverse justify-content-between">
+                  <div class="text-center shadow icon icon-shape bg-gradient-success rounded-circle"><i
+                      class="text-lg opacity-10 ni ni-paper-diploma" aria-hidden="true"></i></div>
+                  <div class="">
+                    <div class="numbers">
+                      <p class="mb-0 text-sm text-uppercase font-weight-bold">금일 출고제품양</p>
+                      <h5 class="mb-0 font-weight-bolder undefined">{{getCurrency(topInfoArr.PRD_OUT_QTY)}}건<span
+                          class="text-sm font-weight-bolder text-success"></span></h5>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="col-lg-3 col-md-6 col-12">
-            <mini-statistics-card
-              title="금일 출고제품양"
-              v-model="topInfoArr.PRD_OUT_QTY"
-              value=""
-              description="<span
-                class='text-sm font-weight-bolder text-success'
-                >+5%</span> than last month"
-              :icon="{
-                component: 'ni ni-cart',
-                background: 'bg-gradient-warning',
-                shape: 'rounded-circle',
-              }"
-            />
+            <div class="mb-3 card" modelvalue="1">
+              <div class="p-3 card-body">
+                <div class="d-flex flex-row-reverse justify-content-between">
+                  <div class="text-center shadow icon icon-shape bg-gradient-success rounded-circle"><i
+                      class="text-lg opacity-10 ni ni-paper-diploma" aria-hidden="true"></i></div>
+                  <div class="">
+                    <div class="numbers">
+                      <p class="mb-0 text-sm text-uppercase font-weight-bold">가동중인 공정</p>
+                      <h5 class="mb-0 font-weight-bolder undefined">{{getCurrency(topInfoArr.PROD_QTY)}}건<span
+                          class="text-sm font-weight-bolder text-success"></span></h5>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="row">
           <div class="col-lg-7 mb-lg">
             <!-- line chart -->
             <div class="card z-index-2">
-              <gradient-line-chart
-                id="chart-line"
-                title="월간 생산량"
-                description="<i class='fa fa-arrow-up text-success'></i>
-      <span class='font-weight-bold'>4% more</span> in 2025"
-                :chart="{
-                  labels: [
-                    'Apr',
-                    'May',
-                    'Jun',
-                    'Jul',
-                    'Aug',
-                    'Sep',
-                    'Oct',
-                    'Nov',
-                    'Dec',
-                  ],
-                  datasets: [
-                    {
-                      label: 'Mobile Apps',
-                      data: [50, 40, 300, 220, 500, 250, 400, 230, 500],
-                    },
-                  ],
-                }"
-              />
+              <gradient-line-chart id="chart-line" title="월간 생산량" :chart="{
+                    labels: monthArr,
+                    datasets: [
+                      {
+                        label: 'Mobile Apps',
+                        data: [200, 300, 400, 200, 150, 570, 150, 468, 266, 756, 541, 341],
+                      },
+                    ],
+                  }" />
             </div>
           </div>
           <div class="col-lg-5 mb-lg-0 mb-4">
