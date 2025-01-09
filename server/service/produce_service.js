@@ -160,22 +160,32 @@ const instInsert = async (values) => {
 
   // 공정별 자재 삽입
   for(let i = 0; i < values[2].length; i++) {
-    
-    // 공정흐름 시퀀스 값 얻기
-    let myMatSeq = await mariadb.transQuery('instMatSeq');
-    console.log(myMatSeq);
-    let matSeq = myMatSeq[0].seq;
-    console.log("1313123123123123213");
-    
-    let obj = {
-      "INST_MAT_CD" : matSeq,
-      "INST_CD" : mySeq,
-      "PROC_FLOW_CD" : values[2][i]["PROC_FLOW_CD"]
-    }    
-    
 
-    // 공정별 자재 INSERT
-    await mariadb.transQuery('instMatInsert', obj);
+
+    // 해당 공정에 해당하는 자재 목록 조회
+    let list = await mariadb.query('procMatList', values[2][i]["PROC_FLOW_CD"]);
+    
+    
+    for(let j = 0; j < list.length; j++) {
+
+      // 공정흐름 시퀀스 값 얻기
+      let myMatSeq = await mariadb.transQuery('instMatSeq');
+      let matSeq = myMatSeq[0].seq;
+
+      let obj = {
+        "INST_MAT_CD" : matSeq,
+        "INST_CD" : mySeq,
+        "PROC_FLOW_CD" : values[2][i]["PROC_FLOW_CD"],
+        "MAT_CD" : list[j].MAT_CD,
+        "MAT_QTY" : list[j].MAT_QTY,
+        "MAT_USE_QTY" : list[j].MAT_USE_QTY,
+        "UNIT" : list[j].UNIT
+      }    
+      
+      // 공정별 자재 INSERT
+      await mariadb.transQuery('instMatInsert', obj);
+    }
+    
   };
 
 
@@ -260,12 +270,12 @@ const progressStart = async (no, updateInfo) => {
     let mat_qty = 0; //lot별 사용량 임시저장
 
     while (mat_qty < use_qty) { //lot별 사용량이 실사용량과 같아질때까지
-
+      
       let mat_stock = 0;
       let rest_qty = use_qty - mat_qty; //잔여량
-      let list = await mariadb.transQuery('matLotSearch', obj.MAT_CD); //자재 lot SELECT
+      let lotlist = await mariadb.transQuery('matLotSearch', obj.MAT_CD); //자재 lot SELECT
 
-      if (rest_qty <= mat_stock) mat_stock = parseInt(list[0]["MAT_STOCK"]); //자재 재고가 잔여량보다 같거나 적으면 전 수량 다가져옴
+      if (rest_qty <= mat_stock) mat_stock = parseInt(lotlist[0]["MAT_STOCK"]); //자재 재고가 잔여량보다 같거나 적으면 전 수량 다가져옴
       else mat_stock = rest_qty; //자재 재고가 잔여량보다 많으면 잔여량만큼 가져옴
 
       mat_qty += mat_stock; //잔여량에 가져온 재고량 더함
@@ -276,13 +286,13 @@ const progressStart = async (no, updateInfo) => {
       let lotObj = { //insert할 lot정보 배열에 저장
         "MAT_OUT_DTL_CD" : lotSeq,
         "MAT_OUT_QTY": mat_stock,
-        "MAT_LOT_CD": list[0]["MAT_LOT_CD"],
+        "MAT_LOT_CD": lotlist[0].MAT_LOT_CD,
         "MAT_CD": obj.MAT_CD,
         "PROD_RESULT_CD": obj.PROD_RESULT_CD,
       };      
-
+      
       let lot_is = await mariadb.query('matLotInsert', lotObj); //자재출고 테이블에 insert
-      let lot_ud = await mariadb.query('matLotUpdate', [mat_stock, list[0]["MAT_LOT_CD"]]); //자재재고 수량 변경
+      let lot_ud = await mariadb.query('matLotUpdate', [mat_stock, lotlist[0]["MAT_LOT_CD"]]); //자재재고 수량 변경
 
       if (lot_is.affectedRows > 0 && lot_ud.affectedRows > 0) {
         resultArr.push('success');
@@ -297,10 +307,10 @@ const progressStart = async (no, updateInfo) => {
   }
 
   if (!resultArr.includes('fail') && list.affectedRows > 0) {
-    await mariadb.commit();
+    //await mariadb.commit();
     return 'success';
   } else {
-    await mariadb.rollback();
+    //await mariadb.rollback();
     return 'fail';
   }
 
@@ -317,10 +327,8 @@ const statusChange = async (no, datas) => {
   let result = await mariadb.query('statusChange', obj);
 
   if (result.affectedRows > 0) {
-    await mariadb.commit();
     return 'success';
   } else {
-    await mariadb.rollback();
     return 'fail';
   }
 }

@@ -215,6 +215,49 @@ const login = (datas) => {
   return sql;
 };
 
+
+
+/* ---------------대시보드 -------------- */
+// 상단 갯수
+const dashBoardTop = (date) => {
+  let sql = `
+              SELECT 
+              IFNULL((SELECT sum(od.ORDER_QTY) FROM \`order\` o JOIN order_detail od ON o.ORDER_CD=od.ORDER_CD WHERE YEAR(CREATE_DT) = '${date.year}' AND MONTH(CREATE_DT) = '01' AND DAY(CREATE_DT) = '${date.day}'),0) AS ORDER_QTY,
+              IFNULL((SELECT sum(PRD_QTY) FROM product_in WHERE YEAR(PRD_IN_DT) = '${date.year}' AND MONTH(PRD_IN_DT) = '${date.month}' AND DAY(PRD_IN_DT) = '${date.day}'),0) AS PRD_IN_QTY,
+              IFNULL((SELECT COUNT(*) FROM prod_result WHERE START_TIME IS NOT NULL AND END_TIME IS NULL ),0) AS PROD_QTY,
+              IFNULL((SELECT SUM(PRD_OUT_QTY) FROM product_out po JOIN product_out_detail pod ON po.PRD_OUT_CD=pod.PRD_OUT_CD WHERE YEAR(PRD_OUT_DT) = '${date.year}' AND MONTH(PRD_OUT_DT) = '${date.month}' AND DAY(PRD_OUT_DT) = '${date.day}'),0) AS PRD_OUT_QTY
+              FROM DUAL
+            `;
+  return sql;
+}
+
+// 부서별 사원 수
+const dashBoardDpt = 
+`
+  SELECT 
+    d.DPT_CD AS DPT_CD,
+    DPT_NM,
+    (SELECT NAME FROM member WHERE id=d.mgr_id) AS MGR_NM,
+    MEM_CNT
+  FROM 
+  department d JOIN (SELECT ID, DPT_CD, COUNT(DPT_CD) AS MEM_CNT FROM member GROUP BY DPT_CD) m
+  on d.DPT_CD=m.DPT_CD
+  order BY mem_cnt DESC
+`;
+
+
+// 월간 생산량
+const dashBoardStats = 
+`
+  SELECT 
+    *
+    ,YEAR(PRD_IN_DT) AS YEAR
+    ,month(PRD_IN_DT) AS MONTH
+  FROM 
+    product_in WHERE YEAR(PRD_IN_DT) = ?
+  GROUP BY month(PRD_IN_DT)
+`;
+
 module.exports = {
   findCommList,
   memList,        // 사원
@@ -222,5 +265,8 @@ module.exports = {
   materialSelect, // 자재
   productSelect,  // 제품
   commOrderDtlList,
-  login // 로그인
+  login, // 로그인
+  dashBoardTop,
+  dashBoardDpt,
+  dashBoardStats
 };

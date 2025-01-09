@@ -88,7 +88,7 @@
                       </td>
                       <td>{{ Dtl.prd_cd }}</td>
                       <td>{{ Dtl.prd_nm }}</td>
-                      <td>{{ Dtl.order_qty }}</td>
+                      <td>{{ this.$comm.getCurrency(Dtl.order_qty) }}</td>
                       <td><span :class="Dtl.flow_cnt > 0 ? 'text-primary' : 'text-secondary'"><b> {{ Dtl.flow_cnt > 0 ? "설정됨" : "미설정" }}</b></span></td>
                       <td><span :class="Dtl.mtl_cnt > 0 ? 'text-primary' : 'text-secondary'"><b> {{ Dtl.mtl_cnt > 0 ? "설정됨" : "미설정" }}</b></span></td>
                       <td><button @click="prdClicked(Dtl.prd_cd)" class="btn btn-sm btn-warning">선택하기</button></td>
@@ -356,7 +356,7 @@ export default {
           STEP: obj.PROC_SEQ
         });
       });
-      
+
       let insertArr = [...insertInst, insertPrd, insertFlow];
 
       let result = await axios.post('/api/inst', insertArr)

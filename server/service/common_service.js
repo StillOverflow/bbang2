@@ -43,6 +43,33 @@ const login = async (datas)=>{
   return info;
 }
 
+
+/* ---------------대시보드 -------------- */
+// 상단 갯수
+const dashBoardTop = async (values) => {
+  let dateArr = values.TODAY.split("-");
+  let date = {
+    "year" : dateArr[0],
+    "month" : dateArr[1],
+    "day" : dateArr[2]
+  }
+  let result = await mariadb.query('dashBoardTop', date);  
+  return result;
+};
+
+// 부서별 사원 수
+const dashBoardDpt = async () => {
+  let result = await mariadb.query('dashBoardDpt');  
+  return result;
+};
+
+// 월간 생산량
+const dashBoardStats = async (values) => {
+  let dateArr = values.TODAY.split("-");
+  let result = await mariadb.query('dashBoardStats', dateArr[0]);  
+  return result;
+};
+
 module.exports = {
     findCommList,
     findMemList,
@@ -50,5 +77,9 @@ module.exports = {
     materialSelect,
     productSelect,
     findOrderNo,
-    login
+    login,
+
+    dashBoardTop,
+    dashBoardDpt,
+    dashBoardStats
 };
