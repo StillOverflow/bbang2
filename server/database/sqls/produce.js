@@ -206,7 +206,7 @@ SELECT
     INST_DTL_CD,
 		pi.INST_CD AS INST_CD, 
 		pi.ORDER_CD AS ORDER_CED, 
-		fn_get_codename(STATUS) as ACT_TYPE,
+		fn_get_codename(pi.STATUS) as ACT_TYPE,
 		PRD_CD, 
     (SELECT PRD_NM 
       FROM product 
@@ -479,6 +479,8 @@ const matLotInsert = (obj) => { // 배열 형식으로 받아야 함.
           '${obj.PROD_RESULT_CD}'), `;
   sql = sql.substring(0, sql.length - 2); // 마지막 ,만 빼고 반환
 
+  console.log("☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆");
+  console.log(sql);
   return sql;
 };
 

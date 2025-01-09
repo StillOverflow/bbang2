@@ -72,8 +72,7 @@ router.get('/comm/dashboard/dpt', async (req, res) => {
 
 // 월간 생산량
 router.get('/comm/dashboard/stats', async (req, res) => {
-  let date = req.query;
-  let List = await commonService.dashBoardStats(date);
+  let List = await commonService.dashBoardStats();
   res.send(List);
 });
 

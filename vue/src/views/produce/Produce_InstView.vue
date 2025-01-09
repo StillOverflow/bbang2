@@ -147,8 +147,10 @@ export default {
       let result2 = await axios.get(`/api/inst/dtl/${this.selectNo}`)
                               .catch(err => console.log(err)); 
       this.prdArr = result2.data;
+      
       this.prdArr.forEach((obj) => {
         const checkboxes = document.querySelector('.sub_'+obj.PRD_CD); 
+        console.log(checkboxes);
         checkboxes.checked = true;
       });
       

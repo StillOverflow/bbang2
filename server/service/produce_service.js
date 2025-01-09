@@ -290,6 +290,8 @@ const progressStart = async (no, updateInfo) => {
         "MAT_CD": obj.MAT_CD,
         "PROD_RESULT_CD": obj.PROD_RESULT_CD,
       };      
+
+      
       
       let lot_is = await mariadb.query('matLotInsert', lotObj); //자재출고 테이블에 insert
       let lot_ud = await mariadb.query('matLotUpdate', [mat_stock, lotlist[0]["MAT_LOT_CD"]]); //자재재고 수량 변경
