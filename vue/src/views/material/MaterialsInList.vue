@@ -693,6 +693,8 @@
          },
       },
       rowSelection: {
+         mode:"singleRow",
+         checkboxes: false,
          enableClickSelection: true,
       },
 
