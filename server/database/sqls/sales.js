@@ -648,7 +648,8 @@ SELECT m.ID,
        m.name, 
        d.dpt_nm 
 FROM member m 
-JOIN department d ON m.dpt_cd = d.dpt_cd;
+JOIN department d ON m.dpt_cd = d.dpt_cd
+WHERE d.dpt_nm = '영업팀'
 `;
 // 제품 조회(모달)
 const moProList =
