@@ -236,9 +236,29 @@ const testWaitPrdList = `
   AND    que_status = 'A02'
 `;
 
+// // 자재 입고검사 대기내역
+// const testWaitMatList = `
+//   SELECT d.mat_order_dtl_cd refer_cd,
+//          d.mat_order_cd,
+//          fn_get_membername(d.id) name,
+//          d.mat_cd target_cd,
+//          fn_get_materialname(d.mat_cd) target_nm,
+//          d.mat_qty order_qty, -- 총발주량
+//          (d.mat_qty - IFNULL((SELECT SUM(mat_qty)
+// 		                          FROM   material_in
+// 							                WHERE  mat_order_cd = d.mat_order_cd
+// 							                AND    mat_cd = d.mat_cd), 0)) yet_qty, -- 미입고량
+//          o.create_dt -- 발주일자
+//   FROM   material_order o JOIN material_order_detail d 
+//                             ON o.mat_order_cd = d.mat_order_cd
+//   WHERE  o.status != 'L01' -- 입고완료되지 않은 내역
+//     AND  o.act_cd = ?
+//   ORDER  BY create_dt DESC, target_nm
+// `;
+
 // 자재 입고검사 대기내역
 const testWaitMatList = `
-  SELECT o.mat_order_cd refer_cd,
+  SELECT d.mat_order_cd refer_cd,
          d.mat_order_dtl_cd,
          fn_get_membername(d.id) name,
          d.mat_cd target_cd,
@@ -253,7 +273,7 @@ const testWaitMatList = `
                             ON o.mat_order_cd = d.mat_order_cd
   WHERE  o.status != 'L01' -- 입고완료되지 않은 내역
     AND  o.act_cd = ?
-  ORDER  BY refer_cd, target_nm
+  ORDER  BY create_dt DESC, target_nm
 `;
 
 // 자재 미입고 거래처조회 (모달용)
@@ -267,6 +287,7 @@ const actList = `
   FROM   material_order o JOIN account a
                             ON o.act_cd = a.act_cd
   WHERE  o.status != 'L01'
+  ORDER  BY o.create_dt DESC, act_nm
 `;
 
 // 타입별 불량조회 (모달용)
@@ -430,7 +451,7 @@ const testRecList = (valueObj) => {
        ${isDef == 'false' ? "AND  r.def_cd IS NULL" : ""} -- 불량이 발생하지 않은 내역
        ${!yetDefect ? "" : "AND r.def_cd IS NOT NULL AND r.def_status IS NULL"} -- 불량이 발생했지만 처리되지 않은 내역
     ${!name ? "" : "HAVING  name LIKE '%" + name + "%' OR complete_name LIKE '%" + name + "%' "} -- alias는 WHERE절 이후에 적용되므로, JOIN 시 HAVING에서 써야 함.
-    ORDER BY r.test_rec_cd DESC
+    ORDER BY r.test_dt DESC
   `;
 };
 
