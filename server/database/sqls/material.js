@@ -395,7 +395,7 @@ const getProduceInstruction = (searchObj) => {
    if (conditions.length > 0) {
       query += " AND " + conditions.join(" AND ");
    }
-   query += ` ORDER BY work_dt DESC `;
+   query += ` ORDER BY work_dt DESC, inst_cd DESC `;
    // 쿼리 반환
    return query;
 }
